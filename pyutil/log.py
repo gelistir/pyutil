@@ -1,5 +1,11 @@
-import io
 import logging
+
+# let's soon ditch support for Python 2.
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 
 from pyutil.message import Mail
 
@@ -17,26 +23,29 @@ def MailHandler(mail, level=None, format=None):
 
     :return: the handler
     """
-    class __mailhandler(logging.Handler):
+    class mailhandler(logging.Handler):
         def emit(self, record):
             self.__mail.send(text=self.format(record))
 
         def __init__(self, mail, format, level):
-            super().__init__()
+            try:
+                super().__init__()
+            except:
+                super(mailhandler, self).__init__()
+
             assert isinstance(mail, Mail)
             self.__mail = mail
             self.level = level
             self.formatter = logging.Formatter(format)
 
-    return __mailhandler(mail, level=level or __level, format=format or __format)
+    return mailhandler(mail, level=level or __level, format=format or __format)
 
 
 def StreamHandler(level=None, format=None):
     """
     Streamhandler, provides handler.stream.getvalue()
-
     """
-    handler = logging.StreamHandler(io.StringIO())
+    handler = logging.StreamHandler(StringIO())
     handler.level = level or __level
     handler.formatter = logging.Formatter(format or __format)
     return handler
