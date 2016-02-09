@@ -13,7 +13,10 @@ if __name__ == '__main__':
     __api = config["Mailgun"]["mailgunapi"]
     __key = config["Mailgun"]["mailgunkey"]
 
-    m = Mail(mailgunapi=__api, mailgunkey=__key, fromAdr="t@mailinator.com", toAdr="t@mailinator.com", subject="test")
+    m = Mail(mailgunapi=__api, mailgunkey=__key)
+    m.fromAdr = "t@mailinator.com"
+    m.toAdr = "t@mailinator.com"
+    m.subject = "test"
 
     logger = get_logger("TEST")
     logger.addHandler(MailHandler(m))
