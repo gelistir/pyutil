@@ -3,7 +3,9 @@ from unittest import TestCase
 from pyutil.performance.drawdown import drawdown
 from pyutil.performance.periods import period_returns, periods
 from pyutil.performance.var import value_at_risk, conditional_value_at_risk
-from test.config import read_series
+from pyutil.performance.month import monthlytable
+
+from test.config import read_series, read_frame
 
 ts = read_series("ts.csv", parse_dates=True)
 
@@ -24,3 +26,8 @@ class TestPerformance(TestCase):
 
         self.assertAlmostEqual(var, 0.0040086450047240874, places=5)
         self.assertAlmostEqual(cvar, 0.0053542831745811131, places=5)
+
+    def test_monthlytable(self):
+        f = 100 * monthlytable(ts)
+        f = f[f.index >= 2008]
+        pdt.assert_frame_equal(f, read_frame("month.csv", parse_dates=False))
