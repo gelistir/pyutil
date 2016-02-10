@@ -1,0 +1,20 @@
+Return,32.1565006189
+# Days,3352
+Annua. Return,2.17938541796
+Annua. Volatility,2.32259008304
+Annua. Sharpe Ratio,0.938342686416
+Max Drawdown,5.70005754585
+Max % return,0.860406191542
+Min % return,-1.29383155992
+MTD,1.41336049222
+YTD,2.17189967346
+Current Nav,1.32156500619
+Max Nav,1.33580342591
+Current Drawdown,1.065906813
+Calmar Ratio (3Y),0.217668121679
+# Positive Days,1856
+# Negative Days,1496
+Value at Risk (alpha = 0.95),0.230096825894
+Conditional Value at Risk (alpha = 0.95),0.337276740114
+First,2002-06-18 00:00:00
+Last,2015-04-22 00:00:00

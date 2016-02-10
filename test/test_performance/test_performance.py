@@ -1,9 +1,11 @@
 from unittest import TestCase
+import pandas as pd
 
 from pyutil.performance.drawdown import drawdown
 from pyutil.performance.periods import period_returns, periods
 from pyutil.performance.var import value_at_risk, conditional_value_at_risk
 from pyutil.performance.month import monthlytable
+from pyutil.performance.performance import performance
 
 from test.config import read_series, read_frame
 
@@ -31,3 +33,13 @@ class TestPerformance(TestCase):
         f = 100 * monthlytable(ts)
         f = f[f.index >= 2008]
         pdt.assert_frame_equal(f, read_frame("month.csv", parse_dates=False))
+
+    def test_performance(self):
+        p = performance(ts, 262)
+        g = read_series("performance_a.csv", parse_dates=False)
+
+        for i in p.index[:-2]:
+            self.assertAlmostEqual(float(p.ix[i]), float(g.ix[i]), places=10)
+
+        for i in p.index[-2:]:
+            self.assertEqual(p.ix[i], pd.Timestamp(g.ix[i]))
