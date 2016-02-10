@@ -1,4 +1,7 @@
+from os.environ import setdefault
 from os.path import join, expanduser
+
+from pyutil.message import Mail
 
 
 class Configuration(object):
@@ -28,8 +31,21 @@ class Configuration(object):
         return self.__config.sections()
 
 
+def mail():
+    c = Configuration()
+    __api = c["Mailgun"]["mailgunapi"]
+    __key = c["Mailgun"]["mailgunkey"]
+    return Mail(mailgunapi=__api, mailgunkey=__key)
+
+
+def mosek():
+    c = Configuration()
+    __mosek = c["Mosek"]["moseklm_license_file"]
+    setdefault("MOSEKLM_LICENSE_FILE", __mosek)
+
+
 if __name__ == '__main__':
     c = Configuration()
     print(c["Mailgun"]["mailgunkey"])
     print(c.sections())
-
+    print(c["Mosek"])
