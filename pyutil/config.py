@@ -1,13 +1,10 @@
-from os.environ import setdefault
-from os.path import join, expanduser
-
+import os
 from pyutil.message import Mail
 
 
 class Configuration(object):
-
     def __init__(self, file=None):
-        file = file or join(expanduser("~"), "lobnek.cfg")
+        file = file or os.path.join(os.path.expanduser("~"), "lobnek.cfg")
         try:
             import configparser
             self.__config = configparser.ConfigParser()
@@ -41,11 +38,6 @@ def mail():
 def mosek():
     c = Configuration()
     __mosek = c["Mosek"]["moseklm_license_file"]
-    setdefault("MOSEKLM_LICENSE_FILE", __mosek)
+    os.environ.setdefault("MOSEKLM_LICENSE_FILE", __mosek)
 
 
-if __name__ == '__main__':
-    c = Configuration()
-    print(c["Mailgun"]["mailgunkey"])
-    print(c.sections())
-    print(c["Mosek"])
