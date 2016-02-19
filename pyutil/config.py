@@ -62,3 +62,25 @@ def mosek(license=None, file=None):
         license = c["Mosek"]["moseklm_license_file"]
 
     os.environ.setdefault("MOSEKLM_LICENSE_FILE", license)
+
+
+def session(write=False, connect=None, file=None):
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import Session
+
+    if write:
+        if not connect:
+            c = Configuration(file=file)
+            connect = c["SQL-Write"]["connect"]
+    else:
+         if not connect:
+            c = Configuration(file=file)
+            connect = c["SQL-Read"]["connect"]
+
+    __ENGINE = create_engine(connect, encoding="utf8", echo=False)
+    return Session(__ENGINE)
+
+
+if __name__ == '__main__':
+    print(session())
+    print(dir(session()))

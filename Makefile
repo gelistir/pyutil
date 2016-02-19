@@ -4,6 +4,7 @@
 ROOT_DIR      = $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PYTHON        = ${ROOT_DIR}/env/bin/python
 NOSE          = ${ROOT_DIR}/env/bin/nosetests
+PIP           = ${ROOT_DIR}/env/bin/pip
 PROJECT       = pyutil
 
 
@@ -23,7 +24,7 @@ clean:
 build:
 	@$(MAKE) clean
 	conda create --yes -p ${ROOT_DIR}/env --file condalist.txt
-
+	${PIP} install -r ${ROOT_DIR}/requirements.txt
 
 .PHONY: tag
 tag:
