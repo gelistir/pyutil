@@ -1,7 +1,28 @@
 import pandas as pd
-from collections import namedtuple, OrderedDict
 
-Period = namedtuple("Period", ["start", "end"])
+
+class Period(object):
+    """
+    Simple Period model, representing an interval of two stamps
+    """
+    def __init__(self, start, end):
+        assert start < end
+        self.__start = start
+        self.__end = end
+
+    def apply_to(self, ts):
+        return ts.truncate(before=self.__start, after=self.__end)
+
+    def __repr__(self):
+        return "Period with start {0} and end {1}".format(self.__start, self.__end)
+
+    @property
+    def start(self):
+        return self.__start
+
+    @property
+    def end(self):
+        return self.__end
 
 
 def __cumreturn(ts):
@@ -9,6 +30,12 @@ def __cumreturn(ts):
 
 
 def periods(today=None):
+    """
+    Construct a series of Period objects
+
+    :param today: If not specified use today's date. Specifying a today is quite useful in unit tests.
+    :return:
+    """
     today = today or pd.Timestamp("today")
 
     def __f(offset, today):
@@ -30,23 +57,21 @@ def periods(today=None):
 
 def period_returns(returns, offset=None):
     """
+    Compute the returns achieve over certain periods
 
-    :param r: time series of returns
-    :param offset: periods
-    :return:
+    :param returns: time series of returns
+    :param offset: periods given as a Series, if not specified use standard set of periods
+    :return: Series of periods returns, same order as in the period Series
     """
     if not isinstance(offset, pd.Series):
         offset = periods()
 
     assert isinstance(returns.index[0], pd.Timestamp)
-    r = returns.dropna()
-    p_returns = OrderedDict()
+    p_returns = {key: __cumreturn(period.apply_to(returns)) for key, period in offset.iteritems()}
 
-    for key, period in offset.iteritems():
-        assert isinstance(period, Period)
-        p_returns[key] = __cumreturn(r.truncate(before=period.start, after=period.end))
+    # preserve the order of the elements in the offset series
+    return pd.Series(p_returns).ix[offset.index]
 
-    return pd.Series(p_returns)
 
 
 

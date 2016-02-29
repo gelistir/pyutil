@@ -7,34 +7,51 @@ from pyutil.performance.var import value_at_risk, conditional_value_at_risk
 
 
 def __gmean(a):
+    # geometric mean A
+    # Prod [a_i] == A^n
+    # Apply log on both sides
+    # Sum [log a_i] = n log A
+    # => A = exp(Sum [log a_i] // n)
     return np.exp(np.mean(np.log(a)))
 
 
 def __cumreturn(ts):
-    return (ts + 1.0).prod() - 1.0
+    return (1 + ts).prod() - 1.0
+
+
+def sharpe_ratio(nav, days=262):
+    # compute one day returns
+    r = nav.resample("1D", how="last").pct_change().dropna()
+    return np.sqrt(days) * (__gmean(r + 1) -1.0) / r.std()
+
+
+def sortino_ratio(nav, days=262):
+    start = nav.index[-1] - pd.DateOffset(years=3)
+    # truncate the nav
+    x = nav.truncate(before=start)
+    # compute the returns for that period
+    r = x.resample("1D", how="last").pct_change().dropna()
+    return days*(__gmean(r + 1) - 1.0)/drawdown(x).max()
 
 
 def performance(nav, days=262, years=None):
     assert isinstance(nav.index[0], pd.Timestamp)
 
-    r = nav.pct_change().dropna()
+    r = nav.resample("1D", how="last").pct_change().dropna()
     d = OrderedDict()
 
-    a = 100 * __cumreturn(r)
-
-    d["Return"] = a
+    d["Return"] = 100 * __cumreturn(r)
     d["# Days"] = r.size
 
-    d["Annua. Return"] = 100 * days * (__gmean(r + 1) - 1.0)
+    d["Annua. Return"] = 100 * days * (__gmean(r + 1)-1.0)
     d["Annua. Volatility"] = 100 * np.sqrt(days) * r.std()
-    d["Annua. Sharpe Ratio"] = np.sqrt(days) * (__gmean(r + 1) - 1.0) / r.std()
+    d["Annua. Sharpe Ratio"] = sharpe_ratio(nav, days=days)
 
     d["Max Drawdown"] = 100 * drawdown(nav).max()
     d["Max % return"] = 100 * r.max()
     d["Min % return"] = 100 * r.min()
 
-    offsets = periods(today=r.index[-1])
-    per = period_returns(returns=r, offset=offsets)
+    per = period_returns(returns=r, offset=periods(today=r.index[-1]))
 
     d["MTD"] = 100*per["Month-to-Date"]
     d["YTD"] = 100*per["Year-to-Date"]
@@ -43,11 +60,7 @@ def performance(nav, days=262, years=None):
     d["Max Nav"] = nav.max()
     d["Current Drawdown"] = 100 * (nav.max() - nav[r.index[-1]])/nav.max()
 
-    period = offsets["Three Years"]
-
-    nav3 = nav.truncate(before=period[0], after=period[1])
-    r3 = nav3.pct_change().dropna()
-    d["Calmar Ratio (3Y)"] = days * (__gmean(r3 + 1) - 1.0) / drawdown(nav3).max()
+    d["Calmar Ratio (3Y)"] = sortino_ratio(nav, days=days)
 
     d["# Positive Days"] = r[r > 0].size
     d["# Negative Days"] = r[r < 0].size
@@ -59,5 +72,6 @@ def performance(nav, days=262, years=None):
     if years:
         for y in years:
             d[str(y)] = 100 * __cumreturn(r[r.index.year == y])
+
     return pd.Series(d)
 
