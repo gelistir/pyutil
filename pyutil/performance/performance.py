@@ -34,6 +34,16 @@ def sortino_ratio(nav, days=262):
     return days*(__gmean(r + 1) - 1.0)/drawdown(x).max()
 
 
+def annualized_return(nav, days=262):
+    r = nav.resample("1D", how="last").pct_change().dropna()
+    return 100 * days * (__gmean(r + 1)-1.0)
+
+
+def annualized_volatility(nav, days=262):
+    r = nav.resample("1D", how="last").pct_change().dropna()
+    return 100 * np.sqrt(days) * r.std()
+
+
 def performance(nav, days=262, years=None):
     assert isinstance(nav.index[0], pd.Timestamp)
 
@@ -43,8 +53,8 @@ def performance(nav, days=262, years=None):
     d["Return"] = 100 * __cumreturn(r)
     d["# Days"] = r.size
 
-    d["Annua. Return"] = 100 * days * (__gmean(r + 1)-1.0)
-    d["Annua. Volatility"] = 100 * np.sqrt(days) * r.std()
+    d["Annua. Return"] = annualized_return(nav, days=days)
+    d["Annua. Volatility"] = annualized_volatility(nav, days=days)
     d["Annua. Sharpe Ratio"] = sharpe_ratio(nav, days=days)
 
     d["Max Drawdown"] = 100 * drawdown(nav).max()
