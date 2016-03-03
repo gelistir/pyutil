@@ -23,7 +23,7 @@ class Mail(object):
         self.__files = list()
         self.__subject = ""
 
-    def attach(self, name, localpath, mode="r+b"):
+    def attach_file(self, name, localpath, mode="r+b"):
         """
         attach a file.
 
@@ -33,6 +33,17 @@ class Mail(object):
         :return: reference to modified object to chain commands
         """
         self.__files.extend([("attachment", (name, open(localpath, mode=mode)))])
+        return self
+
+    def attach_stream(self, name, stream):
+        """
+        attach a stream (or string).
+
+        :param name:
+        :param frame:
+        :return: reference to modified object to chain commands
+        """
+        self.__files.extend([("attachment", (name, stream))])
         return self
 
     def inline(self, name, localpath, mode="r+b"):
@@ -59,7 +70,10 @@ class Mail(object):
         finally:
             for f in self.__files:
                 # List of tuples ("attachment or inline", (f[0], f[1]))
-                f[1][1].close()
+                try:
+                    f[1][1].close()
+                except:
+                    pass
 
     @property
     def toAdr(self):
