@@ -11,10 +11,10 @@ class Period(object):
         self.__end = end
 
     def apply_to(self, ts):
-        return ts.truncate(before=self.__start, after=self.__end)
+        return ts.truncate(before=self.start, after=self.end)
 
     def __repr__(self):
-        return "Period with start {0} and end {1}".format(self.__start, self.__end)
+        return "Period with start {0} and end {1}".format(self.start, self.end)
 
     @property
     def start(self):

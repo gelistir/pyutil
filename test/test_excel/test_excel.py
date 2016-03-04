@@ -3,7 +3,8 @@ from unittest import TestCase
 from pyutil.excel.excel import Excel
 import xlsxwriter
 import pandas as pd
-
+from tempfile import NamedTemporaryFile
+import os
 
 class TestExcel(TestCase):
     def test_init(self):
@@ -21,3 +22,8 @@ class TestExcel(TestCase):
         sheet = x.add_frame(frame, sheetname="test")
         sheet.set_column("A:A", 20, x.format_percent)
         x.save().stream
+
+        f = NamedTemporaryFile()
+        x.to_file(file=f.name)
+
+        os.path.exists(f.name)

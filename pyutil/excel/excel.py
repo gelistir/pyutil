@@ -39,3 +39,8 @@ class Excel(object):
     @property
     def format_percent(self):
         return self.__format_percent
+
+    def to_file(self, file):
+        with open(file, mode="w+b") as f:
+            f.write(self.stream)
+

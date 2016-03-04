@@ -58,6 +58,18 @@ class Mail(object):
         self.__files.extend([("inline", (name, open(localpath, mode=mode)))])
         return self
 
+    def inline_stream(self, name, stream):
+        """
+        inline a file.
+
+        :param name:
+        :param stream:
+
+        :return: reference to modified object to chain commands
+        """
+        self.__files.extend([("inline", (name, stream))])
+        return self
+
     def send(self, text):
         """
         send an email
@@ -98,3 +110,5 @@ class Mail(object):
     @toAdr.setter
     def toAdr(self, value):
         self.__toAdr = value
+
+
