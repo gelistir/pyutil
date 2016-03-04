@@ -48,6 +48,8 @@ def performance(nav, days=262, years=None):
     assert isinstance(nav.index[0], pd.Timestamp)
 
     r = nav.resample("1D", how="last").pct_change().dropna()
+    last = nav.dropna().index[-1]
+
     d = OrderedDict()
 
     d["Return"] = 100 * __cumreturn(r)
@@ -66,9 +68,9 @@ def performance(nav, days=262, years=None):
     d["MTD"] = 100*per["Month-to-Date"]
     d["YTD"] = 100*per["Year-to-Date"]
 
-    d["Current Nav"] = nav[r.index[-1]]
+    d["Current Nav"] = nav[last]
     d["Max Nav"] = nav.max()
-    d["Current Drawdown"] = 100 * (nav.max() - nav[r.index[-1]])/nav.max()
+    d["Current Drawdown"] = 100 * (nav.max() - nav[last])/nav.max()
 
     d["Calmar Ratio (3Y)"] = sortino_ratio(nav, days=days)
 
