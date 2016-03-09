@@ -15,7 +15,7 @@ def configuration(file=None):
         import ConfigParser
         config = ConfigParser.ConfigParser()
         config.read(file)
-        return {item: {key: config(item, key) for key in config.options(item)} for item in config.sections()}
+        return {item: {key: config.get(item, key) for key in config.options(item)} for item in config.sections()}
 
 
 def mail(api=None, key=None, file=None):
