@@ -68,6 +68,3 @@ def session(write=False, connect=None, file=None):
 
     __ENGINE = create_engine(connect, encoding="utf8", echo=False)
     return Session(__ENGINE)
-
-if __name__ == '__main__':
-    print(configuration())
