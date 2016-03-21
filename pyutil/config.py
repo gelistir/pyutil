@@ -3,19 +3,27 @@ from pyutil.message import Mail
 
 
 def configuration(file=None):
+    """
+    Construct a dictionary of dictionaries from a config file. One dictionary per section
+
+    :param file:
+    :return:
+    """
     file = file or os.path.join(os.path.expanduser("~"), "lobnek.cfg")
     assert os.path.exists(file)
     try:
+        # Python 3
         import configparser
         config = configparser.ConfigParser()
         config.read(file)
-        return {item: {k: x for k,x in config[item].items()} for item in config.sections()}
+        return {section: {k: x for k,x in config[section].items()} for section in config.sections()}
 
     except ImportError:
+        # Python 2
         import ConfigParser
         config = ConfigParser.ConfigParser()
         config.read(file)
-        return {item: {key: config.get(item, key) for key in config.options(item)} for item in config.sections()}
+        return {section: {k: config.get(section, k) for k in config.options(section)} for section in config.sections()}
 
 
 def mail(api=None, key=None, file=None):
@@ -54,6 +62,14 @@ def mosek(license=None, file=None):
 
 
 def session(write=False, connect=None, file=None):
+    """
+    Create the SQL Alchemy Session object.
+
+    :param write:
+    :param connect:
+    :param file:
+    :return:
+    """
     from sqlalchemy import create_engine
     from sqlalchemy.orm import Session
 
@@ -66,5 +82,4 @@ def session(write=False, connect=None, file=None):
             c = configuration(file=file)
             connect = c["SQL-Read"]["connect"]
 
-    __ENGINE = create_engine(connect, encoding="utf8", echo=False)
-    return Session(__ENGINE)
+    return Session(create_engine(connect, encoding="utf8", echo=False))
