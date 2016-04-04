@@ -24,7 +24,7 @@ def subsample(ts, day=15, incl=False):
         return a[-1] if len(a) > 0 else np.nan
 
     func = partial(f, day=day, incl=incl)
-    dates = pd.Series(index=ts.index).resample("M", how=func).dropna()
+    dates = pd.Series(index=ts.index).resample("M").apply(func).dropna()
 
     # attach the latest point if isn't already contained
     if ts.index[-1] > dates.values[-1]:
