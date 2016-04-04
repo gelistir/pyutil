@@ -21,7 +21,7 @@ def __cumreturn(ts):
 
 def sharpe_ratio(nav, days=262):
     # compute one day returns
-    r = nav.resample("1D", how="last").pct_change().dropna()
+    r = nav.resample("1D").last().pct_change().dropna()
     return np.sqrt(days) * (__gmean(r + 1) -1.0) / r.std()
 
 
@@ -30,24 +30,24 @@ def sortino_ratio(nav, days=262):
     # truncate the nav
     x = nav.truncate(before=start)
     # compute the returns for that period
-    r = x.resample("1D", how="last").pct_change().dropna()
+    r = x.resample("1D").last().pct_change().dropna()
     return days*(__gmean(r + 1) - 1.0)/drawdown(x).max()
 
 
 def annualized_return(nav, days=262):
-    r = nav.resample("1D", how="last").pct_change().dropna()
+    r = nav.resample("1D").last().pct_change().dropna()
     return 100 * days * (__gmean(r + 1)-1.0)
 
 
 def annualized_volatility(nav, days=262):
-    r = nav.resample("1D", how="last").pct_change().dropna()
+    r = nav.resample("1D").last().pct_change().dropna()
     return 100 * np.sqrt(days) * r.std()
 
 
 def performance(nav, days=262, years=None):
     assert isinstance(nav.index[0], pd.Timestamp)
 
-    r = nav.resample("1D", how="last").pct_change().dropna()
+    r = nav.resample("1D").last().pct_change().dropna()
     last = nav.dropna().index[-1]
 
     d = OrderedDict()

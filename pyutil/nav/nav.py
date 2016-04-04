@@ -28,10 +28,10 @@ class Nav(object):
         return drawdown(self.__nav)
 
     def ewm_volatility(self, com=50, min_periods=50, days=262):
-        return np.sqrt(days) * pd.ewmstd(self.returns.fillna(0.0), com=com, min_periods=min_periods)
+        return np.sqrt(days) * self.returns.fillna(0.0).ewm(com=com, min_periods=min_periods).std(bias=False)
 
     def ewm_ret(self, com=50, min_periods=50, days=262):
-        return days * pd.ewma(self.returns.fillna(0.0), com=com, min_periods=min_periods)
+        return days * self.returns.fillna(0.0).ewm(com=com, min_periods=min_periods).mean()
 
     def ewm_sharpe(self, com=50, min_periods=50, days=262):
         return self.ewm_ret(com, min_periods, days) / self.ewm_volatility(com, min_periods, days)
@@ -74,11 +74,11 @@ class Nav(object):
 
     @property
     def monthly(self):
-        return Nav(self.__nav.resample("M", how="last"))
+        return Nav(self.__nav.resample("M").last())
 
     @property
     def annual(self):
-        return Nav(self.__nav.resample("A", how="last"))
+        return Nav(self.__nav.resample("A").last())
 
     def __getitem__(self, item):
         return self.__nav[item]

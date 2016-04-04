@@ -14,7 +14,7 @@ def value_at_risk(nav, alpha=0.99):
 
     :return: the smallest loss in the (1-alpha) fraction of biggest losses, e.g. smallest loss in the tail
     """
-    losses = nav.resample("D", how="last").pct_change().dropna()*(-1)
+    losses = nav.resample("D").last().pct_change().dropna()*(-1)
     return __tail(losses, alpha)[0]
 
 
@@ -27,7 +27,7 @@ def conditional_value_at_risk(nav, alpha=0.99):
 
     :return: the mean of the (1-alpha) fraction of biggest losses, e.g. the mean of the tail
     """
-    losses = nav.resample("D", how="last").pct_change().dropna()*(-1)
+    losses = nav.resample("D").last().pct_change().dropna()*(-1)
     return np.mean(__tail(losses, alpha))
 
 

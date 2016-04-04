@@ -1,6 +1,8 @@
-python=3.5.0
-pip=7.1.2
-requests=2.8.1
-pandas=0.17.1
-sqlalchemy=1.0.9
-nose
+sqlalchemy=1.0.12
+nose=1.3.7
+python=3.5.1
+pip=8.1.1
+pandas=0.18.0
+requests=2.9.1
+
+
