@@ -1,4 +1,3 @@
-sqlalchemy=1.0.12
 nose=1.3.7
 python=3.5.1
 pip=8.1.1
