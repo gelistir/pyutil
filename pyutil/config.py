@@ -60,26 +60,3 @@ def mosek(license=None, file=None):
 
     os.environ.setdefault("MOSEKLM_LICENSE_FILE", license)
 
-
-def session(write=False, connect=None, file=None):
-    """
-    Create the SQL Alchemy Session object.
-
-    :param write:
-    :param connect:
-    :param file:
-    :return:
-    """
-    from sqlalchemy import create_engine
-    from sqlalchemy.orm import Session
-
-    if write:
-        if not connect:
-            c = configuration(file=file)
-            connect = c["SQL-Write"]["connect"]
-    else:
-         if not connect:
-            c = configuration(file=file)
-            connect = c["SQL-Read"]["connect"]
-
-    return Session(create_engine(connect, encoding="utf8", echo=False))
