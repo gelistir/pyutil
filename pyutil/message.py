@@ -77,6 +77,7 @@ class Mail(object):
         :param text:
         """
         try:
+            assert text   # Text can't be null...
             return requests.post(self.__mailgun_api, auth=("api", self.__mailgun_key), files=self.__files,
                                  data={"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text})
         finally:
