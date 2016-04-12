@@ -62,7 +62,8 @@ class ArchiveReader(object):
     def portfolios(self):
         return self.__portfolio
 
-    def history(self, items=None, name="PX_LAST", before=None, after=None):
+    # bad idea to make history a property as we may have different names, e.g PX_LAST, PX_VOLUME, etc...
+    def history(self, items=None, name="PX_LAST"):
         collection = self.__db.asset
 
         if items:
@@ -70,10 +71,10 @@ class ArchiveReader(object):
         else:
             p = collection.find({}, {"id": 1, name: 1})
 
-        return _cursor2frame(p, name).truncate(before=before, after=after)
+        return _cursor2frame(p, name)
 
-    def history_series(self, item, name="PX_LAST", before=None, after=None):
-        return self.history(items=[item], name=name, before=before, after=after)[item]
+    def history_series(self, item, name="PX_LAST"):
+        return self.history(items=[item], name=name)[item]
 
     @property
     def symbols(self):
@@ -88,8 +89,9 @@ class ArchiveReader(object):
 
         return Nav((y + 1.0).cumprod())
 
-    def read_free(self):
-        collection = self.__db.free
-        return {p["name"]: p["data"] for p in collection.find()}
-
-
+    def read_frame(self, name=None):
+        if name:
+            a = self.__db.free.find_one({"name": name}, {"data": 1})
+            return pd.read_json(a["data"], orient="split")
+        else:
+            return {p["name"]: pd.read_json(p["data"], orient="split") for p in self.__db.free.find()}

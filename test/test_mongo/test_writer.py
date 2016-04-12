@@ -39,10 +39,13 @@ class TestWriter(TestCase):
 
         self.assertAlmostEqual(g[pd.Timestamp("2015-04-30")], 1.0133233120470464, places=5)
 
-    def test_free(self):
-        self.writer.update_dict(name="Peter Maffay", data=["A", "B", "C"])
-        x = self.reader.read_free()
-        self.assertListEqual(x["Peter Maffay"], ["A", "B", "C"])
+    def test_frame(self):
+        self.writer.update_frame(name="Peter Maffay", frame=pd.DataFrame(columns=["A","B"], data=[[1.0, 2.0]]))
+        x = self.reader.read_frame(name="Peter Maffay")
+        self.assertListEqual(list(x.keys()), ["A", "B"])
+
+        y = self.reader.read_frame()
+        self.assertListEqual(list(y["Peter Maffay"].keys()), ["A", "B"])
 
     def test_portfolio(self):
         portfolio = test_portfolio()

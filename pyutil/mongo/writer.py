@@ -98,6 +98,6 @@ class ArchiveWriter(ArchiveReader):
         self.__db.factsheet.update({"fee": fee, "name": name}, {"$set": returns_m}, upsert=True)
         self.__db.factsheet.update({"fee": fee, "name": name}, {"$set": returns_d}, upsert=True)
 
-    def update_dict(self, name, data):
-        collection = self.__db.free
-        collection.update({"name": name}, {"name": name, "data": data}, upsert=True)
+    def update_frame(self, name, frame):
+        frame = frame.to_json(orient="split")
+        self.__db.free.update({"name": name}, {"name": name, "data": frame}, upsert=True)
