@@ -4,6 +4,37 @@ from pyutil.nav.nav import Nav
 from pyutil.timeseries.timeseries import subsample
 
 
+def build(prices, weights):
+    # make sure the weights are a subset of the prices
+    for time in weights.index:
+        assert time in prices.index
+
+    for asset in weights.keys():
+        assert asset in prices.keys()
+
+    # start with all positions are NaN
+    pos = pd.DataFrame(index=prices.index, columns=prices.keys())
+
+    cash = pd.Series(index=prices.index)
+
+    # set the cash for all the points in time we have weights
+    cash.ix[weights.index] = 1.0 - weights.sum(axis=1)
+
+    # set the position for the points in time we have weights
+    pos.ix[weights.index] = weights / prices[weights.keys()].ix[weights.index]
+
+    # compute the value of our positions for all points in time(!)
+    value = pos.ffill() * prices.ffill()
+
+    # the amount of cash won't change 'til the next reallocation
+    total = cash.ffill() + value.sum(axis=1)
+
+    # the weights are now no longer sparse
+    weights = pd.DataFrame({t: value.ix[t] / total[t] for t in value.index}).transpose()
+
+    return Portfolio(prices=prices, weights=weights)
+
+
 class Portfolio(object):
     def __init__(self, prices, weights):
         self.__prices = prices.ix[weights.index]

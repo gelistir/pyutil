@@ -1,5 +1,6 @@
 import pandas as pd
 import pandas.util.testing as pdt
+from pyutil.portfolio.portfolio import build
 from test.config import test_portfolio, read_frame
 from unittest import TestCase
 
@@ -55,4 +56,22 @@ class TestPortfolio(TestCase):
     def test_cash(self):
         self.assertAlmostEqual(portfolio.cash[pd.Timestamp("2015-04-22")], 0.69102612448658074, places=5)
 
+    def test_build(self):
+        prices = read_frame("price.csv")
+        weights = pd.DataFrame(index=[prices.index[5]], data=0.1, columns=prices.keys())
+        portfolio = build(prices, weights)
+
+        self.assertEqual(portfolio.index[5], pd.Timestamp('2013-01-08'))
+        self.assertAlmostEqual(portfolio.weights["B"][pd.Timestamp('2013-01-08')], 0.1, places=5)
+
+    def test_build_portfolio(self):
+        prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[1000, 1000], [1500, 1500], [2000, 2000]])
+        weights = pd.DataFrame(columns=["A", "B"], index=[1], data=[[0.25, 0.25]])
+
+        portfolio = build(prices=prices, weights=weights)
+
+        pdt.assert_frame_equal(prices, portfolio.prices)
+
+        position = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=0.00025)
+        pdt.assert_frame_equal(portfolio.position, position)
 
