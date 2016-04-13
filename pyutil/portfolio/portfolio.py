@@ -35,6 +35,12 @@ def build(prices, weights):
     return Portfolio(prices=prices, weights=weights)
 
 
+def subsample(portfolio, t):
+    assert isinstance(portfolio, Portfolio)
+    return build(prices=portfolio.prices, weights=portfolio.weights.ix[t])
+
+
+
 class Portfolio(object):
     def __init__(self, prices, weights):
         self.__prices = prices.ix[weights.index]
@@ -171,5 +177,13 @@ class Portfolio(object):
         t[t >= threshold] = 1
         t[t < threshold] = 0
         return t
+
+
+    def __mul__(self, other):
+        return Portfolio(self.prices, other * self.weights)
+
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
 
 

@@ -75,3 +75,5 @@ class TestPortfolio(TestCase):
         position = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=0.00025)
         pdt.assert_frame_equal(portfolio.position, position)
 
+    def test_mul(self):
+        pdt.assert_frame_equal(2 * portfolio.weights, (2 * portfolio).weights)
