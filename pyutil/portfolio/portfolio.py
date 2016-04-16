@@ -35,9 +35,9 @@ def build(prices, weights):
     return Portfolio(prices=prices, weights=weights)
 
 
-def subsample(portfolio, t):
-    assert isinstance(portfolio, Portfolio)
-    return build(prices=portfolio.prices, weights=portfolio.weights.ix[t])
+#def subsample(portfolio, t):
+#    assert isinstance(portfolio, Portfolio)
+#    return build(prices=portfolio.prices, weights=portfolio.weights.ix[t])
 
 
 def merge(portfolio_a, portfolio_b, cut):
