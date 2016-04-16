@@ -40,6 +40,17 @@ def subsample(portfolio, t):
     return build(prices=portfolio.prices, weights=portfolio.weights.ix[t])
 
 
+def merge(portfolio_a, portfolio_b, cut):
+    port_a = portfolio_a.truncate(after=cut - pd.DateOffset(days=1))
+    port_b = portfolio_b.truncate(before=cut)
+
+    prices = pd.concat((port_a.prices, port_b.prices), axis=0)
+    weights = pd.concat((port_a.weights, port_b.weights), axis=0)
+
+    # merge two portfolios
+    return Portfolio(prices=prices, weights=weights)
+
+
 
 class Portfolio(object):
     def __init__(self, prices, weights):
@@ -178,12 +189,12 @@ class Portfolio(object):
         t[t < threshold] = 0
         return t
 
-
     def __mul__(self, other):
         return Portfolio(self.prices, other * self.weights)
-
 
     def __rmul__(self, other):
         return self.__mul__(other)
 
+    def subsample(self, t):
+        return build(prices=self.prices, weights=self.weights.ix[t])
 

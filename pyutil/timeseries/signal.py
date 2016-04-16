@@ -7,7 +7,7 @@ def __volatility_adjust(prices, com=32, min_periods=50):
     return returns / volatility
 
 
-def __adjprice(prices, vola=32, winsor=4.2, min_periods=50):
+def adjprice(prices, vola=32, winsor=4.2, min_periods=50):
     # volatility adjusted returns
     return winsorize(__volatility_adjust(prices, vola, min_periods), winsor=winsor).cumsum()
 
@@ -23,7 +23,7 @@ def oscillator(price, a=32, b=96, min_periods=100):
 
 
 def trend(price, a=32, b=96, vola=32, winsor=4.2, min_periods=50):
-    return np.tanh(oscillator(__adjprice(price, vola, winsor, min_periods), a, b, 2 * min_periods))
+    return np.tanh(oscillator(adjprice(price, vola, winsor, min_periods), a, b, 2 * min_periods))
 
 
 def winsorize(data, winsor=4.2):
