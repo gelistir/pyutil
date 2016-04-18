@@ -12,8 +12,8 @@ Current Nav,1.32156500619
 Max Nav,1.33580342591
 Current Drawdown,1.065906813
 Calmar Ratio (3Y),0.217668121679
-# Positive Days,1856
-# Negative Days,1496
+Positive Days,1856
+Negative Days,1496
 Value at Risk (alpha = 0.95),0.230096825894
 Conditional Value at Risk (alpha = 0.95),0.337276740114
 First,2002-06-18 00:00:00

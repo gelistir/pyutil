@@ -74,8 +74,8 @@ def performance(nav, days=262, years=None):
 
     d["Calmar Ratio (3Y)"] = sortino_ratio(nav, days=days)
 
-    d["# Positive Days"] = r[r > 0].size
-    d["# Negative Days"] = r[r < 0].size
+    d["Positive Days"] = r[r > 0].size
+    d["Negative Days"] = r[r < 0].size
     d["Value at Risk (alpha = 0.95)"] = 100*value_at_risk(nav.dropna(), alpha=0.95)
     d["Conditional Value at Risk (alpha = 0.95)"] = 100*conditional_value_at_risk(nav.dropna(), alpha=0.95)
     d["First"] = r.index[0]
