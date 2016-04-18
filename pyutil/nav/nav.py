@@ -44,7 +44,7 @@ class Nav(object):
     def performance(self, days=262):
         return performance(self.__nav, days).ix[
             ["Annua. Return", "Annua. Volatility", "Annua. Sharpe Ratio", "Calmar Ratio (3Y)", "Max Nav",
-             "Max Drawdown", "YTD", "MTD", "Current Nav", "Current Drawdown", "# Positive Days", "# Negative Days"]]
+             "Max Drawdown", "YTD", "MTD", "Current Nav", "Current Drawdown", "Positive Days", "Negative Days"]]
 
     def tail(self, n):
         return Nav(self.__nav.tail(n))

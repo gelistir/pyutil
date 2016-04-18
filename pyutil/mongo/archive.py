@@ -15,8 +15,3 @@ def reader(name, logger=None, host="quantsrv", port=27017):
 
 def writer(name, logger=None, host="quantsrv", port=27017):
     return ArchiveWriter(database(name, host=host, port=port), logger)
-
-
-if __name__ == '__main__':
-    r = reader("production")
-    print(r.read_frame("strategical assets"))
