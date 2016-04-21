@@ -35,21 +35,10 @@ def build(prices, weights):
     return Portfolio(prices=prices, weights=weights)
 
 
-#def subsample(portfolio, t):
-#    assert isinstance(portfolio, Portfolio)
-#    return build(prices=portfolio.prices, weights=portfolio.weights.ix[t])
-
-
-def merge(portfolio_a, portfolio_b, cut):
-    port_a = portfolio_a.truncate(after=cut - pd.DateOffset(days=1))
-    port_b = portfolio_b.truncate(before=cut)
-
-    prices = pd.concat((port_a.prices, port_b.prices), axis=0)
-    weights = pd.concat((port_a.weights, port_b.weights), axis=0)
-
-    # merge two portfolios
-    return Portfolio(prices=prices, weights=weights)
-
+def merge(portfolios, axis=0):
+    prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
+    weights = pd.concat([p.weights for p in portfolios], axis=axis, verify_integrity=True)
+    return Portfolio(prices, weights)
 
 
 class Portfolio(object):
@@ -198,3 +187,5 @@ class Portfolio(object):
     def subsample(self, t):
         return build(prices=self.prices, weights=self.weights.ix[t])
 
+    def apply(self, function, axis=0):
+        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))

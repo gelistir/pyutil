@@ -1,6 +1,6 @@
 import pandas as pd
 import pandas.util.testing as pdt
-from pyutil.portfolio.portfolio import build
+from pyutil.portfolio.portfolio import build, merge
 from test.config import test_portfolio, read_frame
 from unittest import TestCase
 
@@ -77,3 +77,27 @@ class TestPortfolio(TestCase):
 
     def test_mul(self):
         pdt.assert_frame_equal(2 * portfolio.weights, (2 * portfolio).weights)
+
+    def test_merge(self):
+        # we merge two portfolios, in time-direction
+        portfolios = [portfolio.truncate(after=pd.Timestamp("2015-01-01") - pd.DateOffset(days=1)),
+                      portfolio.truncate(before=pd.Timestamp("2015-01-01")).apply(lambda x: 2*x, axis=1)]
+        p = merge(portfolios, axis=0)
+        self.assertAlmostEqual(2*portfolio.weight_current["D"], p.weight_current["D"], places=5)
+
+    def test_trade_count(self):
+        x = portfolio.trade_count(threshold=0.01)
+        self.assertEqual(x.sum(axis=0)["A"], 61.0)
+
+    def test_subsample(self):
+        t = [pd.Timestamp("2015-01-01"), pd.Timestamp("2015-04-01")]
+        p1 = portfolio.subsample(t=t)
+        p2 = build(p1.prices, p1.weights.ix[t])
+        pdt.assert_frame_equal(p1.weights, p2.weights)
+
+    def test_nav_adjusted(self):
+        r = portfolio.nav_adjusted(size=1e6)
+        self.assertAlmostEqual(r.series.tail(1).values[0], 0.97472419, places=5)
+
+
+
