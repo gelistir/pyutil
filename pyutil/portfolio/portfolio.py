@@ -43,8 +43,10 @@ def merge(portfolios, axis=0):
 
 class Portfolio(object):
     def __init__(self, prices, weights):
-        self.__prices = prices.ix[weights.index]
-        self.__weights = weights
+        self.__prices = prices.ix[weights.index].ffill(axis=0)
+        # forward fill the weights and fill initial weights with 0.0.
+        # forward filling of weights is not exactly
+        self.__weights = weights.ffill(axis=0)
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))

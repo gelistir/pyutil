@@ -97,7 +97,7 @@ class TestPortfolio(TestCase):
 
     def test_nav_adjusted(self):
         r = portfolio.nav_adjusted(size=1e6)
-        self.assertAlmostEqual(r.series.tail(1).values[0], 0.97472419, places=5)
+        self.assertAlmostEqual(r.series.tail(1).values[0], 0.97433664268822029, places=5)
 
 
 
