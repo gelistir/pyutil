@@ -48,7 +48,7 @@ class _Portfolios(object):
         return (_cursor2frame(p, "returns") + 1.0).cumprod()
 
 
-class ArchiveReader(object):
+class _ArchiveReader(object):
     def __init__(self, db, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.logger.info("Archive at {0}".format(db))

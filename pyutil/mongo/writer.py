@@ -2,19 +2,19 @@ import datetime
 import pandas as pd
 import logging
 
-from pyutil.mongo.reader import ArchiveReader
+from pyutil.mongo.reader import _ArchiveReader
 from pyutil.nav.nav import Nav
 
 from pymongo.database import Database
 
 
-class ArchiveWriter(ArchiveReader):
+class _ArchiveWriter(_ArchiveReader):
     @staticmethod
     def __flatten_dict(d):
         def items():
             for key, value in d.items():
                 if isinstance(value, dict):
-                    for subkey, subvalue in ArchiveWriter.__flatten_dict(value).items():
+                    for subkey, subvalue in _ArchiveWriter.__flatten_dict(value).items():
                         yield key + "." + subkey, subvalue
                 else:
                     yield key, value
@@ -29,14 +29,14 @@ class ArchiveWriter(ArchiveReader):
 
     @staticmethod
     def __series2dict(ts, format="%Y%m%d"):
-        return {t.strftime(format): y for t, y in ArchiveWriter.__to_date(ts).dropna().iteritems()}
+        return {t.strftime(format): y for t, y in _ArchiveWriter.__to_date(ts).dropna().iteritems()}
 
     @staticmethod
     def __frame2dict(frame, format="%Y%m%d"):
-        return {asset: ArchiveWriter.__series2dict(frame[asset], format=format) for asset in frame.keys()}
+        return {asset: _ArchiveWriter.__series2dict(frame[asset], format=format) for asset in frame.keys()}
 
     def __init__(self, db, logger=None):
-        super(ArchiveWriter, self).__init__(db)
+        super(_ArchiveWriter, self).__init__(db)
         assert isinstance(db, Database)
         self.logger = logger or logging.getLogger(__name__)
         self.logger.info("Archive at {0}".format(db))

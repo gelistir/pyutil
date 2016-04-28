@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-from pyutil.mongo.archive import database
 from pyutil.portfolio.portfolio import Portfolio
 
 BASE_DIR = os.path.dirname(__file__)
@@ -21,7 +20,3 @@ def read_series(name, parse_dates=True):
 
 def test_portfolio():
     return Portfolio(prices=read_frame("price.csv"), weights=read_frame("weight.csv"))
-
-
-def test_database():
-    return database("tmp")
