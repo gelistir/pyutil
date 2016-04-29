@@ -2,7 +2,7 @@ import pandas as pd
 from pyutil.performance.periods import period_returns, periods
 from pyutil.nav.nav import Nav
 from pyutil.timeseries.timeseries import subsample
-import matplotlib.pyplot as plt
+
 
 def build(prices, weights):
     # make sure the weights are a subset of the prices
@@ -193,6 +193,7 @@ class Portfolio(object):
         return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))
 
     def plot(self, colors=None):
+        import matplotlib.pyplot as plt
         colors = colors or [a['color'] for a in plt.rcParams['axes.prop_cycle']]
         ax1 = plt.subplot(211)
         (100 * (self.nav.series)).plot(ax=ax1, color=colors[0])
