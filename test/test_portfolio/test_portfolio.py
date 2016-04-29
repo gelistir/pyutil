@@ -99,5 +99,8 @@ class TestPortfolio(TestCase):
         r = portfolio.nav_adjusted(size=1e6)
         self.assertAlmostEqual(r.series.tail(1).values[0], 0.97433664268822029, places=5)
 
+    def test_plot(self):
+        x = portfolio.plot()
+        self.assertEqual(len(x), 3)
 
 
