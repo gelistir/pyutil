@@ -41,7 +41,7 @@ class TestPortfolio(TestCase):
 
     def test_snapshot(self):
         x = portfolio.snapshot()
-        pdt.assert_frame_equal(x, read_frame("snapshot.csv"))
+        self.assertAlmostEqual(x["Apr 22"]["A"], 0.071761843963205701, places=10)
 
     def test_sector_weights(self):
         x = portfolio.sector_weights(pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
