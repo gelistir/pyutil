@@ -3,6 +3,7 @@ import pandas.util.testing as pdt
 from pymongo import MongoClient
 from pymongo.database import Database
 from pyutil.mongo.archive import writer, reader
+from pyutil.nav.nav import Nav
 from test.config import read_frame, test_portfolio
 from unittest import TestCase
 
@@ -35,10 +36,14 @@ class TestWriter(TestCase):
 
     def test_nav(self):
         portfolio = test_portfolio()
-        self.writer.update_rtn(portfolio.nav.fee(0.5).series, "test", fee=0.5)
-        g = self.reader.read_nav("M", name="test", fee=0.5).series
+        self.writer.update_portfolio("test", portfolio, "test", n=10, comment="Hello World")
+        self.writer.update_rtn(portfolio.nav.series, "test")
 
-        self.assertAlmostEqual(g[pd.Timestamp("2015-04-30")], 1.0133233120470464, places=5)
+        g = self.reader.read_nav(name="test").fee(0.5).monthly.series
+        x = Nav(self.reader.portfolios.nav["test"].dropna()).fee(0.5).monthly.series
+
+        self.assertAlmostEqual(g[pd.Timestamp("2015-04-30")], 0.97715910781949233, places=5)
+        self.assertAlmostEqual(x[pd.Timestamp("2015-04-30")], 0.97715910781949233, places=5)
 
     def test_frame(self):
         self.writer.update_frame(name="Peter Maffay", frame=pd.DataFrame(columns=["A","B"], data=[[1.0, 2.0]]))

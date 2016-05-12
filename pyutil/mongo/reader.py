@@ -3,6 +3,7 @@ import logging
 from pyutil.nav.nav import Nav
 
 from pyutil.portfolio.portfolio import Portfolio
+from pyutil.timeseries.timeseries import adjust
 
 
 def _str2stamp(frame):
@@ -38,14 +39,14 @@ class _Portfolios(object):
 
     @property
     def strategies(self):
-        portfolios = self.__col.find({}, {"id": 1, "group": 1, "time": 1})
-        d = {p["id"]: pd.Series({"group": p["group"], "time": p["time"]}) for p in portfolios}
+        portfolios = self.__col.find({}, {"id": 1, "group": 1, "time": 1, "comment": 1})
+        d = {p["id"]: pd.Series({"group": p["group"], "time": p["time"], "comment": p["comment"]}) for p in portfolios}
         return pd.DataFrame(d).transpose()
 
     @property
     def nav(self):
         p = self.__col.find({}, {"id": 1, "returns": 1})
-        return (_cursor2frame(p, "returns") + 1.0).cumprod()
+        return ((_cursor2frame(p, "returns") + 1.0).cumprod()).apply(adjust)
 
 
 class _ArchiveReader(object):
@@ -81,13 +82,14 @@ class _ArchiveReader(object):
         f = pd.DataFrame({row["id"]: pd.Series(row) for row in self.__db.symbols.find({})}).transpose()
         return f.drop(["_id", "id"], axis=1)
 
-    def read_nav(self, frequency, name, fee=0.0):
-        assert frequency in ["D", "M", "A"]
-        rtn = "{0}-rtn".format(frequency.lower())
-        a = self.__db.factsheet.find_one({"fee": fee, "name": name}, {rtn: 1})
-        y = _str2stamp(pd.Series(a[rtn]))
-
-        return Nav((y + 1.0).cumprod())
+    def read_nav(self, name):
+        rtn = "d-rtn"
+        a = self.__db.factsheet.find_one({"fee": 0.0, "name": name}, {rtn: 1})
+        if a:
+            y = _str2stamp(pd.Series(a[rtn]))
+            return Nav((y + 1.0).cumprod())
+        else:
+            return None
 
     def read_frame(self, name=None):
         if name:

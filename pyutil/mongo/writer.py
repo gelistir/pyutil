@@ -57,22 +57,27 @@ class _ArchiveWriter(_ArchiveReader):
             self.__db.asset.update({"id": asset}, {"$set": m}, upsert=True)
             self.__db.asset.update({"id": asset}, {"$set": p}, upsert=True)
 
-    def update_portfolio(self, key, portfolio, group, n=10):
+    def update_portfolio(self, key, portfolio, group, n=10, comment=""):
         self.logger.debug("Key {0}, Group {1}".format(key, group))
 
         # check if there exists an portfolio and if so update only the last n business days of this portfolio
         current_portfolio = self.portfolios[key]
+
         if current_portfolio:
+            print("FOUND PORTFOLIO")
             last = current_portfolio.index[-1]
             self.logger.debug("Last stamp {0}".format(last))
             offset = last - pd.offsets.BDay(n=n)
             self.logger.debug("Offset {0}".format(offset))
             portfolio = portfolio.truncate(before=offset)
+            r = self.__flatten_dict({"returns": self.__series2dict(portfolio.nav.returns.ix[1:])})
+        else:
+            r = self.__flatten_dict({"returns": self.__series2dict(portfolio.nav.returns)})
 
         w = self.__flatten_dict({"weight": self.__frame2dict(portfolio.weights)})
         p = self.__flatten_dict({"price": self.__frame2dict(portfolio.prices)})
-        r = self.__flatten_dict({"returns": self.__series2dict(portfolio.nav.returns)})
-        m = {"group": group, "time": pd.Timestamp("now")}
+
+        m = {"group": group, "time": pd.Timestamp("now"), "comment": comment}
 
         self.__db.strat_new.update({"id": key}, {"$set": w}, upsert=True)
         self.__db.strat_new.update({"id": key}, {"$set": p}, upsert=True)
@@ -84,19 +89,20 @@ class _ArchiveWriter(_ArchiveReader):
         for asset in frame.index:
             self.__db.symbols.update({"id": asset}, {"$set": frame.ix[asset].to_dict()}, upsert=True)
 
-    def update_rtn(self, nav, name, fee):
+    def update_rtn(self, nav, name):
+        # Step 3: remove D but compare with Portfolios return!!!
+
         n = Nav(nav)
 
         for a in n.returns.index:
             assert a.weekday() <= 4
 
-        returns_m = self.__flatten_dict({"m-rtn": self.__series2dict(n.monthly.returns.tail(1))})
-        returns_a = self.__flatten_dict({"a-rtn": self.__series2dict(n.annual.returns.tail(1))})
-        returns_d = self.__flatten_dict({"d-rtn": self.__series2dict(n.returns.tail(25))})
+        if self.read_nav(name):
+            returns_d = self.__flatten_dict({"d-rtn": self.__series2dict(n.returns.tail(25))})
+        else:
+            returns_d = self.__flatten_dict({"d-rtn": self.__series2dict(n.returns)})
 
-        self.__db.factsheet.update({"fee": fee, "name": name}, {"$set": returns_a}, upsert=True)
-        self.__db.factsheet.update({"fee": fee, "name": name}, {"$set": returns_m}, upsert=True)
-        self.__db.factsheet.update({"fee": fee, "name": name}, {"$set": returns_d}, upsert=True)
+        self.__db.factsheet.update({"fee": 0.0, "name": name}, {"$set": returns_d}, upsert=True)
 
     def update_frame(self, name, frame):
         frame = frame.to_json(orient="split")

@@ -55,7 +55,7 @@ class Nav(object):
 
     @property
     def returns(self):
-        return self.__nav.dropna().pct_change()
+        return self.__nav.dropna().pct_change().fillna(0.0)
 
     def truncate(self, before, after=None):
         return Nav(self.__nav.truncate(before, after))
