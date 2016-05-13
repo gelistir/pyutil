@@ -22,5 +22,7 @@ def performance2json(x, decimals=2, dateformat="%Y-%m-%d", days=262):
 
 
 def frame2html(frame, name, format=TABLE_FORMAT):
+    pd.set_option('display.max_colwidth', -1)
+
     return frame.to_html(classes="{0} {1}".format(name, format),
                          float_format=lambda x: '{0:.2f}'.format(x) if pd.notnull(x) else '-', escape=False)
