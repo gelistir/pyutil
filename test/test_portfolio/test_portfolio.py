@@ -1,6 +1,4 @@
 import pandas as pd
-import numpy as np
-
 import pandas.util.testing as pdt
 from pyutil.portfolio.portfolio import merge, Portfolio
 from test.config import test_portfolio, read_frame

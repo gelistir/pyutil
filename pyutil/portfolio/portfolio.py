@@ -34,7 +34,7 @@ class Portfolio(object):
         cash = 1 - w1.sum()                   # cash at time t1
         pos = w1 / p1                         # pos at time t1
 
-        value = (pos * p2).dropna()           # value of asset at time t2
+        value = (pos * p2)                    # value of asset at time t2
         return value / (value.sum() + cash)
 
     def iron_threshold(self, threshold=0.02):
@@ -74,8 +74,8 @@ class Portfolio(object):
 
         # make sure the weights are a subset of the prices
         if prices.index.equals(weights.index):
-            self.__prices = prices
-            self.__weights = weights
+            self.__prices = prices.ffill()
+            self.__weights = weights.ffill().fillna(0.0)
         else:
             for time in weights.index:
                 assert time in prices.index
@@ -239,11 +239,15 @@ class Portfolio(object):
     def apply(self, function, axis=0):
         return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))
 
-    def plot(self, colors=None):
+    def plot(self, colors=None, tradingDays=None):
         import matplotlib.pyplot as plt
         colors = colors or [a['color'] for a in plt.rcParams['axes.prop_cycle']]
         ax1 = plt.subplot(211)
         (100 * (self.nav.series)).plot(ax=ax1, color=colors[0])
+        if tradingDays:
+            x1, x2, y1, y2 = plt.axis()
+            plt.vlines(x=self.trading_days, ymin=y1, ymax=y2, colors="red")
+
         plt.legend(["NAV"], loc=2)
 
         ax2 = plt.subplot(413, sharex=ax1)
@@ -256,7 +260,6 @@ class Portfolio(object):
         plt.legend(["Drawdown"], loc=2)
 
         plt.tight_layout()
-
         return [ax1, ax2, ax3]
 
     @property
@@ -264,3 +267,9 @@ class Portfolio(object):
         __fundsize = 1e6
         days = (__fundsize*self.position).diff().abs().sum(axis=1)
         return days[days > 1].index
+
+    def ffill(self, prices=False):
+        if prices:
+            return Portfolio(prices=self.prices.ffill(), weights=self.weights.ffill())
+        else:
+            return Portfolio(prices=self.prices, weights=self.weights.ffill())
