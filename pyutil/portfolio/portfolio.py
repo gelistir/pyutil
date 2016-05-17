@@ -5,58 +5,6 @@ from pyutil.timeseries.timeseries import subsample
 from itertools import tee
 
 
-# def build(prices, weights):
-#     # make sure the weights are a subset of the prices
-#     for time in weights.index:
-#         assert time in prices.index
-#
-#     for asset in weights.keys():
-#         assert asset in prices.keys()
-#
-#     # start with all positions are NaN
-#     pos = pd.DataFrame(index=prices.index, columns=prices.keys())
-#
-#     cash = pd.Series(index=prices.index)
-#
-#     # set the cash for all the points in time we have weights
-#     cash.ix[weights.index] = 1.0 - weights.sum(axis=1)
-#
-#     # set the position for the points in time we have weights
-#     pos.ix[weights.index] = weights / prices[weights.keys()].ix[weights.index]
-#
-#     # compute the value of our positions for all points in time(!)
-#     value = pos.ffill() * prices.ffill()
-#
-#     # the amount of cash won't change 'til the next reallocation
-#     total = cash.ffill() + value.sum(axis=1)
-#
-#     # the weights are now no longer sparse
-#     weights = pd.DataFrame({t: value.ix[t] / total[t] for t in value.index}).transpose()
-#
-#     return Portfolio(prices=prices, weights=weights)
-
-
-# def build(prices, weights):
-#     # make sure the weights are a subset of the prices
-#     # for time in weights.index:
-#      #   assert time in prices.index
-#
-#     #for asset in weights.keys():
-#     #    assert asset in prices.keys()
-#
-#     w = pd.DataFrame(index=prices.index, columns=prices.keys())
-#     t_first = weights.index[0]
-#     w.ix[t_first] = weights.ix[t_first]
-#
-#     for t1, t2 in pairwise(prices.index[prices.index >= t_first]):
-#         if t2 in weights.index:
-#             w.ix[t2] = weights.ix[t2]
-#         else:
-#             w.ix[t2] = forward(w.ix[t1], prices.ix[t1], prices.ix[t2])
-#
-#     return Portfolio(prices=prices, weights=w)
-
-
 def merge(portfolios, axis=0):
     prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
     weights = pd.concat([p.weights for p in portfolios], axis=axis, verify_integrity=True)
@@ -78,13 +26,16 @@ class Portfolio(object):
         # p2 price at time t2
         # return the weights at time t2
         import numpy as np
-        cash = 1 - w1.sum()  # cash at time t1
-        pos = w1 / p1  # pos at time t1
-        value1 = (pos * p1).sum() + cash  # value at time t1
-        assert np.absolute(1.0 - value1) < 0.05, "The value is {0}. Cash is {1}. Weights before {2}".format(np.absolute(1 - value1.sum()), cash, w1)
-        value2 = pos * p2  # value at time t2
-        w2 = value2 / (value2.sum() + cash)
-        return w2.apply(float)
+
+        # in some scenarios the weight are set even before a first price is known.
+        w1.ix[p1.isnull()] = np.nan
+        w1 = w1.dropna()
+
+        cash = 1 - w1.sum()                   # cash at time t1
+        pos = w1 / p1                         # pos at time t1
+
+        value = (pos * p2).dropna()           # value of asset at time t2
+        return value / (value.sum() + cash)
 
     def iron_threshold(self, threshold=0.02):
         """
@@ -93,15 +44,14 @@ class Portfolio(object):
         :param threshold:
         :return:
         """
-        w = self.weights.copy().ffill()
+        w = self.weights.ffill(inplace=False)
+        p = self.prices.ffill(inplace=False)
 
-        for t1, t2 in self.__pairwise(self.weights.ix[:-1].index):
-            if (w.ix[t2] - w.ix[t1]).abs().max() > threshold:
-                w.ix[t2] = self.weights.ix[t2]
-            else:
-                w.ix[t2] = self.__forward(w.ix[t1], self.prices.ix[t1], self.prices.ix[t2])
+        for t1, t2 in self.__pairwise(w.ix[:-1].index):
+            if (w.ix[t2] - w.ix[t1]).abs().max() <= threshold:
+                w.ix[t2] = self.__forward(w1=w.ix[t1], p1=p.ix[t1], p2=p.ix[t2])
 
-        return Portfolio(prices=self.prices, weights=w)
+        return Portfolio(prices=p, weights=w)
 
     def iron_time(self, rule):
 
@@ -119,31 +69,31 @@ class Portfolio(object):
         return Portfolio(prices=self.prices, weights=self.weights.ix[moments])
 
     def __init__(self, prices, weights):
-        # make sure the weights are a subset of the prices
-        for time in weights.index:
-            assert time in prices.index
-
         for asset in weights.keys():
             assert asset in prices.keys()
 
-        # only take into account prices after the first weight!
-        t_first = weights.index[0]
-        p = prices.ffill().ix[prices.index >= t_first]
+        # make sure the weights are a subset of the prices
+        if prices.index.equals(weights.index):
+            self.__prices = prices
+            self.__weights = weights
+        else:
+            for time in weights.index:
+                assert time in prices.index
 
-        # set the first weight
-        w = pd.DataFrame(index=p.index, columns=p.keys(), data=0.0)
+            # only take into account prices after the first weight!
+            p = prices.ffill()
 
-        # the weights given are set
-        w.ix[weights.index] = weights
+            # set the weights
+            w = pd.DataFrame(index=p.index, columns=p.keys(), data=0.0)
+            w.ix[weights.index] = weights
 
-        # loop over all times
-        for t1, t2 in self.__pairwise(p.index):
-            assert t2 in w.index
-            if t2 not in weights.index:
-                w.ix[t2] = self.__forward(w.ix[t1], p.ix[t1], p.ix[t2])
+            # loop over all times
+            for t1, t2 in self.__pairwise(p.index):
+                if t2 not in weights.index:
+                    w.ix[t2] = self.__forward(w.ix[t1], p.ix[t1], p.ix[t2])
 
-        self.__prices = p
-        self.__weights = w
+            self.__prices = p
+            self.__weights = w
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
@@ -283,8 +233,8 @@ class Portfolio(object):
     def __rmul__(self, other):
         return self.__mul__(other)
 
-    def subsample(self, t):
-        return Portfolio(prices=self.prices, weights=self.weights.ix[t])
+    # def subsample(self, t):
+    #     return Portfolio(prices=self.prices, weights=self.weights.ix[t])
 
     def apply(self, function, axis=0):
         return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))

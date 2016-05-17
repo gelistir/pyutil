@@ -63,7 +63,7 @@ class TestPortfolio(TestCase):
         weights = pd.DataFrame(index=[prices.index[5]], data=0.1, columns=prices.keys())
         portfolio = Portfolio(prices, weights)
 
-        self.assertEqual(portfolio.index[0], pd.Timestamp('2013-01-08'))
+        self.assertEqual(portfolio.index[0], pd.Timestamp('2013-01-01'))
         self.assertAlmostEqual(portfolio.weights["B"][pd.Timestamp('2013-01-08')], 0.1, places=5)
 
     def test_build_portfolio(self):
@@ -99,11 +99,11 @@ class TestPortfolio(TestCase):
     #    x = portfolio.trade_count(threshold=0.01)
     #    self.assertEqual(x.sum(axis=0)["A"], 61.0)
 
-    def test_subsample(self):
-        t = [pd.Timestamp("2015-01-01"), pd.Timestamp("2015-04-01")]
-        p1 = portfolio.subsample(t=t)
-        p2 = Portfolio(p1.prices, p1.weights.ix[t])
-        pdt.assert_frame_equal(p1.weights, p2.weights)
+    # def test_subsample(self):
+    #     t = [pd.Timestamp("2015-01-01"), pd.Timestamp("2015-04-01")]
+    #     p1 = portfolio.subsample(t=t)
+    #     p2 = Portfolio(p1.prices, p1.weights.ix[t])
+    #     pdt.assert_frame_equal(p1.weights, p2.weights)
 
     #def test_nav_adjusted(self):
     #    r = portfolio.nav_adjusted(size=1e6)
