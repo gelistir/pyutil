@@ -1,6 +1,6 @@
 import pandas as pd
 
-from pyutil.portfolio.portfolio import build
+from pyutil.portfolio.portfolio import Portfolio
 from pyutil.strategy.ConfigMaster import ConfigMaster
 
 
@@ -16,7 +16,7 @@ class Configuration(ConfigMaster):
 
     def method(self):
         p = self.configuration["prices"]
-        return build(self.configuration["prices"],
+        return Portfolio(self.configuration["prices"],
                      weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / 3.0))
 
     @property

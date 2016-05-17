@@ -2,37 +2,59 @@ import pandas as pd
 from pyutil.performance.periods import period_returns, periods
 from pyutil.nav.nav import Nav
 from pyutil.timeseries.timeseries import subsample
+from itertools import tee
 
 
-def build(prices, weights):
-    # make sure the weights are a subset of the prices
-    for time in weights.index:
-        assert time in prices.index
+# def build(prices, weights):
+#     # make sure the weights are a subset of the prices
+#     for time in weights.index:
+#         assert time in prices.index
+#
+#     for asset in weights.keys():
+#         assert asset in prices.keys()
+#
+#     # start with all positions are NaN
+#     pos = pd.DataFrame(index=prices.index, columns=prices.keys())
+#
+#     cash = pd.Series(index=prices.index)
+#
+#     # set the cash for all the points in time we have weights
+#     cash.ix[weights.index] = 1.0 - weights.sum(axis=1)
+#
+#     # set the position for the points in time we have weights
+#     pos.ix[weights.index] = weights / prices[weights.keys()].ix[weights.index]
+#
+#     # compute the value of our positions for all points in time(!)
+#     value = pos.ffill() * prices.ffill()
+#
+#     # the amount of cash won't change 'til the next reallocation
+#     total = cash.ffill() + value.sum(axis=1)
+#
+#     # the weights are now no longer sparse
+#     weights = pd.DataFrame({t: value.ix[t] / total[t] for t in value.index}).transpose()
+#
+#     return Portfolio(prices=prices, weights=weights)
 
-    for asset in weights.keys():
-        assert asset in prices.keys()
 
-    # start with all positions are NaN
-    pos = pd.DataFrame(index=prices.index, columns=prices.keys())
-
-    cash = pd.Series(index=prices.index)
-
-    # set the cash for all the points in time we have weights
-    cash.ix[weights.index] = 1.0 - weights.sum(axis=1)
-
-    # set the position for the points in time we have weights
-    pos.ix[weights.index] = weights / prices[weights.keys()].ix[weights.index]
-
-    # compute the value of our positions for all points in time(!)
-    value = pos.ffill() * prices.ffill()
-
-    # the amount of cash won't change 'til the next reallocation
-    total = cash.ffill() + value.sum(axis=1)
-
-    # the weights are now no longer sparse
-    weights = pd.DataFrame({t: value.ix[t] / total[t] for t in value.index}).transpose()
-
-    return Portfolio(prices=prices, weights=weights)
+# def build(prices, weights):
+#     # make sure the weights are a subset of the prices
+#     # for time in weights.index:
+#      #   assert time in prices.index
+#
+#     #for asset in weights.keys():
+#     #    assert asset in prices.keys()
+#
+#     w = pd.DataFrame(index=prices.index, columns=prices.keys())
+#     t_first = weights.index[0]
+#     w.ix[t_first] = weights.ix[t_first]
+#
+#     for t1, t2 in pairwise(prices.index[prices.index >= t_first]):
+#         if t2 in weights.index:
+#             w.ix[t2] = weights.ix[t2]
+#         else:
+#             w.ix[t2] = forward(w.ix[t1], prices.ix[t1], prices.ix[t2])
+#
+#     return Portfolio(prices=prices, weights=w)
 
 
 def merge(portfolios, axis=0):
@@ -42,11 +64,86 @@ def merge(portfolios, axis=0):
 
 
 class Portfolio(object):
+    @staticmethod
+    def __pairwise(iterable):
+        "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+        a, b = tee(iterable)
+        next(b, None)
+        return zip(a, b)
+
+    @staticmethod
+    def __forward(w1, p1, p2):
+        # w1 weight at time t1
+        # p1 price at time t1
+        # p2 price at time t2
+        # return the weights at time t2
+        import numpy as np
+        cash = 1 - w1.sum()  # cash at time t1
+        pos = w1 / p1  # pos at time t1
+        value1 = (pos * p1).sum() + cash  # value at time t1
+        assert np.absolute(1.0 - value1) < 0.05, "The value is {0}. Cash is {1}. Weights before {2}".format(np.absolute(1 - value1.sum()), cash, w1)
+        value2 = pos * p2  # value at time t2
+        w2 = value2 / (value2.sum() + cash)
+        return w2.apply(float)
+
+    def iron_threshold(self, threshold=0.02):
+        """
+        Iron a portfolio, do not touch the last index
+
+        :param threshold:
+        :return:
+        """
+        w = self.weights.copy().ffill()
+
+        for t1, t2 in self.__pairwise(self.weights.ix[:-1].index):
+            if (w.ix[t2] - w.ix[t1]).abs().max() > threshold:
+                w.ix[t2] = self.weights.ix[t2]
+            else:
+                w.ix[t2] = self.__forward(w.ix[t1], self.prices.ix[t1], self.prices.ix[t2])
+
+        return Portfolio(prices=self.prices, weights=w)
+
+    def iron_time(self, rule):
+
+        # take the weights of the underlying portfolio
+        index = self.weights.index
+
+        moments = [index[0]]
+
+        for t in self.weights.ix[:-1].resample(rule=rule).last().index:
+            # take the last stamp before or at time t.
+            # Often t is a weekend and we have no trading on this particular day
+            moments.append(index[index <= t][-1])
+
+        moments.append(self.weights.index[-1])
+        return Portfolio(prices=self.prices, weights=self.weights.ix[moments])
+
     def __init__(self, prices, weights):
-        self.__prices = prices.ix[weights.index].ffill(axis=0)
-        # forward fill the weights and fill initial weights with 0.0.
-        # forward filling of weights is not exactly
-        self.__weights = weights.ffill(axis=0)
+        # make sure the weights are a subset of the prices
+        for time in weights.index:
+            assert time in prices.index
+
+        for asset in weights.keys():
+            assert asset in prices.keys()
+
+        # only take into account prices after the first weight!
+        t_first = weights.index[0]
+        p = prices.ffill().ix[prices.index >= t_first]
+
+        # set the first weight
+        w = pd.DataFrame(index=p.index, columns=p.keys(), data=0.0)
+
+        # the weights given are set
+        w.ix[weights.index] = weights
+
+        # loop over all times
+        for t1, t2 in self.__pairwise(p.index):
+            assert t2 in w.index
+            if t2 not in weights.index:
+                w.ix[t2] = self.__forward(w.ix[t1], p.ix[t1], p.ix[t2])
+
+        self.__prices = p
+        self.__weights = w
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
@@ -153,32 +250,32 @@ class Portfolio(object):
         nav = self.nav.series
         return pd.DataFrame({k: self.weights[k] * nav / self.prices[k] for k in self.assets})
 
-    @property
-    def trades_relative(self):
-        """
-        :return: trades as fraction of a portfolio per asset and day
-        """
-        trade_in_usd = self.position.ffill().diff().fillna(0.0)*self.prices.ffill()
-        n = self.nav.series
-        return pd.DataFrame({key: trade_in_usd[key]/n for key in trade_in_usd.keys()})
+    #@property
+    #def trades_relative(self):
+    #    """
+    #    :return: trades as fraction of a portfolio per asset and day
+    #    """
+    #    trade_in_usd = self.position.ffill().diff().fillna(0.0)*self.prices.ffill()
+    #    n = self.nav.series
+    #    return pd.DataFrame({key: trade_in_usd[key]/n for key in trade_in_usd.keys()})
 
     def subportfolio(self, assets):
         return Portfolio(prices=self.prices[assets], weights=self.weights[assets])
 
-    def nav_adjusted(self, size=1e6, flatfee=0.0, basispoints=20, threshold=0.01):
-        r0 = self.nav.returns
-        r1 = self.trades_relative.abs().sum(axis=1)*basispoints / 10000
-        r2 = self.trade_count(threshold).sum(axis=1)*flatfee / (self.nav.series * size)
+    #def nav_adjusted(self, size=1e6, flatfee=0.0, basispoints=20, threshold=0.01):
+    #    r0 = self.nav.returns
+    #    r1 = self.trades_relative.abs().sum(axis=1)*basispoints / 10000
+    #    r2 = self.trade_count(threshold).sum(axis=1)*flatfee / (self.nav.series * size)
 
-        # make this a nav again
-        r = r0 - r1 - r2
-        return Nav((1 + r).cumprod())
+    #    # make this a nav again
+    #    r = r0 - r1 - r2
+    #    return Nav((1 + r).cumprod())
 
-    def trade_count(self, threshold=0.01):
-        t = self.trades_relative.abs()
-        t[t >= threshold] = 1
-        t[t < threshold] = 0
-        return t
+    #def trade_count(self, threshold=0.01):
+    #    t = self.trades_relative.abs()
+    #    t[t >= threshold] = 1
+    #    t[t < threshold] = 0
+    #    return t
 
     def __mul__(self, other):
         return Portfolio(self.prices, other * self.weights)
@@ -187,7 +284,7 @@ class Portfolio(object):
         return self.__mul__(other)
 
     def subsample(self, t):
-        return build(prices=self.prices, weights=self.weights.ix[t])
+        return Portfolio(prices=self.prices, weights=self.weights.ix[t])
 
     def apply(self, function, axis=0):
         return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))
@@ -211,3 +308,9 @@ class Portfolio(object):
         plt.tight_layout()
 
         return [ax1, ax2, ax3]
+
+    @property
+    def trading_days(self):
+        __fundsize = 1e6
+        days = (__fundsize*self.position).diff().abs().sum(axis=1)
+        return days[days > 1].index
