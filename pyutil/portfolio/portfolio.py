@@ -1,7 +1,7 @@
 import pandas as pd
 from pyutil.performance.periods import period_returns, periods
 from pyutil.nav.nav import Nav
-from pyutil.portfolio.maths import xround, buy_or_sell, delta
+from pyutil.portfolio.maths import xround, buy_or_sell
 from pyutil.timeseries.timeseries import subsample
 from itertools import tee
 
@@ -294,18 +294,31 @@ class Portfolio(object):
         d = dict()
         nav = self.nav.series
         prices = self.prices.ffill()
-        delta_weight = self.weights.apply(delta)#.diff()
+
+        old_position = pd.Series({asset: 0.0 for asset in self.assets})
 
         for trading_day in self.trading_days:
+            print(trading_day)
             nav_today = nav.ix[trading_day]
             p = prices.ix[trading_day]
-            s = capital * nav_today * delta_weight.ix[trading_day].dropna()
-            s = s[s != 0]
-            units = (s / p[s.index]).apply(xround, args=(n,))
-            amounts = units * p[s.index]
+
+            # new goal position
+            pos = self.weights.ix[trading_day]*capital*nav_today / p
+            pos = pos.apply(xround, (2,))
+
+            # compute the trade to get to position
+            trade = pos - old_position
+            trade = trade[trade.abs() > 0]
+
+            # the new position
+            old_position = pos
+
+            units = trade
+            amounts = units * p.ix[trade.index]
             d[trading_day] = pd.DataFrame({"Amount": amounts, "Units": units})
 
         p = pd.concat(d)
         p["Type"] = p["Amount"].apply(buy_or_sell)
         return p
+
 

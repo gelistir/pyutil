@@ -1,6 +1,6 @@
 import numpy as np
 
-def __f(x, n):
+def __f(x, n=2):
     a = np.floor(np.log10(np.abs(x))) - n + 1
     if a < 0:
         return np.floor(x)
@@ -10,13 +10,6 @@ def __f(x, n):
 
 
 xround = np.vectorize(__f, excluded="n")
-
-
-def delta(ts):
-    x = ts.dropna()
-    y = x.diff()
-    y[y.index[0]] = x[y.index[0]]
-    return y
 
 
 def buy_or_sell(x):
