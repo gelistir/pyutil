@@ -29,7 +29,7 @@ class TestReader(TestCase):
         cls.writer.update_symbols(frame)
 
         p = test_portfolio()
-        cls.writer.update_portfolio("test", p, group="test")
+        cls.writer.update_portfolio("test", p, group="test", comment="test")
 
 
     @classmethod
