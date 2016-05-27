@@ -1,6 +1,7 @@
 import pandas as pd
 from pyutil.performance.periods import period_returns, periods
 from pyutil.nav.nav import Nav
+from pyutil.portfolio.maths import xround, buy_or_sell
 from pyutil.timeseries.timeseries import subsample
 from itertools import tee
 
@@ -34,7 +35,7 @@ class Portfolio(object):
         cash = 1 - w1.sum()                   # cash at time t1
         pos = w1 / p1                         # pos at time t1
 
-        value = (pos * p2)                    # value of asset at time t2
+        value = pos * p2                      # value of asset at time t2
         return value / (value.sum() + cash)
 
     def iron_threshold(self, threshold=0.02):
@@ -49,6 +50,7 @@ class Portfolio(object):
 
         for t1, t2 in self.__pairwise(w.ix[:-1].index):
             if (w.ix[t2] - w.ix[t1]).abs().max() <= threshold:
+                # no trading hence we update the weights forward
                 w.ix[t2] = self.__forward(w1=w.ix[t1], p1=p.ix[t1], p2=p.ix[t2])
 
         return Portfolio(prices=p, weights=w)
@@ -176,6 +178,20 @@ class Portfolio(object):
         b = subsample(self.weights.ffill(), day=day).tail(5).rename(index=lambda x: x.strftime("%b %d")).transpose()
         return pd.concat((a, b), axis=1)
 
+    def snapshot2(self, n=5):
+        today = self.index[-1]
+        offsets = periods(today)
+
+        a = 100*self.weighted_returns.apply(period_returns, offset=offsets).transpose()[["Month-to-Date", "Year-to-Date"]]
+        tt = self.trading_days[-n:]
+
+        b = 100*self.weights.ffill().ix[tt].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
+
+
+
+        #b = subsample(self.weights.ffill(), day=day).tail(5).rename(index=lambda x: x.strftime("%b %d")).transpose()
+        return pd.concat((a, b), axis=1)
+
     def top_flop(self, day_final=pd.Timestamp("today")):
         d = dict()
         s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()
@@ -273,3 +289,23 @@ class Portfolio(object):
             return Portfolio(prices=self.prices.ffill(), weights=self.weights.ffill())
         else:
             return Portfolio(prices=self.prices, weights=self.weights.ffill())
+
+    def transaction_report(self, capital=1e7, n=2):
+        d = dict()
+        nav = self.nav.series
+        prices = self.prices.ffill()
+        delta_weight = self.weights.diff()
+
+        for trading_day in self.trading_days:
+            nav_today = nav.ix[trading_day]
+            p = prices.ix[trading_day]
+            s = capital * nav_today * delta_weight.ix[trading_day].dropna()
+            s = s[s != 0]
+            units = (s / p[s.index]).apply(xround, args=(n,))
+            amounts = units * p[s.index]
+            d[trading_day] = pd.DataFrame({"Amount": amounts, "Units": units})
+
+        p = pd.concat(d)
+        p["Type"] = p["Amount"].apply(buy_or_sell)
+        return p
+
