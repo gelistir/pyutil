@@ -186,10 +186,6 @@ class Portfolio(object):
         tt = self.trading_days[-n:]
 
         b = 100*self.weights.ffill().ix[tt].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
-
-
-
-        #b = subsample(self.weights.ffill(), day=day).tail(5).rename(index=lambda x: x.strftime("%b %d")).transpose()
         return pd.concat((a, b), axis=1)
 
     def top_flop(self, day_final=pd.Timestamp("today")):
@@ -216,15 +212,6 @@ class Portfolio(object):
         nav = self.nav.series
         return pd.DataFrame({k: self.weights[k] * nav / self.prices[k] for k in self.assets})
 
-    #@property
-    #def trades_relative(self):
-    #    """
-    #    :return: trades as fraction of a portfolio per asset and day
-    #    """
-    #    trade_in_usd = self.position.ffill().diff().fillna(0.0)*self.prices.ffill()
-    #    n = self.nav.series
-    #    return pd.DataFrame({key: trade_in_usd[key]/n for key in trade_in_usd.keys()})
-
     def subportfolio(self, assets):
         return Portfolio(prices=self.prices[assets], weights=self.weights[assets])
 
@@ -236,12 +223,6 @@ class Portfolio(object):
     #    # make this a nav again
     #    r = r0 - r1 - r2
     #    return Nav((1 + r).cumprod())
-
-    #def trade_count(self, threshold=0.01):
-    #    t = self.trades_relative.abs()
-    #    t[t >= threshold] = 1
-    #    t[t < threshold] = 0
-    #    return t
 
     def __mul__(self, other):
         return Portfolio(self.prices, other * self.weights)
@@ -282,7 +263,7 @@ class Portfolio(object):
     def trading_days(self):
         __fundsize = 1e6
         days = (__fundsize*self.position).diff().abs().sum(axis=1)
-        return days[days > 1].index
+        return sorted(list(days[days > 1].index))
 
     def ffill(self, prices=False):
         if prices:
@@ -298,13 +279,12 @@ class Portfolio(object):
         old_position = pd.Series({asset: 0.0 for asset in self.assets})
 
         for trading_day in self.trading_days:
-            print(trading_day)
             nav_today = nav.ix[trading_day]
             p = prices.ix[trading_day]
 
             # new goal position
             pos = self.weights.ix[trading_day]*capital*nav_today / p
-            pos = pos.apply(xround, (2,))
+            pos = pos.apply(xround, (n,))
 
             # compute the trade to get to position
             trade = pos - old_position

@@ -16,7 +16,7 @@ class TestPortfolio(TestCase):
 
     def test_assets(self):
         self.assertSetEqual(set(portfolio.assets),
-                            {'A','B','C','D','E','F','G'})
+                            {'A', 'B', 'C', 'D', 'E', 'F', 'G'})
 
     def test_summary(self):
         self.assertAlmostEqual(portfolio.summary()[100]["Max Drawdown"], 1.7524809688827636, places=5)
@@ -45,12 +45,12 @@ class TestPortfolio(TestCase):
 
     def test_sector_weights(self):
         x = portfolio.sector_weights(pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
-       "E": "C", "F": "C", "G": "C"}))
+                                                "E": "C", "F": "C", "G": "C"}))
 
         pdt.assert_frame_equal(x.head(10), read_frame("sector_weights.csv", parse_dates=True))
 
     def test_position(self):
-        x = 1e6*portfolio.position
+        x = 1e6 * portfolio.position
         self.assertAlmostEqual(x["A"][pd.Timestamp("2015-04-22")], 60.191699988670969, places=5)
 
     def test_cash(self):
@@ -70,17 +70,9 @@ class TestPortfolio(TestCase):
 
         portfolio = Portfolio(prices=prices, weights=weights)
 
-        #assert False
-
         pdt.assert_frame_equal(prices, portfolio.prices)
-        #pdt.assert_frame_equal(weights, portfolio.weights)
-
-
-        print(portfolio.weights)
 
         position = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=0.00025)
-        print(portfolio.position)
-        print(portfolio.position.dtypes)
         pdt.assert_frame_equal(portfolio.position, position)
 
     def test_mul(self):
@@ -89,23 +81,9 @@ class TestPortfolio(TestCase):
     def test_merge(self):
         # we merge two portfolios, in time-direction
         portfolios = [portfolio.truncate(after=pd.Timestamp("2015-01-01") - pd.DateOffset(days=1)),
-                      portfolio.truncate(before=pd.Timestamp("2015-01-01")).apply(lambda x: 2*x, axis=1)]
+                      portfolio.truncate(before=pd.Timestamp("2015-01-01")).apply(lambda x: 2 * x, axis=1)]
         p = merge(portfolios, axis=0)
-        self.assertAlmostEqual(2*portfolio.weight_current["D"], p.weight_current["D"], places=5)
-
-    #def test_trade_count(self):
-    #    x = portfolio.trade_count(threshold=0.01)
-    #    self.assertEqual(x.sum(axis=0)["A"], 61.0)
-
-    # def test_subsample(self):
-    #     t = [pd.Timestamp("2015-01-01"), pd.Timestamp("2015-04-01")]
-    #     p1 = portfolio.subsample(t=t)
-    #     p2 = Portfolio(p1.prices, p1.weights.ix[t])
-    #     pdt.assert_frame_equal(p1.weights, p2.weights)
-
-    #def test_nav_adjusted(self):
-    #    r = portfolio.nav_adjusted(size=1e6)
-    #    self.assertAlmostEqual(r.series.tail(1).values[0], 0.97431004876913818, places=5)
+        self.assertAlmostEqual(2 * portfolio.weight_current["D"], p.weight_current["D"], places=5)
 
     def test_plot(self):
         x = portfolio.plot()
@@ -119,7 +97,10 @@ class TestPortfolio(TestCase):
         self.assertEqual(len(p1.trading_days), 40)
         self.assertEqual(len(p2.trading_days), 10)
 
-
-
-
-
+    def test_transaction_report(self):
+        x = test_portfolio()
+        p1 = x.iron_threshold(threshold=0.05)
+        y = p1.transaction_report()
+        yy = read_frame("report.csv", index_col=[0, 1])
+        yy.index.names = [None, None]
+        pdt.assert_frame_equal(y, yy)
