@@ -1,7 +1,7 @@
 import pandas as pd
 from pyutil.performance.periods import period_returns, periods
 from pyutil.nav.nav import Nav
-from pyutil.portfolio.maths import xround, buy_or_sell
+from pyutil.portfolio.maths import xround, buy_or_sell, delta
 from pyutil.timeseries.timeseries import subsample
 from itertools import tee
 
@@ -86,16 +86,16 @@ class Portfolio(object):
             p = prices.ffill()
 
             # set the weights
-            w = pd.DataFrame(index=p.index, columns=p.keys(), data=0.0)
+            w = pd.DataFrame(index=prices.index, columns=prices.keys(), data=0.0)
             w.ix[weights.index] = weights
 
             # loop over all times
-            for t1, t2 in self.__pairwise(p.index):
+            for t1, t2 in self.__pairwise(prices.index):
                 if t2 not in weights.index:
                     w.ix[t2] = self.__forward(w.ix[t1], p.ix[t1], p.ix[t2])
 
-            self.__prices = p
-            self.__weights = w
+            self.__prices = prices.ffill()
+            self.__weights = w.ffill().fillna(0.0)
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
@@ -294,7 +294,7 @@ class Portfolio(object):
         d = dict()
         nav = self.nav.series
         prices = self.prices.ffill()
-        delta_weight = self.weights.diff()
+        delta_weight = self.weights.apply(delta)#.diff()
 
         for trading_day in self.trading_days:
             nav_today = nav.ix[trading_day]

@@ -12,6 +12,13 @@ def __f(x, n):
 xround = np.vectorize(__f, excluded="n")
 
 
+def delta(ts):
+    x = ts.dropna()
+    y = x.diff()
+    y[y.index[0]] = x[y.index[0]]
+    return y
+
+
 def buy_or_sell(x):
     return "Buy" if x >= 0 else "Sell"
 

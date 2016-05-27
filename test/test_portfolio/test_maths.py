@@ -1,4 +1,7 @@
-from pyutil.portfolio.maths import xround, buy_or_sell
+import pandas as pd
+
+import numpy as np
+from pyutil.portfolio.maths import xround, buy_or_sell, delta
 from unittest import TestCase
 
 
@@ -28,3 +31,11 @@ class TestMaths(TestCase):
     def test_buy(self):
         self.assertEqual(buy_or_sell(5.0), "Buy")
         self.assertEqual(buy_or_sell(-5.0), "Sell")
+
+    def test_delta(self):
+        x = pd.Series(data=[np.nan, 2.0, 2.2, 1.9])
+        y = delta(x)
+        self.assertAlmostEqual(y[1], 2.0, places=5)
+        self.assertAlmostEqual(y[2], 0.2, places=5)
+        self.assertAlmostEqual(y[3], -0.3, places=5)
+
