@@ -25,5 +25,3 @@ class TestExcel(TestCase):
         f = NamedTemporaryFile(mode="w+b", delete=True)
         x.to_file(f)
         os.path.exists(f.name)
-
-        x.to_file("maffay.xlsx")
