@@ -6,24 +6,24 @@ import pandas as pd
 from tempfile import NamedTemporaryFile
 import os
 
+
 class TestExcel(TestCase):
     def test_init(self):
         x = Excel()
         assert isinstance(x.book, xlsxwriter.workbook.Workbook)
-        x.save()
 
     def test_name(self):
         x = Excel()
-        assert x.save().stream
+        assert x.stream
 
     def test_write(self):
         x = Excel()
         frame = pd.DataFrame(data=[[2.0, 3.0],[4.0, 5.0]])
         sheet = x.add_frame(frame, sheetname="test")
         sheet.set_column("A:A", 20, x.format_percent)
-        x.save().stream
 
-        f = NamedTemporaryFile()
-        x.to_file(file=f.name)
-
+        f = NamedTemporaryFile(mode="w+b", delete=True)
+        x.to_file(f)
         os.path.exists(f.name)
+
+        x.to_file("maffay.xlsx")

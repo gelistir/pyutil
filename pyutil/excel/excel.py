@@ -27,12 +27,13 @@ class Excel(object):
         frame.to_excel(self.__writer, sheet_name=sheetname)
         return self.__writer.sheets[sheetname]
 
-    def save(self):
+    def __save(self):
         self.__writer.save()
         return self
 
     @property
     def stream(self):
+        self.__save()
         self.__bio.seek(0)
         return self.__bio.read()
 
@@ -41,6 +42,11 @@ class Excel(object):
         return self.__format_percent
 
     def to_file(self, file):
-        with open(file, mode="w+b") as f:
-            f.write(self.stream)
+        # if file is just a pain string you have to create the file and open it for writing
+        if isinstance(file, str):
+            with open(file, mode="w+b") as f:
+                f.write(self.stream)
 
+        else:
+            # this may rise an error
+            file.write(self.stream)
