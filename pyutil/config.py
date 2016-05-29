@@ -10,7 +10,7 @@ def configuration(file=None):
     :return:
     """
     file = file or os.path.join(os.path.expanduser("~"), "lobnek.cfg")
-    assert os.path.exists(file)
+    assert os.path.exists(file), "The file {0} does not exist".format(file)
     try:
         # Python 3
         import configparser
