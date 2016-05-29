@@ -4,9 +4,8 @@ from pyutil.mongo.reader import _ArchiveReader
 from pyutil.mongo.writer import _ArchiveWriter
 
 
-def __database(name, host="quantsrv", port=27017):
-    client = MongoClient(host, port=port)
-    return Database(client, name)
+def __database(name, host, port):
+    return Database(MongoClient(host, port=port), name)
 
 
 def reader(name, logger=None, host="quantsrv", port=27017):

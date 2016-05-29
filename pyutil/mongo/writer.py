@@ -37,7 +37,6 @@ class _ArchiveWriter(_ArchiveReader):
 
     def __init__(self, db, logger=None):
         super(_ArchiveWriter, self).__init__(db)
-        assert isinstance(db, Database)
         self.logger = logger or logging.getLogger(__name__)
         self.logger.info("Archive at {0}".format(db))
         self.__db = db

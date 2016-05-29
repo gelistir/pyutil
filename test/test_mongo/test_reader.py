@@ -1,23 +1,18 @@
 import pandas as pd
-from pymongo import MongoClient
-from pymongo.database import Database
-from pyutil.mongo.archive import writer, reader
-from unittest import TestCase
-
-from test.config import read_frame, test_portfolio
-
 import pandas.util.testing as pdt
+from ming import create_datastore
+from pyutil.mongo.reader import _ArchiveReader
+from pyutil.mongo.writer import _ArchiveWriter
+from test.config import read_frame, test_portfolio
+from unittest import TestCase
 
 
 class TestReader(TestCase):
     @classmethod
     def setUpClass(cls):
-
-        cls.client = MongoClient("quantsrv", port=27017)
-        cls.db = Database(cls.client, "tmp")
-
-        cls.writer = writer("tmp")
-        cls.reader = reader("tmp")
+        cls.db = create_datastore("tmp")
+        cls.reader = _ArchiveReader(cls.db)
+        cls.writer = _ArchiveWriter(cls.db)
 
         # write assets into test database. Writing is slow!
         assets = read_frame("price.csv", parse_dates=True)
@@ -30,11 +25,6 @@ class TestReader(TestCase):
 
         p = test_portfolio()
         cls.writer.update_portfolio("test", p, group="test", comment="test")
-
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.client.drop_database(cls.db)
 
     def test_history(self):
         a = self.reader.history(name="PX_LAST")

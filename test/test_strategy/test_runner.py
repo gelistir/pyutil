@@ -1,35 +1,23 @@
-from pymongo import MongoClient
-from pymongo.database import Database
-from pyutil.mongo.archive import writer, reader
-from test.config import read_frame, test_portfolio
+from ming import create_datastore
+from pyutil.mongo.reader import _ArchiveReader
+from pyutil.mongo.writer import _ArchiveWriter
+from test.config import read_frame
 from unittest import TestCase
 
 
 class TestRunner(TestCase):
     @classmethod
     def setUpClass(cls):
-
-        cls.client = MongoClient("quantsrv", port=27017)
-        cls.db = Database(cls.client, "tmp")
-
-        cls.writer = writer("tmp")
-        cls.reader = reader("tmp")
+        cls.db = create_datastore("tmp")
+        cls.reader = _ArchiveReader(cls.db)
+        cls.writer = _ArchiveWriter(cls.db)
 
         # write assets into test database. Writing is slow!
         assets = read_frame("price.csv", parse_dates=True)
 
+        # write prices into archive
         for asset in assets:
             cls.writer.update_asset(asset, assets[asset])
-
-        frame = read_frame("symbols.csv")
-        cls.writer.update_symbols(frame)
-
-        p = test_portfolio()
-        cls.writer.update_portfolio("test", p, group="test")
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.client.drop_database(cls.db)
 
     def test_run(self):
         from pyutil.strategy.Runner import Runner
