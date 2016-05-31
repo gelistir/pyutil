@@ -1,19 +1,21 @@
 import pandas as pd
 import pandas.util.testing as pdt
-from ming import create_datastore
-from pyutil.mongo.reader import _ArchiveReader
-from pyutil.mongo.writer import _ArchiveWriter
+from pymongo.database import Database
+from pyutil.mongo.archive import writer, reader
 from pyutil.nav.nav import Nav
-from test.config import read_frame, test_portfolio
+from test.config import read_frame, test_portfolio, mongoclient
 from unittest import TestCase
 
 
 class TestWriter(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.db = create_datastore("tmp")
-        cls.reader = _ArchiveReader(cls.db)
-        cls.writer = _ArchiveWriter(cls.db)
+
+        cls.client = mongoclient()
+        cls.db = Database(cls.client, "tmp")
+
+        cls.writer = writer("tmp")
+        cls.reader = reader("tmp")
 
         # write assets into test database. Writing is slow!
         assets = read_frame("price.csv", parse_dates=True)
@@ -26,6 +28,10 @@ class TestWriter(TestCase):
 
         p = test_portfolio()
         cls.writer.update_portfolio("test", p, group="test")
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.db.client.drop_database(cls.db)
 
     def test_nav(self):
         portfolio = test_portfolio()

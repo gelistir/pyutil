@@ -1,18 +1,20 @@
 import pandas as pd
 import pandas.util.testing as pdt
-from ming import create_datastore
-from pyutil.mongo.reader import _ArchiveReader
-from pyutil.mongo.writer import _ArchiveWriter
-from test.config import read_frame, test_portfolio
+from pymongo.database import Database
+from pyutil.mongo.archive import reader, writer
+from test.config import read_frame, test_portfolio, mongoclient
 from unittest import TestCase
 
 
 class TestReader(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.db = create_datastore("tmp")
-        cls.reader = _ArchiveReader(cls.db)
-        cls.writer = _ArchiveWriter(cls.db)
+
+        cls.client = mongoclient()
+        cls.db = Database(cls.client, "tmp")
+
+        cls.writer = writer("tmp")
+        cls.reader = reader("tmp")
 
         # write assets into test database. Writing is slow!
         assets = read_frame("price.csv", parse_dates=True)
@@ -26,6 +28,10 @@ class TestReader(TestCase):
         p = test_portfolio()
         cls.writer.update_portfolio("test", p, group="test", comment="test")
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.drop_database(cls.db)
+
     def test_history(self):
         a = self.reader.history(name="PX_LAST")
         self.assertAlmostEqual(a["B"][pd.Timestamp("2014-07-18").date()], 23454.79, places=5)
@@ -38,7 +44,7 @@ class TestReader(TestCase):
         self.assertRaises(KeyError, self.reader.history_series, item="XYZ", name="PX_LAST")
 
     def test_close(self):
-        x = self.reader.history(name="PX_LAST", items=["A", "B"]).truncate(before=pd.Timestamp("2014-01-01"))
+        x = self.reader.history(name="PX_LAST", items=["A", "B"])
         self.assertAlmostEqual(x["B"][pd.Timestamp("2014-01-14")], 22791.28, places=5)
 
     def test_symbols(self):

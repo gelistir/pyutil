@@ -5,8 +5,6 @@ import logging
 from pyutil.mongo.reader import _ArchiveReader
 from pyutil.nav.nav import Nav
 
-from pymongo.database import Database
-
 
 class _ArchiveWriter(_ArchiveReader):
     @staticmethod
@@ -47,9 +45,9 @@ class _ArchiveWriter(_ArchiveReader):
 
         # look for the asset in database
         if not ts.empty:
-            m = {"id": asset,
-                 "last_index": ts.last_valid_index().strftime("%Y%m%d"),
-                 "last_price": ts[ts.last_valid_index()]}
+            m = {"id": asset}
+                 #"last_index": ts.last_valid_index().strftime("%Y%m%d"),
+                 #"last_price": ts[ts.last_valid_index()]}
 
             p = self.__flatten_dict({name: self.__series2dict(ts.dropna())})
 

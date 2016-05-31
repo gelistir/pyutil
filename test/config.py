@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from pymongo import MongoClient
 from pyutil.portfolio.portfolio import Portfolio
 
 BASE_DIR = os.path.dirname(__file__)
@@ -20,3 +21,7 @@ def read_series(name, parse_dates=True, index_col=0):
 
 def test_portfolio():
     return Portfolio(prices=read_frame("price.csv"), weights=read_frame("weight.csv"))
+
+
+def mongoclient():
+    return MongoClient("quantsrv", port=27017)
