@@ -230,34 +230,45 @@ class Portfolio(object):
     def __rmul__(self, other):
         return self.__mul__(other)
 
-    # def subsample(self, t):
-    #     return Portfolio(prices=self.prices, weights=self.weights.ix[t])
-
     def apply(self, function, axis=0):
         return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))
 
     def plot(self, colors=None, tradingDays=None):
         import matplotlib.pyplot as plt
+        import matplotlib as mpl
+        label_size = 6
+        mpl.rcParams['ytick.labelsize'] = label_size
+        mpl.rcParams['xtick.labelsize'] = label_size
+
         colors = colors or [a['color'] for a in plt.rcParams['axes.prop_cycle']]
         ax1 = plt.subplot(211)
         (100 * (self.nav.series)).plot(ax=ax1, color=colors[0])
         if tradingDays:
             x1, x2, y1, y2 = plt.axis()
             plt.vlines(x=self.trading_days, ymin=y1, ymax=y2, colors="red")
-
+        plt.grid()
         plt.legend(["NAV"], loc=2)
 
-        ax2 = plt.subplot(413, sharex=ax1)
+        ax2 = plt.subplot(614, sharex=ax1)
         (100 * (self.leverage)).plot(ax=ax2, color=colors[1])
         ax2.set_ylim([-10, 110])
         plt.legend(["Leverage"], loc=2)
+        plt.grid()
+        #ax2.set_xticklabels(())
 
-        ax3 = plt.subplot(414, sharex=ax1)
+        ax3 = plt.subplot(615, sharex=ax1)
         (100 * (self.nav.drawdown)).plot(ax=ax3, color=colors[2])
         plt.legend(["Drawdown"], loc=2)
+        plt.grid()
+        #ax3.set_xticklabels(())
 
-        plt.tight_layout()
-        return [ax1, ax2, ax3]
+        ax4 = plt.subplot(616, sharex=ax1)
+        plt.grid()
+        (100 * (self.weights.max(axis=1))).plot(ax=ax4, color=colors[3])
+        plt.legend(["Max Weight"], loc=2)
+        plt.grid()
+
+        return [ax1, ax2, ax3, ax4]
 
     @property
     def trading_days(self):
