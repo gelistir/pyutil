@@ -32,9 +32,9 @@ class _ArchiveWriter(_ArchiveReader):
 
         # look for the asset in database
         if not ts.empty:
-            m = {"id": asset}
-            self.__db.asset.update(m, {"$set": m}, upsert=True)
-            self.__db.asset.update(m, self.__flatten(name, ts), upsert=True)
+            m = {"_id": asset}
+            self.__db.assets.update(m, {"$set": m}, upsert=True)
+            self.__db.assets.update(m, self.__flatten(name, ts), upsert=True)
 
     def update_portfolio(self, key, portfolio, group, n=10, comment=""):
         self.logger.debug("Key {0}, Group {1}".format(key, group))
@@ -56,12 +56,14 @@ class _ArchiveWriter(_ArchiveReader):
         self.__db.strat_new.update({"id": key}, self.__flatten("weight", portfolio.weights), upsert=True)
         self.__db.strat_new.update({"id": key}, self.__flatten("price", portfolio.prices), upsert=True)
         self.__db.strat_new.update({"id": key}, r, upsert=True)
-        self.__db.strat_new.update({"id": key}, {"$set":  {"group": group, "time": pd.Timestamp("now"), "comment": comment}}, upsert=True)
+        self.__db.strat_new.update({"id": key},
+                                   {"$set": {"group": group, "time": pd.Timestamp("now"), "comment": comment}},
+                                   upsert=True)
 
     def update_symbols(self, frame):
         self.logger.debug("Update reference data with:\n{0}".format(frame.head(3)))
-        for asset in frame.index:
-            self.__db.symbols.update({"id": asset}, {"$set": frame.ix[asset].to_dict()}, upsert=True)
+        for index, row in frame.iterrows():
+            self.__db.symbol.update({"_id": index}, {"$set": row.to_dict()}, upsert=True)
 
     def update_rtn(self, nav, name):
         n = Nav(nav)

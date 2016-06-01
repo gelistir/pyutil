@@ -57,22 +57,22 @@ class _ArchiveReader(object):
 
     # bad idea to make history a property as we may have different names, e.g PX_LAST, PX_VOLUME, etc...
     def history(self, items=None, name="PX_LAST"):
-        collection = self.__db.asset
+        collection = self.__db.assets
 
         if items:
-            p = collection.find({"id": {"$in": items}}, {"id": 1, name: 1})
+            p = collection.find({"_id": {"$in": items}}, {"_id": 1, name: 1})
         else:
-            p = collection.find({}, {"id": 1, name: 1})
+            p = collection.find({}, {"_id": 1, name: 1})
 
-        return _f(pd.DataFrame({x["id"]: pd.Series(x[name]) for x in p if name in x.keys()}))
+        return _f(pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p if name in x.keys()}))
 
     def history_series(self, item, name="PX_LAST"):
         return self.history(items=[item], name=name)[item]
 
     @property
     def symbols(self):
-        f = pd.DataFrame({row["id"]: pd.Series(row) for row in self.__db.symbols.find({})}).transpose()
-        return f.drop(["_id", "id"], axis=1)
+        f = pd.DataFrame({row["_id"]: pd.Series(row) for row in self.__db.symbol.find()}).transpose()
+        return f.drop("_id", axis=1)
 
     def read_nav(self, name):
         a = self.__db.fact.find_one({"_id": name}, {"rtn": 1})
