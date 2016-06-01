@@ -236,9 +236,9 @@ class Portfolio(object):
     def plot(self, colors=None, tradingDays=False):
         import matplotlib.pyplot as plt
         import matplotlib as mpl
-        label_size = 6
-        mpl.rcParams['ytick.labelsize'] = label_size
-        mpl.rcParams['xtick.labelsize'] = label_size
+        #label_size = 6
+        #mpl.rcParams['ytick.labelsize'] = label_size
+        #mpl.rcParams['xtick.labelsize'] = label_size
 
         colors = colors or [a['color'] for a in plt.rcParams['axes.prop_cycle']]
         ax1 = plt.subplot(211)
