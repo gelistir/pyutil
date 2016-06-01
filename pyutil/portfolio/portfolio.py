@@ -233,7 +233,7 @@ class Portfolio(object):
     def apply(self, function, axis=0):
         return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))
 
-    def plot(self, colors=None, tradingDays=None):
+    def plot(self, colors=None, tradingDays=False):
         import matplotlib.pyplot as plt
         import matplotlib as mpl
         label_size = 6

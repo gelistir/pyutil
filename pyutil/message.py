@@ -5,7 +5,7 @@ class Mail(object):
     """
     Class for sending emails with and without attachments via mailgun
     """
-    def __init__(self, mailgunapi, mailgunkey, toAdr="", fromAdr="", subject=""):
+    def __init__(self, mailgunapi, mailgunkey, toAdr=None, fromAdr=None, subject=None):
         """
         Create a Mail object
         """
@@ -14,9 +14,9 @@ class Mail(object):
         self.__mailgun_api = mailgunapi
         self.__mailgun_key = mailgunkey
         self.__files = list()
-        self.__toAdr = toAdr
-        self.__fromAdr = fromAdr
-        self.__subject = subject
+        self.__toAdr = toAdr or "lwm@lobnek.com"
+        self.__fromAdr = fromAdr or "monitor@lobnek.com"
+        self.__subject = subject or ""
 
     def clear(self):
         # remove all attachments

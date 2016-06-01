@@ -3,3 +3,4 @@ env
 sandbox
 *.pyc
 */__pycache__/
+maffay*.py

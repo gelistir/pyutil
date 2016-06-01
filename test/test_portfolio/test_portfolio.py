@@ -87,7 +87,7 @@ class TestPortfolio(TestCase):
 
     def test_plot(self):
         x = portfolio.plot()
-        self.assertEqual(len(x), 3)
+        self.assertEqual(len(x), 4)
 
     def test_iron(self):
         x = test_portfolio()
