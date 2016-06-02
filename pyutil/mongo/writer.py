@@ -53,12 +53,14 @@ class _ArchiveWriter(_ArchiveReader):
         else:
             r = self.__flatten("returns", portfolio.nav.returns)
 
-        self.__db.strat_new.update({"id": key}, self.__flatten("weight", portfolio.weights), upsert=True)
-        self.__db.strat_new.update({"id": key}, self.__flatten("price", portfolio.prices), upsert=True)
-        self.__db.strat_new.update({"id": key}, r, upsert=True)
-        self.__db.strat_new.update({"id": key},
-                                   {"$set": {"group": group, "time": pd.Timestamp("now"), "comment": comment}},
-                                   upsert=True)
+        now = pd.Timestamp("now")
+        q = {"_id": key}
+        w = self.__flatten("weight", portfolio.weights)
+        p = self.__flatten("price", portfolio.prices)
+        self.__db.strategy.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)
+        self.__db.strategy.update(q, w, upsert=True)
+        self.__db.strategy.update(q, p, upsert=True)
+        self.__db.strategy.update(q, r, upsert=True)
 
     def update_symbols(self, frame):
         self.logger.debug("Update reference data with:\n{0}".format(frame.head(3)))

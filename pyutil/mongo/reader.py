@@ -19,11 +19,11 @@ class _Portfolios(object):
         return [(k, self[k]) for k in self.keys()]
 
     def keys(self):
-        return {x["id"] for x in self.__col.find({}, {"id": 1})}
+        return {x["_id"] for x in self.__col.find({}, {"_id": 1})}
 
     # return a dictionary portfolio
     def __getitem__(self, item):
-        p = self.__col.find_one({"id": item}, {"id": 1, "price": 1, "weight": 1})
+        p = self.__col.find_one({"_id": item}, {"_id": 1, "price": 1, "weight": 1})
         if p:
             return Portfolio(prices=_f(pd.DataFrame(p["price"])), weights=_f(pd.DataFrame(p["weight"])))
         else:
@@ -31,13 +31,13 @@ class _Portfolios(object):
 
     @property
     def strategies(self):
-        portfolios = self.__col.find({}, {"id": 1, "group": 1, "time": 1, "comment": 1})
-        d = {p["id"]: pd.Series({"group": p["group"], "time": p["time"], "comment": p["comment"]}) for p in portfolios}
+        portfolios = self.__col.find({}, {"_id": 1, "group": 1, "time": 1, "comment": 1})
+        d = {p["_id"]: pd.Series({"group": p["group"], "time": p["time"], "comment": p["comment"]}) for p in portfolios}
         return pd.DataFrame(d).transpose()
 
     @property
     def nav(self):
-        frame = pd.DataFrame({x["id"]: pd.Series(x["returns"]) for x in self.__col.find({}, {"id": 1, "returns": 1})})
+        frame = pd.DataFrame({x["_id"]: pd.Series(x["returns"]) for x in self.__col.find({}, {"_id": 1, "returns": 1})})
         return _f(frame + 1.0).cumprod().apply(adjust)
 
 
@@ -46,7 +46,7 @@ class _ArchiveReader(object):
         self.logger = logger or logging.getLogger(__name__)
         self.logger.info("Archive at {0}".format(db))
         self.__db = db
-        self.__portfolio = _Portfolios(db.strat_new)
+        self.__portfolio = _Portfolios(db.strategy)
 
     def __repr__(self):
         return "Reader for {0}".format(self.__db)
