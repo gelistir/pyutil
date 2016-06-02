@@ -61,10 +61,15 @@ class _ArchiveReader(object):
 
         if items:
             p = collection.find({"_id": {"$in": items}}, {"_id": 1, name: 1})
+            frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p if name in x.keys()})
+            for item in items:
+                assert item in frame.keys(), "For asset {0} we could not find series {1}".format(item, name)
+
         else:
             p = collection.find({}, {"_id": 1, name: 1})
+            frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p if name in x.keys()})
 
-        return _f(pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p if name in x.keys()}))
+        return _f(frame)
 
     def history_series(self, item, name="PX_LAST"):
         return self.history(items=[item], name=name)[item]

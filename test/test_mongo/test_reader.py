@@ -41,7 +41,7 @@ class TestReader(TestCase):
         self.assertAlmostEqual(a[pd.Timestamp("2014-07-18")], 23454.79, places=5)
 
     def test_unknown_series(self):
-        self.assertRaises(KeyError, self.reader.history_series, item="XYZ", name="PX_LAST")
+        self.assertRaises(AssertionError, self.reader.history_series, item="XYZ", name="PX_LAST")
 
     def test_close(self):
         x = self.reader.history(name="PX_LAST", items=["A", "B"])
@@ -69,3 +69,8 @@ class TestReader(TestCase):
         d = {x: p for x, p in self.reader.portfolios.items()}
         self.assertListEqual(["test"], list(d.keys()))
 
+    def test_unknown_asset(self):
+        self.assertRaises(AssertionError, self.reader.history, name="PX_LAST", items=["XYZ"])
+
+    def test_unknown_series(self):
+        self.assertRaises(AssertionError, self.reader.history, name="XYZ", items=["A","B"])
