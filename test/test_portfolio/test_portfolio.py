@@ -104,3 +104,8 @@ class TestPortfolio(TestCase):
         yy = read_frame("report.csv", index_col=[0, 1])
         yy.index.names = [None, None]
         pdt.assert_frame_equal(y, yy)
+
+    def test_to_json(self):
+        x = test_portfolio()
+        a = x.to_json()
+        self.assertAlmostEqual(a["price"]["A"]["20140909"], 1255.5, places=5)

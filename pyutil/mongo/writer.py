@@ -27,20 +27,29 @@ class _ArchiveWriter(_ArchiveReader):
         raise TypeError("ts is of type {0}".format(type(ts)))
 
     def update_asset(self, asset, ts, name="PX_LAST"):
+
+        def __f(ts):
+            return {"{0}".format(t.strftime("%Y%m%d")): v for t, v in ts.dropna().items()}
+
         # this update is cheap when ts is short!
         self.logger.debug("Asset: {0}, Name of ts: {1}, Len of ts: {2}".format(asset, name, len(ts.dropna().index)))
 
         # look for the asset in database
         if not ts.empty:
+            # asset already in database
             m = {"_id": asset}
-            self.__db.assets.update(m, {"$set": m}, upsert=True)
-            self.__db.assets.update(m, self.__flatten(name, ts), upsert=True)
+            if self.__db.assets.find_one(m):
+                self.__db.assets.update(m, self.__flatten(name, ts), upsert=True)
+            else:
+                self.__db.assets.update(m, {name: __f(ts)}, upsert=True)
 
     def update_portfolio(self, key, portfolio, group, n=10, comment=""):
         self.logger.debug("Key {0}, Group {1}".format(key, group))
 
         # check if there exists an portfolio and if so update only the last n business days of this portfolio
         current_portfolio = self.portfolios[key]
+
+        q = {"_id": key}
 
         if current_portfolio:
             last = current_portfolio.index[-1]
@@ -50,17 +59,17 @@ class _ArchiveWriter(_ArchiveReader):
             portfolio = portfolio.truncate(before=offset)
 
             r = self.__flatten("returns", portfolio.nav.returns.ix[1:])
+            w = self.__flatten("weight", portfolio.weights)
+            p = self.__flatten("price", portfolio.prices)
+            self.__db.strategy.update(q, w, upsert=True)
+            self.__db.strategy.update(q, p, upsert=True)
+            self.__db.strategy.update(q, r, upsert=True)
+
         else:
-            r = self.__flatten("returns", portfolio.nav.returns)
+            self.__db.strategy.update(q, portfolio.to_json(), upsert=True)
 
         now = pd.Timestamp("now")
-        q = {"_id": key}
-        w = self.__flatten("weight", portfolio.weights)
-        p = self.__flatten("price", portfolio.prices)
         self.__db.strategy.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)
-        self.__db.strategy.update(q, w, upsert=True)
-        self.__db.strategy.update(q, p, upsert=True)
-        self.__db.strategy.update(q, r, upsert=True)
 
     def update_symbols(self, frame):
         self.logger.debug("Update reference data with:\n{0}".format(frame.head(3)))

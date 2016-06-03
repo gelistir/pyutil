@@ -32,10 +32,10 @@ class Portfolio(object):
         w1.ix[p1.isnull()] = np.nan
         w1 = w1.dropna()
 
-        cash = 1 - w1.sum()                   # cash at time t1
-        pos = w1 / p1                         # pos at time t1
+        cash = 1 - w1.sum()  # cash at time t1
+        pos = w1 / p1  # pos at time t1
 
-        value = pos * p2                      # value of asset at time t2
+        value = pos * p2  # value of asset at time t2
         return value / (value.sum() + cash)
 
     def iron_threshold(self, threshold=0.02):
@@ -131,7 +131,7 @@ class Portfolio(object):
             # the stream of returns starts with a zero!
             rr = self.prices[asset].dropna().pct_change().fillna(0.0)
             ww = self.weights[asset].dropna().shift(1).fillna(0.0)
-            d[asset] = ww*rr
+            d[asset] = ww * rr
 
         return pd.DataFrame(d)
 
@@ -182,10 +182,11 @@ class Portfolio(object):
         today = self.index[-1]
         offsets = periods(today)
 
-        a = 100*self.weighted_returns.apply(period_returns, offset=offsets).transpose()[["Month-to-Date", "Year-to-Date"]]
+        a = 100 * self.weighted_returns.apply(period_returns, offset=offsets).transpose()[
+            ["Month-to-Date", "Year-to-Date"]]
         tt = self.trading_days[-n:]
 
-        b = 100*self.weights.ffill().ix[tt].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
+        b = 100 * self.weights.ffill().ix[tt].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
         return pd.concat((a, b), axis=1)
 
     def top_flop(self, day_final=pd.Timestamp("today")):
@@ -215,7 +216,7 @@ class Portfolio(object):
     def subportfolio(self, assets):
         return Portfolio(prices=self.prices[assets], weights=self.weights[assets])
 
-    #def nav_adjusted(self, size=1e6, flatfee=0.0, basispoints=20, threshold=0.01):
+    # def nav_adjusted(self, size=1e6, flatfee=0.0, basispoints=20, threshold=0.01):
     #    r0 = self.nav.returns
     #    r1 = self.trades_relative.abs().sum(axis=1)*basispoints / 10000
     #    r2 = self.trade_count(threshold).sum(axis=1)*flatfee / (self.nav.series * size)
@@ -236,9 +237,9 @@ class Portfolio(object):
     def plot(self, colors=None, tradingDays=False):
         import matplotlib.pyplot as plt
         import matplotlib as mpl
-        #label_size = 6
-        #mpl.rcParams['ytick.labelsize'] = label_size
-        #mpl.rcParams['xtick.labelsize'] = label_size
+        # label_size = 6
+        # mpl.rcParams['ytick.labelsize'] = label_size
+        # mpl.rcParams['xtick.labelsize'] = label_size
 
         colors = colors or [a['color'] for a in plt.rcParams['axes.prop_cycle']]
         ax1 = plt.subplot(211)
@@ -254,13 +255,13 @@ class Portfolio(object):
         ax2.set_ylim([-10, 110])
         plt.legend(["Leverage"], loc=2)
         plt.grid()
-        #ax2.set_xticklabels(())
+        # ax2.set_xticklabels(())
 
         ax3 = plt.subplot(615, sharex=ax1)
         (100 * (self.nav.drawdown)).plot(ax=ax3, color=colors[2])
         plt.legend(["Drawdown"], loc=2)
         plt.grid()
-        #ax3.set_xticklabels(())
+        # ax3.set_xticklabels(())
 
         ax4 = plt.subplot(616, sharex=ax1)
         plt.grid()
@@ -273,7 +274,7 @@ class Portfolio(object):
     @property
     def trading_days(self):
         __fundsize = 1e6
-        days = (__fundsize*self.position).diff().abs().sum(axis=1)
+        days = (__fundsize * self.position).diff().abs().sum(axis=1)
         return sorted(list(days[days > 1].index))
 
     def ffill(self, prices=False):
@@ -294,7 +295,7 @@ class Portfolio(object):
             p = prices.ix[trading_day]
 
             # new goal position
-            pos = self.weights.ix[trading_day]*capital*nav_today / p
+            pos = self.weights.ix[trading_day] * capital * nav_today / p
             pos = pos.apply(xround, (n,))
 
             # compute the trade to get to position
@@ -312,4 +313,15 @@ class Portfolio(object):
         p["Type"] = p["Amount"].apply(buy_or_sell)
         return p
 
+    def to_json(self):
+        """
+        Convert portfolio into a big dictionary (e.g.
+        :return:
+        """
+        def __f(ts):
+            return {"{0}".format(t.strftime("%Y%m%d")): v for t, v in ts.dropna().items()}
 
+        def __g(frame):
+            return {key: __f(series) for key, series in frame.iteritems()}
+
+        return {"weight": __g(self.weights), "price": __g(self.prices), "returns": __f(self.nav.returns)}
