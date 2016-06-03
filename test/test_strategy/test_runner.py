@@ -1,13 +1,16 @@
+import pandas as pd
+
+from pyutil.mongo.reader import Archive
 from test.config import read_frame
 from unittest import TestCase
 
 
-class Archive(object):
+class CsvArchive(Archive):
+    def history(self, items, name, before=pd.Timestamp("2002-01-01")):
+        return self.__prices[items].truncate(before=before)
+
     def __init__(self):
         self.__prices = read_frame("price.csv", parse_dates=True)
-
-    def history(self, items):
-        return self.__prices[items]
 
 
 class TestRunner(TestCase):

@@ -22,7 +22,7 @@ class Runner(object):
         self.__config = module.Configuration(archive=archive, logger=self.__logger)
 
         # compute the portfolio
-        self.__portfolio = self.__config.method()
+        self.__portfolio = self.__config.portfolio()
 
     @property
     def portfolio(self):

@@ -23,7 +23,7 @@ class ConfigMaster(object):
         return
 
     @abc.abstractmethod
-    def method(self):
+    def portfolio(self):
         return
 
     def prices(self, assets, before=pd.Timestamp("2002-01-01")):

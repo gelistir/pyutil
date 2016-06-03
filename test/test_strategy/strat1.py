@@ -8,16 +8,16 @@ class Configuration(ConfigMaster):
     def __init__(self, archive, logger=None):
         super().__init__(archive=archive, logger=logger)
         self.configuration["assets"] = ["A", "B", "C"]
-        self.configuration["prices"] = self.prices(assets=self.configuration["assets"])
+        self.configuration["start"] = pd.Timestamp("2002-01-01")
+
+    def portfolio(self):
+        a = self.configuration["assets"]
+        p = self.archive.history(items=a, before=self.configuration["start"])
+        return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / len(a)))
 
     @property
     def name(self):
         return "test"
-
-    def method(self):
-        p = self.configuration["prices"]
-        return Portfolio(self.configuration["prices"],
-                     weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / 3.0))
 
     @property
     def group(self):

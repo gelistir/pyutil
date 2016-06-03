@@ -1,3 +1,4 @@
+import abc
 import pandas as pd
 import logging
 from pyutil.nav.nav import Nav
@@ -9,6 +10,14 @@ from pyutil.timeseries.timeseries import adjust
 def _f(frame):
     frame.index = [pd.Timestamp(x) for x in frame.index]
     return frame
+
+
+class Archive(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def history(self, items, name, before):
+        return
 
 
 class _Portfolios(object):
@@ -41,7 +50,7 @@ class _Portfolios(object):
         return _f(frame + 1.0).cumprod().apply(adjust)
 
 
-class _ArchiveReader(object):
+class _ArchiveReader(Archive):
     def __init__(self, db, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.logger.info("Archive at {0}".format(db))
