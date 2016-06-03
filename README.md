@@ -1,5 +1,6 @@
 # pyutil
 Tests will not pass on your local machine as we create and drop a database on a dedicated Lobnek server.
+To address this problem point the MongoClient in test.config to a running MongoDB instance.
 
 ![Alt text](portfolio.png)
 
@@ -70,7 +71,7 @@ ConfigMaster is exposing the abstract portfolio method, e.g. we extend the Confi
 		def portfolio(self):
 			a = self.configuration["assets"]
 			p = self.archive.history(items=a, before=self.configuration["start"])
-			return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / len(a)))
+			return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0/len(a)))
 ```
 The actual strategy is therefore executed as 
 
