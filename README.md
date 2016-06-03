@@ -1,6 +1,4 @@
 # pyutil
-Mail, Logger, etc.
-
 Tests will not pass on your local machine as we create and drop a database on a dedicated Lobnek server.
 
 ![Alt text](portfolio.png)
@@ -20,6 +18,7 @@ whereas in production we run with a MongoDB server providing access to our lates
 Each strategy is described by a class Configuration and is a child of the ConfigMaster class.
 Inheritance is rarely used in Python. Here we use it to enforce a small common interface for all strategies.
 
+```python
 	from pyutil.strategy.ConfigMaster import ConfigMaster
 	
 	
@@ -28,28 +27,34 @@ Inheritance is rarely used in Python. Here we use it to enforce a small common i
 			super().__init__(archive=archive, logger=logger)
 			self.configuration["assets"] = ["A", "B", "C"]
 			self.configuration["start"] = pd.Timestamp("2002-01-01")
+```
 
 Once we have instantiated a Configuration object we could still modify the configuration dictionary which is a simple
 member variable. In this example we define the parameters assets and start.
 
+```python
      c = Configuration(CsvArchive())
      c.configuration["assets"] = ["A", "B", "D"]
-     
+```
+
 We replace the asset C by D. We shall talk briefly about Archives. Archives provide 
 read access to data. An archive could be as minimalistic as:
 
+```python
 	class CsvArchive(Archive):
 		def history(self, items, name, before):
 			return self.__prices[items].truncate(before=before)
 	
 		def __init__(self):
 			self.__prices = read_frame("price.csv", parse_dates=True)
-			
+```
+
 However, in production we use variations of this theme and work with a wrapper for our MongoDB server. 
 
 So far, we have only mentioned to instantiate a Configuration object and pointed it to an archive. To build the portfolio the
 ConfigMaster is exposing the abstract portfolio method, e.g. we extend the Configuration class by 
 
+```python
 	import pandas as pd
 	
 	from pyutil.portfolio.portfolio import Portfolio
@@ -66,9 +71,10 @@ ConfigMaster is exposing the abstract portfolio method, e.g. we extend the Confi
 			a = self.configuration["assets"]
 			p = self.archive.history(items=a, before=self.configuration["start"])
 			return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / len(a)))
-
+```
 The actual strategy is therefore executed as 
 
+```python
 	# define an archive
 	archive = CsvArchive()
 	
@@ -80,5 +86,6 @@ The actual strategy is therefore executed as
 	
 	# compute the portfolio
 	p = c.portfolio()
+```
 
 There is a wealth of tools to analyse the portfolio objects. 
