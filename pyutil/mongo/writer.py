@@ -29,7 +29,7 @@ class _ArchiveWriter(_ArchiveReader):
     def update_asset(self, asset, ts, name="PX_LAST"):
 
         def __f(ts):
-            return {"{0}".format(t.strftime("%Y%m%d")): v for t, v in ts.dropna().items()}
+            return {"{0}".format(t.strftime("%Y%m%d")): v for t, v in ts.dropna().iteritems()}
 
         # this update is cheap when ts is short!
         self.logger.debug("Asset: {0}, Name of ts: {1}, Len of ts: {2}".format(asset, name, len(ts.dropna().index)))

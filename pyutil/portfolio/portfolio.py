@@ -319,7 +319,7 @@ class Portfolio(object):
         :return:
         """
         def __f(ts):
-            return {"{0}".format(t.strftime("%Y%m%d")): v for t, v in ts.dropna().items()}
+            return {"{0}".format(t.strftime("%Y%m%d")): v for t, v in ts.dropna().iteritems()}
 
         def __g(frame):
             return {key: __f(series) for key, series in frame.iteritems()}
