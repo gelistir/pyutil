@@ -44,7 +44,7 @@ class TestReader(TestCase):
         self.assertRaises(AssertionError, self.reader.history_series, item="XYZ", name="PX_LAST")
 
     def test_close(self):
-        x = self.reader.history(name="PX_LAST", items=["A", "B"])
+        x = self.reader.history(items=["A", "B"], name="PX_LAST")
         self.assertAlmostEqual(x["B"][pd.Timestamp("2014-01-14")], 22791.28, places=5)
 
     def test_symbols(self):

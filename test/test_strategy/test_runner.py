@@ -6,7 +6,7 @@ from unittest import TestCase
 
 
 class CsvArchive(Archive):
-    def history(self, items, name, before=pd.Timestamp("2002-01-01")):
+    def history(self, items, name="", before=pd.Timestamp("2002-01-01")):
         return self.__prices[items].truncate(before=before)
 
     def __init__(self):
@@ -18,7 +18,7 @@ class TestRunner(TestCase):
         from pyutil.strategy.Runner import Runner
         module = "test.test_strategy.strat1"
 
-        r = Runner(archive=Archive(), module=module)
+        r = Runner(archive=CsvArchive(), module=module)
 
         self.assertEqual(r.group, "testgroup")
         self.assertEqual(r.name, "test")

@@ -65,7 +65,7 @@ class _ArchiveReader(Archive):
         return self.__portfolio
 
     # bad idea to make history a property as we may have different names, e.g PX_LAST, PX_VOLUME, etc...
-    def history(self, items=None, name="PX_LAST"):
+    def history(self, items=None, name="PX_LAST", before=pd.Timestamp("2002-01-01")):
         collection = self.__db.assets
 
         if items:
@@ -78,7 +78,7 @@ class _ArchiveReader(Archive):
             p = collection.find({}, {"_id": 1, name: 1})
             frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p if name in x.keys()})
 
-        return _f(frame)
+        return _f(frame).truncate(before=before)
 
     def history_series(self, item, name="PX_LAST"):
         return self.history(items=[item], name=name)[item]
