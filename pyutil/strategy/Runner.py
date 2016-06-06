@@ -17,8 +17,6 @@ class Runner(object):
         with open(new_module_filename) as ff:
             self.__source = ff.read()
 
-        self.__logger.debug(self.__source)
-
         self.__config = module.Configuration(archive=archive, logger=self.__logger)
 
         # compute the portfolio

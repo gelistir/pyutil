@@ -16,6 +16,8 @@ class CsvArchive(Archive):
 class TestRunner(TestCase):
     def test_run(self):
         from pyutil.strategy.Runner import Runner
+
+        # specify the module via its name
         module = "test.test_strategy.strat1"
 
         r = Runner(archive=CsvArchive(), module=module)
