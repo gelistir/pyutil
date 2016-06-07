@@ -1,16 +1,6 @@
-import pandas as pd
-
-from pyutil.mongo.reader import Archive
+from pyutil.mongo.reader import CsvArchive
 from test.config import read_frame
 from unittest import TestCase
-
-
-class CsvArchive(Archive):
-    def history(self, items, name="", before=pd.Timestamp("2002-01-01")):
-        return self.__prices[items].truncate(before=before)
-
-    def __init__(self):
-        self.__prices = read_frame("price.csv", parse_dates=True)
 
 
 class TestRunner(TestCase):
@@ -20,7 +10,9 @@ class TestRunner(TestCase):
         # specify the module via its name
         module = "test.test_strategy.strat1"
 
-        r = Runner(archive=CsvArchive(), module=module)
+        frame = read_frame("price.csv", parse_dates=True)
+
+        r = Runner(archive=CsvArchive(frame), module=module)
 
         self.assertEqual(r.group, "testgroup")
         self.assertEqual(r.name, "test")

@@ -8,13 +8,13 @@ To address this problem point the MongoClient in test.config to a running MongoD
 # Running a strategy
 
 Our main concern is to implement and maintain strategies in a robust way. We do not rewrite our codes for production servers 
-in alternative programming languages. Both in research and production we use the same Python scripts. 
+in alternative programming languages. We use the same Python scripts both in research and production. 
 
-A strategy is a script loading time series data from an archive and using a priori specified parameters.
-For research it is important to interfere and alternate the parameters before the strategy runs in a backtest through history.
+A strategy is a script loading time series data from an archive and using parameters specified a priori.
+For research it is helpful to interfere and alternate the parameters before the strategy iterates in a backtest through history.
 
-It is also possible to point the strategy to different archives. For testing purposes we use an archive with immutable test data 
-whereas in production we run with a MongoDB server providing access to our latest data.
+It is possible to point the strategy to different archives. For testing purposes we use an archive with immutable test data 
+whereas in production we run a MongoDB server providing access to our latest data.
 
 Each strategy is described by a class Configuration and is a child of the ConfigMaster class.
 Inheritance is rarely used in Python. Here we use it to enforce a small common interface for all strategies.
@@ -49,8 +49,6 @@ read access to data. An archive could be as minimalistic as:
 		def __init__(self):
 			self.__prices = read_frame("price.csv", parse_dates=True)
 ```
-
-However, in production we use variations of this theme and work with a wrapper for our MongoDB server. 
 
 So far, we have only mentioned to instantiate a Configuration object and pointed it to an archive. To build the portfolio the
 ConfigMaster is exposing the abstract portfolio method, e.g. we extend the Configuration class by 

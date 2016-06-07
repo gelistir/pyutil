@@ -16,7 +16,7 @@ def read_frame(name, parse_dates=True, index_col=0):
 
 
 def read_series(name, parse_dates=True, index_col=0):
-    return pd.read_csv(__f( name), index_col=index_col, header=None, squeeze=True, parse_dates=parse_dates)
+    return pd.read_csv(__f(name), index_col=index_col, header=None, squeeze=True, parse_dates=parse_dates)
 
 
 def test_portfolio():
@@ -25,3 +25,5 @@ def test_portfolio():
 
 def mongoclient():
     return MongoClient("quantsrv", port=27017)
+
+
