@@ -235,6 +235,9 @@ class Portfolio(object):
         return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))
 
     def plot(self, colors=None, tradingDays=False):
+        import matplotlib as mpl
+        mpl.use('Agg')
+
         import matplotlib.pyplot as plt
         import matplotlib as mpl
         # label_size = 6

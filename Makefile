@@ -34,6 +34,5 @@ tag:
 
 .PHONY: test
 test:
-	@$(MAKE) build
 	${NOSE}
 
