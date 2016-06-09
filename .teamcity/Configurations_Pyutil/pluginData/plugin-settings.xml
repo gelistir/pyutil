@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+  <versionedSettings rootId="Configurations_Pyutil_HttpsGithubComLobnekPyutilGit" enabled="true" showChanges="false" />
+  <project-graphs>
+    <graph title="New chart title" defaultFilters="" hideFilters="" seriesTitle="Serie">
+      <valueType key="BuildDuration" title="Build Duration (all stages)" sourceBuildTypeId="Configurations_Pyutil_Strategy" />
+      <valueType key="ArtifactsSize" title="Total Artifacts Size" sourceBuildTypeId="Configurations_Pyutil_Strategy" />
+    </graph>
+  </project-graphs>
+</settings>
+
