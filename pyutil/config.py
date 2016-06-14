@@ -60,3 +60,27 @@ def mosek(license=None, file=None):
 
     os.environ.setdefault("MOSEKLM_LICENSE_FILE", license)
 
+
+def postgresql(server=None, database=None, password=None, port=None, file=None):
+
+    if not server:
+        c = configuration(file=file)
+        server = c["Postgresql"]["server"]
+
+    if not database:
+        c = configuration(file=file)
+        database = c["Postgresql"]["database"]
+
+    if not password:
+        c = configuration(file=file)
+        password = c["Postgresql"]["password"]
+
+    if not port:
+        c = configuration(file=file)
+        port = c["Postgresql"]["port"]
+
+    return 'postgresql://postgres:{2}@{0}:{3}/{1}'.format(server, database, password, port)
+
+
+if __name__ == '__main__':
+    print(postgresql())
