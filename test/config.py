@@ -5,6 +5,9 @@ from pyutil.portfolio.portfolio import Portfolio
 
 BASE_DIR = os.path.dirname(__file__)
 
+import matplotlib as mpl
+mpl.use('Agg')
+
 
 def __f(name):
     BASE_DIR = os.path.dirname(__file__)
