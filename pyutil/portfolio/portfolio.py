@@ -22,6 +22,8 @@ class Portfolio(object):
 
     @staticmethod
     def __forward(w1, p1, p2):
+        # todo: make this fast. Move to numpy, away from pandas
+
         # w1 weight at time t1
         # p1 price at time t1
         # p2 price at time t2
@@ -30,12 +32,12 @@ class Portfolio(object):
 
         # in some scenarios the weight are set even before a first price is known.
         w1.ix[p1.isnull()] = np.nan
-        w1 = w1.dropna()
+        #w1 = w1.dropna()
 
         cash = 1 - w1.sum()  # cash at time t1
-        pos = w1 / p1  # pos at time t1
+        #pos = w1 / p1  # pos at time t1
 
-        value = pos * p2  # value of asset at time t2
+        value = w1 * (p2/p1)  # value of asset at time t2
         return value / (value.sum() + cash)
 
     def iron_threshold(self, threshold=0.02):
