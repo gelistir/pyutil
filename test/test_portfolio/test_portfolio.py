@@ -19,6 +19,7 @@ class TestPortfolio(TestCase):
                             {'A', 'B', 'C', 'D', 'E', 'F', 'G'})
 
     def test_summary(self):
+        #todo: include mtd, ytd
         self.assertAlmostEqual(portfolio.summary()[100]["Max Drawdown"], 1.7524809688827636, places=5)
 
     def test_index(self):

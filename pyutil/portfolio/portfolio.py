@@ -1,9 +1,12 @@
+from itertools import tee
+
 import pandas as pd
 from pyutil.performance.periods import period_returns, periods
 from pyutil.nav.nav import Nav
 from pyutil.portfolio.maths import xround, buy_or_sell
 from pyutil.timeseries.timeseries import subsample
-from itertools import tee
+#from itertools import tee
+import numpy as np
 
 
 def merge(portfolios, axis=0):
@@ -20,24 +23,37 @@ class Portfolio(object):
         next(b, None)
         return zip(a, b)
 
+    # @staticmethod
+    # def __forward(w1, p1, p2):
+    #     # todo: make this fast. Move to numpy, away from pandas
+    #
+    #     # w1 weight at time t1
+    #     # p1 price at time t1
+    #     # p2 price at time t2
+    #     # return the weights at time t2
+    #     import numpy as np
+    #
+    #     # in some scenarios the weight are set even before a first price is known.
+    #     w1.ix[p1.isnull()] = np.nan
+    #     # w1 = w1.dropna()
+    #
+    #     cash = 1 - w1.sum()  # cash at time t1
+    #     # pos = w1 / p1  # pos at time t1
+    #
+    #     value = w1 * (p2 / p1)  # value of asset at time t2
+    #     return value / (value.sum() + cash)
+
     @staticmethod
     def __forward(w1, p1, p2):
-        # todo: make this fast. Move to numpy, away from pandas
-
         # w1 weight at time t1
         # p1 price at time t1
         # p2 price at time t2
         # return the weights at time t2
-        import numpy as np
 
         # in some scenarios the weight are set even before a first price is known.
-        w1.ix[p1.isnull()] = np.nan
-        #w1 = w1.dropna()
-
-        cash = 1 - w1.sum()  # cash at time t1
-        #pos = w1 / p1  # pos at time t1
-
-        value = w1 * (p2/p1)  # value of asset at time t2
+        w1[np.isnan(p1)] = np.nan
+        cash = 1 - w1.sum()
+        value = w1 * (p2 / p1)
         return value / (value.sum() + cash)
 
     def iron_threshold(self, threshold=0.02):
@@ -47,30 +63,63 @@ class Portfolio(object):
         :param threshold:
         :return:
         """
-        w = self.weights.ffill(inplace=False)
-        p = self.prices.ffill(inplace=False)
 
-        for t1, t2 in self.__pairwise(w.ix[:-1].index):
-            if (w.ix[t2] - w.ix[t1]).abs().max() <= threshold:
-                # no trading hence we update the weights forward
-                w.ix[t2] = self.__forward(w1=w.ix[t1], p1=p.ix[t1], p2=p.ix[t2])
+        # make sure the order is correct...
+        w = self.weights.ffill(inplace=False)[self.assets].values
+        p = self.prices.ffill(inplace=False)[self.assets].values
+
+        assert w.shape == p.shape
+
+        for i in range(0, p.shape[0] - 2):
+            if np.abs(w[i + 1] - w[i]).max() <= threshold:
+                w[i + 1] = self.__forward(w1=w[i], p1=p[i], p2=p[i + 1])
+
+        p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
+        w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
 
         return Portfolio(prices=p, weights=w)
 
+    # def iron_threshold(self, threshold=0.02):
+    #     """
+    #     Iron a portfolio, do not touch the last index
+    #
+    #     :param threshold:
+    #     :return:
+    #     """
+    #     w = self.weights.ffill(inplace=False)
+    #     p = self.prices.ffill(inplace=False)
+    #
+    #     for t1, t2 in self.__pairwise(w.ix[:-1].index):
+    #         if (w.ix[t2] - w.ix[t1]).abs().max() <= threshold:
+    #             # no trading hence we update the weights forward
+    #             w.ix[t2] = self.__forward(w1=w.ix[t1], p1=p.ix[t1], p2=p.ix[t2])
+    #
+    #     return Portfolio(prices=p, weights=w)
+
     def iron_time(self, rule):
+
+        # make sure the order is correct...
+        w = self.weights.ffill(inplace=False)[self.assets].values
+        p = self.prices.ffill(inplace=False)[self.assets].values
+
+        assert w.shape == p.shape
 
         # take the weights of the underlying portfolio
         index = self.weights.index
 
-        moments = [index[0]]
+        moments = [0]
 
         for t in self.weights.ix[:-1].resample(rule=rule).last().index:
-            # take the last stamp before or at time t.
-            # Often t is a weekend and we have no trading on this particular day
-            moments.append(index[index <= t][-1])
+            moments.append(len(index[index <= t]) - 1)
 
-        moments.append(self.weights.index[-1])
-        return Portfolio(prices=self.prices, weights=self.weights.ix[moments])
+        for i in range(1, p.shape[0] - 1):
+            if i not in moments:
+                w[i] = self.__forward(w1=w[i-1], p1=p[i-1], p2=p[i])
+
+        p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
+        w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
+
+        return Portfolio(prices=p, weights=w)
 
     def __init__(self, prices, weights):
         for asset in weights.keys():
@@ -81,21 +130,23 @@ class Portfolio(object):
             self.__prices = prices.ffill()
             self.__weights = weights.ffill().fillna(0.0)
         else:
+            #raise ArithmeticError("Index of Weights and Prices have to be equal")
+
             for time in weights.index:
                 assert time in prices.index
 
-            # only take into account prices after the first weight!
             p = prices.ffill()
 
             # set the weights
             w = pd.DataFrame(index=prices.index, columns=prices.keys(), data=0.0)
             w.ix[weights.index] = weights
 
+
             # loop over all times
             for t1, t2 in self.__pairwise(prices.index):
                 if t2 not in weights.index:
                     w.ix[t2] = self.__forward(w.ix[t1], p.ix[t1], p.ix[t2])
-
+            #
             self.__prices = prices.ffill()
             self.__weights = w.ffill().fillna(0.0)
 
@@ -108,7 +159,7 @@ class Portfolio(object):
 
     @property
     def assets(self):
-        return self.__prices.keys()
+        return sorted(list(self.__prices.keys()))
 
     @property
     def prices(self):
@@ -184,11 +235,11 @@ class Portfolio(object):
         today = self.index[-1]
         offsets = periods(today)
 
-        a = 100 * self.weighted_returns.apply(period_returns, offset=offsets).transpose()[
+        a = self.weighted_returns.apply(period_returns, offset=offsets).transpose()[
             ["Month-to-Date", "Year-to-Date"]]
         tt = self.trading_days[-n:]
 
-        b = 100 * self.weights.ffill().ix[tt].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
+        b = self.weights.ffill().ix[tt].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
         return pd.concat((a, b), axis=1)
 
     def top_flop(self, day_final=pd.Timestamp("today")):
@@ -316,6 +367,7 @@ class Portfolio(object):
         Convert portfolio into a big dictionary (e.g.
         :return:
         """
+
         def __f(ts):
             return {"{0}".format(t.strftime("%Y%m%d")): v for t, v in ts.dropna().iteritems()}
 
