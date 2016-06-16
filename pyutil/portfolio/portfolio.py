@@ -1,11 +1,11 @@
-from itertools import tee
+#from itertools import tee
 
 import pandas as pd
 from pyutil.performance.periods import period_returns, periods
 from pyutil.nav.nav import Nav
 from pyutil.portfolio.maths import xround, buy_or_sell
 from pyutil.timeseries.timeseries import subsample
-#from itertools import tee
+# from itertools import tee
 import numpy as np
 
 
@@ -16,12 +16,12 @@ def merge(portfolios, axis=0):
 
 
 class Portfolio(object):
-    @staticmethod
-    def __pairwise(iterable):
-        "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-        a, b = tee(iterable)
-        next(b, None)
-        return zip(a, b)
+    # @staticmethod
+    # def __pairwise(iterable):
+    #     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    #     a, b = tee(iterable)
+    #     next(b, None)
+    #     return zip(a, b)
 
     # @staticmethod
     # def __forward(w1, p1, p2):
@@ -114,7 +114,7 @@ class Portfolio(object):
 
         for i in range(1, p.shape[0] - 1):
             if i not in moments:
-                w[i] = self.__forward(w1=w[i-1], p1=p[i-1], p2=p[i])
+                w[i] = self.__forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
 
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
@@ -130,25 +130,31 @@ class Portfolio(object):
             self.__prices = prices.ffill()
             self.__weights = weights.ffill().fillna(0.0)
         else:
-            #raise ArithmeticError("Index of Weights and Prices have to be equal")
+            # raise ArithmeticError("Index of Weights and Prices have to be equal")
 
             for time in weights.index:
                 assert time in prices.index
 
-            p = prices.ffill()
+            assets = sorted(list(prices.keys()))
+
+            p = prices.ffill()[assets].values
+            www = weights[assets].values
 
             # set the weights
-            w = pd.DataFrame(index=prices.index, columns=prices.keys(), data=0.0)
-            w.ix[weights.index] = weights
+            w = np.zeros((len(prices.index), len(prices.keys())))
 
+            rows = [prices.index.get_loc(key=a) for a in weights.index]
+
+            for i, row in enumerate(rows):
+                w[row] = www[i]
 
             # loop over all times
-            for t1, t2 in self.__pairwise(prices.index):
-                if t2 not in weights.index:
-                    w.ix[t2] = self.__forward(w.ix[t1], p.ix[t1], p.ix[t2])
-            #
+            for i in range(1, len(prices.index)):
+                if i not in rows:
+                    w[i] = self.__forward(w[i-1], p[i-1], p[i])
+
             self.__prices = prices.ffill()
-            self.__weights = w.ffill().fillna(0.0)
+            self.__weights = pd.DataFrame(index=prices.index, columns=assets, data=w)
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
