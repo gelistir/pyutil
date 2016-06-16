@@ -1,11 +1,8 @@
-#from itertools import tee
-
 import pandas as pd
 from pyutil.performance.periods import period_returns, periods
 from pyutil.nav.nav import Nav
 from pyutil.portfolio.maths import xround, buy_or_sell
 from pyutil.timeseries.timeseries import subsample
-# from itertools import tee
 import numpy as np
 
 
@@ -16,33 +13,6 @@ def merge(portfolios, axis=0):
 
 
 class Portfolio(object):
-    # @staticmethod
-    # def __pairwise(iterable):
-    #     "s -> (s0,s1), (s1,s2), (s2, s3), ..."
-    #     a, b = tee(iterable)
-    #     next(b, None)
-    #     return zip(a, b)
-
-    # @staticmethod
-    # def __forward(w1, p1, p2):
-    #     # todo: make this fast. Move to numpy, away from pandas
-    #
-    #     # w1 weight at time t1
-    #     # p1 price at time t1
-    #     # p2 price at time t2
-    #     # return the weights at time t2
-    #     import numpy as np
-    #
-    #     # in some scenarios the weight are set even before a first price is known.
-    #     w1.ix[p1.isnull()] = np.nan
-    #     # w1 = w1.dropna()
-    #
-    #     cash = 1 - w1.sum()  # cash at time t1
-    #     # pos = w1 / p1  # pos at time t1
-    #
-    #     value = w1 * (p2 / p1)  # value of asset at time t2
-    #     return value / (value.sum() + cash)
-
     @staticmethod
     def __forward(w1, p1, p2):
         # w1 weight at time t1
@@ -79,25 +49,7 @@ class Portfolio(object):
 
         return Portfolio(prices=p, weights=w)
 
-    # def iron_threshold(self, threshold=0.02):
-    #     """
-    #     Iron a portfolio, do not touch the last index
-    #
-    #     :param threshold:
-    #     :return:
-    #     """
-    #     w = self.weights.ffill(inplace=False)
-    #     p = self.prices.ffill(inplace=False)
-    #
-    #     for t1, t2 in self.__pairwise(w.ix[:-1].index):
-    #         if (w.ix[t2] - w.ix[t1]).abs().max() <= threshold:
-    #             # no trading hence we update the weights forward
-    #             w.ix[t2] = self.__forward(w1=w.ix[t1], p1=p.ix[t1], p2=p.ix[t2])
-    #
-    #     return Portfolio(prices=p, weights=w)
-
     def iron_time(self, rule):
-
         # make sure the order is correct...
         w = self.weights.ffill(inplace=False)[self.assets].values
         p = self.prices.ffill(inplace=False)[self.assets].values
@@ -130,28 +82,25 @@ class Portfolio(object):
             self.__prices = prices.ffill()
             self.__weights = weights.ffill().fillna(0.0)
         else:
-            # raise ArithmeticError("Index of Weights and Prices have to be equal")
-
             for time in weights.index:
                 assert time in prices.index
 
             assets = sorted(list(prices.keys()))
 
             p = prices.ffill()[assets].values
-            www = weights[assets].values
 
             # set the weights
-            w = np.zeros((len(prices.index), len(prices.keys())))
+            w = np.zeros_like(p)
 
             rows = [prices.index.get_loc(key=a) for a in weights.index]
 
             for i, row in enumerate(rows):
-                w[row] = www[i]
+                w[row] = weights[assets].values[i]
 
             # loop over all times
             for i in range(1, len(prices.index)):
                 if i not in rows:
-                    w[i] = self.__forward(w[i-1], p[i-1], p[i])
+                    w[i] = self.__forward(w1=w[i-1], p1=p[i-1], p2=p[i])
 
             self.__prices = prices.ffill()
             self.__weights = pd.DataFrame(index=prices.index, columns=assets, data=w)
@@ -274,15 +223,6 @@ class Portfolio(object):
 
     def subportfolio(self, assets):
         return Portfolio(prices=self.prices[assets], weights=self.weights[assets])
-
-    # def nav_adjusted(self, size=1e6, flatfee=0.0, basispoints=20, threshold=0.01):
-    #    r0 = self.nav.returns
-    #    r1 = self.trades_relative.abs().sum(axis=1)*basispoints / 10000
-    #    r2 = self.trade_count(threshold).sum(axis=1)*flatfee / (self.nav.series * size)
-
-    #    # make this a nav again
-    #    r = r0 - r1 - r2
-    #    return Nav((1 + r).cumprod())
 
     def __mul__(self, other):
         return Portfolio(self.prices, other * self.weights)

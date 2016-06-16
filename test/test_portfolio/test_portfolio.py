@@ -66,7 +66,7 @@ class TestPortfolio(TestCase):
         self.assertAlmostEqual(portfolio.weights["B"][pd.Timestamp('2013-01-08')], 0.1, places=5)
 
     def test_build_portfolio(self):
-        prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[1000, 1000], [1500, 1500], [2000, 2000]])
+        prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[1000.0, 1000.0], [1500.0, 1500.0], [2000.0, 2000.0]])
         weights = pd.DataFrame(columns=["A", "B"], index=[1], data=[[0.25, 0.25]])
 
         portfolio = Portfolio(prices=prices, weights=weights)
@@ -94,7 +94,6 @@ class TestPortfolio(TestCase):
         x = test_portfolio()
         p1 = x.iron_threshold(threshold=0.05)
         p2 = x.iron_time(rule="3M")
-
         self.assertEqual(len(p1.trading_days), 40)
         self.assertEqual(len(p2.trading_days), 10)
 
