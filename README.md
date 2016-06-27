@@ -4,6 +4,7 @@ To address this problem point the MongoClient in test.config to a running MongoD
 
 ![Alt text](portfolio.png)
 
+The attempts to test using an in-memory version of MongoDB failed.
 
 # Running a strategy
 

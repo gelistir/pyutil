@@ -14,7 +14,6 @@ all:
 	@$(MAKE) publish
 
 
-
 .PHONY: clean
 clean:
 	rm -rf ${ROOT_DIR}/env
@@ -25,6 +24,7 @@ build:
 	@$(MAKE) clean
 	conda create --yes -p ${ROOT_DIR}/env --file condalist.txt
 	${PIP} install -r ${ROOT_DIR}/requirements.txt
+
 
 .PHONY: tag
 tag:
