@@ -1,5 +1,7 @@
 import pandas as pd
+import numpy as np
 import pandas.util.testing as pdt
+from nose.tools import raises
 from pyutil.portfolio.portfolio import merge, Portfolio
 from test.config import test_portfolio, read_frame
 from unittest import TestCase
@@ -19,7 +21,7 @@ class TestPortfolio(TestCase):
                             {'A', 'B', 'C', 'D', 'E', 'F', 'G'})
 
     def test_summary(self):
-        #todo: include mtd, ytd
+        # todo: include mtd, ytd
         self.assertAlmostEqual(portfolio.summary()[100]["Max Drawdown"], 1.7524809688827636, places=5)
 
     def test_index(self):
@@ -66,7 +68,8 @@ class TestPortfolio(TestCase):
         self.assertAlmostEqual(portfolio.weights["B"][pd.Timestamp('2013-01-08')], 0.1, places=5)
 
     def test_build_portfolio(self):
-        prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[1000.0, 1000.0], [1500.0, 1500.0], [2000.0, 2000.0]])
+        prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3],
+                              data=[[1000.0, 1000.0], [1500.0, 1500.0], [2000.0, 2000.0]])
         weights = pd.DataFrame(columns=["A", "B"], index=[1], data=[[0.25, 0.25]])
 
         portfolio = Portfolio(prices=prices, weights=weights)
@@ -109,3 +112,32 @@ class TestPortfolio(TestCase):
         x = test_portfolio()
         a = x.to_json()
         self.assertAlmostEqual(a["price"]["A"]["20140909"], 1255.5, places=5)
+
+    def test_init_1(self):
+        prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[10.0, 10.0], [15.0, 15.0], [20.0, np.nan]])
+        weights = pd.DataFrame(columns=["A", "B"], index=[2], data=[[0.3, 0.7]])
+
+        portfolio = Portfolio(prices=prices, weights=weights)
+        self.assertAlmostEqual(0.4 / 1.1, portfolio.weights["A"][3], places=5)
+
+    @raises(AssertionError)
+    def test_init_2(self):
+        prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[10.0, 10.0], [15.0, 15.0], [20.0, np.nan]])
+        weights = pd.DataFrame(columns=["A", "B"], index=[1.5], data=[[0.3, 0.7]])
+        Portfolio(prices=prices, weights=weights)
+
+    @raises(AssertionError)
+    def test_init_3(self):
+        prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[10.0, 10.0], [15.0, 15.0], [20.0, np.nan]])
+        weights = pd.DataFrame(columns=["C"], index=[1.5], data=[[0.3]])
+        Portfolio(prices=prices, weights=weights)
+
+    def test_mtd(self):
+        portfolio = test_portfolio()
+        p = portfolio.mtd(today=portfolio.index[-1])
+        self.assertEqual(p.index[0], pd.Timestamp("2015-04-01"))
+
+    def test_ytd(self):
+        portfolio = test_portfolio()
+        p = portfolio.ytd(today=portfolio.index[-1])
+        self.assertEqual(p.index[0], pd.Timestamp("2015-01-01"))

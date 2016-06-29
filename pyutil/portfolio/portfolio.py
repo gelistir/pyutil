@@ -2,7 +2,7 @@ import pandas as pd
 from pyutil.performance.periods import period_returns, periods
 from pyutil.nav.nav import Nav
 from pyutil.portfolio.maths import xround, buy_or_sell
-from pyutil.timeseries.timeseries import subsample
+from pyutil.timeseries.timeseries import subsample, ytd, mtd
 import numpy as np
 
 
@@ -74,36 +74,27 @@ class Portfolio(object):
         return Portfolio(prices=p, weights=w)
 
     def __init__(self, prices, weights):
-        for asset in weights.keys():
-            assert asset in prices.keys()
+        assert set(weights.keys()) <= set(prices.keys())
 
         # make sure the weights are a subset of the prices
         if prices.index.equals(weights.index):
             self.__prices = prices.ffill()
             self.__weights = weights.ffill().fillna(0.0)
         else:
-            for time in weights.index:
-                assert time in prices.index
+            assert set(weights.index) <= set(prices.index)
 
             assets = sorted(list(prices.keys()))
 
-            p = prices.ffill()[assets].values
+            # move to numpy, much faster than using pandas at this stage
+            p = prices[assets].ffill().values
+            w = weights[assets].copy().reindex(index=prices.index).values
 
-            # set the weights
-            w = np.zeros_like(p)
-
-            rows = [prices.index.get_loc(key=a) for a in weights.index]
-
-            for i, row in enumerate(rows):
-                w[row] = weights[assets].values[i]
-
-            # loop over all times
-            for i in range(1, len(prices.index)):
-                if i not in rows:
-                    w[i] = self.__forward(w1=w[i-1], p1=p[i-1], p2=p[i])
+            for i, t in enumerate(prices.index[1:], start=1):
+                if t not in set(weights.index):
+                    w[i] = self.__forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
 
             self.__prices = prices.ffill()
-            self.__weights = pd.DataFrame(index=prices.index, columns=assets, data=w)
+            self.__weights = pd.DataFrame(index=prices.index, columns=assets, data=w).fillna(0.0)
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
@@ -321,3 +312,9 @@ class Portfolio(object):
             return {key: __f(series) for key, series in frame.iteritems()}
 
         return {"weight": __g(self.weights), "price": __g(self.prices), "returns": __f(self.nav.returns)}
+
+    def ytd(self, today=None):
+        return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today))
+
+    def mtd(self, today=None):
+        return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today))
