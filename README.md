@@ -1,6 +1,4 @@
 # pyutil
-Tests will not pass on your local machine as we create and drop a database on a dedicated Lobnek server.
-To address this problem point the MongoClient in test.config to a running MongoDB instance.
 
 ![Alt text](portfolio.png)
 

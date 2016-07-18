@@ -27,6 +27,6 @@ def test_portfolio():
 
 
 def mongoclient():
-    return MongoClient("quantsrv", port=27017)
+    return MongoClient("mongo", port=27017)
 
 

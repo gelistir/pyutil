@@ -13,8 +13,8 @@ class TestReader(TestCase):
         cls.client = mongoclient()
         cls.db = Database(cls.client, "tmp")
 
-        cls.writer = writer("tmp")
-        cls.reader = reader("tmp")
+        cls.writer = writer("tmp", host="mongo")
+        cls.reader = reader("tmp", host="mongo")
 
         # write assets into test database. Writing is slow!
         assets = read_frame("price.csv", parse_dates=True)
