@@ -28,10 +28,6 @@ class TestReader(TestCase):
         p = test_portfolio()
         cls.writer.update_portfolio("test", p, group="test", comment="test")
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.client.drop_database(cls.db)
-
     def test_history(self):
         a = self.reader.history(name="PX_LAST")
         self.assertAlmostEqual(a["B"][pd.Timestamp("2014-07-18").date()], 23454.79, places=5)

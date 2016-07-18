@@ -29,10 +29,6 @@ class TestWriter(TestCase):
         p = test_portfolio()
         cls.writer.update_portfolio("test", p, group="test")
 
-    #@classmethod
-    #def tearDownClass(cls):
-    #    cls.db.client.drop_database(cls.db)
-
     def test_nav(self):
         portfolio = test_portfolio()
         self.writer.update_portfolio("test", portfolio, "test", n=10, comment="Hello World")
