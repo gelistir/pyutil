@@ -11,8 +11,7 @@
     <build-runners>
       <runner id="RUNNER_10" name="" type="simpleRunner">
         <parameters>
-          <param name="script.content"><![CDATA[make build
-make test]]></param>
+          <param name="script.content" value="./test.sh" />
           <param name="teamcity.step.mode" value="default" />
           <param name="use.custom.script" value="true" />
         </parameters>
