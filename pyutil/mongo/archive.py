@@ -8,11 +8,11 @@ def __database(name, host, port):
     return Database(MongoClient(host, port=port), name)
 
 
-def reader(name, logger=None, host="quantsrv", port=27017):
+def reader(name, host, port=27017, logger=None):
     return _ArchiveReader(__database(name, host=host, port=port), logger)
 
 
-def writer(name, logger=None, host="quantsrv", port=27017):
+def writer(name, host, port=27017, logger=None):
     return _ArchiveWriter(__database(name, host=host, port=port), logger)
 
 
