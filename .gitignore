@@ -1,6 +1,5 @@
-env
 .idea
 sandbox
 *.pyc
 */__pycache__/
-maffay*.py
+todo

@@ -59,15 +59,17 @@ class _ArchiveWriter(_ArchiveReader):
         for index, row in frame.iterrows():
             self.__db.symbol.update({"_id": index}, {"$set": row.to_dict()}, upsert=True)
 
-    def update_rtn(self, nav, name):
+    def update_rtn(self, nav, name, today=pd.Timestamp("today")):
         n = Nav(nav)
-
+        print(nav)
         for a in n.returns.index:
             assert a.weekday() <= 4
 
         if self.read_nav(name):
-            xxx = pd.Timestamp("today").date() + pd.offsets.MonthBegin(n=-1)
+            xxx = today.date() + pd.offsets.MonthBegin(n=-1)
+            print(xxx)
             yyy = n.returns.truncate(before=xxx)
+            print(yyy)
         else:
             yyy = n.returns
 

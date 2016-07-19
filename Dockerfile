@@ -1,5 +1,5 @@
 # Set the base image to Ubuntu
-FROM continuumio/miniconda3
+FROM lobnek/pyutil
 
 # File Author / Maintainer
 MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
@@ -7,6 +7,6 @@ MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
 ADD . /pyutil
 WORKDIR pyutil
 
-RUN conda install -q -y --file production.txt && pip install -r requirements.txt
+
 
 

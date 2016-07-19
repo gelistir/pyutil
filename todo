@@ -1,0 +1,3 @@
+We have to explore pushing a docker image to docker hub to avoid rebuilding docker images. The dockerfile shall not contain conda!
+
+This may require signing up for docker hub!

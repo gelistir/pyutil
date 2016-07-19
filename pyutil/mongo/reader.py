@@ -20,17 +20,6 @@ class Archive(object):
         return
 
 
-class CsvArchive(Archive):
-    def __init__(self, frame):
-        self.__prices = {key: ts.dropna() for key, ts in frame.iteritems()}
-
-    def history(self, items, name="", before=pd.Timestamp("2002-01-01")):
-        return pd.DataFrame({item: self.__prices[item] for item in items}).truncate(before=before)
-
-    def keys(self):
-        return self.__prices.keys()
-
-
 class _Portfolios(object):
     def __init__(self, col):
         self.__col = col

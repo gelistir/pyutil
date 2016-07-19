@@ -1,5 +1,9 @@
 import pandas as pd
 import os
+import matplotlib
+
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 from pyutil.portfolio.portfolio import Portfolio
 

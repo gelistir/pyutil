@@ -1,6 +1,5 @@
 import pandas as pd
 import pandas.util.testing as pdt
-from pymongo.database import Database
 from pyutil.mongo.archive import writer, reader
 from pyutil.nav.nav import Nav
 from test.config import read_frame, test_portfolio, mongoclient
@@ -12,7 +11,6 @@ class TestWriter(TestCase):
     def setUpClass(cls):
 
         cls.client = mongoclient()
-        cls.db = Database(cls.client, "tmp")
 
         cls.writer = writer("tmp", host="mongo")
         cls.reader = reader("tmp", host="mongo")
@@ -32,7 +30,7 @@ class TestWriter(TestCase):
     def test_nav(self):
         portfolio = test_portfolio()
         self.writer.update_portfolio("test", portfolio, "test", n=10, comment="Hello World")
-        self.writer.update_rtn(portfolio.nav.series, "test")
+        self.writer.update_rtn(portfolio.nav.series, "test", today=pd.Timestamp("2015-04-16"))
 
         g = self.reader.read_nav(name="test").fee(0.5).monthly.series
         x = Nav(self.reader.portfolios.nav["test"].dropna()).fee(0.5).monthly.series

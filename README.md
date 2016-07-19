@@ -33,20 +33,20 @@ Once we have instantiated a Configuration object we could still modify the confi
 member variable. In this example we define the parameters assets and start.
 
 ```python
-     c = Configuration(CsvArchive())
+     c = Configuration(archive)
      c.configuration["assets"] = ["A", "B", "D"]
 ```
 
 We replace the asset C by D. We shall talk briefly about Archives. Archives provide 
-read access to data. An archive could be as minimalistic as:
+read access to historic data. 
 
 ```python
-	class CsvArchive(Archive):
-		def history(self, items, name, before):
-			return self.__prices[items].truncate(before=before)
+	class Archive(object):
+		__metaclass__ = abc.ABCMeta
 	
-		def __init__(self):
-			self.__prices = read_frame("price.csv", parse_dates=True)
+		@abc.abstractmethod
+		def history(self, items, name, before):
+			return
 ```
 
 So far, we have only mentioned to instantiate a Configuration object and pointed it to an archive. To build the portfolio the
@@ -74,7 +74,7 @@ The actual strategy is therefore executed as
 
 ```python
 	# define an archive
-	archive = CsvArchive()
+	archive = ArchiveReader()
 	
 	# define a Configuration object
 	c = Configuration(archive=archive)

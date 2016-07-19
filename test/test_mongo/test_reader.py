@@ -1,6 +1,5 @@
 import pandas as pd
 import pandas.util.testing as pdt
-from pymongo.database import Database
 from pyutil.mongo.archive import reader, writer
 from test.config import read_frame, test_portfolio, mongoclient
 from unittest import TestCase
@@ -11,7 +10,6 @@ class TestReader(TestCase):
     def setUpClass(cls):
 
         cls.client = mongoclient()
-        cls.db = Database(cls.client, "tmp")
 
         cls.writer = writer("tmp", host="mongo")
         cls.reader = reader("tmp", host="mongo")

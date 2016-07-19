@@ -1,9 +1,23 @@
-from pyutil.mongo.reader import CsvArchive
+from pymongo import MongoClient
+
+from pyutil.mongo.archive import writer
 from test.config import read_frame
 from unittest import TestCase
 
 
 class TestRunner(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.client = MongoClient(host="mongo")
+        cls.writer = writer("tmp", host="mongo")
+
+        # write assets into test database. Writing is slow!
+        assets = read_frame("price.csv", parse_dates=True)
+
+        for asset in assets:
+            cls.writer.update_asset(asset, assets[asset])
+
+
     def test_run(self):
         from pyutil.strategy.Runner import Runner
 
@@ -12,7 +26,7 @@ class TestRunner(TestCase):
 
         frame = read_frame("price.csv", parse_dates=True)
 
-        r = Runner(archive=CsvArchive(frame), module=module)
+        r = Runner(archive=self.writer, module=module)
 
         self.assertEqual(r.group, "testgroup")
         self.assertEqual(r.name, "test")
