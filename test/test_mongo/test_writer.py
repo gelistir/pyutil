@@ -2,18 +2,15 @@ import pandas as pd
 import pandas.util.testing as pdt
 from pyutil.mongo.archive import writer, reader
 from pyutil.nav.nav import Nav
-from test.config import read_frame, test_portfolio, mongoclient
+from test.config import read_frame, test_portfolio
 from unittest import TestCase
 
 
 class TestWriter(TestCase):
     @classmethod
     def setUpClass(cls):
-
-        cls.client = mongoclient()
-
-        cls.writer = writer("tmp", host="mongo")
-        cls.reader = reader("tmp", host="mongo")
+        cls.writer = writer("tmp_J32JFASDK", host="mongo", port=27050)
+        cls.reader = reader("tmp_J32JFASDK", host="mongo", port=27050)
 
         # write assets into test database. Writing is slow!
         assets = read_frame("price.csv", parse_dates=True)

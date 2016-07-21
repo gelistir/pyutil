@@ -1,5 +1,3 @@
-from pymongo import MongoClient
-
 from pyutil.mongo.archive import writer
 from test.config import read_frame
 from unittest import TestCase
@@ -8,15 +6,13 @@ from unittest import TestCase
 class TestRunner(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.client = MongoClient(host="mongo")
-        cls.writer = writer("tmp", host="mongo")
+        cls.writer = writer("tmp_ZHJKJFA8", host="mongo", port=27050)
 
         # write assets into test database. Writing is slow!
         assets = read_frame("price.csv", parse_dates=True)
 
         for asset in assets:
             cls.writer.update_asset(asset, assets[asset])
-
 
     def test_run(self):
         from pyutil.strategy.Runner import Runner

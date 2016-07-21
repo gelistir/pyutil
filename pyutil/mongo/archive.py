@@ -9,11 +9,11 @@ def __database(name, host, port):
 
 
 def reader(name, host, port=27017, logger=None):
-    return _ArchiveReader(__database(name, host=host, port=port), logger)
+    return _ArchiveReader(__database(name, host=host, port=int(port)), logger)
 
 
 def writer(name, host, port=27017, logger=None):
-    return _ArchiveWriter(__database(name, host=host, port=port), logger)
+    return _ArchiveWriter(__database(name, host=host, port=int(port)), logger)
 
 
 
