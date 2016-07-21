@@ -42,12 +42,6 @@ class TestReader(TestCase):
         self.assertAlmostEqual(x["B"][pd.Timestamp("2014-01-14")], 22791.28, places=5)
 
     def test_symbols(self):
-        # enforce the same order with this trick
-        a = read_frame("symbols.csv")
-        self.assertEqual(len(self.reader.symbols.keys()), len(a.keys()))
-        pdt.assert_frame_equal(self.reader.symbols, a[self.reader.symbols.keys()], check_dtype=False)
-
-    def test_strategies(self):
         r = self.reader.portfolios.strategies
         self.assertEqual(r["group"]["test"], "test")
 
