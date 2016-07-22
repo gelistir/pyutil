@@ -162,10 +162,7 @@ class Portfolio(object):
         return a
 
     def sector_weights(self, symbolmap):
-        weights = self.weights.ffill()
-        assets = weights.keys()
-        groups = symbolmap[assets]
-        frame = pd.DataFrame({group: weights[groups[groups == group].index].sum(axis=1) for group in groups.unique()})
+        frame = self.weights.ffill().groupby(by=symbolmap, axis=1).sum()
         frame["total"] = frame.sum(axis=1)
         return frame
 

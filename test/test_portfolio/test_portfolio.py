@@ -52,6 +52,13 @@ class TestPortfolio(TestCase):
 
         pdt.assert_frame_equal(x.head(10), read_frame("sector_weights.csv", parse_dates=True))
 
+    #def test_sector_weights_2(self):
+    #    x = portfolio.sector_weights(pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
+    #                                            "E": "C", "F": "C", "G": "C"}))
+    #
+    #    pdt.assert_frame_equal(x.head(10), read_frame("sector_weights.csv", parse_dates=True))
+
+
     def test_position(self):
         x = 1e6 * portfolio.position
         self.assertAlmostEqual(x["A"][pd.Timestamp("2015-04-22")], 60.191699988670969, places=5)
