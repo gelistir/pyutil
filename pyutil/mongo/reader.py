@@ -38,6 +38,16 @@ class _Portfolios(object):
         else:
             return None
 
+    def weights(self, item):
+        p = self.__col.find_one({"_id": item}, {"_id": 1, "weight": 1})
+        assert p
+        return _f(pd.DataFrame(p["weight"]))
+
+    def sector_weights(self, item, symbolmap):
+        frame = self.weights(item).ffill().groupby(by=symbolmap, axis=1).sum()
+        frame["total"] = frame.sum(axis=1)
+        return frame
+
     @property
     def strategies(self):
         portfolios = self.__col.find({}, {"_id": 1, "group": 1, "time": 1, "comment": 1})

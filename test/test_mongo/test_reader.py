@@ -1,5 +1,4 @@
 import pandas as pd
-import pandas.util.testing as pdt
 from pyutil.mongo.archive import reader, writer
 from test.config import read_frame, test_portfolio
 from unittest import TestCase
@@ -59,3 +58,8 @@ class TestReader(TestCase):
 
     def test_unknown_series(self):
         self.assertRaises(AssertionError, self.reader.history, name="XYZ", items=["A","B"])
+
+    def test_sector_weights(self):
+        symbolmap = self.writer.symbols["group"]
+        sector_w = self.writer.portfolios.sector_weights("test", symbolmap)
+        self.assertAlmostEqual(sector_w["Equity"]["2013-01-04"], 0.24351702703439526, places=5)
