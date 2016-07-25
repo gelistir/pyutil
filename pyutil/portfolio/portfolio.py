@@ -12,20 +12,21 @@ def merge(portfolios, axis=0):
     return Portfolio(prices, weights)
 
 
+def forward(w1, p1, p2):
+    # w1 weight at time t1
+    # p1 price at time t1
+    # p2 price at time t2
+    # return the weights at time t2
+
+    # in some scenarios the weight are set even before a first price is known.
+    w1[np.isnan(p1)] = np.nan
+    cash = 1 - w1.sum()
+    assert isinstance(cash, float), "Cash is not a float. Happens if w1 is a frame!"
+    value = w1 * (p2 / p1)
+    return value / (value.sum() + cash)
+
+
 class Portfolio(object):
-    @staticmethod
-    def __forward(w1, p1, p2):
-        # w1 weight at time t1
-        # p1 price at time t1
-        # p2 price at time t2
-        # return the weights at time t2
-
-        # in some scenarios the weight are set even before a first price is known.
-        w1[np.isnan(p1)] = np.nan
-        cash = 1 - w1.sum()
-        value = w1 * (p2 / p1)
-        return value / (value.sum() + cash)
-
     def iron_threshold(self, threshold=0.02):
         """
         Iron a portfolio, do not touch the last index
@@ -42,7 +43,7 @@ class Portfolio(object):
 
         for i in range(0, p.shape[0] - 2):
             if np.abs(w[i + 1] - w[i]).max() <= threshold:
-                w[i + 1] = self.__forward(w1=w[i], p1=p[i], p2=p[i + 1])
+                w[i + 1] = forward(w1=w[i], p1=p[i], p2=p[i + 1])
 
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
@@ -66,7 +67,7 @@ class Portfolio(object):
 
         for i in range(1, p.shape[0] - 1):
             if i not in moments:
-                w[i] = self.__forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
+                w[i] = forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
 
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
@@ -91,7 +92,7 @@ class Portfolio(object):
 
             for i, t in enumerate(prices.index[1:], start=1):
                 if t not in set(weights.index):
-                    w[i] = self.__forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
+                    w[i] = forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
 
             self.__prices = prices.ffill()
             self.__weights = pd.DataFrame(index=prices.index, columns=assets, data=w).fillna(0.0)

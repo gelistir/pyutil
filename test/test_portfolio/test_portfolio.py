@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import pandas.util.testing as pdt
 from nose.tools import raises
-from pyutil.portfolio.portfolio import merge, Portfolio
+from pyutil.portfolio.portfolio import merge, forward, Portfolio
 from test.config import test_portfolio, read_frame
 from unittest import TestCase
 
@@ -141,3 +141,19 @@ class TestPortfolio(TestCase):
         portfolio = test_portfolio()
         p = portfolio.ytd(today=portfolio.index[-1])
         self.assertEqual(p.index[0], pd.Timestamp("2015-01-01"))
+
+    def test_forward_1(self):
+        w2 = forward(w1=np.array([0.5, 0.5]), p1=np.array([10.0, 10.0]), p2=([20.0, 10.0]))
+        self.assertAlmostEqual(w2[0], 2.0/3.0, places=10)
+        self.assertAlmostEqual(w2[1], 1.0/3.0, places=10)
+
+    def test_forward_2(self):
+        w1 = pd.Series(data=[0.5, 0.5])
+        p1 = pd.Series(data=[10.0, 10.0])
+        p2 = pd.Series(data=[20.0, 10.0])
+
+        w2 = forward(w1, p1=p1, p2=p2)
+        self.assertAlmostEqual(w2[0], 2.0/3.0, places=10)
+        self.assertAlmostEqual(w2[1], 1.0/3.0, places=10)
+
+
