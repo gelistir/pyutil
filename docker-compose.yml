@@ -2,5 +2,6 @@ pyutil:
    build: .
    extra_hosts:
       - quantsrv:192.168.100.15
-
-
+      - .:/pyutil
+   working_dir:
+      pyutil
