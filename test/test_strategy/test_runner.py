@@ -6,7 +6,7 @@ from unittest import TestCase
 class TestRunner(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.writer = writer("tmp_ZHJKJFA8", host="mongo", port=27050)
+        cls.writer = writer("tmp_ZHJKJFA8", host="mongo")
 
         # write assets into test database. Writing is slow!
         assets = read_frame("price.csv", parse_dates=True)

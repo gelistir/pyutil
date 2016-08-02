@@ -8,5 +8,5 @@ services:
   mongo:
     image: mongo
     ports:
-       - "27050:27050"
-    command: mongod --port 27050
+       - "27017:27017"
+    command: mongod

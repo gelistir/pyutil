@@ -9,8 +9,8 @@ from unittest import TestCase
 class TestWriter(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.writer = writer("tmp_J32JFASDK", host="mongo", port=27050)
-        cls.reader = reader("tmp_J32JFASDK", host="mongo", port=27050)
+        cls.writer = writer("tmp_J32JFASDK", host="mongo")
+        cls.reader = reader("tmp_J32JFASDK", host="mongo")
 
         # write assets into test database. Writing is slow!
         assets = read_frame("price.csv", parse_dates=True)

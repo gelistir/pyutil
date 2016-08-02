@@ -7,8 +7,8 @@ from unittest import TestCase
 class TestReader(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.writer = writer("tmp_JKJFDAFJJKFD", host="mongo", port=27050)
-        cls.reader = reader("tmp_JKJFDAFJJKFD", host="mongo", port=27050)
+        cls.writer = writer("tmp_JKJFDAFJJKFD", host="mongo")
+        cls.reader = reader("tmp_JKJFDAFJJKFD", host="mongo")
 
         # write assets into test database. Writing is slow!
         assets = read_frame("price.csv", parse_dates=True)

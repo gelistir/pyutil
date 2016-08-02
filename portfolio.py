@@ -23,5 +23,4 @@ if __name__ == '__main__':
 
     print(100 * portfolio.nav.monthlytable)
 
-    plt.savefig("portfolio.png")
-    plt.show()
+    plt.savefig(os.path.join("results", "portfolio.png"))
