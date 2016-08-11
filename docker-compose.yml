@@ -7,5 +7,4 @@ services:
      volumes:
         - ${cwd}/results:/results
         - .:/pyutil
-     working_dir:
-        pyutil
+
