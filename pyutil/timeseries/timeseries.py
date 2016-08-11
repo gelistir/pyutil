@@ -15,7 +15,7 @@ def subsample(ts, day=15, incl=False):
     """
     from functools import partial
 
-    def f(ts, day, incl=True):
+    def f(ts, day, incl):
         if incl:
             a = ts.index[ts.index.day <= day]
         else:

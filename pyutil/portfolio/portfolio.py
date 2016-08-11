@@ -167,23 +167,15 @@ class Portfolio(object):
         frame["total"] = frame.sum(axis=1)
         return frame
 
-    def snapshot(self, day=15):
-        today = self.index[-1]
-        offsets = periods(today)
-
-        a = self.weighted_returns.apply(period_returns, offset=offsets).transpose()[["Month-to-Date", "Year-to-Date"]]
-        b = subsample(self.weights.ffill(), day=day).tail(5).rename(index=lambda x: x.strftime("%b %d")).transpose()
-        return pd.concat((a, b), axis=1)
-
-    def snapshot2(self, n=5):
+    def snapshot(self, n=5):
         today = self.index[-1]
         offsets = periods(today)
 
         a = self.weighted_returns.apply(period_returns, offset=offsets).transpose()[
             ["Month-to-Date", "Year-to-Date"]]
-        tt = self.trading_days[-n:]
+        t = self.trading_days[-n:]
 
-        b = self.weights.ffill().ix[tt].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
+        b = self.weights.ffill().ix[t].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
         return pd.concat((a, b), axis=1)
 
     def top_flop(self, day_final=pd.Timestamp("today")):

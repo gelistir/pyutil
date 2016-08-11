@@ -42,10 +42,6 @@ class TestPortfolio(TestCase):
         self.assertEqual(len(x.index), 5)
         self.assertEqual(x.index[0], pd.Timestamp("2015-04-16"))
 
-    def test_snapshot(self):
-        x = portfolio.snapshot()
-        self.assertAlmostEqual(x["Apr 22"]["A"], 0.071761843963205701, places=10)
-
     def test_sector_weights(self):
         x = portfolio.sector_weights(pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
                                                 "E": "C", "F": "C", "G": "C"}))
