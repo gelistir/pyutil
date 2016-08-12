@@ -1,10 +1,5 @@
 import logging
-
-# let's soon ditch support for Python 2.
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from io import StringIO
 
 
 from pyutil.message import Mail

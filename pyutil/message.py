@@ -1,3 +1,4 @@
+import logging
 import requests
 
 
@@ -5,11 +6,10 @@ class Mail(object):
     """
     Class for sending emails with and without attachments via mailgun
     """
-    def __init__(self, mailgunapi, mailgunkey, toAdr=None, fromAdr=None, subject=None):
+    def __init__(self, mailgunapi, mailgunkey, toAdr=None, fromAdr=None, subject=None, logger=None):
         """
         Create a Mail object
         """
-
         # make sure that mailgun is of the correct type as specified in the config
         self.__mailgun_api = mailgunapi
         self.__mailgun_key = mailgunkey
@@ -17,6 +17,8 @@ class Mail(object):
         self.__toAdr = toAdr or "lwm@lobnek.com"
         self.__fromAdr = fromAdr or "monitor@lobnek.com"
         self.__subject = subject or ""
+
+        self.__logger = logger or logging.getLogger("LWM")
 
     def clear(self):
         # remove all attachments
@@ -78,8 +80,13 @@ class Mail(object):
         """
         try:
             assert text   # Text can't be null...
-            return requests.post(self.__mailgun_api, auth=("api", self.__mailgun_key), files=self.__files,
-                                 data={"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text})
+            data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text}
+            self.__logger.debug("data: {0}".format(data))
+            for file in self.__files:
+                self.__logger.debug("type: {0}, name: {1}".format(file[0], file[1][0]))
+
+            return requests.post(self.__mailgun_api, auth=("api", self.__mailgun_key), files=self.__files, data=data)
+
         finally:
             for f in self.__files:
                 # List of tuples ("attachment or inline", (f[0], f[1]))
