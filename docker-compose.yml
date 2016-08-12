@@ -2,9 +2,6 @@ version: '2'
 services:
   pyutil:
      build: .
-     extra_hosts:
-        - quantsrv:192.168.100.15
      volumes:
-        - ${cwd}/results:/results
         - .:/pyutil
 

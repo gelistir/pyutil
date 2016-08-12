@@ -1,7 +1,21 @@
 .git*
 .gitignore*
 sandbox*
-Makefile*
+
+portfolio.png
+portfolio.py
+setup.py
+
+docker-compose.test.yml
+docker-compose.yml
+
+tag.sh
+test.sh
+
+todo
+
+LICENSE
+
 
 
 
