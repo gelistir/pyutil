@@ -52,19 +52,21 @@ class _ArchiveWriter(_ArchiveReader):
 
     def update_rtn(self, nav, name, today=pd.Timestamp("today")):
         n = Nav(nav)
-        print(nav)
         for a in n.returns.index:
             assert a.weekday() <= 4
 
         if self.read_nav(name):
-            xxx = today.date() + pd.offsets.MonthBegin(n=-1)
-            yyy = n.returns.truncate(before=xxx)
+            date = today.date() + pd.offsets.MonthBegin(n=-1)
+            ts = n.returns.truncate(before=date)
         else:
-            yyy = n.returns
+            ts = n.returns
 
-        m = {"_id": name}
-        self.__db.fact.update(m, {"$set": m}, upsert=True)
-        self.__db.fact.update(m, flatten("rtn", yyy), upsert=True)
+        ts = ts.dropna()
+
+        if not ts.empty:
+            m = {"_id": name}
+            self.__db.fact.update(m, {"$set": m}, upsert=True)
+            self.__db.fact.update(m, flatten("rtn", ts), upsert=True)
 
     def update_frame(self, name, frame):
         frame = frame.to_json(orient="split")

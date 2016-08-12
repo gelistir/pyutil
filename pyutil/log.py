@@ -8,7 +8,7 @@ __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 __level = logging.DEBUG
 
 
-def build_logger(to_adr, file="/log/lobnek.log", mode="w+"):
+def build_logger(to_adr, file="/log/lobnek.log", mode="a"):
     logger = get_logger("LWM")
 
     # add a mailhandler
