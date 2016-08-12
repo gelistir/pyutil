@@ -2,10 +2,31 @@ import logging
 from io import StringIO
 
 
-from pyutil.message import Mail
+from pyutil.message import Mail, mail
 
 __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 __level = logging.DEBUG
+
+
+def build_logger(to_adr, file="/log/lobnek.log", mode="w+"):
+    logger = get_logger("LWM")
+
+    # add a mailhandler
+    __mail = mail(logger=logger)
+    __mail.toAdr = to_adr
+    __mail.fromAdr = "logger@lobnek.com"
+    __mail.subject = "Logger"
+
+    logger.addHandler(MailHandler(__mail, level=logging.WARNING))
+    # add a streamhandler
+    logger.addHandler(StreamHandler())
+    # add a filehandler
+    logger.addHandler(FileHandler(file=file, mode=mode))
+
+    # avoid request logger spam
+    logging.getLogger("requests").setLevel(logging.WARNING)
+
+    return logger
 
 
 def MailHandler(mail, level=None, format=None):

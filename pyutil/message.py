@@ -1,11 +1,19 @@
 import logging
+
 import requests
+import os
+
+
+def mail(logger=None):
+    logger = logger or logging.getLogger("LWM")
+    return Mail(mailgunapi=os.environ["MAILGUNAPI"], mailgunkey=os.environ["MAILGUNKEY"], logger=logger)
 
 
 class Mail(object):
     """
     Class for sending emails with and without attachments via mailgun
     """
+
     def __init__(self, mailgunapi, mailgunkey, toAdr=None, fromAdr=None, subject=None, logger=None):
         """
         Create a Mail object
@@ -79,7 +87,7 @@ class Mail(object):
         :param text:
         """
         try:
-            assert text   # Text can't be null...
+            assert text  # Text can't be null...
             data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text}
             self.__logger.debug("data: {0}".format(data))
             for file in self.__files:
@@ -118,5 +126,3 @@ class Mail(object):
     @toAdr.setter
     def toAdr(self, value):
         self.__toAdr = value
-
-
