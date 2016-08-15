@@ -1,6 +1,7 @@
 import pandas as pd
 import pandas.util.testing as pdt
 from pyutil.mongo.archive import writer, reader
+from pyutil.mongo.writer import _flatten, _series2dict
 from pyutil.nav.nav import Nav
 from test.config import read_frame, test_portfolio
 from unittest import TestCase
@@ -52,3 +53,16 @@ class TestWriter(TestCase):
 
         pdt.assert_frame_equal(portfolio.prices, g.prices)
         pdt.assert_frame_equal(portfolio.weights, g.weights)
+
+    def test_series2dict(self):
+        x = pd.Series(index=[pd.Timestamp("2014-01-01"), pd.Timestamp("2014-02-26")], data=[1.0, 3.0])
+        self.assertDictEqual(_series2dict(x), {'20140101': 1.0, '20140226': 3.0})
+
+    def test_flatten_series(self):
+        x = pd.Series(index=[pd.Timestamp("2014-01-01"), pd.Timestamp("2014-02-26")], data=[1.0, 3.0])
+        self.assertDictEqual(_flatten("test", x), {'$set': {'test.20140226': 3.0, 'test.20140101': 1.0}})
+
+    def test_flatten_frame(self):
+        x = pd.Series(index=[pd.Timestamp("2014-01-01"), pd.Timestamp("2014-02-26")], data=[1.0, 3.0])
+        frame = pd.DataFrame({"peter": x})
+        self.assertDictEqual(_flatten("maffay", frame), {'$set': {'maffay.peter.20140226': 3.0, 'maffay.peter.20140101': 1.0}})
