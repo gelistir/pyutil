@@ -2,7 +2,6 @@ import pandas as pd
 import logging
 
 from pyutil.mongo.reader import _ArchiveReader
-from pyutil.nav.nav import Nav
 
 
 def _flatten(name, ts):
@@ -68,22 +67,12 @@ class _ArchiveWriter(_ArchiveReader):
             self.logger.debug("Properties: {0}".format(row.to_dict()))
             self.__db.symbol.update({"_id": index}, {"$set": row.to_dict()}, upsert=True)
 
-    def update_rtn(self, nav, name, today=pd.Timestamp("today")):
-        n = Nav(nav)
-        for a in n.returns.index:
+    def update_rtn(self, ts, name):
+        for a in ts.index:
             assert a.weekday() <= 4
-
-        if self.read_nav(name):
-            date = today.date() + pd.offsets.MonthBegin(n=-1)
-            ts = n.returns.truncate(before=date)
-        else:
-            ts = n.returns
-
-        ts = ts.dropna()
 
         if not ts.empty:
             m = {"_id": name}
-            self.__db.fact.update(m, {"$set": m}, upsert=True)
             self.__db.fact.update(m, _flatten("rtn", ts), upsert=True)
 
     def update_frame(self, name, frame):

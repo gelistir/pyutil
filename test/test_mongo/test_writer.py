@@ -28,7 +28,7 @@ class TestWriter(TestCase):
     def test_nav(self):
         portfolio = test_portfolio()
         self.writer.update_portfolio("test", portfolio, "test", n=10, comment="Hello World")
-        self.writer.update_rtn(portfolio.nav.series, "test", today=pd.Timestamp("2015-04-16"))
+        self.writer.update_rtn(portfolio.nav.returns, "test")
 
         g = self.reader.read_nav(name="test").fee(0.5).monthly.series
         x = Nav(self.reader.portfolios.nav["test"].dropna()).fee(0.5).monthly.series
