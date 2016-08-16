@@ -38,6 +38,10 @@ class _Portfolios(object):
         else:
             return None
 
+    # fast bypass to get the index underlying the portfolio
+    def index(self, item):
+        return self.weights(item).index
+
     def weights(self, item):
         p = self.__col.find_one({"_id": item}, {"_id": 1, "weight": 1})
         assert p

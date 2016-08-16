@@ -47,9 +47,8 @@ class _ArchiveWriter(_ArchiveReader):
         self.logger.debug("Key {0}, Group {1}".format(key, group))
 
         q = {"_id": key}
-
         if key in self.portfolios.keys():
-            offset = self.portfolios[key].index[-1] - pd.offsets.BDay(n=n)
+            offset = self.portfolios.index(key)[-1] - pd.offsets.BDay(n=n)
             self.logger.debug("Offset {0}".format(offset))
             portfolio = portfolio.truncate(before=offset)
 
