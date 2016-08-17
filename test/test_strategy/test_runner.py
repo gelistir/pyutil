@@ -1,3 +1,5 @@
+import pandas as pd
+
 from pyutil.mongo.archive import writer
 from test.config import read_frame
 from unittest import TestCase
@@ -20,9 +22,7 @@ class TestRunner(TestCase):
         # specify the module via its name
         module = "test.test_strategy.strat1"
 
-        frame = read_frame("price.csv", parse_dates=True)
-
-        r = Runner(archive=self.writer, module=module)
+        r = Runner(archive=self.writer, t0=pd.Timestamp("2002-01-01"), module=module)
 
         self.assertEqual(r.group, "testgroup")
         self.assertEqual(r.name, "test")

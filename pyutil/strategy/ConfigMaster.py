@@ -9,10 +9,11 @@ class ConfigMaster(object):
     def __repr__(self, *args, **kwargs):
         return 'Name: {0}, Group: {1}'.format(self.name, self.group)
 
-    def __init__(self, archive, logger=None):
+    def __init__(self, archive, t0=pd.Timestamp("2002-01-01"), logger=None):
         self.configuration = dict()
-        self.logger = logger or get_logger("LOBNEK")
+        self.logger = logger or get_logger("LWM")
         self.archive = archive
+        self.t0 = t0
 
     @abc.abstractproperty
     def group(self):
@@ -26,5 +27,5 @@ class ConfigMaster(object):
     def portfolio(self):
         return
 
-    def prices(self, assets, before=pd.Timestamp("2002-01-01")):
-        return self.archive.history(items=assets).truncate(before=before)
+    def prices(self, assets):
+        return self.archive.history(items=assets).truncate(before=self.t0)
