@@ -4,8 +4,10 @@ import requests
 import os
 
 
-def mail():
-    return Mail(mailgunapi=os.environ["MAILGUNAPI"], mailgunkey=os.environ["MAILGUNKEY"])
+def mail(mailgunapi=None, mailgunkey=None):
+    mailgunapi = mailgunapi or os.environ["MAILGUNAPI"]
+    mailgunkey = mailgunkey or os.environ["MAILGUNKEY"]
+    return Mail(mailgunapi=mailgunapi, mailgunkey=mailgunkey)
 
 
 class Mail(object):

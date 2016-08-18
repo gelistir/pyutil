@@ -1,7 +1,7 @@
 import logging
 from io import StringIO
 
-from pyutil.message import Mail, mail
+from pyutil.message import mail
 
 __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 __level = logging.DEBUG
@@ -22,17 +22,10 @@ def MailHandler(toAdr, fromAdr="logger@lobnek.com", subject="LOGGER", level=logg
             self.__mail.send(text=self.format(record))
 
         def __init__(self, mail, format, level):
-            try:
-                super().__init__()
-            except:
-                super(mailhandler, self).__init__()
-
-            assert isinstance(mail, Mail)
+            super().__init__(level=level)
+            print(type(mail))
             self.__mail = mail
-            self.level = level
             self.formatter = logging.Formatter(format)
-
-            # add a mailhandler
 
     __mail = mail()
     __mail.toAdr = toAdr
@@ -79,3 +72,6 @@ def get_logger(name="LWM", level=None, format=None):
     logging.basicConfig(level=level or __level, format=format or __format)
     return logging.getLogger(name)
 
+if __name__ == '__main__':
+    logger=get_logger("LWM")
+    logger.addHandler(MailHandler(toAdr=["thomas.schmelzer@lobnek.com"]))
