@@ -4,9 +4,9 @@ import requests
 import os
 
 
-def mail(logger=None):
+def mail():
     logger = logger or logging.getLogger("LWM")
-    return Mail(mailgunapi=os.environ["MAILGUNAPI"], mailgunkey=os.environ["MAILGUNKEY"], logger=logger)
+    return Mail(mailgunapi=os.environ["MAILGUNAPI"], mailgunkey=os.environ["MAILGUNKEY"])
 
 
 class Mail(object):
@@ -14,7 +14,7 @@ class Mail(object):
     Class for sending emails with and without attachments via mailgun
     """
 
-    def __init__(self, mailgunapi, mailgunkey, toAdr=None, fromAdr=None, subject=None, logger=None):
+    def __init__(self, mailgunapi, mailgunkey, toAdr=None, fromAdr=None, subject=None):
         """
         Create a Mail object
         """
@@ -26,7 +26,7 @@ class Mail(object):
         self.__fromAdr = fromAdr or "monitor@lobnek.com"
         self.__subject = subject or ""
 
-        self.__logger = logger or logging.getLogger("LWM")
+        #self.__logger = logger or logging.getLogger("LWM")
 
     def clear(self):
         # remove all attachments
@@ -80,18 +80,19 @@ class Mail(object):
         self.__files.extend([("inline", (name, stream))])
         return self
 
-    def send(self, text):
+    def send(self, text, logger=None):
         """
         send an email
 
         :param text:
         """
+        logger = logger or logging.getLogger("LWM")
         try:
             assert text  # Text can't be null...
             data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text}
-            self.__logger.debug("data: {0}".format(data))
+            logger.debug("data: {0}".format(data))
             for file in self.__files:
-                self.__logger.debug("type: {0}, name: {1}".format(file[0], file[1][0]))
+                logger.debug("type: {0}, name: {1}".format(file[0], file[1][0]))
 
             return requests.post(self.__mailgun_api, auth=("api", self.__mailgun_key), files=self.__files, data=data)
 
