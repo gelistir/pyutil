@@ -7,21 +7,6 @@ __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 __level = logging.DEBUG
 
 
-# def build_logger(to_adr, file="/log/lobnek.log", mode="a"):
-#     logger = get_logger("LWM")
-#
-#     logger.addHandler(MailHandler(toAdr=to_adr))
-#     # add a streamhandler
-#     logger.addHandler(StreamHandler())
-#     # add a filehandler
-#     logger.addHandler(FileHandler(file=file, mode=mode))
-#
-#     # avoid request logger spam
-#     logging.getLogger("requests").setLevel(logging.WARNING)
-#
-#     return logger
-
-
 def MailHandler(toAdr, fromAdr="logger@lobnek.com", subject="LOGGER", level=logging.WARNING, format=None):
     """
     MailHandler, sending log messages directly via email
@@ -67,7 +52,7 @@ def StreamHandler(level=None, format=None):
     return handler
 
 
-def FileHandler(file, level=None, format=None, mode="w+"):
+def FileHandler(file="/log/lobnek.log", level=logging.INFO, format=None, mode="a"):
     """
     Filehandler, logs to a file
 
@@ -83,7 +68,7 @@ def FileHandler(file, level=None, format=None, mode="w+"):
     return handler
 
 
-def get_logger(name, level=None, format=None):
+def get_logger(name="LWM", level=None, format=None):
     """
     Provides a basic logger, append handlers to this logger
 
@@ -93,7 +78,4 @@ def get_logger(name, level=None, format=None):
     """
     logging.basicConfig(level=level or __level, format=format or __format)
     return logging.getLogger(name)
-
-
-
 

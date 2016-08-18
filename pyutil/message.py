@@ -5,7 +5,6 @@ import os
 
 
 def mail():
-    logger = logger or logging.getLogger("LWM")
     return Mail(mailgunapi=os.environ["MAILGUNAPI"], mailgunkey=os.environ["MAILGUNKEY"])
 
 
