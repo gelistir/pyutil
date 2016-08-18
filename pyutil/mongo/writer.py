@@ -24,9 +24,9 @@ def _series2dict(ts):
 
 class _ArchiveWriter(_ArchiveReader):
     def __init__(self, db, logger=None):
-        super(_ArchiveWriter, self).__init__(db)
+        super().__init__(db, logger)
         self.logger = logger or logging.getLogger(__name__)
-        self.logger.info("Archive at {0}".format(db))
+        self.logger.info("Archive (write-access) at {0}".format(db))
         self.__db = db
 
     def update_asset(self, asset, ts, name="PX_LAST"):
@@ -43,7 +43,7 @@ class _ArchiveWriter(_ArchiveReader):
                 self.__db.assets.update(m, {name: _series2dict(ts)}, upsert=True)
 
     def update_portfolio(self, key, portfolio, group, n=10, comment=""):
-        self.logger.debug("Key {0}, Group {1}".format(key, group))
+        self.logger.info("Key {0}, Group {1}".format(key, group))
 
         q = {"_id": key}
         if key in self.portfolios.keys():
@@ -63,7 +63,7 @@ class _ArchiveWriter(_ArchiveReader):
     def update_symbols(self, frame):
         self.logger.debug("Update reference data with:\n{0}".format(frame.head(3)))
         for index, row in frame.iterrows():
-            self.logger.debug("Symbol: {0}".format(index))
+            self.logger.info("Symbol: {0}".format(index))
             self.logger.debug("Properties: {0}".format(row.to_dict()))
             self.__db.symbol.update({"_id": index}, {"$set": row.to_dict()}, upsert=True)
 
@@ -76,7 +76,7 @@ class _ArchiveWriter(_ArchiveReader):
             self.__db.fact.update(m, _flatten("rtn", ts), upsert=True)
 
     def update_frame(self, name, frame):
-        self.logger.debug("Update frame: {0}".format(name))
+        self.logger.info("Update frame: {0}".format(name))
         self.logger.debug("{0}".format(frame.head(3)))
         frame = frame.to_json(orient="split")
         self.__db.free.update({"_id": name}, {"_id": name, "data": frame}, upsert=True)

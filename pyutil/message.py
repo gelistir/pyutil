@@ -91,9 +91,9 @@ class Mail(object):
         try:
             assert text  # Text can't be null...
             data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text}
-            logger.debug("data: {0}".format(data))
+            logger.info("Mail: {0}".format(data))
             for file in self.__files:
-                logger.debug("type: {0}, name: {1}".format(file[0], file[1][0]))
+                logger.info("type: {0}, name: {1}".format(file[0], file[1][0]))
 
             return requests.post(self.__mailgun_api, auth=("api", self.__mailgun_key), files=self.__files, data=data)
 

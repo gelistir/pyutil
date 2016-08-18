@@ -23,7 +23,6 @@ def MailHandler(toAdr, fromAdr="logger@lobnek.com", subject="LOGGER", level=logg
 
         def __init__(self, mail, format, level):
             super().__init__(level=level)
-            print(type(mail))
             self.__mail = mail
             self.formatter = logging.Formatter(format)
 
@@ -71,7 +70,3 @@ def get_logger(name="LWM", level=None, format=None):
     """
     logging.basicConfig(level=level or __level, format=format or __format)
     return logging.getLogger(name)
-
-if __name__ == '__main__':
-    logger=get_logger("LWM")
-    logger.addHandler(MailHandler(toAdr=["thomas.schmelzer@lobnek.com"]))

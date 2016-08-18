@@ -67,7 +67,7 @@ class _Portfolios(object):
 class _ArchiveReader(Archive):
     def __init__(self, db, logger=None):
         self.logger = logger or logging.getLogger(__name__)
-        self.logger.info("Archive at {0}".format(db))
+        self.logger.info("Archive (read-access) at {0}".format(db))
         self.__db = db
         self.__portfolio = _Portfolios(db.strategy)
 
