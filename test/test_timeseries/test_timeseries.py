@@ -28,9 +28,9 @@ class TestTimeseries(TestCase):
 
     def test_ytd(self):
         a = ytd(nav, today=pd.Timestamp("2014-05-07"))
-        pdt.assert_series_equal(a, nav.truncate(before=pd.Timestamp("2014-01-01")))
+        pdt.assert_series_equal(a, nav.truncate(before=pd.Timestamp("2014-01-01"), after=pd.Timestamp("2014-05-07")))
 
     def test_mtd(self):
         a = mtd(nav, today=pd.Timestamp("2015-02-10"))
         print(a)
-        pdt.assert_series_equal(a, nav.truncate(before=pd.Timestamp("2015-02-01")))
+        pdt.assert_series_equal(a, nav.truncate(before=pd.Timestamp("2015-02-01"), after=pd.Timestamp("2015-02-10")))
