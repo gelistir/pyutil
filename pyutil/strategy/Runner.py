@@ -1,22 +1,15 @@
 import importlib
-import os
-from pyutil.log import get_logger
+import logging
+import inspect
 
 
 class Runner(object):
     def __init__(self, module, archive, t0, logger=None):
-        self.__logger = logger or get_logger("LWM")
+        self.__logger = logger or logging.getLogger("LWM")
 
         # see: http://stackoverflow.com/questions/37209181/converting-the-py-script-into-a-string/37209507#37209507
         module = importlib.import_module(module)
-        new_module_filename = os.path.realpath(module.__file__)
-
-        if new_module_filename.endswith(".pyc"):
-            new_module_filename = new_module_filename[:-1]
-
-        with open(new_module_filename) as ff:
-            self.__source = ff.read()
-
+        self.__source = inspect.getsource(object=module)
         self.__config = module.Configuration(archive=archive, t0=t0, logger=self.__logger)
 
         # compute the portfolio

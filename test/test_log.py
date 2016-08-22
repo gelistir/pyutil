@@ -7,3 +7,5 @@ class TestLog(TestCase):
         logger = get_logger("Peter")
         logger.addHandler(StreamHandler())
         logger.warning("In da house")
+
+
