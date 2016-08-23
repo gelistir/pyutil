@@ -7,10 +7,10 @@ import os
 def mail(mailgunapi=None, mailgunkey=None):
     mailgunapi = mailgunapi or os.environ["MAILGUNAPI"]
     mailgunkey = mailgunkey or os.environ["MAILGUNKEY"]
-    return Mail(mailgunapi=mailgunapi, mailgunkey=mailgunkey)
+    return _Mail(mailgunapi=mailgunapi, mailgunkey=mailgunkey)
 
 
-class Mail(object):
+class _Mail(object):
     """
     Class for sending emails with and without attachments via mailgun
     """
