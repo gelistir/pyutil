@@ -1,6 +1,6 @@
 import abc
 import pandas as pd
-from pyutil.log import get_logger
+import logging
 
 
 class ConfigMaster(object):
@@ -11,7 +11,7 @@ class ConfigMaster(object):
 
     def __init__(self, archive, t0=pd.Timestamp("2002-01-01"), logger=None):
         self.configuration = dict()
-        self.logger = logger or get_logger("LWM")
+        self.logger = logger or logging.getLogger("LWM")
         self.archive = archive
         self.t0 = t0
 

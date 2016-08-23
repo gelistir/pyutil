@@ -1,9 +1,12 @@
-import pandas as pd
-from pyutil.performance.periods import period_returns, periods
-from pyutil.nav.nav import Nav
-from pyutil.portfolio.maths import xround, buy_or_sell
-from pyutil.timeseries.timeseries import subsample, ytd, mtd
+import logging
+
 import numpy as np
+import pandas as pd
+
+from pyutil.nav.nav import Nav
+from pyutil.performance.periods import period_returns, periods
+from pyutil.portfolio.maths import xround, buy_or_sell
+from pyutil.timeseries.timeseries import ytd, mtd
 
 
 def merge(portfolios, axis=0):
@@ -74,15 +77,20 @@ class Portfolio(object):
 
         return Portfolio(prices=p, weights=w)
 
-    def __init__(self, prices, weights):
+    def __init__(self, prices, weights, logger=None):
+        self.__logger = logger or logging.getLogger("LWM")
+
         assert set(weights.keys()) <= set(prices.keys())
 
         # make sure the weights are a subset of the prices
         if prices.index.equals(weights.index):
+            self.__logger.info("prices.index === weights.index")
             self.__prices = prices.ffill()
             self.__weights = weights.ffill().fillna(0.0)
+
         else:
             assert set(weights.index) <= set(prices.index)
+            self.__logger.info("weights.index < prices.index")
 
             assets = sorted(list(prices.keys()))
 
@@ -90,8 +98,13 @@ class Portfolio(object):
             p = prices[assets].ffill().values
             w = weights[assets].copy().reindex(index=prices.index).values
 
+            s = set(weights.index)
+            # price.index: t0, t1, t2...
+            # start at t1, t2, ...
             for i, t in enumerate(prices.index[1:], start=1):
-                if t not in set(weights.index):
+                # unknown stamp not in weights...
+                if t not in s:
+                    # forward extrapolate the weights
                     w[i] = forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
 
             self.__prices = prices.ffill()
