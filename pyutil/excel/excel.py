@@ -15,6 +15,8 @@ class Excel(object):
         self.__bio = BytesIO()
         self.__writer = pd.ExcelWriter(self.__bio, engine='xlsxwriter', date_format=date_format)
         self.__format_percent = self.add_format({'num_format': '#.##%'})
+        self.__format_number = self.add_format({'num_format': '#.##'})
+
 
     @property
     def book(self):
@@ -40,6 +42,10 @@ class Excel(object):
     @property
     def format_percent(self):
         return self.__format_percent
+
+    @property
+    def format_number(self):
+        return self.__format_number
 
     def to_file(self, file):
         # if file is just a pain string you have to create the file and open it for writing

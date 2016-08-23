@@ -31,7 +31,6 @@ def MailHandler(toAdr, fromAdr="logger@lobnek.com", subject="LOGGER", level=logg
             self.formatter = logging.Formatter(format)
 
     __mail = mail(mailgunapi, mailgunkey)
-    print(type(__mail))
     __mail.toAdr = toAdr
     __mail.fromAdr = fromAdr
     __mail.subject = subject
