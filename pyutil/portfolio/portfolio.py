@@ -27,13 +27,15 @@ def forward(w1, w2, p1, p2):
     valid = np.isfinite(w2)
 
     if np.all(valid):
+        # all weights are valid
         return w2
     elif np.all(~valid):
-        w1[np.isnan(p1)] = np.nan
-        cash = 1 - w1.sum()
-        assert isinstance(cash, float), "Cash is not a float. Happens if w1 is a frame!"
+        # not a single weight is valid
+        cash = 1.0 - np.nansum(w1)
+        #assert isinstance(cash, float), "Cash is not a float. Happens if w1 is a frame!"
         value = w1 * (p2 / p1)
-        return value / (value.sum() + cash)
+        w = value / (np.nansum(value) + cash)
+        w[np.isnan(w)] = 0.0
     else:
         assert False, "Partial definition of weights. Problem! w2: {0}, w1: {1}".format(w2, w1)
 
@@ -48,8 +50,10 @@ class Portfolio(object):
         """
 
         # make sure the order is correct...
+        self.__logger.debug("Head of weights\n{0}".format(self.weights.head(4)))
+        self.__logger.debug("Head of prices\n{0}".format(self.prices.head(4)))
         w = self.weights[self.assets].values
-        p = self.prices[self.assets].ffill().values
+        p = self.prices[self.assets].values
 
         assert w.shape == p.shape
 
@@ -64,8 +68,8 @@ class Portfolio(object):
 
     def iron_time(self, rule):
         # make sure the order is correct...
-        w = self.weights.ffill(inplace=False)[self.assets].values
-        p = self.prices.ffill(inplace=False)[self.assets].values
+        w = self.weights[self.assets].values
+        p = self.prices[self.assets].values
 
         assert w.shape == p.shape
 
