@@ -57,26 +57,26 @@ class TestPortfolio(TestCase):
 
     def test_build(self):
         prices = read_frame("price.csv")
-        weights = pd.DataFrame(index=[prices.index[5]], data=0.1, columns=prices.keys())
+        weights = pd.DataFrame(index=prices.index, data=0.1, columns=prices.keys())
         portfolio = Portfolio(prices, weights)
 
-        self.assertEqual(portfolio.index[0], pd.Timestamp('2013-01-01'))
+        # self.assertEqual(portfolio.index[0], pd.Timestamp('2013-01-01'))
         self.assertAlmostEqual(portfolio.weights["B"][pd.Timestamp('2013-01-08')], 0.1, places=5)
 
     def test_build_portfolio(self):
         prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3],
                               data=[[1000.0, 1000.0], [1500.0, 1500.0], [2000.0, 2000.0]])
-        weights = pd.DataFrame(columns=["A", "B"], index=[1], data=[[0.25, 0.25]])
+        weights = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[0.25, 0.25], [0.25, 0.25], [0.25, 0.25]])
 
         portfolio = Portfolio(prices=prices, weights=weights)
-
         pdt.assert_frame_equal(prices, portfolio.prices)
 
-        position = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=0.00025)
-        pdt.assert_frame_equal(portfolio.position, position)
+        self.assertAlmostEqual(portfolio.position["A"][2], 0.00020833333333333335, places=5)
 
     def test_mul(self):
-        pdt.assert_frame_equal(2 * portfolio.weights, (2 * portfolio).weights)
+        print(2 * portfolio.weights)
+        print((2 * portfolio).weights)
+        pdt.assert_frame_equal(2 * portfolio.weights, (2 * portfolio).weights, check_names=False)
 
     def test_merge(self):
         # we merge two portfolios, in time-direction
@@ -111,10 +111,10 @@ class TestPortfolio(TestCase):
 
     def test_init_1(self):
         prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[10.0, 10.0], [15.0, 15.0], [20.0, np.nan]])
-        weights = pd.DataFrame(columns=["A", "B"], index=[2], data=[[0.3, 0.7]])
-
+        weights = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[0.3, 0.7], [0.3, 0.7], [0.3, 0.7]])
         portfolio = Portfolio(prices=prices, weights=weights)
-        self.assertAlmostEqual(0.4 / 1.1, portfolio.weights["A"][3], places=5)
+        self.assertAlmostEqual(0.3, portfolio.weights["A"][3], places=5)
+        self.assertAlmostEqual(15.0, portfolio.prices["B"][3], places=5)
 
     @raises(AssertionError)
     def test_init_2(self):
@@ -139,17 +139,18 @@ class TestPortfolio(TestCase):
         self.assertEqual(p.index[0], pd.Timestamp("2015-01-01"))
 
     def test_forward_1(self):
-        w2 = forward(w1=np.array([0.5, 0.5]), p1=np.array([10.0, 10.0]), p2=([20.0, 10.0]))
-        self.assertAlmostEqual(w2[0], 2.0/3.0, places=10)
-        self.assertAlmostEqual(w2[1], 1.0/3.0, places=10)
+        w1 = np.array([0.5, 0.5])
+        w2 = np.array([0.6, 0.4])
+        w2 = forward(w1=w1, w2=w2, p1=np.array([10.0, 10.0]), p2=([20.0, 10.0]))
+        self.assertAlmostEqual(w2[0], 0.6, places=10)
+        self.assertAlmostEqual(w2[1], 0.4, places=10)
 
     def test_forward_2(self):
         w1 = pd.Series(data=[0.5, 0.5])
+        w2 = np.nan*w1
         p1 = pd.Series(data=[10.0, 10.0])
         p2 = pd.Series(data=[20.0, 10.0])
 
-        w2 = forward(w1, p1=p1, p2=p2)
-        self.assertAlmostEqual(w2[0], 2.0/3.0, places=10)
-        self.assertAlmostEqual(w2[1], 1.0/3.0, places=10)
-
-
+        w2 = forward(w1=w1, w2=w2, p1=p1, p2=p2)
+        self.assertAlmostEqual(w2[0], 2.0 / 3.0, places=10)
+        self.assertAlmostEqual(w2[1], 1.0 / 3.0, places=10)

@@ -15,18 +15,27 @@ def merge(portfolios, axis=0):
     return Portfolio(prices, weights)
 
 
-def forward(w1, p1, p2):
+def forward(w1, w2, p1, p2):
     # w1 weight at time t1
+    # w2 weight at time t2
     # p1 price at time t1
     # p2 price at time t2
-    # return the weights at time t2
+    # return the extrapolated weights at time t2
 
     # in some scenarios the weight are set even before a first price is known.
-    w1[np.isnan(p1)] = np.nan
-    cash = 1 - w1.sum()
-    assert isinstance(cash, float), "Cash is not a float. Happens if w1 is a frame!"
-    value = w1 * (p2 / p1)
-    return value / (value.sum() + cash)
+
+    valid = np.isfinite(w2)
+
+    if np.all(valid):
+        return w2
+    elif np.all(~valid):
+        w1[np.isnan(p1)] = np.nan
+        cash = 1 - w1.sum()
+        assert isinstance(cash, float), "Cash is not a float. Happens if w1 is a frame!"
+        value = w1 * (p2 / p1)
+        return value / (value.sum() + cash)
+    else:
+        assert False, "Partial definition of weights. Problem!"
 
 
 class Portfolio(object):
@@ -46,7 +55,7 @@ class Portfolio(object):
 
         for i in range(0, p.shape[0] - 2):
             if np.abs(w[i + 1] - w[i]).max() <= threshold:
-                w[i + 1] = forward(w1=w[i], p1=p[i], p2=p[i + 1])
+                w[i + 1] = forward(w1=w[i], w2=np.nan*w[i], p1=p[i], p2=p[i + 1])
 
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
@@ -70,7 +79,7 @@ class Portfolio(object):
 
         for i in range(1, p.shape[0] - 1):
             if i not in moments:
-                w[i] = forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
+                w[i] = forward(w1=w[i - 1], w2=np.nan*w[i-1], p1=p[i - 1], p2=p[i])
 
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
@@ -80,35 +89,19 @@ class Portfolio(object):
     def __init__(self, prices, weights, logger=None):
         self.__logger = logger or logging.getLogger("LWM")
 
-        assert set(weights.keys()) <= set(prices.keys())
+        assert set(weights.keys()) <= set(prices.keys()), "Key for weights not subset of keys for prices"
+        assert prices.index.equals(weights.index), "Index for prices and weights have to match"
 
-        # make sure the weights are a subset of the prices
-        if prices.index.equals(weights.index):
-            self.__logger.info("prices.index === weights.index")
-            self.__prices = prices.ffill()
-            self.__weights = weights.ffill().fillna(0.0)
+        self.__logger.info("prices.index === weights.index")
+        self.__prices = prices[weights.keys()].ffill()
 
-        else:
-            assert set(weights.index) <= set(prices.index)
-            self.__logger.info("weights.index < prices.index")
+        p = self.__prices.values
+        w = weights.values
 
-            assets = sorted(list(prices.keys()))
+        for i in range(1, p.shape[0]):
+            w[i] = forward(w1=w[i - 1], w2=w[i], p1=p[i - 1], p2=p[i])
 
-            # move to numpy, much faster than using pandas at this stage
-            p = prices[assets].ffill().values
-            w = weights[assets].copy().reindex(index=prices.index).values
-
-            s = set(weights.index)
-            # price.index: t0, t1, t2...
-            # start at t1, t2, ...
-            for i, t in enumerate(prices.index[1:], start=1):
-                # unknown stamp not in weights...
-                if t not in s:
-                    # forward extrapolate the weights
-                    w[i] = forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
-
-            self.__prices = prices.ffill()
-            self.__weights = pd.DataFrame(index=prices.index, columns=assets, data=w).fillna(0.0)
+        self.__weights = pd.DataFrame(index=prices.index, columns=prices.keys(), data=w).fillna(0.0)
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
@@ -321,3 +314,13 @@ class Portfolio(object):
 
     def mtd(self, today=None):
         return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today))
+
+
+if __name__ == '__main__':
+    weights = pd.DataFrame(columns=["A", "B"], index=[1, 2], data=[[0.5, 0.5], [np.NaN, np.NaN]])
+    print(weights)
+
+    prices = pd.DataFrame(columns=["A", "B"], index=[1, 2], data=100)
+    print(prices)
+
+    p = Portfolio(prices=prices, weights=weights)
