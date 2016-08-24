@@ -35,7 +35,7 @@ def forward(w1, w2, p1, p2):
         value = w1 * (p2 / p1)
         return value / (value.sum() + cash)
     else:
-        assert False, "Partial definition of weights. Problem!"
+        assert False, "Partial definition of weights. Problem! w2: {0}, w1: {1}".format(w2, w1)
 
 
 class Portfolio(object):
@@ -48,14 +48,14 @@ class Portfolio(object):
         """
 
         # make sure the order is correct...
-        w = self.weights.ffill(inplace=False)[self.assets].values
-        p = self.prices.ffill(inplace=False)[self.assets].values
+        w = self.weights[self.assets].values
+        p = self.prices[self.assets].ffill().values
 
         assert w.shape == p.shape
 
-        for i in range(0, p.shape[0] - 2):
-            if np.abs(w[i + 1] - w[i]).max() <= threshold:
-                w[i + 1] = forward(w1=w[i], w2=np.nan*w[i], p1=p[i], p2=p[i + 1])
+        for i in range(1, p.shape[0] - 1):
+            if np.abs(w[i] - w[i-1]).max() <= threshold:
+                w[i] = forward(w1=w[i-1], w2=np.nan*w[i-1], p1=p[i-1], p2=p[i])
 
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
