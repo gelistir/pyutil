@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import pandas.util.testing as pdt
 from nose.tools import raises
-from pyutil.portfolio.portfolio import merge, forward, Portfolio
+from pyutil.portfolio.portfolio import forward, Portfolio
 from test.config import test_portfolio, read_frame
 from unittest import TestCase
 
@@ -77,13 +77,6 @@ class TestPortfolio(TestCase):
         print(2 * portfolio.weights)
         print((2 * portfolio).weights)
         pdt.assert_frame_equal(2 * portfolio.weights, (2 * portfolio).weights, check_names=False)
-
-    def test_merge(self):
-        # we merge two portfolios, in time-direction
-        portfolios = [portfolio.truncate(after=pd.Timestamp("2015-01-01") - pd.DateOffset(days=1)),
-                      portfolio.truncate(before=pd.Timestamp("2015-01-01")).apply(lambda x: 2 * x, axis=1)]
-        p = merge(portfolios, axis=0)
-        self.assertAlmostEqual(2 * portfolio.weight_current["D"], p.weight_current["D"], places=5)
 
     def test_plot(self):
         x = portfolio.plot()
