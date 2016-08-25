@@ -32,10 +32,10 @@ def forward(w1, w2, p1, p2):
     elif np.all(~valid):
         # not a single weight is valid
         cash = 1.0 - np.nansum(w1)
-        #assert isinstance(cash, float), "Cash is not a float. Happens if w1 is a frame!"
         value = w1 * (p2 / p1)
         w = value / (np.nansum(value) + cash)
         w[np.isnan(w)] = 0.0
+        return w
     else:
         assert False, "Partial definition of weights. Problem! w2: {0}, w1: {1}".format(w2, w1)
 
