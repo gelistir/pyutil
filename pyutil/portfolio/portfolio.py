@@ -9,10 +9,10 @@ from pyutil.portfolio.maths import xround, buy_or_sell
 from pyutil.timeseries.timeseries import ytd, mtd
 
 
-#def merge(portfolios, axis=0):
-#    prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
-#    weights = pd.concat([p.weights for p in portfolios], axis=axis, verify_integrity=True)
-#    return Portfolio(prices, weights.fillna(0.0))
+def merge(portfolios, axis=0):
+    prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
+    weights = pd.concat([p.weights for p in portfolios], axis=axis, verify_integrity=True)
+    return Portfolio(prices, weights.fillna(0.0))
 
 
 def forward(w1, w2, p1, p2):
@@ -50,8 +50,6 @@ class Portfolio(object):
         """
 
         # make sure the order is correct...
-        self.__logger.debug("Head of weights\n{0}".format(self.weights.head(4)))
-        self.__logger.debug("Head of prices\n{0}".format(self.prices.head(4)))
         w = self.weights[self.assets].values
         p = self.prices[self.assets].values
 
