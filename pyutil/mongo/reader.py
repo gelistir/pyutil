@@ -21,7 +21,8 @@ class Archive(object):
 
 
 class _Portfolios(object):
-    def __init__(self, col):
+    def __init__(self, col, logger=None):
+        self.__logger = logger or logging.getLogger(__name__)
         self.__col = col
 
     def items(self):
@@ -32,9 +33,14 @@ class _Portfolios(object):
 
     # return a dictionary portfolio
     def __getitem__(self, item):
+        self.__logger.debug("Portfolio: {0}".format(item))
         p = self.__col.find_one({"_id": item}, {"_id": 1, "price": 1, "weight": 1})
         if p:
-            return Portfolio(prices=_f(pd.DataFrame(p["price"])), weights=_f(pd.DataFrame(p["weight"])))
+            prices = _f(pd.DataFrame(p["price"]))
+            weights = _f(pd.DataFrame(p["weight"])).fillna(0.0)
+            prices = prices.ix[weights.index]
+
+            return Portfolio(prices=prices, weights=weights)
         else:
             return None
 
@@ -45,7 +51,7 @@ class _Portfolios(object):
     def weights(self, item):
         p = self.__col.find_one({"_id": item}, {"_id": 1, "weight": 1})
         assert p
-        return _f(pd.DataFrame(p["weight"]))
+        return _f(pd.DataFrame(p["weight"])).ffill().fillna(0.0)
 
     def sector_weights(self, item, symbolmap):
         frame = self.weights(item).ffill().groupby(by=symbolmap, axis=1).sum()
@@ -116,3 +122,6 @@ class _ArchiveReader(Archive):
             return pd.read_json(a["data"], orient="split")
         else:
             return {p["_id"]: pd.read_json(p["data"], orient="split") for p in self.__db.free.find()}
+
+
+
