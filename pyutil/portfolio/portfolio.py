@@ -317,6 +317,30 @@ class Portfolio(object):
     def mtd(self, today=None):
         return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today))
 
+    @property
+    def state(self):
+        trade_events = self.trading_days[-5:-1]
+        self.__logger.debug("Trade events: {0}".format(trade_events))
+        today = self.index[-1]
+        yesterday = self.index[-2]
+        self.__logger.debug("Last dates: {0}, {1}".format(today, yesterday))
+        trade_events.append(today)
+
+        weights = self.weights.ffill().ix[trade_events].transpose()
+
+        extrapolated = forward(w1=self.weights.ffill().ix[yesterday],
+                               w2=np.nan * self.weights.ffill().ix[yesterday],
+                               p1=self.prices.ffill().ix[yesterday],
+                               p2=self.prices.ffill().ix[today])
+
+        gap = weights[today] - extrapolated
+
+        weights = 100 * weights.rename(columns=lambda x: x.strftime("%d-%b-%y"))
+        weights["Extrapolated"] = 100 * extrapolated
+        weights["Gap"] = 100 * gap
+
+        return weights
+
 
 if __name__ == '__main__':
     weights = pd.DataFrame(columns=["A", "B"], index=[1, 2], data=[[0.5, 0.5], [np.NaN, np.NaN]])

@@ -168,3 +168,10 @@ class TestPortfolio(TestCase):
         p2 = np.array([20.0, 10.0])
 
         w2 = forward(w1,w2,p1,p2)
+
+    def test_state(self):
+        p = test_portfolio()
+        x = p.state
+        self.assertAlmostEqual(x["Extrapolated"]["F"], 3.6564581863077144, places=10)
+        self.assertAlmostEqual(x["Gap"]["A"], 0.042612879799229508, places=10)
+
