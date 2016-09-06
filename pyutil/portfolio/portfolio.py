@@ -95,15 +95,19 @@ class Portfolio(object):
         assert prices.index.equals(weights.index), "Index for prices and weights have to match"
 
         self.__logger.info("prices.index === weights.index")
-        self.__prices = prices[weights.keys()].ffill()
 
-        p = self.__prices.values
-        w = weights.values
+        # list of assets
+        assets = list(weights.keys())
+        self.__prices = prices[assets].ffill()
+
+
+        p = prices[assets].ffill().values
+        w = weights[assets].values
 
         for i in range(1, p.shape[0]):
             w[i] = forward(w1=w[i - 1], w2=w[i], p1=p[i - 1], p2=p[i])
 
-        self.__weights = pd.DataFrame(index=prices.index, columns=prices.keys(), data=w).fillna(0.0)
+        self.__weights = pd.DataFrame(index=prices.index, columns=assets, data=w).fillna(0.0)
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
