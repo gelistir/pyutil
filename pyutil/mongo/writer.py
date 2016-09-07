@@ -42,6 +42,10 @@ class _ArchiveWriter(_ArchiveReader):
             else:
                 self.__db.assets.update(m, {name: _series2dict(ts)}, upsert=True)
 
+    def update_assets(self, frame, name="PX_LAST"):
+        for key in frame.keys():
+            self.update_asset(key, ts=frame[key].dropna(), name=name)
+
     def update_portfolio(self, key, portfolio, group, n=10, comment=""):
         self.logger.info("Key {0}, Group {1}".format(key, group))
 

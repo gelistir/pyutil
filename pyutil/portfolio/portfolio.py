@@ -122,11 +122,11 @@ class Portfolio(object):
 
     @property
     def prices(self):
-        return self.__prices.sort(axis=1)
+        return self.__prices.sort_index(axis=1)
 
     @property
     def weights(self):
-        return self.__weights.sort(axis=1)
+        return self.__weights.sort_index(axis=1)
 
     @property
     def asset_returns(self):

@@ -14,16 +14,9 @@ class TestWriter(TestCase):
         cls.reader = reader("tmp_J32JFASDK", host="mongo")
 
         # write assets into test database. Writing is slow!
-        assets = read_frame("price.csv", parse_dates=True)
-
-        for asset in assets:
-            cls.writer.update_asset(asset, assets[asset])
-
-        frame = read_frame("symbols.csv")
-        cls.writer.update_symbols(frame)
-
-        p = test_portfolio()
-        cls.writer.update_portfolio("test", p, group="test")
+        cls.writer.update_assets(frame=read_frame("price.csv", parse_dates=True))
+        cls.writer.update_symbols(frame=read_frame("symbols.csv"))
+        cls.writer.update_portfolio("test", test_portfolio(), group="test")
 
     def test_nav(self):
         portfolio = test_portfolio()
