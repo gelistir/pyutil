@@ -64,6 +64,14 @@ def FileHandler(file="/log/lobnek.log", level=logging.INFO, format=None, mode="a
     return handler
 
 
+def SentryHandler(dns=None, level=logging.WARNING):
+    from raven.handlers.logging import SentryHandler
+    dns = dns or os.environ.get("SENTRY")
+    sentry_handler = SentryHandler(dns)
+    sentry_handler.level = level
+    return sentry_handler
+
+
 def get_logger(name="LWM", level=None, format=None):
     """
     Provides a basic logger, append handlers to this logger

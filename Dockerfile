@@ -1,5 +1,5 @@
 # Set the base image to Ubuntu
-FROM lobnek/pybase:v1.3
+FROM lobnek/pybase:v1.5
 
 # File Author / Maintainer
 MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"

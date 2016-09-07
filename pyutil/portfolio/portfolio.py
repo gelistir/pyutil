@@ -100,7 +100,6 @@ class Portfolio(object):
         assets = list(weights.keys())
         self.__prices = prices[assets].ffill()
 
-
         p = prices[assets].ffill().values
         w = weights[assets].values
 
