@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def __f(x, n=2):
     a = np.floor(np.log10(np.abs(x))) - n + 1
     if a < 0:
@@ -7,7 +8,6 @@ def __f(x, n=2):
     else:
         b = np.power(10, a)
         return np.floor(x / b) * b
-
 
 xround = np.vectorize(__f, excluded="n")
 
