@@ -87,7 +87,7 @@ class _Mail(object):
 
         :param text:
         """
-        logger = logger or logging.getLogger("LWM")
+        logger = logger or logging.getLogger(__name__)
         try:
             assert text  # Text can't be null...
             data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text}

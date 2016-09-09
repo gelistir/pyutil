@@ -89,10 +89,16 @@ class Portfolio(object):
         return Portfolio(prices=p, weights=w)
 
     def __init__(self, prices, weights, logger=None):
-        self.__logger = logger or logging.getLogger("LWM")
+        self.__logger = logger or logging.getLogger(__name__)
 
         assert set(weights.keys()) <= set(prices.keys()), "Key for weights not subset of keys for prices"
         assert prices.index.equals(weights.index), "Index for prices and weights have to match"
+
+        assert prices.index.has_duplicates == False, "Price Index has duplicates"
+        assert weights.index.has_duplicates == False, "Weights Index has duplicates"
+
+        assert prices.index.is_monotonic_increasing, "Price Index is not increasing"
+        assert weights.index.is_monotonic_increasing, "Weight Index is not increasing"
 
         self.__logger.info("prices.index === weights.index")
 

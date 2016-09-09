@@ -11,7 +11,7 @@ class ConfigMaster(object):
 
     def __init__(self, archive, t0=pd.Timestamp("2002-01-01"), logger=None):
         self.configuration = dict()
-        self.logger = logger or logging.getLogger("LWM")
+        self.logger = logger or logging.getLogger(__name__)
         self.archive = archive
         self.t0 = t0
 

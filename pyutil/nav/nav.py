@@ -57,7 +57,7 @@ class Nav(object):
     def returns(self):
         return self.__nav.dropna().pct_change().fillna(0.0)
 
-    def truncate(self, before, after=None):
+    def truncate(self, before=None, after=None):
         return Nav(self.__nav.truncate(before, after))
 
     def period_returns(self):
