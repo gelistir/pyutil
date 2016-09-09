@@ -34,13 +34,13 @@ class _Portfolios(object):
     # return a dictionary portfolio
     def __getitem__(self, item):
         self.__logger.debug("Portfolio: {0}".format(item))
-        p = self.__col.find_one({"_id": item}, {"_id": 1, "price": 1, "weight": 1})
+        p = self.__col.find_one({"_id": item}, {"_id": 1})
         if p:
-            prices = _f(pd.DataFrame(p["price"]))
-            weights = _f(pd.DataFrame(p["weight"])).fillna(0.0)
+            prices = self.prices(item)
+            weights = self.weights(item)
             prices = prices.ix[weights.index]
 
-            return Portfolio(prices=prices, weights=weights)
+            return Portfolio(prices=prices, weights=weights, logger=self.__logger)
         else:
             return None
 
@@ -52,6 +52,11 @@ class _Portfolios(object):
         p = self.__col.find_one({"_id": item}, {"_id": 1, "weight": 1})
         assert p
         return _f(pd.DataFrame(p["weight"])).ffill().fillna(0.0)
+
+    def prices(self, item):
+        p = self.__col.find_one({"_id": item}, {"_id": 1, "price": 1})
+        assert p
+        return _f(pd.DataFrame(p["price"]))
 
     def sector_weights(self, item, symbolmap):
         frame = self.weights(item).ffill().groupby(by=symbolmap, axis=1).sum()
@@ -75,7 +80,7 @@ class _ArchiveReader(Archive):
         self.logger = logger or logging.getLogger(__name__)
         self.logger.info("Archive (read-access) at {0}".format(db))
         self.__db = db
-        self.__portfolio = _Portfolios(db.strategy)
+        self.__portfolio = _Portfolios(db.strategy, logger=self.logger)
 
     def __repr__(self):
         return "Reader for {0}".format(self.__db)
