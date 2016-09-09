@@ -170,7 +170,7 @@ class Portfolio(object):
 
     def truncate(self, before=None, after=None):
         return Portfolio(prices=self.prices.truncate(before=before, after=after),
-                         weights=self.weights.truncate(before=before, after=after))
+                         weights=self.weights.truncate(before=before, after=after), logger=self.__logger)
 
     @property
     def weight_current(self):
@@ -212,7 +212,7 @@ class Portfolio(object):
     def tail(self, n=10):
         w = self.weights.tail(n)
         p = self.prices.ix[w.index]
-        return Portfolio(p, w)
+        return Portfolio(p, w, logger=self.__logger)
 
     @property
     def position(self):
@@ -220,16 +220,16 @@ class Portfolio(object):
         return pd.DataFrame({k: self.weights[k] * nav / self.prices[k] for k in self.assets})
 
     def subportfolio(self, assets):
-        return Portfolio(prices=self.prices[assets], weights=self.weights[assets])
+        return Portfolio(prices=self.prices[assets], weights=self.weights[assets], logger=self.__logger)
 
     def __mul__(self, other):
-        return Portfolio(self.prices, other * self.weights)
+        return Portfolio(self.prices, other * self.weights, self.__logger)
 
     def __rmul__(self, other):
         return self.__mul__(other)
 
     def apply(self, function, axis=0):
-        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))
+        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis), logger=self.__logger)
 
     def plot(self, colors=None, tradingDays=False):
         import matplotlib.pyplot as plt
@@ -272,9 +272,9 @@ class Portfolio(object):
 
     def ffill(self, prices=False):
         if prices:
-            return Portfolio(prices=self.prices.ffill(), weights=self.weights.ffill())
+            return Portfolio(prices=self.prices.ffill(), weights=self.weights.ffill(), logger=self.__logger)
         else:
-            return Portfolio(prices=self.prices, weights=self.weights.ffill())
+            return Portfolio(prices=self.prices, weights=self.weights.ffill(), logger=self.__logger)
 
     def transaction_report(self, capital=1e7, n=2):
         d = dict()
@@ -321,10 +321,10 @@ class Portfolio(object):
         return {"weight": __g(self.weights), "price": __g(self.prices), "returns": __f(self.nav.returns)}
 
     def ytd(self, today=None):
-        return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today))
+        return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today), logger=self.__logger)
 
     def mtd(self, today=None):
-        return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today))
+        return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today), logger=self.__logger)
 
     @property
     def state(self):
