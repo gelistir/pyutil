@@ -62,7 +62,7 @@ class Portfolio(object):
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
 
-        return Portfolio(prices=p, weights=w)
+        return Portfolio(prices=p, weights=w, logger=self.__logger)
 
     def iron_time(self, rule):
         # make sure the order is correct...
@@ -86,7 +86,7 @@ class Portfolio(object):
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
 
-        return Portfolio(prices=p, weights=w)
+        return Portfolio(prices=p, weights=w, logger=self.__logger)
 
     def __init__(self, prices, weights, logger=None):
         self.__logger = logger or logging.getLogger(__name__)
