@@ -3,6 +3,7 @@ import logging
 import numpy as np
 import pandas as pd
 
+from pyutil.json.json import series2dict, frame2dict
 from pyutil.nav.nav import Nav
 from pyutil.performance.periods import period_returns, periods
 from pyutil.portfolio.maths import xround, buy_or_sell
@@ -56,8 +57,8 @@ class Portfolio(object):
         assert w.shape == p.shape
 
         for i in range(1, p.shape[0] - 1):
-            if np.abs(w[i] - w[i-1]).max() <= threshold:
-                w[i] = forward(w1=w[i-1], w2=np.nan*w[i-1], p1=p[i-1], p2=p[i])
+            if np.abs(w[i] - w[i - 1]).max() <= threshold:
+                w[i] = forward(w1=w[i - 1], w2=np.nan * w[i - 1], p1=p[i - 1], p2=p[i])
 
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
@@ -81,7 +82,7 @@ class Portfolio(object):
 
         for i in range(1, p.shape[0] - 1):
             if i not in moments:
-                w[i] = forward(w1=w[i - 1], w2=np.nan*w[i-1], p1=p[i - 1], p2=p[i])
+                w[i] = forward(w1=w[i - 1], w2=np.nan * w[i - 1], p1=p[i - 1], p2=p[i])
 
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
@@ -94,13 +95,11 @@ class Portfolio(object):
         assert set(weights.keys()) <= set(prices.keys()), "Key for weights not subset of keys for prices"
         assert prices.index.equals(weights.index), "Index for prices and weights have to match"
 
-        assert prices.index.has_duplicates == False, "Price Index has duplicates"
-        assert weights.index.has_duplicates == False, "Weights Index has duplicates"
+        assert not prices.index.has_duplicates, "Price Index has duplicates"
+        assert not weights.index.has_duplicates, "Weights Index has duplicates"
 
         assert prices.index.is_monotonic_increasing, "Price Index is not increasing"
         assert weights.index.is_monotonic_increasing, "Weight Index is not increasing"
-
-        self.__logger.info("prices.index === weights.index")
 
         # list of assets
         assets = list(weights.keys())
@@ -171,6 +170,10 @@ class Portfolio(object):
     def truncate(self, before=None, after=None):
         return Portfolio(prices=self.prices.truncate(before=before, after=after),
                          weights=self.weights.truncate(before=before, after=after), logger=self.__logger)
+
+    @property
+    def empty(self):
+        return len(self.index) == 0
 
     @property
     def weight_current(self):
@@ -312,19 +315,15 @@ class Portfolio(object):
         :return:
         """
 
-        def __f(ts):
-            return {"{0}".format(t.strftime("%Y%m%d")): v for t, v in ts.dropna().iteritems()}
-
-        def __g(frame):
-            return {key: __f(series) for key, series in frame.iteritems()}
-
-        return {"weight": __g(self.weights), "price": __g(self.prices), "returns": __f(self.nav.returns)}
+        return {"weight": frame2dict(self.weights), "price": frame2dict(self.prices), "returns": series2dict(self.nav.returns)}
 
     def ytd(self, today=None):
-        return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today), logger=self.__logger)
+        return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today),
+                         logger=self.__logger)
 
     def mtd(self, today=None):
-        return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today), logger=self.__logger)
+        return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today),
+                         logger=self.__logger)
 
     @property
     def state(self):

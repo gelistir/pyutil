@@ -175,3 +175,22 @@ class TestPortfolio(TestCase):
         self.assertAlmostEqual(x["Extrapolated"]["F"], 3.6564581863077144, places=10)
         self.assertAlmostEqual(x["Gap"]["A"], 0.042612879799229508, places=10)
 
+    def test_empty(self):
+        p = Portfolio(prices=pd.DataFrame(columns=["A"]), weights=pd.DataFrame(columns=["A"]))
+        self.assertTrue(p.empty)
+
+    @raises(AssertionError)
+    def test_mismatch_columns(self):
+        Portfolio(prices=pd.DataFrame(columns=["A"]), weights=pd.DataFrame(columns=["B"]))
+
+    @raises(AssertionError)
+    def test_mismatch_index(self):
+        Portfolio(prices=pd.DataFrame(index=[0]), weights=pd.DataFrame(index=[1]))
+
+    @raises(AssertionError)
+    def test_monotonic_index(self):
+        Portfolio(prices=pd.DataFrame(index=[1,0]), weights=pd.DataFrame(index=[1,0]))
+
+    @raises(AssertionError)
+    def test_duplicates_index(self):
+        Portfolio(prices=pd.DataFrame(index=[1, 1]), weights=pd.DataFrame(index=[1, 1]))
