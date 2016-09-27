@@ -89,7 +89,6 @@ class _Mail(object):
         """
         logger = logger or logging.getLogger(__name__)
         try:
-            assert text  # Text can't be null...
             data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text, "html": '<font face="Courier New, Courier, monospace">' + html + '</font>'}
             logger.info("Mail: {0}".format(data))
             for file in self.__files:
