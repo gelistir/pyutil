@@ -1,8 +1,4 @@
-# Safe import for either Python 2.x or 3.x
-try:
-    from io import BytesIO
-except ImportError:
-    from cStringIO import StringIO as BytesIO
+from io import BytesIO
 
 import pandas as pd
 

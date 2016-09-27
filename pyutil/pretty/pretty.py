@@ -118,6 +118,5 @@ class PrettyPandas(object):
         # Sort column names
         return frame[list(self.data.columns) + summary_colnames]
 
-
     def __repr__(self):
         return self.frame.to_string()

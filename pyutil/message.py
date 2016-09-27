@@ -81,7 +81,7 @@ class _Mail(object):
         self.__files.extend([("inline", (name, stream))])
         return self
 
-    def send(self, text, logger=None):
+    def send(self, text="", html="", logger=None):
         """
         send an email
 
@@ -90,7 +90,7 @@ class _Mail(object):
         logger = logger or logging.getLogger(__name__)
         try:
             assert text  # Text can't be null...
-            data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text}
+            data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text, "html": '<font face="Courier New, Courier, monospace">' + html + '</font>'}
             logger.info("Mail: {0}".format(data))
             for file in self.__files:
                 logger.info("type: {0}, name: {1}".format(file[0], file[1][0]))
