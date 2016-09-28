@@ -1,33 +1,21 @@
 import logging
-
 import requests
 import os
 
 
-def mail(mailgunapi=None, mailgunkey=None):
-    mailgunapi = mailgunapi or os.environ["MAILGUNAPI"]
-    mailgunkey = mailgunkey or os.environ["MAILGUNKEY"]
-    return _Mail(mailgunapi=mailgunapi, mailgunkey=mailgunkey)
-
-
-class _Mail(object):
+class Mail(object):
     """
     Class for sending emails with and without attachments via mailgun
     """
 
-    def __init__(self, mailgunapi, mailgunkey, toAdr=None, fromAdr=None, subject=None):
+    def __init__(self, mailgunapi=None, mailgunkey=None):
         """
         Create a Mail object
         """
         # make sure that mailgun is of the correct type as specified in the config
-        self.__mailgun_api = mailgunapi
-        self.__mailgun_key = mailgunkey
+        self.__mailgun_api = mailgunapi or os.environ["MAILGUNAPI"]
+        self.__mailgun_key = mailgunkey or os.environ["MAILGUNKEY"]
         self.__files = list()
-        self.__toAdr = toAdr or "lwm@lobnek.com"
-        self.__fromAdr = fromAdr or "monitor@lobnek.com"
-        self.__subject = subject or ""
-
-        #self.__logger = logger or logging.getLogger("LWM")
 
     def clear(self):
         # remove all attachments
@@ -81,15 +69,16 @@ class _Mail(object):
         self.__files.extend([("inline", (name, stream))])
         return self
 
-    def send(self, text="", html="", logger=None):
+    def send(self, text="", html=None, logger=None):
         """
         send an email
-
-        :param text:
         """
         logger = logger or logging.getLogger(__name__)
         try:
-            data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text, "html": '<font face="Courier New, Courier, monospace">' + html + '</font>'}
+            data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text}
+            if html:
+                data["html"] = html
+
             logger.info("Mail: {0}".format(data))
             for file in self.__files:
                 logger.info("type: {0}, name: {1}".format(file[0], file[1][0]))

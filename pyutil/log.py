@@ -2,13 +2,13 @@ import logging
 import os
 from io import StringIO
 
-from pyutil.message import mail
+from pyutil.message import Mail
 
 __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 __level = logging.DEBUG
 
 
-def MailHandler(toAdr, fromAdr="logger@lobnek.com", subject="LOGGER", level=logging.WARNING, format=None, mailgunapi=None, mailgunkey=None):
+def MailHandler(toAdr, fromAdr=None, subject=None, level=logging.WARNING, format=None, mailgunapi=None, mailgunkey=None):
     """
     MailHandler, sending log messages directly via email
 
@@ -31,10 +31,10 @@ def MailHandler(toAdr, fromAdr="logger@lobnek.com", subject="LOGGER", level=logg
             self.__mail = mail
             self.formatter = logging.Formatter(format)
 
-    __mail = mail(mailgunapi, mailgunkey)
+    __mail = Mail(mailgunapi, mailgunkey)
     __mail.toAdr = toAdr
-    __mail.fromAdr = fromAdr
-    __mail.subject = subject
+    __mail.fromAdr = fromAdr or "logger@lobnek.com"
+    __mail.subject = subject or "LOG"
 
     return mailhandler(mail=__mail, level=level or __level, format=format or __format)
 
