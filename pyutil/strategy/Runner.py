@@ -1,10 +1,16 @@
 import importlib
-import logging
 import inspect
 
+from pyutil.decorators import attempt
 
-class Runner(object):
-    def __init__(self, module, archive, t0, logger=None):
+
+@attempt
+def run(logger, module, archive, t0):
+    return _Runner(module=module, archive=archive, t0=t0, logger=logger)
+
+
+class _Runner(object):
+    def __init__(self, module, archive, t0, logger):
         # see: http://stackoverflow.com/questions/37209181/converting-the-py-script-into-a-string/37209507#37209507
         module = importlib.import_module(module)
         self.__source = inspect.getsource(object=module)

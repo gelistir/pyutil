@@ -13,6 +13,7 @@ class Configuration(ConfigMaster):
         p = self.configuration["prices"]
         return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / len(p.keys())))
 
+
     @property
     def name(self):
         return "test"

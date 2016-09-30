@@ -2,7 +2,6 @@ import abc
 import pandas as pd
 import logging
 
-
 class ConfigMaster(object):
     __metaclass__ = abc.ABCMeta
 
