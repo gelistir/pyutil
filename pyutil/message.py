@@ -79,7 +79,6 @@ class Mail(object):
             if html:
                 data["html"] = html
 
-            logger.info("Mail: {0}".format(data))
             for file in self.__files:
                 logger.info("type: {0}, name: {1}".format(file[0], file[1][0]))
 
