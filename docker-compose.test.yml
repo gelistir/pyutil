@@ -1,7 +1,9 @@
 version: '2'
 services:
   sut:
-    build: .
+    build:
+       context: .
+       dockerfile: Dockerfile-Test
     command: nosetests
     links:
      - mongo

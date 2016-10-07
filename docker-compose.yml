@@ -1,7 +1,9 @@
 version: '2'
 services:
   pyutil:
-     build: .
+     build:
+       context: .
+       dockerfile: Dockerfile
      extra_hosts:
         - quantsrv:192.168.100.15
      volumes:
