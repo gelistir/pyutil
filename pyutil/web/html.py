@@ -21,3 +21,13 @@ def getTemplate(name, folder="./templates/"):
 def transform(html):
     from premailer import transform as ttt
     return ttt(html)
+
+
+def compile2html(name, dictionary, folder="./templates", classes="table"):
+    t = getTemplate(name, folder)
+    for key, item in dictionary.items():
+        dictionary[key] = frame2html(item, classes=classes)
+
+    return transform(t.render(dictionary))
+
+#transform(getTemplate(name="fact.html").render({"performance": pp, "monthly": frame, "topflop": topflop, "sector": sector}))

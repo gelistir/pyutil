@@ -1,7 +1,8 @@
 from unittest import TestCase
 
+import pandas as pd
 
-from pyutil.web.html import transform, link, getTemplate
+from pyutil.web.html import transform, link, getTemplate, compile2html
 
 
 parse="""<!DOCTYPE html>
@@ -46,6 +47,10 @@ class TestHtml(TestCase):
         x = getTemplate("latest.html", folder="/pyutil/test/resources/templates")
         self.assertEqual(transform(x.render({"latest": 2.0})), transformed)
 
+    def test_compile2html(self):
+        d = dict()
+        d["latest"] = pd.DataFrame(data=[[2.0]])
+        f = compile2html(name="latest.html", dictionary=d, folder="/pyutil/test/resources/templates")
 
 
 
