@@ -45,7 +45,7 @@ class TestHtml(TestCase):
 
     def test_transform(self):
         x = getTemplate("latest.html", folder="/pyutil/test/resources/templates")
-        self.assertEqual(transform(x.render({"latest": 2.0})), transformed)
+        self.assertEqual(transform(x.render({"latest": 2.0}), base_url="http://mybase"), transformed)
 
     def test_compile2html(self):
         d = dict()

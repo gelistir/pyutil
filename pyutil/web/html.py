@@ -18,16 +18,16 @@ def getTemplate(name, folder="./templates/"):
     return env.get_template(name)
 
 
-def transform(html):
+def transform(html, base_url):
     from premailer import transform as ttt
-    return ttt(html)
+    return ttt(html, base_url=base_url)
 
 
-def compile2html(name, dictionary, folder="./templates", classes="table"):
+def compile2html(name, dictionary, folder="./templates", classes="table", base_url="http://quantsrv/"):
     t = getTemplate(name, folder)
     for key, item in dictionary.items():
         dictionary[key] = frame2html(item, classes=classes)
 
-    return transform(t.render(dictionary))
+    return transform(t.render(dictionary), base_url=base_url)
 
 #transform(getTemplate(name="fact.html").render({"performance": pp, "monthly": frame, "topflop": topflop, "sector": sector}))
