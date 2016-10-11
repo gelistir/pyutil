@@ -1,7 +1,10 @@
+import os
 import pandas as pd
+import jinja2
+from premailer import transform
 
 
-def frame2html(frame, classes="table"):
+def __frame2html(frame, classes="table"):
     return frame.to_html(classes=classes, float_format=lambda x: '{0:.2f}'.format(x) if pd.notnull(x) else '-',
                          escape=False).replace('border="1"', 'border="0"')
 
@@ -12,22 +15,15 @@ def link(name):
     return "<a href=http://www.bloomberg.com/quote/{0}:{1}>{2}</a>".format(x[0], x[1], name.lstrip())
 
 
-def getTemplate(name, folder="./templates/"):
-    from jinja2 import Environment, FileSystemLoader
-    env = Environment(loader=FileSystemLoader(folder))
-    return env.get_template(name)
+def __getTemplate(tpl_path):
+    path, filename = os.path.split(tpl_path)
+    return jinja2.Environment(loader=jinja2.FileSystemLoader(path or './')).get_template(filename)
 
 
-def transform(html, base_url):
-    from premailer import transform as ttt
-    return ttt(html, base_url=base_url)
+def compile2html(file, render_dict, classes="table", base_url="http://quantsrv/"):
+    t = __getTemplate(tpl_path=file)
+    for key, item in render_dict.items():
+        if isinstance(item, pd.DataFrame):
+            render_dict[key] = __frame2html(item, classes=classes)
 
-
-def compile2html(name, dictionary, folder="./templates", classes="table", base_url="http://quantsrv/"):
-    t = getTemplate(name, folder)
-    for key, item in dictionary.items():
-        dictionary[key] = frame2html(item, classes=classes)
-
-    return transform(t.render(dictionary), base_url=base_url)
-
-#transform(getTemplate(name="fact.html").render({"performance": pp, "monthly": frame, "topflop": topflop, "sector": sector}))
+    return transform(t.render(render_dict), base_url=base_url)
