@@ -20,10 +20,13 @@ def __getTemplate(tpl_path):
     return jinja2.Environment(loader=jinja2.FileSystemLoader(path or './')).get_template(filename)
 
 
-def compile2html(file, render_dict, classes="table", base_url="http://quantsrv/"):
+def compile2html(file, render_dict=None, classes="table", base_url="http://quantsrv/"):
     t = __getTemplate(tpl_path=file)
-    for key, item in render_dict.items():
-        if isinstance(item, pd.DataFrame):
-            render_dict[key] = __frame2html(item, classes=classes)
+    if render_dict:
+        for key, item in render_dict.items():
+            if isinstance(item, pd.DataFrame):
+                render_dict[key] = __frame2html(item, classes=classes)
 
-    return transform(t.render(render_dict), base_url=base_url)
+        return transform(t.render(render_dict), base_url=base_url)
+    else:
+        return transform(t, base_url=base_url)
