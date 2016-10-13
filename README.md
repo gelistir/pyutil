@@ -1,8 +1,6 @@
 # pyutil
 
-![Alt text](portfolio.png)
-
-The attempts to test using an in-memory version of MongoDB failed.
+![Alt text](examples/portfolio.png)
 
 # Running a strategy
 
@@ -10,9 +8,9 @@ Our main concern is to implement and maintain strategies in a robust way. We do 
 in alternative programming languages. We use the same Python scripts both in research and production. 
 
 A strategy is a script loading time series data from an archive and using parameters specified a priori.
-For research it is helpful to interfere and alternate the parameters before the strategy iterates in a backtest through history.
+For research it is helpful to interfere with the parameters before the strategy iterates in a backtest through history.
 
-It is possible to point the strategy to different archives. For testing purposes we use an archive with immutable test data 
+It is possible to point the strategy to different archives. For testing purposes we fire up and populate a MongoDB Docker image 
 whereas in production we run a MongoDB server providing access to our latest data.
 
 Each strategy is described by a class Configuration and is a child of the ConfigMaster class.
