@@ -4,7 +4,7 @@ services:
     build:
        context: .
        dockerfile: Dockerfile-Test
-    command: nosetests
+    command: nosetests --with-coverage --cover-package=pyutil
     links:
      - mongo
   mongo:

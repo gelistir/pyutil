@@ -7,4 +7,4 @@ ADD . /pyutil
 WORKDIR pyutil
 
 # this is used to mock http for testing
-RUN pip install httpretty nose
+RUN pip install httpretty nose coverage
