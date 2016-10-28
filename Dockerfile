@@ -9,10 +9,9 @@ RUN pip install xlsxwriter==0.9.3 premailer==3.0.1 raven==5.27.1
 # File Author / Maintainer
 MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
 
-ADD . /pyutil
+# copy only the package
+COPY ./pyutil /pyutil
+
 WORKDIR pyutil
-
-RUN mkdir -p results
-
 
 

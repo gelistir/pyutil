@@ -6,11 +6,13 @@ RUN conda install -q -y pandas=0.18.1 requests=2.9.1 matplotlib=1.5.1 pymongo=3.
 # install a writer for excel...
 RUN pip install xlsxwriter==0.9.3 premailer==3.0.1 raven==5.27.1
 
+# this is used to mock http for testing
+RUN pip install httpretty nose coverage
+
 # File Author / Maintainer
 MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
 
-ADD . /pyutil
-WORKDIR pyutil
+COPY ./pyutil /pyutil/pyutil
+COPY ./test   /pyutil/test
 
-# this is used to mock http for testing
-RUN pip install httpretty nose coverage
+WORKDIR pyutil

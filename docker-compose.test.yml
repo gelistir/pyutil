@@ -4,9 +4,12 @@ services:
     build:
        context: .
        dockerfile: Dockerfile-Test
-    command: nosetests --with-coverage --cover-package=pyutil
+    command: nosetests --with-coverage --cover-html --cover-erase --cover-package=pyutil --cover-html-dir=/pyutil/html-coverage
     links:
      - mongo
+    volumes:
+     - ./html-coverage:/pyutil/html-coverage
+
   mongo:
     image: mongo
     expose:
