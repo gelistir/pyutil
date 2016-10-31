@@ -21,6 +21,7 @@ def __getTemplate(tpl_path):
 
 
 def compile2html(file, render_dict=None, classes="table", base_url="http://quantsrv/"):
+    assert os.path.exists(file), "File {0} does not exist.".format(file)
     t = __getTemplate(tpl_path=file)
     if render_dict:
         for key, item in render_dict.items():
