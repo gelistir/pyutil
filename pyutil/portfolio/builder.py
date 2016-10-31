@@ -17,6 +17,14 @@ class PortfolioBuilder(object):
     def weights(self):
         return self.__weights
 
+    @property
+    def prices(self):
+        return self.__prices
+
+    @property
+    def assets(self):
+        return sorted(self.__prices.columns.tolist())
+
     def build(self, logger=None):
         return Portfolio(prices = self.__prices, weights = self.__weights, logger=logger)
 
@@ -30,3 +38,4 @@ if __name__ == '__main__':
     builder.weights.ix[2] = pd.Series({"A": 0.3, "B": 0.7})
     portfolio = builder.build()
     print(portfolio.weights)
+    print(sorted(builder.prices.columns.tolist()))

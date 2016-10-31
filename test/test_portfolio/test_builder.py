@@ -14,4 +14,9 @@ class TestPortfolioBuilder(TestCase):
         builder.weights.ix[2] = pd.Series({"A": 0.3, "B": 0.7})
         portfolio = builder.build()
 
-        self.assertEqual(portfolio.weights["A"][1], 0.3)
+        self.assertEqual(builder.weights["A"][1], 0.5)
+        self.assertEqual(builder.assets, ["A", "B"])
+        self.assertEqual(builder.prices["A"][2], 100)
+        self.assertEqual(builder.returns["A"][2], 0.0)
+        self.assertEqual(portfolio.weights["A"][1], 0.5)
+
