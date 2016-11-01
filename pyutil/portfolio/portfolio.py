@@ -102,16 +102,16 @@ class Portfolio(object):
         assert weights.index.is_monotonic_increasing, "Weight Index is not increasing"
 
         # list of assets
-        assets = list(weights.keys())
-        self.__prices = prices[assets].ffill()
+        #assets = list(weights.keys())
+        self.__prices = prices.ffill()
 
-        p = prices[assets].ffill().values
-        w = weights[assets].values
+        #p = prices[assets].ffill().values
+        #w = weights[assets].values
 
-        for i in range(1, p.shape[0]):
-            w[i] = forward(w1=w[i - 1], w2=w[i], p1=p[i - 1], p2=p[i])
+        #for i in range(1, p.shape[0]):
+        #    w[i] = forward(w1=w[i - 1], w2=w[i], p1=p[i - 1], p2=p[i])
 
-        self.__weights = pd.DataFrame(index=prices.index, columns=assets, data=w).fillna(0.0)
+        self.__weights = weights #pd.DataFrame(index=prices.index, columns=assets, data=w).fillna(0.0)
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))

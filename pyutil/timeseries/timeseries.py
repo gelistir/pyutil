@@ -74,3 +74,11 @@ def mtd(ts, today=None):
     assert isinstance(ts.index[0], pd.Timestamp)
     first_day_of_month = (today + pd.offsets.MonthBegin(-1)).date()
     return ts.truncate(before=first_day_of_month, after=today)
+
+
+def consecutive(x):
+    d = pd.Series(index = x.index)
+    last = 0
+    for i,t in x.items():
+        d[i], last = (last + 1, last + 1) if t else (0, 0)
+    return d.apply(int)
