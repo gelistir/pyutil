@@ -32,14 +32,6 @@ class PortfolioBuilder(object):
     def current_prices(self, t):
         return self.__prices.ix[t].dropna()
 
-    def yesterday_prices(self, t):
-        p = self.__prices.truncate(after=t)
-        return p.ix[p.index[-2]]
-
-    def yesterday_weights(self, t):
-        w = self.weights.truncate(after=t)
-        return w.ix[w.index[-2]]
-
     @property
     def cash(self):
         return self.weights.sum(axis=1)
@@ -51,48 +43,20 @@ class PortfolioBuilder(object):
     def build(self, logger=None):
         return Portfolio(prices = self.__prices, weights = self.__weights, logger=logger)
 
+    def __before(self, t):
+        tt = self.timestamps.get_loc(t)
+        return self.timestamps[tt-1]
+
     def forward(self, t):
         # We move weights to t
-        p2 = self.current_prices(t)
-        p1 = self.yesterday_prices(t)
-        w1 = self.yesterday_weights(t)
+        yesterday = self.__before(t)
 
-        # we only update weights that are finite
-        w1 = w1.dropna()
+        w1 = self.current_weights(yesterday)
+        r = self.returns.ix[t]
 
         # fraction of the cash in the portfolio yesterday
         cash = 1.0 - w1.sum()
         # new value of each position
-        value = w1 * (p2 / p1)
+        value = w1 * (r + 1)
 
-        # new weights
-        w = value / (value.sum() + cash)
-
-        self.weights.ix[t] = w
-
-
-if __name__ == '__main__':
-    prices = pd.DataFrame(columns=["A", "B"], index=[1, 2], data=[[100,100],[110,100]])
-    print(prices)
-
-    builder = PortfolioBuilder(prices=prices)
-
-    # set the initial weights...
-    # builder.t = 1
-    builder.weights.ix[1] = {"A": 0.2, "B": 0.8}
-
-    print(builder.cash)
-    print(builder.weights)
-
-    for t in builder.timestamps[1:]:
-        # forward weights from previous state
-        builder.forward(t)
-
-        # set new weights
-        print(builder.weights)
-        print(builder.current_weights)
-
-    portfolio = builder.build()
-    print(portfolio.weights)
-
-
+        self.weights.ix[t] = value / (value.sum() + cash)
