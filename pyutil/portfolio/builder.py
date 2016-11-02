@@ -8,6 +8,11 @@ class PortfolioBuilder(object):
     def __init__(self, prices):
         self.__prices = prices.ffill()
         self.__weights = pd.DataFrame(index = prices.index, columns=prices.keys(), data=np.nan)
+        self.__returns = self.__prices.pct_change()
+
+    @property
+    def timestamps(self):
+        return self.__prices.index
 
     @property
     def assets(self):
@@ -15,24 +20,29 @@ class PortfolioBuilder(object):
 
     @property
     def returns(self):
-        return self.__prices.pct_change()
+        return self.__returns  #.truncate(after=self.t)
 
-    # make sure weight is a dictionary or series!
-    def set_weights(self, t, weights):
-        for asset, weight in weights.items():
-            self.set_weight(t, asset, weight)
+    @property
+    def weights(self):
+        return self.__weights  #.truncate(after=self.t)
 
-    def set_weight(self, t, asset, weight):
-        # we should have prices for the assets
-        assert asset in self.assets, "Unknown asset {0}".format(asset)
+    def current_weights(self, t):
+        return self.__weights.ix[t].dropna()
 
-        # the weight has to be a real number
-        assert np.isfinite(weight), "Weight has to be a finite number {0}".format(weight)
+    def current_prices(self, t):
+        return self.__prices.ix[t].dropna()
 
-        # the price has to be there
-        assert np.isfinite(self.__prices[asset][t]), "Price for asset {0} has to be available at time {1}".format(asset, t)
+    def yesterday_prices(self, t):
+        p = self.__prices.truncate(after=t)
+        return p.ix[p.index[-2]]
 
-        self.__weights[asset][t] = weight
+    def yesterday_weights(self, t):
+        w = self.weights.truncate(after=t)
+        return w.ix[w.index[-2]]
+
+    @property
+    def cash(self):
+        return self.weights.sum(axis=1)
 
     @property
     def prices(self):
@@ -43,20 +53,22 @@ class PortfolioBuilder(object):
 
     def forward(self, t):
         # We move weights to t
-        p = self.__prices.truncate(after=t)
-        p2 = p.ix[p.index[-1]]
-        p1 = p.ix[p.index[-2]]
-        w1 = self.__weights.ix[p.index[-2]]
+        p2 = self.current_prices(t)
+        p1 = self.yesterday_prices(t)
+        w1 = self.yesterday_weights(t)
 
         # we only update weights that are finite
-        w1 = w1[w1.notnull()]
+        w1 = w1.dropna()
 
+        # fraction of the cash in the portfolio yesterday
         cash = 1.0 - w1.sum()
+        # new value of each position
         value = w1 * (p2 / p1)
+
+        # new weights
         w = value / (value.sum() + cash)
 
-        for asset, weight in w.items():
-            self.set_weight(t, asset=asset, weight=weight)
+        self.weights.ix[t] = w
 
 
 if __name__ == '__main__':
@@ -64,10 +76,21 @@ if __name__ == '__main__':
     print(prices)
 
     builder = PortfolioBuilder(prices=prices)
-    builder.set_weight(t=1, asset="A", weight=0.2)
-    builder.set_weight(t=1, asset="B", weight=0.8)
 
-    builder.forward(t=2)
+    # set the initial weights...
+    # builder.t = 1
+    builder.weights.ix[1] = {"A": 0.2, "B": 0.8}
+
+    print(builder.cash)
+    print(builder.weights)
+
+    for t in builder.timestamps[1:]:
+        # forward weights from previous state
+        builder.forward(t)
+
+        # set new weights
+        print(builder.weights)
+        print(builder.current_weights)
 
     portfolio = builder.build()
     print(portfolio.weights)
