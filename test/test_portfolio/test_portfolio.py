@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import pandas.util.testing as pdt
 from nose.tools import raises
-from pyutil.portfolio.portfolio import forward, Portfolio
+from pyutil.portfolio.portfolio import Portfolio
 from test.config import test_portfolio, read_frame
 from unittest import TestCase
 
@@ -130,44 +130,6 @@ class TestPortfolio(TestCase):
         portfolio = test_portfolio()
         p = portfolio.ytd(today=portfolio.index[-1])
         self.assertEqual(p.index[0], pd.Timestamp("2015-01-01"))
-
-    def test_forward_1(self):
-        w1 = np.array([0.5, 0.5])
-        w2 = np.array([0.6, 0.4])
-        w2 = forward(w1=w1, w2=w2, p1=np.array([10.0, 10.0]), p2=([20.0, 10.0]))
-        self.assertAlmostEqual(w2[0], 0.6, places=10)
-        self.assertAlmostEqual(w2[1], 0.4, places=10)
-
-    def test_forward_2(self):
-        w1 = pd.Series(data=[0.5, 0.5])
-        w2 = np.nan*w1
-        p1 = pd.Series(data=[10.0, 10.0])
-        p2 = pd.Series(data=[20.0, 10.0])
-
-        w2 = forward(w1=w1, w2=w2, p1=p1, p2=p2)
-        self.assertAlmostEqual(w2[0], 2.0 / 3.0, places=10)
-        self.assertAlmostEqual(w2[1], 1.0 / 3.0, places=10)
-
-    def test_forward_3(self):
-        w1 = np.array([0.5, 0.5])
-        w2 = np.array([np.nan, np.nan])
-
-        p1 = np.array([10.0, 10.0])
-        p2 = np.array([20.0, 10.0])
-
-        w2 = forward(w1,w2,p1,p2)
-        self.assertAlmostEqual(w2[0],2.0/3.0,places=5)
-        self.assertAlmostEqual(w2[1],1.0/3.0,places=5)
-
-    @raises(AssertionError)
-    def test_forward_4(self):
-        w1 = np.array([0.5, 0.5])
-        w2 = np.array([np.nan, 0.5])
-
-        p1 = np.array([10.0, 10.0])
-        p2 = np.array([20.0, 10.0])
-
-        w2 = forward(w1,w2,p1,p2)
 
     def test_state(self):
         p = test_portfolio()

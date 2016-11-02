@@ -15,33 +15,21 @@ def merge(portfolios, axis=0, logger=None):
     weights = pd.concat([p.weights for p in portfolios], axis=axis, verify_integrity=True)
     return Portfolio(prices, weights.fillna(0.0), logger=logger)
 
-
-def forward(w1, w2, p1, p2):
-    # w1 weight at time t1
-    # w2 weight at time t2
-    # p1 price at time t1
-    # p2 price at time t2
-    # return the extrapolated weights at time t2
-
-    # in some scenarios the weight are set even before a first price is known.
-
-    valid = np.isfinite(w2)
-
-    if np.all(valid):
-        # all weights are valid
-        return w2
-    elif np.all(~valid):
-        # not a single weight is valid
-        cash = 1.0 - np.nansum(w1)
-        value = w1 * (p2 / p1)
-        w = value / (np.nansum(value) + cash)
-        w[np.isnan(w)] = 0.0
-        return w
-    else:
-        assert False, "Partial definition of weights. Problem! w2: {0}, w1: {1}".format(w2, w1)
-
-
 class Portfolio(object):
+    @staticmethod
+    def __forward(w1, p1, p2):
+        # w1 weight at time t1
+        # p1 price at time t1
+        # p2 price at time t2
+        # return the extrapolated weights at time t2
+
+        # not a single weight is valid
+        cash = 1.0 - np.sum(w1)
+        value = w1 * (p2 / p1)
+        w = value / (np.sum(value) + cash)
+        return w
+
+
     def iron_threshold(self, threshold=0.02):
         """
         Iron a portfolio, do not touch the last index
@@ -58,7 +46,7 @@ class Portfolio(object):
 
         for i in range(1, p.shape[0] - 1):
             if np.abs(w[i] - w[i - 1]).max() <= threshold:
-                w[i] = forward(w1=w[i - 1], w2=np.nan * w[i - 1], p1=p[i - 1], p2=p[i])
+                w[i] = self.__forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
 
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
@@ -82,7 +70,7 @@ class Portfolio(object):
 
         for i in range(1, p.shape[0] - 1):
             if i not in moments:
-                w[i] = forward(w1=w[i - 1], w2=np.nan * w[i - 1], p1=p[i - 1], p2=p[i])
+                w[i] = self.__forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
 
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
@@ -101,17 +89,8 @@ class Portfolio(object):
         assert prices.index.is_monotonic_increasing, "Price Index is not increasing"
         assert weights.index.is_monotonic_increasing, "Weight Index is not increasing"
 
-        # list of assets
-        #assets = list(weights.keys())
         self.__prices = prices.ffill()
-
-        #p = prices[assets].ffill().values
-        #w = weights[assets].values
-
-        #for i in range(1, p.shape[0]):
-        #    w[i] = forward(w1=w[i - 1], w2=w[i], p1=p[i - 1], p2=p[i])
-
-        self.__weights = weights #pd.DataFrame(index=prices.index, columns=assets, data=w).fillna(0.0)
+        self.__weights = weights.fillna(0.0)
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
@@ -336,10 +315,9 @@ class Portfolio(object):
 
         weights = self.weights.ffill().ix[trade_events].transpose()
 
-        extrapolated = forward(w1=self.weights.ffill().ix[yesterday],
-                               w2=np.nan * self.weights.ffill().ix[yesterday],
-                               p1=self.prices.ffill().ix[yesterday],
-                               p2=self.prices.ffill().ix[today])
+        extrapolated = self.__forward(w1=self.weights.ffill().ix[yesterday],
+                                      p1=self.prices.ffill().ix[yesterday],
+                                      p2=self.prices.ffill().ix[today])
 
         gap = weights[today] - extrapolated
 

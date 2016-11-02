@@ -20,11 +20,11 @@ class PortfolioBuilder(object):
 
     @property
     def returns(self):
-        return self.__returns  #.truncate(after=self.t)
+        return self.__returns
 
     @property
     def weights(self):
-        return self.__weights  #.truncate(after=self.t)
+        return self.__weights
 
     def current_weights(self, t):
         return self.__weights.ix[t].dropna()
