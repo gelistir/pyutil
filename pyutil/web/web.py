@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from pyutil.performance.performance import performance
+from ..performance.performance import performance
 
 TABLE_FORMAT = "table table-striped table-bordered"
 

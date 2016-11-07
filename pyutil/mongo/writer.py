@@ -1,8 +1,8 @@
 import pandas as pd
 import logging
 
-from pyutil.json.json import flatten, series2dict
-from pyutil.mongo.reader import _ArchiveReader
+from ..json.json import flatten, series2dict
+from .reader import _ArchiveReader
 
 
 class _ArchiveWriter(_ArchiveReader):

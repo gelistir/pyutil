@@ -3,12 +3,12 @@ import logging
 import numpy as np
 import pandas as pd
 
-from pyutil.json.json import series2dict, frame2dict
-from pyutil.nav.nav import Nav
-from pyutil.performance.periods import period_returns, periods
-from pyutil.portfolio.maths import xround, buy_or_sell
-from pyutil.timeseries.timeseries import ytd, mtd
+from ..json.json import series2dict, frame2dict
+from ..nav.nav import Nav
+from ..performance.periods import period_returns, periods
+from ..timeseries.timeseries import ytd, mtd
 
+from .maths import xround, buy_or_sell
 
 def merge(portfolios, axis=0, logger=None):
     prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)

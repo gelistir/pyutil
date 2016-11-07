@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from pymongo.database import Database
-from pyutil.mongo.reader import _ArchiveReader
-from pyutil.mongo.writer import _ArchiveWriter
+from .reader import _ArchiveReader
+from .writer import _ArchiveWriter
 
 
 def __database(name, host, port):

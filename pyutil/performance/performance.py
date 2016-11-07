@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 from collections import OrderedDict
-from pyutil.performance.drawdown import drawdown
-from pyutil.performance.periods import periods, period_returns
-from pyutil.performance.var import value_at_risk, conditional_value_at_risk
+from .drawdown import drawdown
+from .periods import periods, period_returns
+from .var import value_at_risk, conditional_value_at_risk
 
 
 def __gmean(a):
@@ -59,7 +59,8 @@ def performance(nav, days=262, years=None):
     d["Annua. Volatility"] = annualized_volatility(nav, days=days)
     d["Annua. Sharpe Ratio"] = sharpe_ratio(nav, days=days)
 
-    d["Max Drawdown"] = 100 * drawdown(nav).max()
+    dd = drawdown(nav)
+    d["Max Drawdown"] = 100 * dd.max()
     d["Max % return"] = 100 * r.max()
     d["Min % return"] = 100 * r.min()
 
@@ -70,7 +71,7 @@ def performance(nav, days=262, years=None):
 
     d["Current Nav"] = nav[last]
     d["Max Nav"] = nav.max()
-    d["Current Drawdown"] = 100 * (nav.max() - nav[last])/nav.max()
+    d["Current Drawdown"] = 100 * dd[dd.index[-1]] #(nav.max() - nav[last])/nav.max()
 
     d["Calmar Ratio (3Y)"] = sortino_ratio(nav, days=days)
 

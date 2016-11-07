@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from pyutil.portfolio.portfolio import Portfolio
+from .portfolio import Portfolio
 
 
 class PortfolioBuilder(object):
