@@ -38,3 +38,5 @@ class TestTimeseries(TestCase):
     def test_consecutive(self):
         x = pd.Series(index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], data=[1, 0, 0, 1, 1, 1, 0, 0, 1, 1])
         pdt.assert_series_equal(consecutive(x), pd.Series(index=x.index, data=[1, 0, 0, 1, 2, 3, 0, 0, 1, 2]))
+
+

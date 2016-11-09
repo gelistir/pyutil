@@ -10,12 +10,8 @@ class TestRunner(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.writer = writer("tmp_ZHJKJFA8", host="mongo")
+        cls.writer.update_assets(read_frame("price.csv", parse_dates=True))
 
-        # write assets into test database. Writing is slow!
-        assets = read_frame("price.csv", parse_dates=True)
-
-        for asset in assets:
-            cls.writer.update_asset(asset, assets[asset])
 
     def test_run(self):
         # specify the module via its name

@@ -28,3 +28,13 @@ def trend(price, a=32, b=96, vola=32, winsor=4.2, min_periods=50):
 
 def winsorize(data, winsor=4.2):
     return data.apply(np.clip, a_min=-winsor, a_max=winsor)
+
+
+def gap_correction(ts):
+    """
+    For adjusting volatility based on monthly or weekly data
+    :param ts: ts
+    :return: ts / sqrt(mean-gap in business days)
+    """
+    meangap = np.mean([np.busday_count(enddates=ts.index[i], begindates=ts.index[i-1]) for i in range(1,ts.size)])
+    return ts / np.sqrt(meangap)

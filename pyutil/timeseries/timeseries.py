@@ -33,7 +33,7 @@ def subsample(ts, day=15, incl=False):
         return ts.ix[dates.values]
 
 
-def adjust(ts):
+def adjust(ts: pd.Series) -> pd.Series:
     """
     adjust a (nav) series. Multiply the series with a constant such that the first entry is 1.0
 
@@ -41,12 +41,11 @@ def adjust(ts):
 
     :return: adjusted series
     """
-    assert isinstance(ts, pd.Series)
     c = ts.copy().dropna()
     return c / c[c.index[0]]
 
 
-def ytd(ts, today=None):
+def ytd(ts: pd.Series, today=None)->pd.Series:
     """
     Extract year to date of a series or a frame
 
@@ -61,7 +60,7 @@ def ytd(ts, today=None):
     return ts.truncate(before=first_day_of_year, after=today)
 
 
-def mtd(ts, today=None):
+def mtd(ts: pd.Series, today=None) -> pd.Series:
     """
     Extract month to date of a series or a frame
 
@@ -76,9 +75,9 @@ def mtd(ts, today=None):
     return ts.truncate(before=first_day_of_month, after=today)
 
 
-def consecutive(x):
-    d = pd.Series(index = x.index)
+def consecutive(ts: pd.Series)->pd.Series:
+    d = pd.Series(index = ts.index)
     last = 0
-    for i,t in x.items():
+    for i,t in ts.items():
         d[i], last = (last + 1, last + 1) if t else (0, 0)
     return d.apply(int)

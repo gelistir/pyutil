@@ -1,7 +1,7 @@
-import abc
 import pandas as pd
 import logging
 
+from .abc_archive import Archive
 from ..portfolio.portfolio import Portfolio
 from ..timeseries.timeseries import adjust
 
@@ -9,14 +9,6 @@ from ..timeseries.timeseries import adjust
 def _f(frame):
     frame.index = [pd.Timestamp(x) for x in frame.index]
     return frame
-
-
-class Archive(object):
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
-    def history(self, items, name, before):
-        return
 
 
 class _Portfolios(object):
@@ -104,8 +96,8 @@ class _ArchiveReader(Archive):
 
         return _f(frame).truncate(before=before)
 
-    def history_series(self, item, name="PX_LAST"):
-        return self.history(items=[item], name=name)[item]
+    #def history_series(self, item, name="PX_LAST"):
+    #    return self.history(items=[item], name=name)[item]
 
     @property
     def symbols(self):
