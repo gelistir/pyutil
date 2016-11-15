@@ -23,5 +23,5 @@ if __name__ == '__main__':
 
     f.set_size_inches(15,15)
     print(f.get_axes())
-    print(f.suptitle("Test Portfolio"))
-    f.savefig("/pyutil/results/portfolio.png")
+    #print(f.suptitle("Test Portfolio"))
+    f.savefig("/pyutil/examples/portfolio.png")

@@ -1,7 +1,7 @@
 # Set the base image to Ubuntu
 FROM continuumio/miniconda3
 
-RUN conda install -q -y pandas=0.19.1 requests=2.11.1 matplotlib pymongo xlrd=1.0.0 jinja2=2.8 xlsxwriter==0.9.3 seaborn
+RUN conda install -q -y pandas=0.19.1 requests=2.11.1 matplotlib pymongo xlrd=1.0.0 jinja2=2.8 xlsxwriter==0.9.3
 
 # install a writer for excel...
 RUN pip install premailer==3.0.1 raven==5.27.1

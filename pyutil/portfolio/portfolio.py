@@ -298,27 +298,28 @@ class Portfolio(object):
     def plot(self, tradingDays=False):
 
         import matplotlib.pyplot as plt
-        import seaborn as sns
-        sns.set(style="darkgrid")
+
+        import matplotlib
+        matplotlib.style.use('ggplot')
 
         f = plt.figure()
 
         ax1 = f.add_subplot(211)
-        (100 * (self.nav.series)).plot(ax=ax1)
+        (100 * (self.nav.series)).plot(ax=ax1, color="blue")
         if tradingDays:
             x1, x2, y1, y2 = plt.axis()
             plt.vlines(x=self.trading_days, ymin=y1, ymax=y2, colors="red")
         plt.legend(["NAV"], loc=2)
 
         ax2 = f.add_subplot(413,sharex=ax1)
-        (100*self.nav.drawdown).plot.area(ax=ax2, alpha=0.3, color="red")
+        (100*self.nav.drawdown).plot.area(ax=ax2, alpha=0.2, color="red", linewidth=2)
         plt.legend(["Drawdown"], loc=2)
 
         ax3 = plt.subplot(414, sharex=ax1)
-        (100 * self.leverage).plot(ax=ax3, color='g')
+        (100 * self.leverage).plot(ax=ax3, color='green')
         ax3.set_ylim([-10, 110])
 
-        (100 * self.weights.max(axis=1)).plot(ax=ax3, color='b')
+        (100 * self.weights.max(axis=1)).plot(ax=ax3, color='blue')
         plt.legend(["Leverage","Max Weight"], loc=2)
 
         f.subplots_adjust(hspace=0.05)
