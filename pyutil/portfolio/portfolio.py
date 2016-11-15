@@ -213,39 +213,6 @@ class Portfolio(object):
     def apply(self, function, axis=0):
         return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis), logger=self.__logger)
 
-    def plot(self, colors=None, tradingDays=False):
-        import matplotlib.pyplot as plt
-
-        colors = colors or [a['color'] for a in plt.rcParams['axes.prop_cycle']]
-        ax1 = plt.subplot(211)
-        (100 * (self.nav.series)).plot(ax=ax1, color=colors[0])
-        if tradingDays:
-            x1, x2, y1, y2 = plt.axis()
-            plt.vlines(x=self.trading_days, ymin=y1, ymax=y2, colors="red")
-        plt.grid()
-        plt.legend(["NAV"], loc=2)
-
-        ax2 = plt.subplot(614, sharex=ax1)
-        (100 * (self.leverage)).plot(ax=ax2, color=colors[1])
-        ax2.set_ylim([-10, 110])
-        plt.legend(["Leverage"], loc=2)
-        plt.grid()
-        # ax2.set_xticklabels(())
-
-        ax3 = plt.subplot(615, sharex=ax1)
-        (100 * (self.nav.drawdown)).plot(ax=ax3, color=colors[2])
-        plt.legend(["Drawdown"], loc=2)
-        plt.grid()
-        # ax3.set_xticklabels(())
-
-        ax4 = plt.subplot(616, sharex=ax1)
-        plt.grid()
-        (100 * (self.weights.max(axis=1))).plot(ax=ax4, color=colors[3])
-        plt.legend(["Max Weight"], loc=2)
-        plt.grid()
-
-        return [ax1, ax2, ax3, ax4]
-
     @property
     def trading_days(self):
         __fundsize = 1e6
@@ -326,6 +293,40 @@ class Portfolio(object):
         weights["Gap"] = 100 * gap
 
         return weights
+
+
+    def plot(self, tradingDays=False):
+
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        sns.set(style="darkgrid")
+
+        f = plt.figure()
+
+        ax1 = f.add_subplot(211)
+        (100 * (self.nav.series)).plot(ax=ax1)
+        if tradingDays:
+            x1, x2, y1, y2 = plt.axis()
+            plt.vlines(x=self.trading_days, ymin=y1, ymax=y2, colors="red")
+        plt.legend(["NAV"], loc=2)
+
+        ax2 = f.add_subplot(413,sharex=ax1)
+        (100*self.nav.drawdown).plot.area(ax=ax2, alpha=0.3, color="red")
+        plt.legend(["Drawdown"], loc=2)
+
+        ax3 = plt.subplot(414, sharex=ax1)
+        (100 * self.leverage).plot(ax=ax3, color='g')
+        ax3.set_ylim([-10, 110])
+
+        (100 * self.weights.max(axis=1)).plot(ax=ax3, color='b')
+        plt.legend(["Leverage","Max Weight"], loc=2)
+
+        f.subplots_adjust(hspace=0.05)
+        plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
+
+        return f
+
+
 
 
 if __name__ == '__main__':
