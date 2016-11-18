@@ -156,3 +156,9 @@ class TestPortfolio(TestCase):
     @raises(AssertionError)
     def test_duplicates_index(self):
         Portfolio(prices=pd.DataFrame(index=[1, 1]), weights=pd.DataFrame(index=[1, 1]))
+
+    def test_series(self):
+        prices=pd.DataFrame(index=[0,1,2],columns=["A","B"])
+        weights=pd.Series(index=["A","B"],data=[1.0,1.0])
+        p=Portfolio(prices=prices, weights=weights)
+        self.assertEquals(p.weights["B"][2],1)

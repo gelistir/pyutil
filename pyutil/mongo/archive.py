@@ -4,16 +4,16 @@ from .reader import _ArchiveReader
 from .writer import _ArchiveWriter
 
 
-def __database(name, host, port):
+def database(name, host="quantsrv", port=27017):
     return Database(MongoClient(host, port=port), name)
 
 
-def reader(name, host, port=27017, logger=None):
-    return _ArchiveReader(__database(name, host=host, port=int(port)), logger)
+def reader(name, host="quantsrv", port=27017, logger=None):
+    return _ArchiveReader(database(name, host=host, port=port), logger)
 
 
-def writer(name, host, port=27017, logger=None):
-    return _ArchiveWriter(__database(name, host=host, port=int(port)), logger)
+def writer(name, host="quantsrv", port=27017, logger=None):
+    return _ArchiveWriter(database(name, host=host, port=port), logger)
 
 
 

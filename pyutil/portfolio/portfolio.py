@@ -80,6 +80,14 @@ class Portfolio(object):
     def __init__(self, prices, weights, logger=None):
         self.__logger = logger or logging.getLogger(__name__)
 
+        if isinstance(weights, pd.Series):
+            w = pd.DataFrame(index=prices.index, columns=weights.keys())
+            for t in w.index:
+                w.ix[t] = weights
+
+            weights = w
+
+
         assert set(weights.keys()) <= set(prices.keys()), "Key for weights not subset of keys for prices"
         assert prices.index.equals(weights.index), "Index for prices and weights have to match"
 
