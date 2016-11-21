@@ -24,9 +24,10 @@ class Portfolio(object):
         # return the extrapolated weights at time t2
 
         # not a single weight is valid
-        cash = 1.0 - np.sum(w1)
+        cash = 1.0 - np.nansum(w1)
+        # note that it's not possible that p1 is defined but p2 is nan... prices are forward interpolated
         value = w1 * (p2 / p1)
-        w = value / (np.sum(value) + cash)
+        w = value / (np.nansum(value) + cash)
         return w
 
 
