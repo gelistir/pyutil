@@ -10,6 +10,9 @@ from pyutil.portfolio.portfolio import Portfolio
 if __name__ == '__main__':
     pd.options.display.width = 300 #set_option("display.width", 300)
 
+    import matplotlib.pyplot as plt
+    plt.style.use('ggplot')
+
     file_prices = "data/price.csv"
     file_weights = "data/weight.csv"
 

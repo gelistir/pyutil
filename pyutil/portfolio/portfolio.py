@@ -303,14 +303,11 @@ class Portfolio(object):
         return weights
 
 
-    def plot(self, tradingDays=False):
+    def plot(self, tradingDays=False, figsize=(16,10)):
 
         import matplotlib.pyplot as plt
 
-        import matplotlib
-        matplotlib.style.use('ggplot')
-
-        f = plt.figure()
+        f = plt.figure(figsize=figsize)
 
         ax1 = f.add_subplot(211)
         (100 * (self.nav.series)).plot(ax=ax1, color="blue")
