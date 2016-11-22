@@ -26,8 +26,13 @@ class Portfolio(object):
         # not a single weight is valid
         cash = 1.0 - np.nansum(w1)
         # note that it's not possible that p1 is defined but p2 is nan... prices are forward interpolated
+        p2[np.isnan(p2)] = p1[np.isnan(p2)]
+
         value = w1 * (p2 / p1)
         w = value / (np.nansum(value) + cash)
+        # interpolate the nan values with 0
+        w[np.isnan(w)] = 0
+
         return w
 
 
@@ -48,6 +53,9 @@ class Portfolio(object):
         for i in range(1, p.shape[0] - 1):
             if np.abs(w[i] - w[i - 1]).max() <= threshold:
                 w[i] = self.__forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
+            else:
+                # now we do nothing. We do not forward interpolate the old weights. Rather we use the weights computed by the algo
+                pass
 
         p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
         w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
