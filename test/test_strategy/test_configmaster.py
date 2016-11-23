@@ -1,7 +1,7 @@
 import pandas as pd
 from unittest import TestCase
 
-from pyutil.mongo.archive import writer
+from pyutil.mongo.archive import reader
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.strategy.ConfigMaster import ConfigMaster
 from test.config import read_frame
@@ -30,8 +30,8 @@ class Configuration(ConfigMaster):
 class TestCconfigMaster(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.writer = writer("tmp_ZHJKJFA8", host="mongo")
-        cls.writer.update_assets(read_frame("price.csv", parse_dates=True))
+        cls.writer = reader("tmp_ZHJKJFA8", host="mongo")
+        cls.writer.assets.update_all(read_frame("price.csv", parse_dates=True))
 
     def test_master(self):
 

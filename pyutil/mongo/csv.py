@@ -5,8 +5,11 @@ class CsvArchive(Archive):
     def __init__(self):
         self.__data = dict()
 
-    def put(self, frame, name="PX_LAST"):
-        self.__data[name] = frame
+    def __getitem__(self, item):
+        return self.__data[item]
+
+    def __setitem__(self, key, value):
+        self.__data[key] = value
 
     def history(self, items, name="PX_LAST", before=pd.Timestamp("2002-01-01")):
-        return self.__data[name][items].truncate(before=before)
+        return self[name][items].truncate(before=before)
