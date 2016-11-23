@@ -29,23 +29,16 @@ class _ArchiveWriter(_ArchiveReader):
         for key in frame.keys():
             self.update_asset(key, ts=frame[key].dropna(), name=name)
 
-    def update_portfolio(self, key, portfolio, group, n=0, comment=""):
+    def update_portfolio(self, key, portfolio, group, comment=""):
         self.logger.info("Key {0}, Group {1}".format(key, group))
 
         q = {"_id": key}
         if key in self.portfolios.keys():
-            offset = self.portfolios.index(key)[-1] - pd.offsets.BDay(n=n)
-            self.logger.debug("Offset {0}".format(offset))
-            returns = portfolio.nav.returns
-
-            p = portfolio.truncate(before=offset + pd.offsets.Second(n=1))
-            r = returns.truncate(before=offset + pd.offsets.Second(n=1))
-
             # If there is any data left after the truncation process write into database
-            if not p.empty:
-                self.__db.strategy.update(q, {"$set": flatten("weight", p.weights.stack())}, upsert=True)
-                self.__db.strategy.update(q, {"$set": flatten("price", p.prices.stack())}, upsert=True)
-                self.__db.strategy.update(q, {"$set": flatten("returns", r)}, upsert=True)
+            if not portfolio.empty:
+                self.__db.strategy.update(q, {"$set": flatten("weight", portfolio.weights.stack())}, upsert=True)
+                self.__db.strategy.update(q, {"$set": flatten("price", portfolio.prices.stack())}, upsert=True)
+                self.__db.strategy.update(q, {"$set": flatten("returns", portfolio.nav.series.pct_change().dropna())}, upsert=True)
         else:
             # write the entire database into the database, one has to make sure _flatten and to_json are compatible
             self.__db.strategy.update(q, portfolio.to_json(), upsert=True)

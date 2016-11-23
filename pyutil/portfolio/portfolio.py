@@ -169,6 +169,11 @@ class Portfolio(object):
 
     @property
     def empty(self):
+        """
+        Return True if the portfolio is empty, False otherwise. A portfolio is empty if any only if both prices and weights are empty
+
+        :return:
+        """
         return len(self.index) == 0
 
     @property
