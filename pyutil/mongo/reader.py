@@ -74,20 +74,20 @@ class _Symbols(object):
 
 
 class _Portfolios(object):
-    def __init__(self, col, logger=None):
+    def __init__(self, db, logger=None):
         self.logger = logger or logging.getLogger(__name__)
-        self.__col = col
+        self.__db = db
 
     def items(self):
         return [(k, self[k]) for k in self.keys()]
 
     def keys(self):
-        return {x["_id"] for x in self.__col.find({}, {"_id": 1})}
+        return {x["_id"] for x in self.__db.find({}, {"_id": 1})}
 
     # return a dictionary portfolio
     def __getitem__(self, item):
         self.logger.debug("Portfolio: {0}".format(item))
-        p = self.__col.find_one({"_id": item}, {"_id": 1})
+        p = self.__db.find_one({"_id": item}, {"_id": 1})
         if p:
             prices = self.prices(item)
             weights = self.weights(item)
@@ -102,12 +102,12 @@ class _Portfolios(object):
         return self.weights(item).index
 
     def weights(self, item):
-        p = self.__col.find_one({"_id": item}, {"_id": 1, "weight": 1})
+        p = self.__db.find_one({"_id": item}, {"_id": 1, "weight": 1})
         assert p
         return _f(pd.DataFrame(p["weight"])).ffill().fillna(0.0)
 
     def prices(self, item):
-        p = self.__col.find_one({"_id": item}, {"_id": 1, "price": 1})
+        p = self.__db.find_one({"_id": item}, {"_id": 1, "price": 1})
         assert p
         return _f(pd.DataFrame(p["price"]))
 
@@ -118,13 +118,13 @@ class _Portfolios(object):
 
     @property
     def strategies(self):
-        portfolios = self.__col.find({}, {"_id": 1, "group": 1, "time": 1, "comment": 1})
+        portfolios = self.__db.find({}, {"_id": 1, "group": 1, "time": 1, "comment": 1})
         d = {p["_id"]: pd.Series({"group": p["group"], "time": p["time"], "comment": p["comment"]}) for p in portfolios}
         return pd.DataFrame(d).transpose()
 
     @property
     def nav(self):
-        frame = pd.DataFrame({x["_id"]: pd.Series(x["returns"]) for x in self.__col.find({}, {"_id": 1, "returns": 1})})
+        frame = pd.DataFrame({x["_id"]: pd.Series(x["returns"]) for x in self.__db.find({}, {"_id": 1, "returns": 1})})
         return _f(frame + 1.0).cumprod().apply(adjust)
 
 
@@ -135,15 +135,17 @@ class _Portfolios(object):
         if key in self.keys():
             # If there is any data left after the truncation process write into database
             if not portfolio.empty:
-                self.__col.update(q, {"$set": flatten("weight", portfolio.weights.stack())}, upsert=True)
-                self.__col.update(q, {"$set": flatten("price", portfolio.prices.stack())}, upsert=True)
-                self.__col.update(q, {"$set": flatten("returns", portfolio.nav.series.pct_change().dropna())}, upsert=True)
+                self.__db.update(q, {"$set": flatten("weight", portfolio.weights.stack())}, upsert=True)
+                self.__db.update(q, {"$set": flatten("price", portfolio.prices.stack())}, upsert=True)
+                r = portfolio.nav.series.pct_change().dropna()
+                if len(r.index) > 0:
+                    self.__db.update(q, {"$set": flatten("returns", r)}, upsert=True)
         else:
             # write the entire database into the database, one has to make sure _flatten and to_json are compatible
-            self.__col.update(q, portfolio.to_json(), upsert=True)
+            self.__db.update(q, portfolio.to_json(), upsert=True)
 
         now = pd.Timestamp("now")
-        self.__col.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)
+        self.__db.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)
         return self[key]
 
 
