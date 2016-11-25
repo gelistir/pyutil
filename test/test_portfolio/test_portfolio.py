@@ -36,6 +36,8 @@ class TestPortfolio(TestCase):
     def test_top_flop(self):
         x = portfolio.top_flop(day_final=pd.Timestamp("2015-01-01"))
         self.assertAlmostEqual(x["Value"].values[16], 0.00025637273414469419, places=5)
+        self.assertEqual(x.index.names[0],"category")
+        self.assertEqual(x.index.names[1],"rank")
 
     def test_tail(self):
         x = portfolio.tail(5)

@@ -211,7 +211,7 @@ class Portfolio(object):
         d["flop YTD"] = a.head(5).reset_index().rename(columns={"Year-to-Date": "Value"})
         a = s.sort_values(by=["Year-to-Date"], ascending=False)[["Year-to-Date"]]
         d["top YTD"] = a.head(5).reset_index().rename(columns={"Year-to-Date": "Value"})
-        return pd.concat(d, axis=0)
+        return pd.concat(d, axis=0, names=["category","rank"])
 
     def tail(self, n=10):
         w = self.weights.tail(n)

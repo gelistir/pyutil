@@ -14,4 +14,5 @@ COPY ./pyutil /pyutil
 
 WORKDIR pyutil
 
-
+# Import this to run construct the font-cache
+RUN python -c "from matplotlib.font_manager import FontManager"

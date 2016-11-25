@@ -3,6 +3,7 @@ from pyutil.mongo.archive import reader
 from test.config import read_frame, test_portfolio
 from unittest import TestCase
 import pandas.util.testing as pdt
+from nose.tools import raises
 
 class TestArchive(TestCase):
     @classmethod
@@ -89,3 +90,22 @@ class TestArchive(TestCase):
         s = self.archive.symbols["A"]
         self.assertEqual(s["group"], "Alternatives")
 
+
+    def test_multiindex_1(self):
+        tuples = [("Maffay", "X"), ("Maffay", "Y"), ("Peter", "A"), ("Peter", "B")]
+        index = pd.MultiIndex.from_tuples(tuples=tuples, names=["number", "color"])
+        x = pd.DataFrame(columns=["C1"], index=index, data=[[2], [3], [0], [1]])
+        self.archive.frames["MyFrame"] = x
+        pdt.assert_frame_equal(self.archive.frames["MyFrame"], x)
+
+    def test_multiindex_2(self):
+        x = pd.DataFrame(columns=["C1"], index=["A","B"], data=[[2], [3]])
+        self.archive.frames["MyFrame"] = x
+        pdt.assert_frame_equal(self.archive.frames["MyFrame"], x)
+
+    @raises(AssertionError)
+    def test_multiindex_3(self):
+        tuples = [("Maffay", "X"), ("Maffay", "Y"), ("Peter", "A"), ("Peter", "B")]
+        index = pd.MultiIndex.from_tuples(tuples=tuples)
+        x = pd.DataFrame(columns=["C1"], index=index, data=[[2], [3], [0], [1]])
+        self.archive.frames["MyFrame"] = x

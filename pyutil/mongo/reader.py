@@ -155,12 +155,22 @@ class _Frames(object):
         self.__db = db
 
     def __getitem__(self, item):
-        a = self.__db.find_one({"_id": item}, {"data": 1})
-        return pd.read_json(a["data"], orient="split")
+        a = self.__db.find_one({"_id": item})
+        if "index" in a.keys():
+            return pd.read_json(a["data"], orient="split").set_index(a["index"])
+        else:
+            return pd.read_json(a["data"], orient="split")
 
     def __setitem__(self, key, value):
-        frame = value.to_json(orient="split")
-        self.__db.update({"_id": key}, {"_id": key, "data": frame}, upsert=True)
+        if len(value.index.names) > 1:
+            frame=value.reset_index().to_json(orient="split")
+            for name in value.index.names:
+                assert name, "Using a multiindex all levels need to have names"
+
+            self.__db.update({"_id": key}, {"_id": key, "data": frame, "index": value.index.names}, upsert=True)
+        else:
+            frame = value.to_json(orient="split")
+            self.__db.update({"_id": key}, {"_id": key, "data": frame}, upsert=True)
 
 
     def items(self):
