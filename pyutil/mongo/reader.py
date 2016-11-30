@@ -104,7 +104,7 @@ class _Portfolios(object):
     def weights(self, item):
         p = self.__db.find_one({"_id": item}, {"_id": 1, "weight": 1})
         assert p
-        return _f(pd.DataFrame(p["weight"])).ffill().fillna(0.0)
+        return _f(pd.DataFrame(p["weight"])).fillna(0.0)
 
     def prices(self, item):
         p = self.__db.find_one({"_id": item}, {"_id": 1, "price": 1})
@@ -197,3 +197,5 @@ class _ArchiveReader(Archive):
     # bad idea to make history a property as we may have different names, e.g PX_LAST, PX_VOLUME, etc...
     def history(self, items=None, name="PX_LAST"):
         return self.assets.frame(items, name)
+
+

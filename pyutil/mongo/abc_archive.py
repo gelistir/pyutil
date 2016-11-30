@@ -1,5 +1,4 @@
 import abc
-import pandas as pd
 
 class Archive(object):
     __metaclass__ = abc.ABCMeta

@@ -21,8 +21,22 @@ def __cumreturn(ts):
 
 def sharpe_ratio(nav, days=262):
     # compute one day returns
-    r = nav.resample("1D").last().pct_change().dropna()
+    r = nav.pct_change().dropna()
     return np.sqrt(days) * (__gmean(r + 1) -1.0) / r.std()
+
+
+def sharpe_ratio_week(nav):
+    # compute one day returns
+    r = nav.resample("W").last().pct_change().dropna()
+    return np.sqrt(52) * (__gmean(r + 1) -1.0) / r.std()
+
+
+def sharpe_ratio_month(nav):
+    # compute one day returns
+    r = nav.resample("M").last().pct_change().dropna()
+    return np.sqrt(12) * (__gmean(r + 1) -1.0) / r.std()
+
+
 
 
 def sortino_ratio(nav, days=262):
