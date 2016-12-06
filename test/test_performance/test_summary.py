@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from pyutil.performance.summary import Summary
+from pyutil.performance.summary import Summary, performance
 from test.config import read_series
 
 s = Summary(read_series("ts.csv", parse_dates=True))
@@ -70,3 +70,8 @@ class TestSummary(TestCase):
         self.assertAlmostEqual(100 * s.ewm_volatility(periods=250).values[-1], 2.7706672542422539, places=6)
         self.assertAlmostEqual(100 * s.ewm_ret(periods=250).values[-1], 6.0326401733122053, places=6)
         self.assertAlmostEqual(s.ewm_sharpe(periods=250).values[-1], 2.177323951144059, places=6)
+
+    def test_performance(self):
+        x = read_series("ts.csv", parse_dates=True)
+        result = performance(x)
+        self.assertAlmostEqual(result["Max Drawdown"], 5.7000575458488578, places=10)

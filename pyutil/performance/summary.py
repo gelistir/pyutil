@@ -9,6 +9,10 @@ from .periods import period_returns, periods
 from .var import value_at_risk, conditional_value_at_risk
 
 
+def performance(nav, alpha=0.95, periods=None):
+    return Summary(nav).summary(alpha=alpha, periods=periods)
+
+
 class Summary(object):
     @staticmethod
     def __gmean(a):
