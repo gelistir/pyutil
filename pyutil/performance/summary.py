@@ -33,6 +33,10 @@ class Summary(object):
         self.__r = nav.pct_change().dropna()
 
     @property
+    def series(self):
+        return self.__nav
+
+    @property
     def monthlytable(self):
         return monthlytable(self.__nav)
 
@@ -128,30 +132,28 @@ class Summary(object):
         d["Return"] = 100 * self.cum_return
         d["# Events"] = self.events
 
-        d["Annua. Return"] = 100 * self.mean_r(periods=periods)#annualized_return(nav, days=days)
-        d["Annua. Volatility"] = 100 * self.std(periods=periods)#annualized_volatility(nav, days=days)
-        d["Annua. Sharpe Ratio"] = self.sharpe_ratio(periods=periods)#sharpe_ratio(nav, days=days)
+        d["Annua. Return"] = 100 * self.mean_r(periods=periods)
+        d["Annua. Volatility"] = 100 * self.std(periods=periods)
+        d["Annua. Sharpe Ratio"] = self.sharpe_ratio(periods=periods)
 
         dd = self.drawdown
         d["Max Drawdown"] = 100 * dd.max()
         d["Max % return"] = 100 * self.max_r
         d["Min % return"] = 100 * self.min_r
 
-        #per = period_returns(returns=r, offset=periods(today=r.index[-1]))
-
         d["MTD"] = 100*self.mtd
-        d["YTD"] = 100*self.ytd #per["Year-to-Date"]
+        d["YTD"] = 100*self.ytd
 
         d["Current Nav"] = self.__nav.tail(1).values[0]
         d["Max Nav"] = self.max_nav
-        d["Current Drawdown"] = 100 * dd[dd.index[-1]] #(nav.max() - nav[last])/nav.max()
+        d["Current Drawdown"] = 100 * dd[dd.index[-1]]
 
-        d["Calmar Ratio (3Y)"] = self.calmar_ratio(periods=periods) #sortino_ratio(nav, days=days)
+        d["Calmar Ratio (3Y)"] = self.calmar_ratio(periods=periods)
 
         d["Positive Days"] = self.__r[self.__r > 0].size
         d["Negative Days"] = self.__r[self.__r < 0].size
-        d["Value at Risk (alpha = 0.95)"] = 100*self.var(alpha=0.95)
-        d["Conditional Value at Risk (alpha = 0.95)"] = 100*self.cvar(alpha=0.95)
+        d["Value at Risk (alpha = {alpha})".format(alpha=alpha)] = 100*self.var(alpha=alpha)
+        d["Conditional Value at Risk (alpha = {alpha})".format(alpha=alpha)] = 100*self.cvar(alpha=alpha)
         d["First"] = self.__nav.index[0]
         d["Last"] = self.__nav.index[-1]
 
