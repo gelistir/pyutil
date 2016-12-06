@@ -41,7 +41,7 @@ def adjust(ts: pd.Series) -> pd.Series:
 
     :return: adjusted series
     """
-    c = ts.copy().dropna()
+    c = ts.dropna()
     return c / c[c.index[0]]
 
 

@@ -3,12 +3,11 @@ import logging
 import numpy as np
 import pandas as pd
 
+from pyutil.portfolio.nav import fromReturns
+from .maths import xround, buy_or_sell
 from ..json.json import series2dict, frame2dict
-from ..nav.nav import Nav
 from ..performance.periods import period_returns, periods
 from ..timeseries.timeseries import ytd, mtd
-
-from .maths import xround, buy_or_sell
 
 def merge(portfolios, axis=0, logger=None):
     prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
@@ -118,7 +117,7 @@ class Portfolio(object):
 
     @property
     def assets(self):
-        return sorted(list(self.__prices.keys()))
+        return list(self.__prices.sort_index(axis=1).columns)
 
     @property
     def prices(self):
@@ -134,7 +133,7 @@ class Portfolio(object):
 
     @property
     def nav(self):
-        return Nav((self.weighted_returns.sum(axis=1) + 1).cumprod().dropna())
+        return fromReturns(self.weighted_returns.sum(axis=1)) # + 1).cumprod().dropna())
 
     @property
     def weighted_returns(self):
@@ -155,13 +154,13 @@ class Portfolio(object):
     def leverage(self):
         return self.weights.ffill().sum(axis=1).dropna()
 
-    def summary(self, days=262):
-        return pd.DataFrame({n: self.tail(n).performance(days) for n in [100, 250, 500, 1000, 1500, 2500, 5000]})
+    #def summary(self, days=262):
+    #    return pd.DataFrame({n: self.tail(n).performance(days) for n in [100, 250, 500, 1000, 1500, 2500, 5000]})
 
-    def performance(self, days=262):
-        l = self.leverage
-        lev = pd.Series({"Av Leverage": l.mean(), "Current Leverage": l[l.index[-1]]})
-        return pd.concat((self.nav.performance(days), lev))
+    #def performance(self, days=262):
+    #    l = self.leverage
+    #    lev = pd.Series({"Av Leverage": l.mean(), "Current Leverage": l[l.index[-1]]})
+    #    return pd.concat((self.nav.performance(days), lev))
 
     def truncate(self, before=None, after=None):
         return Portfolio(prices=self.prices.truncate(before=before, after=after),

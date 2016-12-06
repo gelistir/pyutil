@@ -14,15 +14,13 @@ class TestPortfolio(TestCase):
         self.assertAlmostEqual(portfolio.leverage[pd.Timestamp("2013-07-19")], 0.25505730106555635, places=5)
 
     def test_nav(self):
-        self.assertAlmostEqual(portfolio.nav.series[pd.Timestamp("2013-07-19")], 0.9849066065468487, places=5)
+        self.assertAlmostEqual(portfolio.nav[pd.Timestamp("2013-07-19")], 0.9849066065468487, places=5)
 
     def test_assets(self):
-        self.assertSetEqual(set(portfolio.assets),
-                            {'A', 'B', 'C', 'D', 'E', 'F', 'G'})
+        self.assertSetEqual(set(portfolio.assets), {'A', 'B', 'C', 'D', 'E', 'F', 'G'})
 
     def test_summary(self):
-        # todo: include mtd, ytd
-        self.assertAlmostEqual(portfolio.summary()[100]["Max Drawdown"], 1.7524809688827636, places=5)
+        self.assertAlmostEqual(portfolio.nav.statistics.summary()["Max Drawdown"], 3.9885756705666742, places=5)
 
     def test_index(self):
         pdt.assert_index_equal(portfolio.index, portfolio.prices.index)

@@ -1,12 +1,11 @@
 import pandas as pd
 from unittest import TestCase
 
-from pyutil.mongo.archive import reader
+from pyutil.mongo.csv import CsvArchive
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.strategy.ConfigMaster import ConfigMaster
 from test.config import read_frame
 
-import pandas.util.testing as pdt
 
 class Configuration(ConfigMaster):
     def __init__(self, archive, t0, logger=None):
@@ -28,21 +27,13 @@ class Configuration(ConfigMaster):
 
 
 class TestCconfigMaster(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.writer = reader("tmp_ZHJKJFA8", host="mongo")
-        cls.writer.assets.update_all(read_frame("price.csv", parse_dates=True))
-
     def test_master(self):
+        archive = CsvArchive()
+        archive["PX_LAST"] = read_frame("price.csv", parse_dates=True)
 
-        con = Configuration(self.writer, t0=pd.Timestamp("2013-01-01"))
-        self.assertEqual(con.name, "test")
-        self.assertEquals(con.group, "testgroup")
-        p = con.prices(assets=["A","B"])
-        pdt.assert_frame_equal(p[["A","B"]], read_frame("price.csv")[["A","B"]].truncate(before=pd.Timestamp("2013-01-01")), check_less_precise=True)
+        configuration = Configuration(archive, t0=pd.Timestamp("2013-01-01"))
+        self.assertEqual(configuration.name, "test")
+        self.assertEquals(configuration.group, "testgroup")
 
-        portfolio=con.portfolio()
-        self.assertAlmostEquals(portfolio.nav.statistics.sharpe, -0.017204147680543617, places=5)
-
-
-
+        portfolio=configuration.portfolio()
+        self.assertAlmostEquals(portfolio.nav.statistics.sharpe_ratio(), -0.27817227635204395, places=5)

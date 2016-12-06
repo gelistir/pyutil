@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from ..performance.performance import performance
+from ..performance.summary import Summary
 
 TABLE_FORMAT = "table table-striped table-bordered"
 
@@ -9,8 +9,8 @@ def series2array(x, tz="CET"):
     return [[pd.Timestamp(key, tz=tz).value * 1e-6, value] for key, value in x.dropna().items()]
 
 
-def performance2json(x, decimals=2, dateformat="%Y-%m-%d", days=262):
-    p = performance(x, days=days)
+def performance2json(x, decimals=2, dateformat="%Y-%m-%d"):
+    p = Summary(nav = x).summary()
     for i in p.index:
         if isinstance(p[i], np.float64):
             p[i] = np.round(p[i], decimals=decimals)

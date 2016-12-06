@@ -1,4 +1,4 @@
-from pyutil.timeseries.signal import oscillator, trend, gap_correction
+from pyutil.timeseries.signal import oscillator, trend
 from unittest import TestCase
 import pandas as pd
 
@@ -14,6 +14,3 @@ class TestSignal(TestCase):
 
     def test_trend(self):
         self.assertAlmostEqual(trend(s)[index], -0.026098552008347351, places=5)
-
-    def test_gap(self):
-        self.assertAlmostEqual(gap_correction(s.ewm(com=20).std())[index], 0.0090075569206635921, places=5)

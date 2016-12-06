@@ -18,6 +18,7 @@ class TestPortfolioBuilder(TestCase):
         self.assertEqual(builder.prices["A"][2], 100)
         self.assertEqual(builder.returns["A"][2], 0.0)
         self.assertEqual(portfolio.weights["A"][1], 0.5)
+        self.assertEqual(builder.cash[2], 0.0)
 
     def test_forward(self):
         prices = pd.DataFrame(columns=["A", "B"], index=[1,2,3], data=[[100,120],[110, 110],[130,120]])

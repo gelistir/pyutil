@@ -1,7 +1,7 @@
 from unittest import TestCase
 import numpy as np
 
-from pyutil.random.rand import rand_asset, rand_assets
+from pyutil.rand.rand import rand_asset, rand_assets, rand_asset_auto
 
 
 class TestRandom(TestCase):
@@ -20,3 +20,7 @@ class TestRandom(TestCase):
         self.assertAlmostEqual(x.pct_change().corr()[0][1], 0.19524023082368255, places=5)
         self.assertAlmostEqual(x[1].pct_change().std(), 0.019553138398418057, places=5)
         self.assertAlmostEqual(x[0]["2016-11-25"], 0.7137679656717445, places=5)
+
+    def test_auto(self):
+        x = rand_asset_auto(corr=0.2, t0="2010-01-01", t1="2017-01-01")
+        self.assertAlmostEqual(x.pct_change().autocorr(), 0.17565822898735925, places=5)
