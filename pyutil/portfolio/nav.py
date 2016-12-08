@@ -17,21 +17,8 @@ class _Nav(object):
     def index(self):
         return self.__nav.index
 
-    #def summary(self, periods=None):
-    #    d = dict()
-    #    d["all"] = self.performance(periods=periods)
-    #    for n in [100, 250, 500, 1000, 1500, 2500]:
-    #        d[n] = self.tail(n).performance(periods=periods)
-
-    #    return pd.DataFrame(d)
-
     def adjust(self, value=100):
         return _Nav(adjust(self.__nav) * value)
-
-    #def performance(self, periods=None):
-    #    return performance(self.__nav, days).ix[
-    #        ["Annua. Return", "Annua. Volatility", "Annua. Sharpe Ratio", "Calmar Ratio (3Y)", "Max Nav",
-    #         "Max Drawdown", "YTD", "MTD", "Current Nav", "Current Drawdown", "Positive Days", "Negative Days"]]
 
     def tail(self, n):
         return _Nav(self.series.tail(n))
@@ -91,3 +78,5 @@ class _Nav(object):
     def resample(self, frequency="D"):
         return _Nav(self.__nav.resample(frequency).last())
 
+    def summary(self, alpha=0.95, periods=None):
+        return Summary(self.series).summary(alpha, periods)

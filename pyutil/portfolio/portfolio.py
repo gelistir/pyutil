@@ -3,7 +3,8 @@ import logging
 import numpy as np
 import pandas as pd
 
-from pyutil.portfolio.nav import fromReturns
+from .leverage import Leverage
+from .nav import fromReturns
 from .maths import xround, buy_or_sell
 from ..json.json import series2dict, frame2dict
 from ..performance.periods import period_returns, periods
@@ -152,15 +153,12 @@ class Portfolio(object):
 
     @property
     def leverage(self):
-        return self.weights.ffill().sum(axis=1).dropna()
+        return Leverage(self.weights.ffill().sum(axis=1).dropna())
 
-    #def summary(self, days=262):
-    #    return pd.DataFrame({n: self.tail(n).performance(days) for n in [100, 250, 500, 1000, 1500, 2500, 5000]})
-
-    #def performance(self, days=262):
-    #    l = self.leverage
-    #    lev = pd.Series({"Av Leverage": l.mean(), "Current Leverage": l[l.index[-1]]})
-    #    return pd.concat((self.nav.performance(days), lev))
+    def summary(self, t0=None, t1=None, alpha=0.95, periods=None):
+        x = self.nav.truncate(before=t0, after=t1).summary(alpha=alpha, periods=periods)
+        y = self.leverage.truncate(before=t0, after=t1).summary()
+        return pd.concat((x,y), axis=0)
 
     def truncate(self, before=None, after=None):
         return Portfolio(prices=self.prices.truncate(before=before, after=after),
@@ -334,7 +332,7 @@ class Portfolio(object):
         plt.legend(["Drawdown"], loc=2)
 
         ax3 = plt.subplot(414, sharex=ax1)
-        (100 * self.leverage).plot(ax=ax3, color='green')
+        (100 * self.leverage.series).plot(ax=ax3, color='green')
         ax3.set_ylim([-10, 110])
 
         (100 * self.weights.max(axis=1)).plot(ax=ax3, color='blue')
@@ -344,15 +342,3 @@ class Portfolio(object):
         plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
 
         return f
-
-
-
-
-if __name__ == '__main__':
-    weights = pd.DataFrame(columns=["A", "B"], index=[1, 2], data=[[0.5, 0.5], [np.NaN, np.NaN]])
-    print(weights)
-
-    prices = pd.DataFrame(columns=["A", "B"], index=[1, 2], data=100)
-    print(prices)
-
-    p = Portfolio(prices=prices, weights=weights)

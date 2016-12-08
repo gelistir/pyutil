@@ -108,14 +108,26 @@ class Summary(object):
 
     @property
     def autocorrelation(self):
-        return self.__r.autocorr()
+        """
+        Compute the autocorrelation of returns
+        :return:
+        """
+        return self.__r.autocorr(lag=1)
 
     @property
     def mtd(self):
+        """
+        Compute the return in the last available month
+        :return:
+        """
         return self.__nav.resample("M").last().dropna().pct_change().tail(1).values[0]
 
     @property
     def ytd(self):
+        """
+        Compute the return in the last available year
+        :return:
+        """
         return self.__nav.resample("A").last().dropna().pct_change().tail(1).values[0]
 
     def var(self, alpha=0.95):
@@ -124,13 +136,14 @@ class Summary(object):
     def cvar(self, alpha=0.95):
         return conditional_value_at_risk(self.__nav, alpha=alpha)
 
-    def summary(self, alpha=0.95, periods=None, years=None):
+    def summary(self, alpha=0.95, periods=None):
         periods = periods or self.periods_per_year
 
         d = OrderedDict()
 
         d["Return"] = 100 * self.cum_return
         d["# Events"] = self.events
+        d["# Events per year"] = periods
 
         d["Annua. Return"] = 100 * self.mean_r(periods=periods)
         d["Annua. Volatility"] = 100 * self.std(periods=periods)
@@ -150,18 +163,12 @@ class Summary(object):
 
         d["Calmar Ratio (3Y)"] = self.calmar_ratio(periods=periods)
 
-        d["Positive Days"] = self.__r[self.__r > 0].size
-        d["Negative Days"] = self.__r[self.__r < 0].size
+        d["# Positive Events"] = self.__r[self.__r > 0].size
+        d["# Negative Events"] = self.__r[self.__r < 0].size
         d["Value at Risk (alpha = {alpha})".format(alpha=alpha)] = 100*self.var(alpha=alpha)
         d["Conditional Value at Risk (alpha = {alpha})".format(alpha=alpha)] = 100*self.cvar(alpha=alpha)
-        d["First"] = self.__nav.index[0]
-        d["Last"] = self.__nav.index[-1]
-
-        a = self.__nav.resample("A").last().pct_change().dropna()
-
-        if years:
-            for y in years:
-                d[str(y)] = 100 * a[a.index.year == y].values[0]
+        d["First"] = self.__nav.index[0].date()
+        d["Last"] = self.__nav.index[-1].date()
 
         return pd.Series(d)
 
