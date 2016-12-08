@@ -1,32 +1,7 @@
+from collections import namedtuple
 import pandas as pd
 
-
-class Period(object):
-    """
-    Simple Period model, representing an interval of two stamps
-    """
-    def __init__(self, start, end):
-        assert start < end
-        self.__start = start
-        self.__end = end
-
-    def apply_to(self, ts):
-        return ts.truncate(before=self.start, after=self.end)
-
-    def __repr__(self):
-        return "Period with start {0} and end {1}".format(self.start, self.end)
-
-    @property
-    def start(self):
-        return self.__start
-
-    @property
-    def end(self):
-        return self.__end
-
-
-def __cumreturn(ts):
-    return (ts + 1.0).prod() - 1.0
+Period = namedtuple('Period', ['start', 'end'])
 
 
 def periods(today=None):
@@ -63,11 +38,15 @@ def period_returns(returns, offset=None):
     :param offset: periods given as a Series, if not specified use standard set of periods
     :return: Series of periods returns, same order as in the period Series
     """
+
+    def __cumreturn(ts):
+        return (ts + 1.0).prod() - 1.0
+
     if not isinstance(offset, pd.Series):
         offset = periods()
 
     assert isinstance(returns.index[0], pd.Timestamp)
-    p_returns = {key: __cumreturn(period.apply_to(returns)) for key, period in offset.iteritems()}
+    p_returns = {key: __cumreturn(returns.truncate(before=period.start, after=period.end)) for key, period in offset.iteritems()}
 
     # preserve the order of the elements in the offset series
     return pd.Series(p_returns).ix[offset.index]
