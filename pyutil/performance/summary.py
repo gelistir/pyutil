@@ -84,27 +84,29 @@ class Summary(object):
     def cum_return(self):
         return (1 + self.__r).prod() - 1.0
 
-    def sharpe_ratio(self, periods=None):
-        return self.mean_r(periods)/self.std(periods)
+    def sharpe_ratio(self, periods=None, r_f=0):
 
-    def mean_r(self, periods=None):
+        return self.mean_r(periods, r_f=r_f) /self.std(periods)
+
+    def mean_r(self, periods=None, r_f=0):
+        # annualized performance over a risk_free rate r_f (annualized)
         periods = periods or self.periods_per_year
-        return periods*(self.__gmean(self.__r + 1.0)  - 1.0)
+        return periods*(self.__gmean(self.__r + 1.0)  - 1.0) - r_f
 
     @property
     def drawdown(self):
         return dd(self.__nav)
 
-    def sortino_ratio(self, periods=None):
+    def sortino_ratio(self, periods=None, r_f=0):
         periods = periods or self.periods_per_year
-        return self.mean_r(periods) / self.drawdown.max()
+        return self.mean_r(periods, r_f=r_f) / self.drawdown.max()
 
-    def calmar_ratio(self, periods=None):
+    def calmar_ratio(self, periods=None, r_f=0):
         periods = periods or self.periods_per_year
         start = self.__nav.index[-1] - pd.DateOffset(years=3)
         # truncate the nav
         x = self.__nav.truncate(before=start)
-        return Summary(x).sortino_ratio(periods=periods)
+        return Summary(x).sortino_ratio(periods=periods, r_f=r_f)
 
     @property
     def autocorrelation(self):
@@ -136,7 +138,7 @@ class Summary(object):
     def cvar(self, alpha=0.95):
         return conditional_value_at_risk(self.__nav, alpha=alpha)
 
-    def summary(self, alpha=0.95, periods=None):
+    def summary(self, alpha=0.95, periods=None, r_f=0):
         periods = periods or self.periods_per_year
 
         d = OrderedDict()
@@ -147,7 +149,7 @@ class Summary(object):
 
         d["Annua. Return"] = 100 * self.mean_r(periods=periods)
         d["Annua. Volatility"] = 100 * self.std(periods=periods)
-        d["Annua. Sharpe Ratio"] = self.sharpe_ratio(periods=periods)
+        d["Annua. Sharpe Ratio (r_f = {0})".format(r_f)] = self.sharpe_ratio(periods=periods, r_f=r_f)
 
         dd = self.drawdown
         d["Max Drawdown"] = 100 * dd.max()
@@ -161,7 +163,7 @@ class Summary(object):
         d["Max Nav"] = self.max_nav
         d["Current Drawdown"] = 100 * dd[dd.index[-1]]
 
-        d["Calmar Ratio (3Y)"] = self.calmar_ratio(periods=periods)
+        d["Calmar Ratio (3Y)"] = self.calmar_ratio(periods=periods, r_f=r_f)
 
         d["# Positive Events"] = self.__r[self.__r > 0].size
         d["# Negative Events"] = self.__r[self.__r < 0].size
@@ -187,3 +189,15 @@ class Summary(object):
     @property
     def period_returns(self):
         return period_returns(self.__r, periods(today=n.index[-1]))
+
+    def to_json(self, decimals=2):
+        return self.summary().to_json(date_format="epoch", double_precision=decimals)
+
+        # for i in p.index:
+        #     if isinstance(p[i], np.float64):
+        #         p[i] = np.round(p[i], decimals=decimals)
+        #
+        # p["Last"] = pd.Timestamp(p["Last"]).date().strftime(dateformat)
+        # p["First"] = pd.Timestamp(p["First"]).date().strftime(dateformat)
+        # p.name = "performance"
+        # return p.apply(str).to_json(orient="split")

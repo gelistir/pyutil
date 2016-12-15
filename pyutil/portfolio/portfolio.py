@@ -155,8 +155,8 @@ class Portfolio(object):
     def leverage(self):
         return Leverage(self.weights.ffill().sum(axis=1).dropna())
 
-    def summary(self, t0=None, t1=None, alpha=0.95, periods=None):
-        x = self.nav.truncate(before=t0, after=t1).summary(alpha=alpha, periods=periods)
+    def summary(self, t0=None, t1=None, alpha=0.95, periods=None, r_f=0):
+        x = self.nav.truncate(before=t0, after=t1).summary(alpha=alpha, periods=periods, r_f=r_f)
         y = self.leverage.truncate(before=t0, after=t1).summary()
         return pd.concat((x,y), axis=0)
 

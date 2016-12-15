@@ -26,6 +26,10 @@ class TestArchive(TestCase):
         a = self.archive.history_series(item="B", name="PX_LAST")
         self.assertAlmostEqual(a[pd.Timestamp("2014-07-18")], 23454.79, places=5)
 
+    def test_assets_item(self):
+        a = self.archive.assets["B"]["PX_LAST"]
+        self.assertAlmostEqual(a[pd.Timestamp("2014-07-18")], 23454.79, places=5)
+
     def test_unknown_series(self):
         self.assertRaises(AssertionError, self.archive.history_series, item="XYZ", name="PX_LAST")
 

@@ -78,5 +78,5 @@ class _Nav(object):
     def resample(self, frequency="D"):
         return _Nav(self.__nav.resample(frequency).last())
 
-    def summary(self, alpha=0.95, periods=None):
-        return Summary(self.series).summary(alpha, periods)
+    def summary(self, alpha=0.95, periods=None, r_f=0):
+        return Summary(self.series).summary(alpha, periods, r_f=r_f)
