@@ -14,7 +14,7 @@ It is possible to point the strategy to different archives. For testing purposes
 whereas in production we run a MongoDB server providing access to our latest data.
 
 Each strategy is described by a class Configuration and is a child of the ConfigMaster class.
-Inheritance is rarely used in Python. Here we use it to enforce a small common interface for all strategies.
+Although inheritance is rarely used in Python we use it here to enforce a small common interface for all strategies.
 
 ```python
 	from pyutil.strategy.ConfigMaster import ConfigMaster
@@ -84,4 +84,4 @@ The actual strategy is therefore executed as
 	p = c.portfolio()
 ```
 
-There is a wealth of tools to analyse the portfolio objects. 
+There is a wealth of tools to analyse the portfolio objects. y
