@@ -6,7 +6,7 @@ import pandas as pd
 from .leverage import Leverage
 from .nav import fromReturns
 from .maths import xround, buy_or_sell
-from ..json.json import series2dict, frame2dict
+#from ..json.json import series2dict, frame2dict
 from ..performance.periods import period_returns, periods
 from ..timeseries.timeseries import ytd, mtd
 
@@ -274,13 +274,13 @@ class Portfolio(object):
         p["Type"] = p["Amount"].apply(buy_or_sell)
         return p
 
-    def to_json(self):
-        """
-        Convert portfolio into a big dictionary (e.g.
-        :return:
-        """
-
-        return {"weight": frame2dict(self.weights), "price": frame2dict(self.prices), "returns": series2dict(self.nav.returns)}
+    # def to_json(self):
+    #     """
+    #     Convert portfolio into a big dictionary (e.g.
+    #     :return:
+    #     """
+    #
+    #     return {"weight": frame2dict(self.weights), "price": frame2dict(self.prices), "returns": series2dict(self.nav.returns)}
 
     def ytd(self, today=None):
         return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today),

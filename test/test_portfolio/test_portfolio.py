@@ -97,10 +97,10 @@ class TestPortfolio(TestCase):
         yy.index.names = [None, None]
         pdt.assert_frame_equal(y, yy)
 
-    def test_to_json(self):
-        x = test_portfolio()
-        a = x.to_json()
-        self.assertAlmostEqual(a["price"]["A"]["20140909"], 1255.5, places=5)
+    # def test_to_json(self):
+    #     x = test_portfolio()
+    #     a = x.to_json()
+    #     self.assertAlmostEqual(a["price"]["A"]["20140909"], 1255.5, places=5)
 
     def test_init_1(self):
         prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[10.0, 10.0], [15.0, 15.0], [20.0, np.nan]])

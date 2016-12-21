@@ -1,10 +1,11 @@
 import pandas as pd
 import logging
+import warnings
 
+from .mongo_pandas import MongoSeries, MongoFrame
 from .abc_archive import Archive
 from ..portfolio.portfolio import Portfolio
 from ..timeseries.timeseries import adjust
-from ..json.json import flatten, series2dict
 
 
 def _f(frame):
@@ -23,13 +24,14 @@ class _Assets(object):
 
         # look for the asset in database
         if not ts.empty:
+            x = MongoSeries(ts)
             m = {"_id": asset}
             if self.__db.find_one(m):
                 # asset already in database
-                self.__db.update(m, {"$set": flatten(name, ts)}, upsert=True)
+                self.__db.update(m, {"$set": x.mongo_dict(name=name)}, upsert=True)
             else:
                 # asset not in the database
-                self.__db.update(m, {name: series2dict(ts)}, upsert=True)
+                self.__db.update(m, {name: x.mongo_dict()}, upsert=True)
 
     def update_all(self, frame, name="PX_LAST"):
         for asset in frame.keys():
@@ -41,16 +43,23 @@ class _Assets(object):
 
     def frame(self, items=None, name="PX_LAST"):
         if items:
-            p = self.__db.find({"_id": {"$in": items}}, {"_id": 1, name: 1})
-            frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p if name in x.keys()})
             for item in items:
-                assert item in frame.keys(), "For asset {0} we could not find series {1}".format(item, name)
+                assert item in self.keys(), "The asset {asset} is unknown".format(asset=item)
 
+            p = self.__db.find({"_id": {"$in": items}, name: {"$exists":1}}, {"_id": 1, name: 1})
+            # now p is a cursor, each element is a dictionary with "_id" and name as keys
+            frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p})
+            for item in items:
+                if not item in frame.keys():
+                    warnings.warn("For asset {0} we could not find series {1}".format(item, name))
         else:
             p = self.__db.find({}, {"_id": 1, name: 1})
             frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p if name in x.keys()})
 
         return _f(frame)
+
+    def keys(self):
+        return self.__db.distinct("_id")
 
 
 class _Symbols(object):
@@ -70,7 +79,10 @@ class _Symbols(object):
 
     @property
     def frame(self):
-        return pd.DataFrame({row["_id"]: pd.Series(row) for row in self.__db.find()}).transpose().drop("_id", axis=1)
+        return pd.DataFrame({id: self[id] for id in self.keys()}).transpose().drop("_id", axis=1)
+
+    def keys(self):
+        return self.__db.distinct("_id")
 
 
 class _Portfolios(object):
@@ -82,7 +94,7 @@ class _Portfolios(object):
         return [(k, self[k]) for k in self.keys()]
 
     def keys(self):
-        return {x["_id"] for x in self.__db.find({}, {"_id": 1})}
+        return self.__db.distinct("_id")
 
     # return a dictionary portfolio
     def __getitem__(self, item):
@@ -135,14 +147,16 @@ class _Portfolios(object):
         if key in self.keys():
             # If there is any data left after the truncation process write into database
             if not portfolio.empty:
-                self.__db.update(q, {"$set": flatten("weight", portfolio.weights.stack())}, upsert=True)
-                self.__db.update(q, {"$set": flatten("price", portfolio.prices.stack())}, upsert=True)
+                self.__db.update(q, {"$set": MongoFrame(portfolio.weights).mongo_dict(name="weight")}, upsert=True)
+                self.__db.update(q, {"$set": MongoFrame(portfolio.prices).mongo_dict(name="price")}, upsert=True)
                 r = portfolio.nav.series.pct_change().dropna()
                 if len(r.index) > 0:
-                    self.__db.update(q, {"$set": flatten("returns", r)}, upsert=True)
+                    self.__db.update(q, {"$set": MongoSeries(r).mongo_dict(name="returns")}, upsert=True)
         else:
             # write the entire database into the database, one has to make sure _flatten and to_json are compatible
-            self.__db.update(q, portfolio.to_json(), upsert=True)
+            self.__db.update(q, {"weight": MongoFrame(portfolio.weights).mongo_dict(),
+                                 "price": MongoFrame(portfolio.prices).mongo_dict(),
+                                 "returns": MongoSeries(portfolio.nav.returns).mongo_dict()}, upsert=True)
 
         now = pd.Timestamp("now")
         self.__db.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)
@@ -176,9 +190,8 @@ class _Frames(object):
     def items(self):
         return [(k, self[k]) for k in self.keys()]
 
-
     def keys(self):
-        return {x["_id"] for x in self.__db.find({}, {"_id": 1})}
+        return self.__db.distinct("_id")
 
 
 class _ArchiveReader(Archive):

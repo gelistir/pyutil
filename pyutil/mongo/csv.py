@@ -2,6 +2,10 @@ from .abc_archive import Archive
 import pandas as pd
 
 class CsvArchive(Archive):
+    """
+    Mainly used for unit-testing. This is a very minimalistic Archive providing the same interface to access historic
+    data as its siblings.
+    """
     def __init__(self):
         self.__data = dict()
 
