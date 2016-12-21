@@ -2,10 +2,10 @@ import pandas as pd
 import logging
 import warnings
 
+from ..performance.summary import fromReturns
 from .mongo_pandas import MongoSeries, MongoFrame
 from .abc_archive import Archive
 from ..portfolio.portfolio import Portfolio
-from ..timeseries.timeseries import adjust
 
 
 def _f(frame):
@@ -136,8 +136,8 @@ class _Portfolios(object):
 
     @property
     def nav(self):
-        frame = pd.DataFrame({x["_id"]: pd.Series(x["returns"]) for x in self.__db.find({}, {"_id": 1, "returns": 1})})
-        return _f(frame + 1.0).cumprod().apply(adjust)
+        frame = pd.DataFrame({x["_id"]: fromReturns(pd.Series(x["returns"])) for x in self.__db.find({}, {"_id": 1, "returns": 1})})
+        return _f(frame) #.cumprod().apply(adjust)
 
 
     def update(self, key, portfolio, group, comment=""):
@@ -156,7 +156,7 @@ class _Portfolios(object):
             # write the entire database into the database, one has to make sure _flatten and to_json are compatible
             self.__db.update(q, {"weight": MongoFrame(portfolio.weights).mongo_dict(),
                                  "price": MongoFrame(portfolio.prices).mongo_dict(),
-                                 "returns": MongoSeries(portfolio.nav.returns).mongo_dict()}, upsert=True)
+                                 "returns": MongoSeries(portfolio.nav.pct_change().fillna(0.0)).mongo_dict()}, upsert=True)
 
         now = pd.Timestamp("now")
         self.__db.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)

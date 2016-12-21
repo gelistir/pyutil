@@ -3,11 +3,18 @@ from collections import OrderedDict
 import pandas as pd
 import numpy as np
 
+from pyutil.timeseries.timeseries import adjust
 from .month import monthlytable
 from .drawdown import drawdown as dd
 from .periods import period_returns, periods
 from .var import value_at_risk, conditional_value_at_risk
 
+
+def fromReturns(r):
+    return NavSeries((1 + r).cumprod().dropna()).adjust(value=1.0)
+
+def fromNav(ts):
+    return NavSeries(ts).adjust(value=1.0)
 
 def performance(nav, alpha=0.95, periods=None):
     return NavSeries(nav).summary(alpha=alpha, periods=periods)
@@ -167,3 +174,26 @@ class NavSeries(pd.Series):
 
     def to_json(self, decimals=2):
         return self.summary().to_json(date_format="epoch", double_precision=decimals)
+
+    def adjust(self, value=100):
+        return NavSeries(adjust(self) * value)
+
+    @property
+    def monthly(self):
+        return NavSeries(self.resample("M").last())
+
+    @property
+    def annual(self):
+        return NavSeries(self.resample("A").last())
+
+    @property
+    def weekly(self):
+        return NavSeries(self.resample("W").last())
+
+    @property
+    def daily(self):
+        return NavSeries(self.resample("D").last())
+
+    def fee(self, daily_fee_basis_pts=0.5):
+        ret = self.pct_change().fillna(0.0) - daily_fee_basis_pts / 10000.0
+        return NavSeries((ret + 1.0).cumprod())

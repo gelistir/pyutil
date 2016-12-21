@@ -36,4 +36,4 @@ class TestCconfigMaster(TestCase):
         self.assertEquals(configuration.group, "testgroup")
 
         portfolio=configuration.portfolio()
-        self.assertAlmostEquals(portfolio.nav.statistics.sharpe_ratio(), -0.27817227635204395, places=5)
+        self.assertAlmostEquals(portfolio.nav.sharpe_ratio(), -0.27817227635204395, places=5)

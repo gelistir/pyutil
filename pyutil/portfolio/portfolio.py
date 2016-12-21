@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from .leverage import Leverage
-from .nav import fromReturns
+from ..performance.summary import fromReturns
 from .maths import xround, buy_or_sell
 from ..performance.periods import period_returns, periods
 from ..timeseries.timeseries import ytd, mtd
@@ -216,8 +216,7 @@ class Portfolio(object):
 
     @property
     def position(self):
-        nav = self.nav.series
-        return pd.DataFrame({k: self.weights[k] * nav / self.prices[k] for k in self.assets})
+        return pd.DataFrame({k: self.weights[k] * self.nav / self.prices[k] for k in self.assets})
 
     def subportfolio(self, assets):
         return Portfolio(prices=self.prices[assets], weights=self.weights[assets], logger=self.__logger)
@@ -245,7 +244,7 @@ class Portfolio(object):
 
     def transaction_report(self, capital=1e7, n=2):
         d = dict()
-        nav = self.nav.series
+        nav = self.nav
         prices = self.prices.ffill()
 
         old_position = pd.Series({asset: 0.0 for asset in self.assets})
@@ -273,13 +272,6 @@ class Portfolio(object):
         p["Type"] = p["Amount"].apply(buy_or_sell)
         return p
 
-    # def to_json(self):
-    #     """
-    #     Convert portfolio into a big dictionary (e.g.
-    #     :return:
-    #     """
-    #
-    #     return {"weight": frame2dict(self.weights), "price": frame2dict(self.prices), "returns": series2dict(self.nav.returns)}
 
     def ytd(self, today=None):
         return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today),
@@ -320,7 +312,7 @@ class Portfolio(object):
         f = plt.figure(figsize=figsize)
 
         ax1 = f.add_subplot(211)
-        (100 * (self.nav.series)).plot(ax=ax1, color="blue")
+        (100 * self.nav).plot(ax=ax1, color="blue")
         if tradingDays:
             x1, x2, y1, y2 = plt.axis()
             plt.vlines(x=self.trading_days, ymin=y1, ymax=y2, colors="red")

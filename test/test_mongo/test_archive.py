@@ -115,6 +115,9 @@ class TestPortfolio(TestCase):
 
     def test_nav(self):
         r = self.archive.portfolios.nav["test"]
+        print(type(r))
+        print(r)
+        # test the nav
         self.assertAlmostEqual(r[pd.Timestamp("2015-04-22")], 1.0070191775792583, places=5)
 
     def test_porfolio_none(self):

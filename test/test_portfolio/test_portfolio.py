@@ -20,7 +20,7 @@ class TestPortfolio(TestCase):
         self.assertSetEqual(set(portfolio.assets), {'A', 'B', 'C', 'D', 'E', 'F', 'G'})
 
     def test_summary(self):
-        self.assertAlmostEqual(portfolio.nav.statistics.summary()["Max Drawdown"], 3.9885756705666742, places=5)
+        self.assertAlmostEqual(portfolio.nav.summary()["Max Drawdown"], 3.9885756705666742, places=5)
 
     def test_index(self):
         pdt.assert_index_equal(portfolio.index, portfolio.prices.index)
