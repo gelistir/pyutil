@@ -149,7 +149,7 @@ class _Portfolios(object):
             if not portfolio.empty:
                 self.__db.update(q, {"$set": MongoFrame(portfolio.weights).mongo_dict(name="weight")}, upsert=True)
                 self.__db.update(q, {"$set": MongoFrame(portfolio.prices).mongo_dict(name="price")}, upsert=True)
-                r = portfolio.nav.series.pct_change().dropna()
+                r = portfolio.nav.pct_change().dropna()
                 if len(r.index) > 0:
                     self.__db.update(q, {"$set": MongoSeries(r).mongo_dict(name="returns")}, upsert=True)
         else:

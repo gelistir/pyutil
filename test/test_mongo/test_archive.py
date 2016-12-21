@@ -108,15 +108,12 @@ class TestPortfolio(TestCase):
         cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
         cls.archive.portfolios.update("test", test_portfolio(), group="test", comment="test")
 
-
     def test_symbols(self):
         r = self.archive.portfolios.strategies
         self.assertEqual(r["group"]["test"], "test")
 
     def test_nav(self):
         r = self.archive.portfolios.nav["test"]
-        print(type(r))
-        print(r)
         # test the nav
         self.assertAlmostEqual(r[pd.Timestamp("2015-04-22")], 1.0070191775792583, places=5)
 
@@ -124,19 +121,15 @@ class TestPortfolio(TestCase):
         p = self.archive.portfolios["abc"]
         assert not p
 
-    def test_portfolio(self):
-        d = {x: p for x, p in self.archive.portfolios.items()}
-        self.assertListEqual(["test"], list(d.keys()))
-
     def test_sector_weights(self):
         symbolmap = self.archive.symbols.frame["group"]
         sector_w = self.archive.portfolios.sector_weights("test", symbolmap)
         self.assertAlmostEqual(sector_w["Equity"]["2013-01-04"], 0.24351702703439526, places=5)
 
-    def test_portfolio(self):
+    def test_update(self):
         portfolio = test_portfolio()
-        g = self.archive.portfolios["test"]
+        self.archive.portfolios.update(key="test", portfolio=portfolio.tail(10), group="test", comment="test")
 
+        g = self.archive.portfolios["test"]
         pdt.assert_frame_equal(portfolio.prices, g.prices)
         pdt.assert_frame_equal(portfolio.weights, g.weights)
-

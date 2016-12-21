@@ -1,4 +1,5 @@
 from unittest import TestCase
+import pandas as pd
 
 from pyutil.performance.summary import NavSeries, performance
 from test.config import read_series
@@ -72,3 +73,29 @@ class TestSummary(TestCase):
         x = read_series("ts.csv", parse_dates=True)
         result = performance(x)
         self.assertAlmostEqual(result["Max Drawdown"], 5.7000575458488578, places=10)
+
+    def test_summary(self):
+        summary = s.summary()
+        self.assertAlmostEqual(summary["Max Drawdown"], 5.7000575458488578 , places=10)
+
+    def test_truncate(self):
+        x = s.truncate(before=pd.Timestamp("2014-01-01"), after=pd.Timestamp("2014-02-28"))
+        self.assertEqual(len(x), 43)
+
+    def test_fee(self):
+        x = s.fee(0.5)
+        self.assertAlmostEqual(x[x.index[-1]], 1.1175918337152901, places=5)
+        x = s.fee(0.0)
+        self.assertAlmostEqual(x[x.index[-1]], 1.3215650061893029, places=5)
+
+    def test_monthly(self):
+        self.assertAlmostEqual(s.monthly[pd.Timestamp("2014-11-30")], 1.2935771592500624, places=5)
+
+    def test_annual(self):
+        self.assertAlmostEqual(s.annual[pd.Timestamp("2014-12-31")], 1.2934720900884369, places=5)
+
+    def test_weekly(self):
+        self.assertEqual(len(s.weekly.index), 671)
+
+    def test_daily(self):
+        self.assertEqual(len(s.daily.index), 4693)
