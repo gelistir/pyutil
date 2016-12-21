@@ -1,18 +1,15 @@
 from unittest import TestCase
 
-from pyutil.performance.summary import Summary, performance
+from pyutil.performance.summary import NavSeries, performance
 from test.config import read_series
 
-s = Summary(read_series("ts.csv", parse_dates=True))
+s = NavSeries(read_series("ts.csv", parse_dates=True))
 
 
 class TestSummary(TestCase):
-    def test_events(self):
-        self.assertEqual(s.periods_per_year, 261)
-
     def test_first_last(self):
-        self.assertEqual(s.first, 1.0)
-        self.assertEqual(s.last, 1.3215650061893174)
+        self.assertEqual(s.head(1).values[0], 1.0)
+        self.assertEqual(s.tail(1).values[0], 1.3215650061893174)
 
     def test_pos_neg(self):
         self.assertEqual(s.negative_events, 1496)
@@ -47,13 +44,13 @@ class TestSummary(TestCase):
         self.assertAlmostEqual(100*s.ytd, 2.1718996734564122, places=10)
 
     def test_max_r(self):
-        self.assertAlmostEqual(s.max_r, 0.0086040619154168496, places=10)
+        self.assertAlmostEqual(s.returns.max(), 0.0086040619154168496, places=10)
 
     def test_min_r(self):
-        self.assertAlmostEqual(s.min_r, -0.012938315599174022, places=10)
+        self.assertAlmostEqual(s.returns.min(), -0.012938315599174022, places=10)
 
     def test_max_nav(self):
-        self.assertAlmostEqual(s.max_nav, 1.3358034259144032, places=10)
+        self.assertAlmostEqual(s.max(), 1.3358034259144032, places=10)
     #def test_cvar(self):
     #    s = read_series("ts.csv", parse_dates=True)
     #    x = 100*conditional_value_at_risk(s, alpha=0.99)

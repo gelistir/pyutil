@@ -10,10 +10,22 @@ from .var import value_at_risk, conditional_value_at_risk
 
 
 def performance(nav, alpha=0.95, periods=None):
-    return Summary(nav).summary(alpha=alpha, periods=periods)
+    return NavSeries(nav).summary(alpha=alpha, periods=periods)
 
 
-class Summary(object):
+class NavSeries(pd.Series):
+    def __init__(self, data=None, index=None, dtype=None, name=None, copy=False, fastpath=False):
+        super(NavSeries, self).__init__(data=data, index=index, dtype=dtype, name=name, copy=copy, fastpath=fastpath)
+
+    @property
+    def __periods_per_year(self):
+        x = pd.Series(data=self.index)
+        return np.round(365 * 24 * 60 * 60 / x.diff().mean().total_seconds(), decimals=0)
+
+    def annualized_volatility(self, periods=None):
+        t = periods or self.__periods_per_year
+        return np.sqrt(t)*self.dropna().pct_change().std()
+
     @staticmethod
     def __gmean(a):
         # geometric mean A
@@ -24,89 +36,51 @@ class Summary(object):
         return np.exp(np.mean(np.log(a)))
 
     @property
-    def periods_per_year(self):
-        x = pd.Series(data=self.__nav.index)
-        return np.round(365 * 24 * 60 * 60 / x.diff().mean().total_seconds(), decimals=0)
-
-    def __init__(self, nav):
-        self.__nav = nav
-        self.__r = nav.pct_change().dropna()
-
-    @property
-    def series(self):
-        return self.__nav
-
-    @property
     def monthlytable(self):
-        return monthlytable(self.__nav)
+        return monthlytable(self)
 
     @property
-    def first(self):
-        return self.__nav.values[0]
-
-    @property
-    def last(self):
-        return self.__nav.values[-1]
+    def returns(self):
+        return self.pct_change().dropna()
 
     @property
     def positive_events(self):
-        return (self.__r >= 0).sum()
+        return (self.returns >= 0).sum()
 
     @property
     def negative_events(self):
-        return (self.__r < 0).sum()
-
-    @property
-    def max_r(self):
-        return self.__r.max()
-
-    @property
-    def min_r(self):
-        return self.__r.min()
-
-    @property
-    def max_nav(self):
-        return self.__nav.max()
-
-    @property
-    def min_nav(self):
-        return self.__nav.min()
+        return (self.returns < 0).sum()
 
     @property
     def events(self):
-        return self.__r.size
-
-    def std(self, periods=None):
-        periods = periods or self.periods_per_year
-        return np.sqrt(periods)*self.__r.std()
+        return self.returns.size
 
     @property
     def cum_return(self):
-        return (1 + self.__r).prod() - 1.0
+        return (1 + self.returns).prod() - 1.0
 
     def sharpe_ratio(self, periods=None, r_f=0):
-
-        return self.mean_r(periods, r_f=r_f) /self.std(periods)
+        return self.mean_r(periods, r_f=r_f) /self.annualized_volatility(periods)
 
     def mean_r(self, periods=None, r_f=0):
         # annualized performance over a risk_free rate r_f (annualized)
-        periods = periods or self.periods_per_year
-        return periods*(self.__gmean(self.__r + 1.0)  - 1.0) - r_f
+        periods = periods or self.__periods_per_year
+        return periods*(self.__gmean(self.returns + 1.0)  - 1.0) - r_f
 
     @property
     def drawdown(self):
-        return dd(self.__nav)
+        return dd(self)
 
     def sortino_ratio(self, periods=None, r_f=0):
-        periods = periods or self.periods_per_year
+        periods = periods or self.__periods_per_year
         return self.mean_r(periods, r_f=r_f) / self.drawdown.max()
 
     def calmar_ratio(self, periods=None, r_f=0):
-        periods = periods or self.periods_per_year
-        start = self.__nav.index[-1] - pd.DateOffset(years=3)
+        periods = periods or self.__periods_per_year
+        start = self.index[-1] - pd.DateOffset(years=3)
         # truncate the nav
-        x = self.__nav.truncate(before=start)
-        return Summary(x).sortino_ratio(periods=periods, r_f=r_f)
+        x = self.truncate(before=start)
+        return NavSeries(x).sortino_ratio(periods=periods, r_f=r_f)
 
     @property
     def autocorrelation(self):
@@ -114,7 +88,7 @@ class Summary(object):
         Compute the autocorrelation of returns
         :return:
         """
-        return self.__r.autocorr(lag=1)
+        return self.returns.autocorr(lag=1)
 
     @property
     def mtd(self):
@@ -122,7 +96,7 @@ class Summary(object):
         Compute the return in the last available month
         :return:
         """
-        return self.__nav.resample("M").last().dropna().pct_change().tail(1).values[0]
+        return self.resample("M").last().dropna().pct_change().tail(1).values[0]
 
     @property
     def ytd(self):
@@ -130,16 +104,16 @@ class Summary(object):
         Compute the return in the last available year
         :return:
         """
-        return self.__nav.resample("A").last().dropna().pct_change().tail(1).values[0]
+        return self.resample("A").last().dropna().pct_change().tail(1).values[0]
 
     def var(self, alpha=0.95):
-        return value_at_risk(self.__nav, alpha=alpha)
+        return value_at_risk(self, alpha=alpha)
 
     def cvar(self, alpha=0.95):
-        return conditional_value_at_risk(self.__nav, alpha=alpha)
+        return conditional_value_at_risk(self, alpha=alpha)
 
     def summary(self, alpha=0.95, periods=None, r_f=0):
-        periods = periods or self.periods_per_year
+        periods = periods or self.__periods_per_year
 
         d = OrderedDict()
 
@@ -148,56 +122,48 @@ class Summary(object):
         d["# Events per year"] = periods
 
         d["Annua. Return"] = 100 * self.mean_r(periods=periods)
-        d["Annua. Volatility"] = 100 * self.std(periods=periods)
+        d["Annua. Volatility"] = 100 * self.annualized_volatility(periods=periods)
         d["Annua. Sharpe Ratio (r_f = {0})".format(r_f)] = self.sharpe_ratio(periods=periods, r_f=r_f)
 
         dd = self.drawdown
         d["Max Drawdown"] = 100 * dd.max()
-        d["Max % return"] = 100 * self.max_r
-        d["Min % return"] = 100 * self.min_r
+        d["Max % return"] = 100 * self.returns.max()
+        d["Min % return"] = 100 * self.returns.min()
 
         d["MTD"] = 100*self.mtd
         d["YTD"] = 100*self.ytd
 
-        d["Current Nav"] = self.__nav.tail(1).values[0]
-        d["Max Nav"] = self.max_nav
+        d["Current Nav"] = self.tail(1).values[0]
+        d["Max Nav"] = self.max()
         d["Current Drawdown"] = 100 * dd[dd.index[-1]]
 
         d["Calmar Ratio (3Y)"] = self.calmar_ratio(periods=periods, r_f=r_f)
 
-        d["# Positive Events"] = self.__r[self.__r > 0].size
-        d["# Negative Events"] = self.__r[self.__r < 0].size
+        d["# Positive Events"] = self.positive_events
+        d["# Negative Events"] = self.negative_events
+
         d["Value at Risk (alpha = {alpha})".format(alpha=alpha)] = 100*self.var(alpha=alpha)
         d["Conditional Value at Risk (alpha = {alpha})".format(alpha=alpha)] = 100*self.cvar(alpha=alpha)
-        d["First"] = self.__nav.index[0].date()
-        d["Last"] = self.__nav.index[-1].date()
+        d["First"] = self.index[0].date()
+        d["Last"] = self.index[-1].date()
 
         return pd.Series(d)
 
     def ewm_volatility(self, com=50, min_periods=50, periods=None):
-        periods = periods or self.periods_per_year
-        return np.sqrt(periods) * self.__r.fillna(0.0).ewm(com=com, min_periods=min_periods).std(bias=False)
+        periods = periods or self.__periods_per_year
+        return np.sqrt(periods) * self.returns.fillna(0.0).ewm(com=com, min_periods=min_periods).std(bias=False)
 
     def ewm_ret(self, com=50, min_periods=50, periods=None):
-        periods = periods or self.periods_per_year
-        return periods * self.__r.fillna(0.0).ewm(com=com, min_periods=min_periods).mean()
+        periods = periods or self.__periods_per_year
+        return periods * self.returns.fillna(0.0).ewm(com=com, min_periods=min_periods).mean()
 
     def ewm_sharpe(self, com=50, min_periods=50, periods=None):
-        periods = periods or self.periods_per_year
+        periods = periods or self.__periods_per_year
         return self.ewm_ret(com, min_periods, periods) / self.ewm_volatility(com, min_periods, periods)
 
     @property
     def period_returns(self):
-        return period_returns(self.__r, periods(today=n.index[-1]))
+        return period_returns(self.returns, periods(today=self.index[-1]))
 
     def to_json(self, decimals=2):
         return self.summary().to_json(date_format="epoch", double_precision=decimals)
-
-        # for i in p.index:
-        #     if isinstance(p[i], np.float64):
-        #         p[i] = np.round(p[i], decimals=decimals)
-        #
-        # p["Last"] = pd.Timestamp(p["Last"]).date().strftime(dateformat)
-        # p["First"] = pd.Timestamp(p["First"]).date().strftime(dateformat)
-        # p.name = "performance"
-        # return p.apply(str).to_json(orient="split")

@@ -1,5 +1,5 @@
 from pyutil.timeseries.timeseries import ytd, mtd, adjust
-from pyutil.performance.summary import Summary
+from pyutil.performance.summary import NavSeries
 
 
 def fromReturns(r):
@@ -73,7 +73,7 @@ class _Nav(object):
 
     @property
     def statistics(self):
-        return Summary(self.series)
+        return NavSeries(self.series)
 
     def resample(self, frequency="D"):
         return _Nav(self.__nav.resample(frequency).last())

@@ -6,7 +6,6 @@ import pandas as pd
 from .leverage import Leverage
 from .nav import fromReturns
 from .maths import xround, buy_or_sell
-#from ..json.json import series2dict, frame2dict
 from ..performance.periods import period_returns, periods
 from ..timeseries.timeseries import ytd, mtd
 
