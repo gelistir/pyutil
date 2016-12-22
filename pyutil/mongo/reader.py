@@ -3,7 +3,7 @@ import logging
 import warnings
 
 from ..performance.summary import fromReturns
-from .mongo_pandas import MongoSeries, MongoFrame
+from .mongo_pandas import _mongo_series, _mongo_frame, _flatten
 from .abc_archive import Archive
 from ..portfolio.portfolio import Portfolio
 
@@ -20,20 +20,22 @@ class _Assets(object):
 
 
     def update(self, asset, ts, name="PX_LAST"):
+        """Update time series data for an asset"""
         self.logger.debug("Asset: {0}, Name of ts: {1}, Len of ts: {2}".format(asset, name, len(ts.dropna().index)))
 
-        # look for the asset in database
+        # ts empty? Get out here...
         if not ts.empty:
-            x = MongoSeries(ts)
             m = {"_id": asset}
+            #look for the asset in database
             if self.__db.find_one(m):
                 # asset already in database
-                self.__db.update(m, {"$set": x.mongo_dict(name=name)}, upsert=True)
+                self.__db.update(m, {"$set": _flatten({name: _mongo_series(ts)})}, upsert=True)
             else:
                 # asset not in the database
-                self.__db.update(m, {name: x.mongo_dict()}, upsert=True)
+                self.__db.update(m, {name: _mongo_series(ts)}, upsert=True)
 
     def update_all(self, frame, name="PX_LAST"):
+        """ Update assets with a frame. One asset per column"""
         for asset in frame.keys():
             self.update(asset, ts=frame[asset].dropna(), name=name)
 
@@ -53,8 +55,8 @@ class _Assets(object):
                 if not item in frame.keys():
                     warnings.warn("For asset {0} we could not find series {1}".format(item, name))
         else:
-            p = self.__db.find({}, {"_id": 1, name: 1})
-            frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p if name in x.keys()})
+            p = self.__db.find({name: {"$exists":1}}, {"_id": 1, name: 1})
+            frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p})
 
         return _f(frame)
 
@@ -147,16 +149,16 @@ class _Portfolios(object):
         if key in self.keys():
             # If there is any data left after the truncation process write into database
             if not portfolio.empty:
-                self.__db.update(q, {"$set": MongoFrame(portfolio.weights).mongo_dict(name="weight")}, upsert=True)
-                self.__db.update(q, {"$set": MongoFrame(portfolio.prices).mongo_dict(name="price")}, upsert=True)
+                self.__db.update(q, {"$set": _flatten({"weight": _mongo_frame(portfolio.weights)})}, upsert=True)
+                self.__db.update(q, {"$set": _flatten({"price": _mongo_frame(portfolio.prices)})}, upsert=True)
                 r = portfolio.nav.pct_change().dropna()
                 if len(r.index) > 0:
-                    self.__db.update(q, {"$set": MongoSeries(r).mongo_dict(name="returns")}, upsert=True)
+                    self.__db.update(q, {"$set": _flatten({"returns": _mongo_series(r)})}, upsert=True)
         else:
             # write the entire database into the database, one has to make sure _flatten and to_json are compatible
-            self.__db.update(q, {"weight": MongoFrame(portfolio.weights).mongo_dict(),
-                                 "price": MongoFrame(portfolio.prices).mongo_dict(),
-                                 "returns": MongoSeries(portfolio.nav.pct_change().fillna(0.0)).mongo_dict()}, upsert=True)
+            self.__db.update(q, {"weight": _mongo_frame(portfolio.weights),
+                                 "price": _mongo_frame(portfolio.prices),
+                                 "returns": _mongo_series(portfolio.nav.pct_change().fillna(0.0))}, upsert=True)
 
         now = pd.Timestamp("now")
         self.__db.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)

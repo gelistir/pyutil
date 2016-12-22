@@ -1,5 +1,5 @@
 from unittest import TestCase
-from pyutil.mongo.mongo_pandas import MongoSeries, MongoFrame
+from pyutil.mongo.mongo_pandas import _mongo_series, _mongo_frame, _flatten
 from test.config import read_frame
 
 
@@ -9,17 +9,17 @@ class TestJson(TestCase):
         cls.assets = read_frame("price.csv")
 
     def test_series2dict(self):
-        x = MongoSeries(x=self.assets["A"]).mongo_dict()
+        x = _mongo_series(x=self.assets["A"])
         self.assertAlmostEqual(x["20130625"], 1277.650, places=5)
 
     def test_frame2dict(self):
-        x = MongoFrame(x=self.assets).mongo_dict()
+        x = _mongo_frame(x=self.assets)
         self.assertAlmostEqual(x["A"]["20130625"], 1277.650, places=5)
 
     def test_flatten(self):
-        x = MongoSeries(x=self.assets["A"]).mongo_dict(name="test")
+        x = _flatten({"test": _mongo_series(x=self.assets["A"])})
         self.assertAlmostEqual(x["test.20130625"], 1277.650, places=5)
 
     def test_flatten_frame(self):
-        x = MongoFrame(x=self.assets).mongo_dict(name="test")
+        x = _flatten({"test": _mongo_frame(x=self.assets)})
         self.assertAlmostEqual(x["test.A.20130625"], 1277.650, places=5)

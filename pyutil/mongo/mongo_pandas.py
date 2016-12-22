@@ -1,26 +1,39 @@
+from builtins import AttributeError
+
 import pandas as pd
+import collections
 
-class MongoSeries(object):
-    def __init__(self,  x):
-        assert isinstance(x, pd.Series), "The argument is of type {0}. It has to be a Pandas Series".format(type(x))
-        self.__series = x
 
-    def mongo_dict(self, format="%Y%m%d", name=None):
-        if name:
-            return {"{name}.{time}".format(name=name, time=t.strftime(format)): v for t, v in self.__series.dropna().items()}
+def _flatten(d, parent_key=None, sep='.'):
+    """ flatten dictonaries of dictionaries (of dictionaries of dict... you get it)"""
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, collections.MutableMapping):
+            items.extend(_flatten(v, new_key, sep=sep).items())
         else:
-            return {"{time}".format(time=t.strftime(format)): v for t, v in self.__series.dropna().items()}
+            items.append((new_key, v))
+    return dict(items)
 
 
-class MongoFrame(object):
-    def __init__(self, x):
-        assert isinstance(x, pd.DataFrame), "The argument is of type {0}. It has to be a Pandas DataFrame".format(type(x))
-        self.__frame = x
+def _mongo_series(x, format="%Y%m%d"):
+    """ Convert a pandas time series into a dictionary (for Mongo)"""
+    assert isinstance(x, pd.Series), "The argument is of type {0}. It has to be a Pandas Series".format(type(x))
+    try:
+        x.index = x.index.strftime(format)
+    except AttributeError:
+        pass
 
-    def mongo_dict(self, format="%Y%m%d", name=None):
-        y = self.__frame.stack()
-        if name:
-            return {"{name}.{asset}.{time}".format(name=name, asset=t[1], time=t[0].strftime(format)): v for t, v in y.dropna().items()}
-        else:
-            y = self.__frame
-            return {asset: MongoSeries(y[asset]).mongo_dict(format=format) for asset in y.keys()}
+    return x.to_dict()
+
+
+def _mongo_frame(x, format="%Y%m%d"):
+    """ Convert a pandas DataFrame into a dictionary of dictionaries (for Mongo)"""
+    assert isinstance(x, pd.DataFrame), "The argument is of type {0}. It has to be a Pandas DataFrame".format(type(x))
+    try:
+        x.index = x.index.strftime(format)
+    except AttributeError:
+        pass
+
+    return {asset: _mongo_series(x[asset], format=format) for asset in x.keys()}
+
