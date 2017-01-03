@@ -2,7 +2,7 @@ import numpy as np
 
 
 def __tail(losses, alpha=0.99):
-    return np.sort(losses)[int(losses.size*alpha):]
+    return np.sort(losses)[int(losses.size * alpha):]
 
 
 def value_at_risk(nav, alpha=0.99):

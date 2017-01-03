@@ -21,8 +21,8 @@ def performance(nav, alpha=0.95, periods=None):
 
 
 class NavSeries(pd.Series):
-    def __init__(self, data=None, index=None, dtype=None, name=None, copy=False, fastpath=False):
-        super(NavSeries, self).__init__(data=data, index=index, dtype=dtype, name=name, copy=copy, fastpath=fastpath)
+    def __init__(self, *args, **kwargs):
+        super(NavSeries, self).__init__(*args, **kwargs)
 
     @property
     def __periods_per_year(self):
@@ -172,10 +172,7 @@ class NavSeries(pd.Series):
     def period_returns(self):
         return period_returns(self.returns, periods(today=self.index[-1]))
 
-    def to_json(self, decimals=2):
-        return self.summary().to_json(date_format="epoch", double_precision=decimals)
-
-    def adjust(self, value=100):
+    def adjust(self, value=100.0):
         return NavSeries(adjust(self) * value)
 
     @property

@@ -298,9 +298,9 @@ class Portfolio(object):
 
         gap = weights[today] - extrapolated
 
-        weights = 100 * weights.rename(columns=lambda x: x.strftime("%d-%b-%y"))
-        weights["Extrapolated"] = 100 * extrapolated
-        weights["Gap"] = 100 * gap
+        weights = 100.0 * weights.rename(columns=lambda x: x.strftime("%d-%b-%y"))
+        weights["Extrapolated"] = 100.0 * extrapolated
+        weights["Gap"] = 100.0 * gap
 
         return weights
 

@@ -1,8 +1,9 @@
 import abc
+
 import pandas as pd
 import logging
 from typing import List
-from ..mongo.abc_archive import Archive
+from ..mongo.abcArchive import Archive
 
 
 class ConfigMaster(object):
@@ -38,4 +39,4 @@ class ConfigMaster(object):
         return
 
     def prices(self, assets: List[str]) -> pd.DataFrame:
-        return self.archive.history(items=assets).truncate(before=self.t0)
+        return self.archive.history(assets=assets).truncate(before=self.t0)

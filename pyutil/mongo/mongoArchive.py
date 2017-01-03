@@ -1,5 +1,4 @@
 import collections
-from builtins import AttributeError, isinstance, dict, object, property, len, type
 
 import pandas as pd
 import logging
@@ -9,9 +8,9 @@ from pymongo import MongoClient
 from pymongo.database import Database
 
 from ..performance.summary import fromReturns
-from .abc_archive import Archive
 from ..portfolio.portfolio import Portfolio
 
+from .abcArchive import Archive
 
 def _f(frame):
     frame.index = [pd.Timestamp(x) for x in frame.index]
@@ -52,13 +51,25 @@ def _mongo_frame(x, format="%Y%m%d"):
     return {asset: _mongo_series(x[asset], format=format) for asset in x.keys()}
 
 
-class ArchiveReader(Archive):
-
-    class __Assets(object):
+class MongoArchive(Archive):
+    class __DB(object):
         def __init__(self, db, logger=None):
             self.logger = logger or logging.getLogger(__name__)
-            self.__db = db
+            self.db = db
 
+        def keys(self):
+            return self.db.distinct("_id")
+
+        def __getitem__(self, item):
+            raise NotImplementedError
+
+        def items(self):
+            return [(k, self[k]) for k in self.keys()]
+
+
+    class __Assets(__DB):
+        def __init__(self, db, logger=None):
+            super().__init__(db=db, logger=logger)
 
         def update(self, asset, ts, name="PX_LAST"):
             """Update time series data for an asset"""
@@ -68,12 +79,12 @@ class ArchiveReader(Archive):
             if not ts.empty:
                 m = {"_id": asset}
                 # look for the asset in database
-                if self.__db.find_one(m):
+                if self.db.find_one(m):
                     # asset already in database
-                    self.__db.update(m, {"$set": _flatten({name: _mongo_series(ts)})}, upsert=True)
+                    self.db.update(m, {"$set": _flatten({name: _mongo_series(ts)})}, upsert=True)
                 else:
                     # asset not in the database
-                    self.__db.insert_one({"_id": asset, name: _mongo_series(ts)})
+                    self.db.insert_one({"_id": asset, name: _mongo_series(ts)})
 
         def update_all(self, frame, name="PX_LAST"):
             """ Update assets with a frame. One asset per column"""
@@ -81,66 +92,53 @@ class ArchiveReader(Archive):
                 self.update(asset, ts=frame[asset].dropna(), name=name)
 
         def __getitem__(self, item):
-            a = self.__db.find_one({"_id": item}, {"_id": 0})
+            a = self.db.find_one({"_id": item}, {"_id": 0})
             return {key: _f(pd.Series(values)) for key, values in a.items()}
 
-        def frame(self, items=None, name="PX_LAST"):
-            if items:
+        def frame(self, assets=None, name="PX_LAST"):
+            if assets:
                 # a list of items (e.g. assets) has been specified.
-                for item in items:
-                    assert item in self.keys(), "The asset {asset} is unknown".format(asset=item)
+                for asset in assets:
+                    assert asset in self.keys(), "The asset {asset} is unknown".format(asset=asset)
 
-                p = self.__db.find({"_id": {"$in": items}, name: {"$exists":1}}, {"_id": 1, name: 1})
+                p = self.db.find({"_id": {"$in": assets}, name: {"$exists":1}}, {"_id": 1, name: 1})
                 # now p is a cursor, each element is a dictionary with "_id" and name as keys
                 frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p})
-                for item in items:
-                    if not item in frame.keys():
-                        warnings.warn("For asset {0} we could not find series {1}".format(item, name))
+                for asset in assets:
+                    if not asset in frame.keys():
+                        warnings.warn("For asset {0} we could not find series {1}".format(asset, name))
             else:
                 # no items (e.g. assets) have been specified. Find now all assets where name is specified for
-                p = self.__db.find({name: {"$exists":1}}, {"_id": 1, name: 1})
+                p = self.db.find({name: {"$exists":1}}, {"_id": 1, name: 1})
                 frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p})
 
             return _f(frame)
 
-        def keys(self):
-            return self.__db.distinct("_id")
 
 
-    class __Symbols(object):
+    class __Symbols(__DB):
         def __init__(self, db, logger=None):
-            self.logger = logger or logging.getLogger(__name__)
-            self.__db = db
+            super().__init__(db=db, logger=logger)
 
-        def update(self, symbol, dictionary):
+        def update(self, asset, dictionary):
             # this is slow if we update an empty database
-            self.__db.update({"_id": symbol}, {"$set": dictionary}, upsert=True)
+            self.db.update({"_id": asset}, {"$set": dictionary}, upsert=True)
 
         def update_all(self, frame):
             for asset, row in frame.iterrows():
                 self.update(asset, dictionary=row.to_dict())
 
         def __getitem__(self, item):
-            return pd.Series(self.__db.find_one({"_id": item}))
+            return pd.Series(self.db.find_one({"_id": item}))
 
         @property
         def frame(self):
             return pd.DataFrame({id: self[id] for id in self.keys()}).transpose().drop("_id", axis=1)
 
-        def keys(self):
-            return self.__db.distinct("_id")
 
-
-    class __Portfolios(object):
+    class __Portfolios(__DB):
         def __init__(self, db, logger=None):
-            self.logger = logger or logging.getLogger(__name__)
-            self.__db = db
-
-        def items(self):
-            return [(k, self[k]) for k in self.keys()]
-
-        def keys(self):
-            return self.__db.distinct("_id")
+            super().__init__(db=db, logger=logger)
 
         # return a dictionary portfolio
         def __getitem__(self, item):
@@ -159,12 +157,12 @@ class ArchiveReader(Archive):
             return self.weights(item).index
 
         def weights(self, item):
-            p = self.__db.find_one({"_id": item}, {"_id": 1, "weight": 1})
+            p = self.db.find_one({"_id": item}, {"_id": 1, "weight": 1})
             assert p
             return _f(pd.DataFrame(p["weight"])).fillna(0.0)
 
         def prices(self, item):
-            p = self.__db.find_one({"_id": item}, {"_id": 1, "price": 1})
+            p = self.db.find_one({"_id": item}, {"_id": 1, "price": 1})
             assert p
             return _f(pd.DataFrame(p["price"]))
 
@@ -175,13 +173,13 @@ class ArchiveReader(Archive):
 
         @property
         def strategies(self):
-            portfolios = self.__db.find({}, {"_id": 1, "group": 1, "time": 1, "comment": 1})
+            portfolios = self.db.find({}, {"_id": 1, "group": 1, "time": 1, "comment": 1})
             d = {p["_id"]: pd.Series({"group": p["group"], "time": p["time"], "comment": p["comment"]}) for p in portfolios}
             return pd.DataFrame(d).transpose()
 
         @property
         def nav(self):
-            frame = pd.DataFrame({x["_id"]: fromReturns(pd.Series(x["returns"])) for x in self.__db.find({}, {"_id": 1, "returns": 1})})
+            frame = pd.DataFrame({x["_id"]: fromReturns(pd.Series(x["returns"])) for x in self.db.find({}, {"_id": 1, "returns": 1})})
             return _f(frame)
 
 
@@ -192,29 +190,28 @@ class ArchiveReader(Archive):
             if key in self.keys() and not portfolio.empty:
                 # If there is any data left after the truncation process write into database
                 #if not portfolio.empty:
-                self.__db.update(q, {"$set": _flatten({"weight": _mongo_frame(portfolio.weights)})}, upsert=True)
-                self.__db.update(q, {"$set": _flatten({"price": _mongo_frame(portfolio.prices)})}, upsert=True)
+                self.db.update(q, {"$set": _flatten({"weight": _mongo_frame(portfolio.weights)})}, upsert=True)
+                self.db.update(q, {"$set": _flatten({"price": _mongo_frame(portfolio.prices)})}, upsert=True)
                 r = portfolio.nav.pct_change().dropna()
                 if len(r.index) > 0:
-                    self.__db.update(q, {"$set": _flatten({"returns": _mongo_series(r)})}, upsert=True)
+                    self.db.update(q, {"$set": _flatten({"returns": _mongo_series(r)})}, upsert=True)
             else:
                 # write the entire database into the database, one has to make sure _flatten and to_json are compatible
-                self.__db.insert_one({"_id": key, "weight": _mongo_frame(portfolio.weights),
+                self.db.insert_one({"_id": key, "weight": _mongo_frame(portfolio.weights),
                                      "price": _mongo_frame(portfolio.prices),
                                      "returns": _mongo_series(portfolio.nav.pct_change().fillna(0.0))})
 
             now = pd.Timestamp("now")
-            self.__db.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)
+            self.db.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)
             return self[key]
 
 
-    class __Frames(object):
+    class __Frames(__DB):
         def __init__(self, db, logger=None):
-            self.logger = logger or logging.getLogger(__name__)
-            self.__db = db
+            super().__init__(db=db, logger=logger)
 
         def __getitem__(self, item):
-            a = self.__db.find_one({"_id": item})
+            a = self.db.find_one({"_id": item})
             if "index" in a.keys():
                 return pd.read_json(a["data"], orient="split").set_index(a["index"])
             else:
@@ -226,17 +223,11 @@ class ArchiveReader(Archive):
                 for name in value.index.names:
                     assert name, "Using a multiindex all levels need to have names"
 
-                self.__db.update({"_id": key}, {"_id": key, "data": frame, "index": value.index.names}, upsert=True)
+                self.db.update({"_id": key}, {"_id": key, "data": frame, "index": value.index.names}, upsert=True)
             else:
                 frame = value.to_json(orient="split")
-                self.__db.update({"_id": key}, {"_id": key, "data": frame}, upsert=True)
+                self.db.update({"_id": key}, {"_id": key, "data": frame}, upsert=True)
 
-
-        def items(self):
-            return [(k, self[k]) for k in self.keys()]
-
-        def keys(self):
-            return self.__db.distinct("_id")
 
     def __init__(self, name, host="quantsrv", port=27017, logger=None):
         self.logger = logger or logging.getLogger(__name__)
@@ -251,7 +242,7 @@ class ArchiveReader(Archive):
         return "Reader for {0}".format(self.__db)
 
     # bad idea to make history a property as we may have different names, e.g PX_LAST, PX_VOLUME, etc...
-    def history(self, items=None, name="PX_LAST"):
-        return self.assets.frame(items, name)
+    def history(self, assets=None, name="PX_LAST"):
+        return self.assets.frame(assets, name)
 
 

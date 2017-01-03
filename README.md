@@ -50,7 +50,7 @@ read access to historic data.
 		__metaclass__ = abc.ABCMeta
 	
 		@abc.abstractmethod
-		def history(self, items, name, before):
+		def history(self, assets, name):
 			return
 ```
 
@@ -72,7 +72,7 @@ ConfigMaster is exposing the abstract portfolio method, e.g. we extend the Confi
 			
 		def portfolio(self):
 			a = self.configuration["assets"]
-			p = self.archive.history(items=a, before=self.configuration["start"])
+			p = self.archive.history(assets=a).truncate(before=self.configuration["start"])
 			return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0/len(a)))
 ```
 The actual strategy is therefore executed as 
@@ -91,4 +91,4 @@ The actual strategy is therefore executed as
 	p = c.portfolio()
 ```
 
-There is a wealth of tools to analyse the portfolio objects. y
+There is a wealth of tools to analyse the portfolio objects. 

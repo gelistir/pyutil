@@ -1,7 +1,7 @@
 import pandas as pd
 from unittest import TestCase
 
-from pyutil.mongo.csv import CsvArchive
+from pyutil.mongo.csvArchive import CsvArchive
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.strategy.ConfigMaster import ConfigMaster
 from test.config import read_frame
@@ -29,7 +29,7 @@ class Configuration(ConfigMaster):
 class TestCconfigMaster(TestCase):
     def test_master(self):
         archive = CsvArchive()
-        archive["PX_LAST"] = read_frame("price.csv", parse_dates=True)
+        archive.data["PX_LAST"] = read_frame("price.csv", parse_dates=True)
 
         configuration = Configuration(archive, t0=pd.Timestamp("2013-01-01"))
         self.assertEqual(configuration.name, "test")

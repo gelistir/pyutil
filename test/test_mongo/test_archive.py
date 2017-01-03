@@ -1,7 +1,7 @@
 from builtins import Warning, AssertionError
 
 import pandas as pd
-from pyutil.mongo.reader import ArchiveReader
+from pyutil.mongo.mongoArchive import MongoArchive
 
 from test.config import read_frame, test_portfolio
 from unittest import TestCase
@@ -11,7 +11,7 @@ from nose.tools import raises
 class TestAssets(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = ArchiveReader("mongo", host="mongo")
+        cls.archive = MongoArchive("mongo", host="mongo")
         cls.archive.assets.update_all(frame=read_frame("price.csv", parse_dates=True))
         cls.assets = cls.archive.assets
 
@@ -19,15 +19,11 @@ class TestAssets(TestCase):
         self.assertListEqual(self.assets.keys(), ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
 
     def test_history(self):
-        a = self.archive.history(name="PX_LAST", items=["A","B"])
+        a = self.archive.history(name="PX_LAST", assets=["A", "B"])
         self.assertAlmostEqual(a["B"][pd.Timestamp("2014-07-18").date()], 23454.79, places=5)
 
         a = self.archive.history(name="PX_LAST")
         self.assertAlmostEqual(a["B"][pd.Timestamp("2014-07-18").date()], 23454.79, places=5)
-
-    def test_history_series(self):
-        a = self.archive.history_series(item="B", name="PX_LAST")
-        self.assertAlmostEqual(a[pd.Timestamp("2014-07-18")], 23454.79, places=5)
 
     def test_assets_item(self):
         a = self.archive.assets["B"]["PX_LAST"]
@@ -35,7 +31,7 @@ class TestAssets(TestCase):
 
     def test_unknown_series(self):
         with self.assertRaises(AssertionError):
-            self.archive.history_series(item="XYZ", name="PX_LAST")
+            self.archive.history(assets=["XYZ"], name="PX_LAST")
 
     def test_update(self):
         self.assets.update(asset="B", ts=pd.Series(index=[pd.Timestamp("2016-07-18")], data=[1.0]))
@@ -43,12 +39,12 @@ class TestAssets(TestCase):
 
     def test_unknown_series_warning(self):
         with self.assertWarns(Warning):
-            self.archive.history(items=["A","B"], name="XYZ")
+            self.archive.history(assets=["A", "B"], name="XYZ")
 
 class TestFrames(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = ArchiveReader("mongo", host="mongo")
+        cls.archive = MongoArchive("mongo", host="mongo")
         cls.archive.frames["Peter Maffay"] = pd.DataFrame(columns=["A", "B"], data=[[1.2, 2.5]])
         cls.frames = cls.archive.frames
 
@@ -85,7 +81,7 @@ class TestFrames(TestCase):
 class TestSymbols(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = ArchiveReader("mongo", host="mongo")
+        cls.archive = MongoArchive("mongo", host="mongo")
         cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
 
     def test_frame(self):
@@ -104,7 +100,7 @@ class TestSymbols(TestCase):
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = ArchiveReader("mongo", host="mongo")
+        cls.archive = MongoArchive("mongo", host="mongo")
         # need this for sector-weights
         cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
         cls.archive.portfolios.update("test", test_portfolio(), group="test", comment="test")
