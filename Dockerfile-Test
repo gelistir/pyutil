@@ -10,7 +10,7 @@ RUN conda install -q -y pandas=0.19.1 requests=2.11.1 matplotlib pymongo xlrd=1.
 RUN pip install raven==5.27.1 premailer
 
 # this is used to mock http for testing
-RUN pip install httpretty nose coverage
+RUN pip install httpretty nose coverage nose-timer
 
 # File Author / Maintainer
 MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"

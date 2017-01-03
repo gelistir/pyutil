@@ -2,7 +2,7 @@
 import logging
 
 from pyutil.decorators import attempt
-from pyutil.mongo.archive import reader
+from pyutil.mongo.reader import reader
 
 # I use the attempt decorator here. The attempt decorator embeds the function into try/except and reports any exception
 # to the logger...:

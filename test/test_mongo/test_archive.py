@@ -1,7 +1,8 @@
 from builtins import Warning, AssertionError
 
 import pandas as pd
-from pyutil.mongo.archive import reader
+from pyutil.mongo.reader import ArchiveReader
+
 from test.config import read_frame, test_portfolio
 from unittest import TestCase
 import pandas.util.testing as pdt
@@ -10,7 +11,7 @@ from nose.tools import raises
 class TestAssets(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = reader("mongo", host="mongo")
+        cls.archive = ArchiveReader("mongo", host="mongo")
         cls.archive.assets.update_all(frame=read_frame("price.csv", parse_dates=True))
         cls.assets = cls.archive.assets
 
@@ -47,7 +48,7 @@ class TestAssets(TestCase):
 class TestFrames(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = reader("mongo", host="mongo")
+        cls.archive = ArchiveReader("mongo", host="mongo")
         cls.archive.frames["Peter Maffay"] = pd.DataFrame(columns=["A", "B"], data=[[1.2, 2.5]])
         cls.frames = cls.archive.frames
 
@@ -84,7 +85,7 @@ class TestFrames(TestCase):
 class TestSymbols(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = reader("mongo", host="mongo")
+        cls.archive = ArchiveReader("mongo", host="mongo")
         cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
 
     def test_frame(self):
@@ -103,7 +104,7 @@ class TestSymbols(TestCase):
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = reader("mongo", host="mongo")
+        cls.archive = ArchiveReader("mongo", host="mongo")
         # need this for sector-weights
         cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
         cls.archive.portfolios.update("test", test_portfolio(), group="test", comment="test")

@@ -1,5 +1,6 @@
+from builtins import classmethod
 from unittest import TestCase
-from pyutil.mongo.mongo_pandas import _mongo_series, _mongo_frame, _flatten
+from pyutil.mongo.reader import _mongo_series, _mongo_frame, _flatten
 from test.config import read_frame
 
 
