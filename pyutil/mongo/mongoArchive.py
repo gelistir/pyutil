@@ -61,10 +61,20 @@ class MongoArchive(Archive):
             return self.db.distinct("_id")
 
         def __getitem__(self, item):
-            raise NotImplementedError
+            if item in self.keys():
+                return self.db.find_one({"_id": item}, {"_id": 0})
+            else:
+                return None
 
         def items(self):
             return [(k, self[k]) for k in self.keys()]
+
+        def __setitem__(self, key, value):
+            raise NotImplementedError
+
+        def __delitem__(self, key):
+            if key in self.keys():
+                return self.db.remove({"_id": key})
 
 
     class __Assets(__DB):
@@ -92,8 +102,11 @@ class MongoArchive(Archive):
                 self.update(asset, ts=frame[asset].dropna(), name=name)
 
         def __getitem__(self, item):
-            a = self.db.find_one({"_id": item}, {"_id": 0})
-            return {key: _f(pd.Series(values)) for key, values in a.items()}
+            d = super().__getitem__(item)
+            if d:
+                return {key: _f(pd.Series(values)) for key, values in d.items()}
+            else:
+                return None
 
         def frame(self, assets=None, name="PX_LAST"):
             if assets:
@@ -114,7 +127,10 @@ class MongoArchive(Archive):
 
             return _f(frame)
 
-
+        def __setitem__(self, key, value):
+            # value has to be a dict!
+            for k in value.keys():
+                self.db.insert_one({"_id": key, k: _mongo_series(value[k])})
 
     class __Symbols(__DB):
         def __init__(self, db, logger=None):
@@ -122,18 +138,22 @@ class MongoArchive(Archive):
 
         def update(self, asset, dictionary):
             # this is slow if we update an empty database
-            self.db.update({"_id": asset}, {"$set": dictionary}, upsert=True)
+            self.db.update({"_id": asset}, {"$set": _flatten(dictionary)}, upsert=True)
 
         def update_all(self, frame):
             for asset, row in frame.iterrows():
                 self.update(asset, dictionary=row.to_dict())
 
         def __getitem__(self, item):
-            return pd.Series(self.db.find_one({"_id": item}))
+            return pd.Series(super().__getitem__(item))
+
+        def __setitem__(self, key, value):
+            # this will overwrite information
+            self.db.update({"_id": key}, value, upsert=True)
 
         @property
         def frame(self):
-            return pd.DataFrame({id: self[id] for id in self.keys()}).transpose().drop("_id", axis=1)
+            return pd.DataFrame({id: self[id] for id in self.keys()}).transpose()
 
 
     class __Portfolios(__DB):
@@ -143,9 +163,10 @@ class MongoArchive(Archive):
         # return a dictionary portfolio
         def __getitem__(self, item):
             self.logger.debug("Portfolio: {0}".format(item))
-            if item in self.keys():
-                prices = self.prices(item)
-                weights = self.weights(item)
+            a = super().__getitem__(item)
+            if a:
+                prices = _f(pd.DataFrame(a["price"]))
+                weights = _f(pd.DataFrame(a["weight"]))
                 prices = prices.ix[weights.index]
 
                 return Portfolio(prices=prices, weights=weights, logger=self.logger)
@@ -205,17 +226,33 @@ class MongoArchive(Archive):
             self.db.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)
             return self[key]
 
+        def __setitem__(self, key, value):
+            now = pd.Timestamp("now")
+
+            self.db.insert_one({"_id": key,
+                                "weight": _mongo_frame(value.weights),
+                                "price": _mongo_frame(value.prices),
+                                "returns": _mongo_series(value.nav.pct_change().fillna(0.0)),
+                                "time": now,
+                                "group": "",
+                                "comment": ""
+                                })
+
+
 
     class __Frames(__DB):
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
 
         def __getitem__(self, item):
-            a = self.db.find_one({"_id": item})
-            if "index" in a.keys():
-                return pd.read_json(a["data"], orient="split").set_index(a["index"])
+            a = super().__getitem__(item)
+            if a:
+                if "index" in a.keys():
+                    return pd.read_json(a["data"], orient="split").set_index(a["index"])
+                else:
+                    return pd.read_json(a["data"], orient="split")
             else:
-                return pd.read_json(a["data"], orient="split")
+                return None
 
         def __setitem__(self, key, value):
             if len(value.index.names) > 1:

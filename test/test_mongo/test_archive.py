@@ -1,5 +1,3 @@
-from builtins import Warning, AssertionError
-
 import pandas as pd
 from pyutil.mongo.mongoArchive import MongoArchive
 
@@ -20,26 +18,36 @@ class TestAssets(TestCase):
 
     def test_history(self):
         a = self.archive.history(name="PX_LAST", assets=["A", "B"])
-        self.assertAlmostEqual(a["B"][pd.Timestamp("2014-07-18").date()], 23454.79, places=5)
+        self.assertAlmostEqual(a["B"]["2014-07-18"], 23454.79, places=5)
 
         a = self.archive.history(name="PX_LAST")
-        self.assertAlmostEqual(a["B"][pd.Timestamp("2014-07-18").date()], 23454.79, places=5)
+        self.assertAlmostEqual(a["B"]["2014-07-18"], 23454.79, places=5)
 
     def test_assets_item(self):
-        a = self.archive.assets["B"]["PX_LAST"]
-        self.assertAlmostEqual(a[pd.Timestamp("2014-07-18")], 23454.79, places=5)
+        a = self.assets["B"]["PX_LAST"]
+        self.assertAlmostEqual(a["2014-07-18"], 23454.79, places=5)
 
     def test_unknown_series(self):
         with self.assertRaises(AssertionError):
             self.archive.history(assets=["XYZ"], name="PX_LAST")
 
     def test_update(self):
-        self.assets.update(asset="B", ts=pd.Series(index=[pd.Timestamp("2016-07-18")], data=[1.0]))
-        self.assertAlmostEqual(self.assets["B"]["PX_LAST"][pd.Timestamp("2016-07-18")], 1.0, places=10)
+        self.assets.update(asset="B", ts=pd.Series(index=["2016-07-18"], data=[1.0]))
+        self.assertAlmostEqual(self.assets["B"]["PX_LAST"]["2016-07-18"], 1.0, places=10)
 
     def test_unknown_series_warning(self):
         with self.assertWarns(Warning):
             self.archive.history(assets=["A", "B"], name="XYZ")
+
+    def test_set(self):
+        self.archive.assets["TEST"] = self.archive.assets["B"]
+        #print(self.archive.assets.keys())
+        self.assertAlmostEqual(self.assets["TEST"]["PX_LAST"]["2014-07-18"], 23454.79, places=5)
+
+        del self.archive.assets["TEST"]
+        print(self.archive.assets.keys())
+
+
 
 class TestFrames(TestCase):
     @classmethod
@@ -77,6 +85,11 @@ class TestFrames(TestCase):
         x = pd.DataFrame(columns=["C1"], index=index, data=[[2], [3], [0], [1]])
         self.archive.frames["MyFrame"] = x
 
+    def test_del_frame(self):
+        self.frames["Peter"] = pd.DataFrame()
+        self.assertTrue("Peter" in self.frames.keys())
+        del self.frames["Peter"]
+        self.assertTrue("Peter" not in self.frames.keys())
 
 class TestSymbols(TestCase):
     @classmethod
@@ -95,6 +108,15 @@ class TestSymbols(TestCase):
     def test_keys(self):
         self.assertListEqual(self.archive.symbols.keys(), ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
 
+    def test_set(self):
+        self.archive.symbols["T"] = {"prop1": "2.0", "prop2": "Peter Maffay"}
+        g = self.archive.symbols["T"]
+        self.assertEqual(g["prop2"], "Peter Maffay")
+
+        self.archive.symbols["T"] = {"prop3": "2.0", "prop2": "Peter Maffay"}
+        self.assertTrue("prop1" not in self.archive.symbols["T"].index)
+        self.assertTrue("prop2" in self.archive.symbols["T"].index)
+
 
 
 class TestPortfolio(TestCase):
@@ -112,7 +134,7 @@ class TestPortfolio(TestCase):
     def test_nav(self):
         r = self.archive.portfolios.nav["test"]
         # test the nav
-        self.assertAlmostEqual(r[pd.Timestamp("2015-04-22")], 1.0070191775792583, places=5)
+        self.assertAlmostEqual(r["2015-04-22"], 1.0070191775792583, places=5)
 
     def test_porfolio_none(self):
         p = self.archive.portfolios["abc"]
