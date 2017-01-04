@@ -5,7 +5,7 @@ import numpy as np
 
 from pyutil.timeseries.timeseries import adjust
 from .month import monthlytable
-from .drawdown import drawdown as dd
+from .drawdown import drawdown as dd, drawdown_periods as dp
 from .periods import period_returns, periods
 from .var import value_at_risk, conditional_value_at_risk
 
@@ -194,3 +194,7 @@ class NavSeries(pd.Series):
     def fee(self, daily_fee_basis_pts=0.5):
         ret = self.pct_change().fillna(0.0) - daily_fee_basis_pts / 10000.0
         return NavSeries((ret + 1.0).cumprod())
+
+    @property
+    def drawdown_periods(self):
+        return dp(self)

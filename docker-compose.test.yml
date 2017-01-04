@@ -9,6 +9,8 @@ services:
      - mongo
     volumes:
      - ./html-coverage:/html-coverage
+     - ./test:/pyutil/test
+     - ./pyutil:/pyutil/pyutil
 
   mongo:
     image: mongo

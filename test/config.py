@@ -17,8 +17,8 @@ def read_frame(name, parse_dates=True, index_col=0):
     return pd.read_csv(__f(name), index_col=index_col, header=0, parse_dates=parse_dates)
 
 
-def read_series(name, parse_dates=True, index_col=0):
-    return pd.read_csv(__f(name), index_col=index_col, header=None, squeeze=True, parse_dates=parse_dates)
+def read_series(name, parse_dates=True, index_col=0, cname=None):
+    return pd.read_csv(__f(name), index_col=index_col, header=None, squeeze=True, parse_dates=parse_dates, names=[cname])
 
 
 def test_portfolio():

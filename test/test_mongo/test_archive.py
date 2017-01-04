@@ -10,8 +10,10 @@ class TestAssets(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.archive = MongoArchive("mongo", host="mongo")
-        cls.archive.assets.update_all(frame=read_frame("price.csv", parse_dates=True))
+        frame = read_frame("price.csv", parse_dates=True)
+        cls.archive.assets.update_all(frame=frame)
         cls.assets = cls.archive.assets
+        cls.assets.update("A", ts=frame["A"].tail(10))
 
     def test_Keys(self):
         self.assertListEqual(self.assets.keys(), ['A', 'B', 'C', 'D', 'E', 'F', 'G'])

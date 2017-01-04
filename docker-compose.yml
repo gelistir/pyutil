@@ -4,12 +4,22 @@ services:
      build:
        context: .
        dockerfile: Dockerfile
-     extra_hosts:
-        - quantsrv:192.168.100.15
      volumes:
         - ./examples:/pyutil/examples
         - ./results:/pyutil/results
-        #- ./sandbox:/sandbox
+        - ./pyutil:/pyutil/pyutil
+
+  # used to create test resources
+  test:
+     build:
+       context: .
+       dockerfile: Dockerfile
+
+     volumes:
+       - ./test/data.py:/pyutil/data.py
+       - ./test/resources:/pyutil/resources
+
+     command: python data.py
 
 
 

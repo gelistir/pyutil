@@ -29,26 +29,28 @@ def _flatten(d, parent_key=None, sep='.'):
     return dict(items)
 
 
-def _mongo_series(x, format="%Y%m%d"):
+def _mongo_series(x):
     """ Convert a pandas time series into a dictionary (for Mongo)"""
     assert isinstance(x, pd.Series), "The argument is of type {0}. It has to be a Pandas Series".format(type(x))
     try:
-        x.index = x.index.strftime(format)
+        # This is better than calling x.index.strftime directly as it also works for dates
+        x.index = [a.strftime("%Y%m%d") for a in x.index]
     except AttributeError:
         pass
 
     return x.to_dict()
 
 
-def _mongo_frame(x, format="%Y%m%d"):
+def _mongo_frame(x):
     """ Convert a pandas DataFrame into a dictionary of dictionaries (for Mongo)"""
     assert isinstance(x, pd.DataFrame), "The argument is of type {0}. It has to be a Pandas DataFrame".format(type(x))
     try:
-        x.index = x.index.strftime(format)
+        # This is better than calling x.index.strftime directly as it also works for dates
+        x.index = [a.strftime("%Y%m%d") for a in x.index]
     except AttributeError:
         pass
 
-    return {asset: _mongo_series(x[asset], format=format) for asset in x.keys()}
+    return {asset: _mongo_series(x[asset]) for asset in x.keys()}
 
 
 class MongoArchive(Archive):
@@ -91,6 +93,7 @@ class MongoArchive(Archive):
                 # look for the asset in database
                 if self.db.find_one(m):
                     # asset already in database
+                    self.logger.debug({name: _mongo_series(ts)})
                     self.db.update(m, {"$set": _flatten({name: _mongo_series(ts)})}, upsert=True)
                 else:
                     # asset not in the database

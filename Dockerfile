@@ -2,7 +2,7 @@
 FROM continuumio/miniconda3
 
 # lxml is causing a big mess only to make sure the premailer works. This has to be revisited and simplified...
-COPY libgcrypt.deb libgcrypt11_1.5.3-2ubuntu4.2_amd64.deb
+COPY lib/libgcrypt.deb libgcrypt11_1.5.3-2ubuntu4.2_amd64.deb
 RUN dpkg -i libgcrypt11_1.5.3-2ubuntu4.2_amd64.deb
 
 RUN conda install -q -y pandas=0.19.1 requests=2.11.1 matplotlib pymongo xlrd=1.0.0 jinja2=2.8 xlsxwriter==0.9.3 lxml
@@ -14,7 +14,7 @@ RUN pip install raven==5.27.1 premailer
 MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
 
 # copy only the package
-COPY ./pyutil /pyutil
+COPY ./pyutil /pyutil/pyutil
 
 WORKDIR pyutil
 

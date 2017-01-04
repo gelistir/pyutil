@@ -4,39 +4,21 @@ import pandas as pd
 from pyutil.performance.summary import NavSeries, performance
 from test.config import read_series
 
+import pandas.util.testing as pdt
 s = NavSeries(read_series("ts.csv", parse_dates=True))
 
 
 class TestSummary(TestCase):
-    def test_first_last(self):
-        self.assertEqual(s.head(1).values[0], 1.0)
-        self.assertEqual(s.tail(1).values[0], 1.3215650061893174)
-
     def test_pos_neg(self):
-        self.assertEqual(s.negative_events, 1496)
-        self.assertEqual(s.positive_events, 1856)
-        self.assertEqual(s.events, 3352)
+        self.assertEqual(s.negative_events, 164)
+        self.assertEqual(s.positive_events, 176)
+        self.assertEqual(s.events, 340)
 
-    def test_sharpe_ratio(self):
-        self.assertAlmostEqual(s.sharpe_ratio(), 0.93655024411782517, places=10)
-
-    def test_calmar_ratio(self):
-        self.assertAlmostEqual(s.calmar_ratio(), 0.2168373273211153, places=10)
-
-    def test_sortino_ratio(self):
-        self.assertAlmostEqual(s.sortino_ratio(), 0.38088512888549675, places=10)
-
-    def test_var(self):
-        self.assertAlmostEqual(100*s.var(), 0.23009682589375524, places=10)
-
-    def test_cvar(self):
-        self.assertAlmostEqual(100*s.cvar(), 0.33727674011381015, places=10)
-        #s = read_series("ts.csv", parse_dates=True)
-        #x = 100*value_at_risk(s, alpha=0.99)
-        #self.assertAlmostEqual(x, 0.40086450047240874, places=10)
+    def test_summary(self):
+        pdt.assert_series_equal(s.summary().apply(str), read_series("summary.csv").apply(str))
 
     def test_autocorrelation(self):
-        self.assertAlmostEqual(s.autocorrelation, 0.1235649973501317, places=10)
+        self.assertAlmostEqual(s.autocorrelation, 0.070961153249184269, places=10)
 
     def test_mtd(self):
         self.assertAlmostEqual(100*s.mtd, 1.4133604922211385, places=10)
@@ -44,49 +26,23 @@ class TestSummary(TestCase):
     def test_ytd(self):
         self.assertAlmostEqual(100*s.ytd, 2.1718996734564122, places=10)
 
-    def test_max_r(self):
-        self.assertAlmostEqual(s.returns.max(), 0.0086040619154168496, places=10)
-
-    def test_min_r(self):
-        self.assertAlmostEqual(s.returns.min(), -0.012938315599174022, places=10)
-
-    def test_max_nav(self):
-        self.assertAlmostEqual(s.max(), 1.3358034259144032, places=10)
-    #def test_cvar(self):
-    #    s = read_series("ts.csv", parse_dates=True)
-    #    x = 100*conditional_value_at_risk(s, alpha=0.99)
-    #    self.assertAlmostEqual(x, 0.53542831745811131, places=10)
-
-    def test_drawdown(self):
-        self.assertAlmostEqual(100 * s.drawdown.max(), 5.7000575458488578, places=6)
-
     def test_monthly_table(self):
-        self.assertAlmostEqual(100 * s.monthlytable["Nov"][2013], 0.23233078558395626, places=5)
-
+        self.assertAlmostEqual(100 * s.monthlytable["Nov"][2014], -0.19540358586001005, places=5)
 
     def test_ewm(self):
-        self.assertAlmostEqual(100 * s.ewm_volatility(periods=250).values[-1], 2.7706672542422539, places=6)
-        self.assertAlmostEqual(100 * s.ewm_ret(periods=250).values[-1], 6.0326401733122053, places=6)
-        self.assertAlmostEqual(s.ewm_sharpe(periods=250).values[-1], 2.177323951144059, places=6)
+        self.assertAlmostEqual(100 * s.ewm_volatility(periods=250).values[-1], 2.7714298334400818, places=6)
+        self.assertAlmostEqual(100 * s.ewm_ret(periods=250).values[-1], 6.0365130705403685, places=6)
+        self.assertAlmostEqual(s.ewm_sharpe(periods=250).values[-1], 2.1781222810347862, places=6)
 
     def test_performance(self):
-        x = read_series("ts.csv", parse_dates=True)
-        result = performance(x)
-        self.assertAlmostEqual(result["Max Drawdown"], 5.7000575458488578, places=10)
-
-    def test_summary(self):
-        summary = s.summary()
-        self.assertAlmostEqual(summary["Max Drawdown"], 5.7000575458488578 , places=10)
-
-    def test_truncate(self):
-        x = s.truncate(before=pd.Timestamp("2014-01-01"), after=pd.Timestamp("2014-02-28"))
-        self.assertEqual(len(x), 43)
+        result = performance(s)
+        self.assertAlmostEqual(result["Max Drawdown"], 3.9885756705666631, places=10)
 
     def test_fee(self):
         x = s.fee(0.5)
-        self.assertAlmostEqual(x[x.index[-1]], 1.1175918337152901, places=5)
+        self.assertAlmostEqual(x[x.index[-1]], 0.99454336215760819, places=5)
         x = s.fee(0.0)
-        self.assertAlmostEqual(x[x.index[-1]], 1.3215650061893029, places=5)
+        self.assertAlmostEqual(x[x.index[-1]], 1.0116455798589048, places=5)
 
     def test_monthly(self):
         self.assertAlmostEqual(s.monthly[pd.Timestamp("2014-11-30")], 1.2935771592500624, places=5)
@@ -95,7 +51,5 @@ class TestSummary(TestCase):
         self.assertAlmostEqual(s.annual[pd.Timestamp("2014-12-31")], 1.2934720900884369, places=5)
 
     def test_weekly(self):
-        self.assertEqual(len(s.weekly.index), 671)
-
-    def test_daily(self):
-        self.assertEqual(len(s.daily.index), 4693)
+        self.assertEqual(len(s.weekly.index), 69)
+        self.assertEqual(len(s.daily.index), 477)

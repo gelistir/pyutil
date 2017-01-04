@@ -15,8 +15,8 @@ RUN pip install httpretty nose coverage nose-timer
 # File Author / Maintainer
 MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
 
-COPY ./pyutil /pyutil/pyutil
-COPY ./test   /pyutil/test
+ADD ./pyutil /pyutil/pyutil
+ADD ./test   /pyutil/test
 
 WORKDIR pyutil
 
