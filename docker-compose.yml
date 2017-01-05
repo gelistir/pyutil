@@ -10,16 +10,16 @@ services:
         - ./pyutil:/pyutil/pyutil
 
   # used to create test resources
-  test:
+  testdata:
      build:
        context: .
        dockerfile: Dockerfile
 
      volumes:
-       - ./test/data.py:/pyutil/data.py
+       - ./test/config.py:/pyutil/config.py
        - ./test/resources:/pyutil/resources
 
-     command: python data.py
+     command: python config.py
 
 
 

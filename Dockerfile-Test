@@ -12,14 +12,5 @@ RUN pip install raven==5.27.1 premailer
 # this is used to mock http for testing
 RUN pip install httpretty nose coverage nose-timer
 
-# File Author / Maintainer
-MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
-
-ADD ./pyutil /pyutil/pyutil
-ADD ./test   /pyutil/test
-
-WORKDIR pyutil
-
 # Import this to run construct the font-cache
 RUN python -c "from matplotlib.font_manager import FontManager"
-
