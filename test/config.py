@@ -3,12 +3,10 @@ import pandas as pd
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.performance.summary import NavSeries
 
-BASE_DIR = os.path.dirname(__file__)
-
 
 def resource(name):
-    BASE_DIR = os.path.dirname(__file__)
-    return os.path.join(BASE_DIR, "resources", name)
+    base_dir = os.path.dirname(__file__)
+    return os.path.join(base_dir, "resources", name)
 
 
 def read_frame(name, parse_dates=True, index_col=0):
