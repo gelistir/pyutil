@@ -12,6 +12,8 @@ from ..portfolio.portfolio import Portfolio
 
 from .abcArchive import Archive
 
+import uuid
+
 def _f(frame):
     frame.index = [pd.Timestamp(x) for x in frame.index]
     return frame
@@ -269,7 +271,7 @@ class MongoArchive(Archive):
                 self.db.update({"_id": key}, {"_id": key, "data": frame}, upsert=True)
 
 
-    def __init__(self, name, host="quantsrv", port=27017, logger=None):
+    def __init__(self, name=str(uuid.uuid4()), host="quantsrv", port=27017, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.__db = Database(MongoClient(host, port=port), name)
         self.logger.info("Archive (read-access) at {0}".format(self.__db))

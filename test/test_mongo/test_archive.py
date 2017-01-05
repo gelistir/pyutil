@@ -9,7 +9,7 @@ from nose.tools import raises
 class TestAssets(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = MongoArchive("mongo", host="mongo")
+        cls.archive = MongoArchive(host="mongo")
         frame = read_frame("price.csv", parse_dates=True)
         cls.archive.assets.update_all(frame=frame)
         cls.assets = cls.archive.assets
@@ -54,7 +54,7 @@ class TestAssets(TestCase):
 class TestFrames(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = MongoArchive("mongo", host="mongo")
+        cls.archive = MongoArchive(host="mongo")
         cls.archive.frames["Peter Maffay"] = pd.DataFrame(columns=["A", "B"], data=[[1.2, 2.5]])
         cls.frames = cls.archive.frames
 
@@ -62,23 +62,19 @@ class TestFrames(TestCase):
         x = self.archive.frames["Peter Maffay"]
         pdt.assert_frame_equal(x, pd.DataFrame(columns=["A", "B"], data=[[1.2, 2.5]]))
 
-        assert "Peter Maffay" in self.archive.frames.keys()
-        assert len(self.archive.frames.keys())==1
-
-        pair = self.archive.frames.items()[0]
-        self.assertEqual(pair[0], "Peter Maffay")
-
     def test_multiindex_1(self):
         tuples = [("Maffay", "X"), ("Maffay", "Y"), ("Peter", "A"), ("Peter", "B")]
         index = pd.MultiIndex.from_tuples(tuples=tuples, names=["number", "color"])
         x = pd.DataFrame(columns=["C1"], index=index, data=[[2], [3], [0], [1]])
         self.archive.frames["MyFrame"] = x
         pdt.assert_frame_equal(self.archive.frames["MyFrame"], x)
+        del self.archive.frames["MyFrame"]
 
     def test_multiindex_2(self):
         x = pd.DataFrame(columns=["C1"], index=["A","B"], data=[[2], [3]])
         self.archive.frames["MyFrame"] = x
         pdt.assert_frame_equal(self.archive.frames["MyFrame"], x)
+        del self.archive.frames["MyFrame"]
 
     @raises(AssertionError)
     def test_multiindex_3(self):
@@ -96,7 +92,7 @@ class TestFrames(TestCase):
 class TestSymbols(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = MongoArchive("mongo", host="mongo")
+        cls.archive = MongoArchive(host="mongo")
         cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
 
     def test_frame(self):
@@ -119,12 +115,13 @@ class TestSymbols(TestCase):
         self.assertTrue("prop1" not in self.archive.symbols["T"].index)
         self.assertTrue("prop2" in self.archive.symbols["T"].index)
 
+        del self.archive.symbols["T"]
 
 
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = MongoArchive("mongo", host="mongo")
+        cls.archive = MongoArchive(host="mongo")
         # need this for sector-weights
         cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
         cls.archive.portfolios.update("test", test_portfolio(), group="test", comment="test")

@@ -2,7 +2,7 @@
 import logging
 
 from pyutil.decorators import attempt
-from pyutil.mongo.mongoArchive import reader
+from pyutil.mongo.mongoArchive import MongoArchive
 
 # I use the attempt decorator here. The attempt decorator embeds the function into try/except and reports any exception
 # to the logger...:
@@ -16,4 +16,4 @@ def f(logger, archive):
 
 
 if __name__ == '__main__':
-    f(logger=logging.getLogger(__name__), archive=reader(name="production", host="quantsrv"))
+    f(logger=logging.getLogger(__name__), archive=MongoArchive(name="production", host="quantsrv"))
