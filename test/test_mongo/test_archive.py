@@ -9,7 +9,7 @@ from nose.tools import raises
 class TestAssets(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = MongoArchive(host="mongo")
+        cls.archive = MongoArchive()
         frame = read_frame("price.csv", parse_dates=True)
         cls.archive.assets.update_all(frame=frame)
         cls.assets = cls.archive.assets
@@ -54,7 +54,7 @@ class TestAssets(TestCase):
 class TestFrames(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = MongoArchive(host="mongo")
+        cls.archive = MongoArchive()
         cls.archive.frames["Peter Maffay"] = pd.DataFrame(columns=["A", "B"], data=[[1.2, 2.5]])
         cls.frames = cls.archive.frames
 
@@ -92,7 +92,7 @@ class TestFrames(TestCase):
 class TestSymbols(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = MongoArchive(host="mongo")
+        cls.archive = MongoArchive()
         cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
 
     def test_frame(self):
@@ -121,7 +121,7 @@ class TestSymbols(TestCase):
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.archive = MongoArchive(host="mongo")
+        cls.archive = MongoArchive()
         # need this for sector-weights
         cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
         cls.archive.portfolios.update("test", test_portfolio(), group="test", comment="test")
