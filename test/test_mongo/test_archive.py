@@ -117,6 +117,18 @@ class TestSymbols(TestCase):
 
         del self.archive.symbols["T"]
 
+    def test_drop(self):
+        self.archive.symbols.drop()
+        self.assertTrue(self.archive.symbols.isempty, msg="There are no symbols left in the database")
+        self.archive.symbols.update_all(frame=read_frame("symbols.csv"))
+
+    def test_del_unknown(self):
+        result = self.archive.symbols.remove("Peter Maffay is in da house")
+        self.assertEqual(result["n"], 0, "No element has been deleted")
+
+    def test_stats(self):
+        print(self.archive.symbols.stats)
+        assert False
 
 class TestPortfolio(TestCase):
     @classmethod

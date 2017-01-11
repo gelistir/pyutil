@@ -57,8 +57,8 @@ def _mongo_frame(x):
 
 class MongoArchive(Archive):
     class __DB(object):
-        def __init__(self, db, logger=None):
-            self.logger = logger or logging.getLogger(__name__)
+        def __init__(self, db, logger):
+            self.logger = logger
             self.db = db
 
         def keys(self):
@@ -74,11 +74,26 @@ class MongoArchive(Archive):
             return [(k, self[k]) for k in self.keys()]
 
         def __setitem__(self, key, value):
+            # this is implemented in the children
             raise NotImplementedError
 
         def __delitem__(self, key):
-            if key in self.keys():
-                return self.db.remove({"_id": key})
+            #if key in self.keys():
+            # could raise a KeyError
+            return self.remove(key)
+
+        def drop(self):
+            return self.db.drop()
+
+        def remove(self, key):
+            return self.db.remove({"_id": key})
+
+        def count(self):
+            return self.db.count()
+
+        @property
+        def isempty(self):
+            return self.db.count() == 0
 
 
     class __Assets(__DB):
