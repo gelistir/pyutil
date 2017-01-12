@@ -28,8 +28,7 @@ class Configuration(ConfigMaster):
 
 class TestCconfigMaster(TestCase):
     def test_master(self):
-        archive = CsvArchive()
-        archive.data["PX_LAST"] = read_frame("price.csv", parse_dates=True)
+        archive = CsvArchive({"PX_LAST": read_frame("price.csv", parse_dates=True)})
 
         configuration = Configuration(archive, t0=pd.Timestamp("2013-01-01"))
         self.assertEqual(configuration.name, "test")

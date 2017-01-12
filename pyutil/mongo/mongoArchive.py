@@ -15,8 +15,9 @@ from .abcArchive import Archive
 import uuid
 
 def _f(frame):
-    frame.index = [pd.Timestamp(x) for x in frame.index]
-    return frame
+    f = frame.copy()
+    f.index = [pd.Timestamp(x) for x in f.index]
+    return f
 
 
 def _flatten(d, parent_key=None, sep='.'):
@@ -31,28 +32,16 @@ def _flatten(d, parent_key=None, sep='.'):
     return dict(items)
 
 
-def _mongo_series(x):
-    """ Convert a pandas time series into a dictionary (for Mongo)"""
-    assert isinstance(x, pd.Series), "The argument is of type {0}. It has to be a Pandas Series".format(type(x))
+def _mongo(x):
+    y = x.copy()
     try:
         # This is better than calling x.index.strftime directly as it also works for dates
-        x.index = [a.strftime("%Y%m%d") for a in x.index]
+        y.index = [a.strftime("%Y%m%d") for a in y.index]
     except AttributeError:
+        warnings.warn("You are trying to convert the indizes of Pandas object into str. "
+                      "They are currently {0} and of type {1}".format(x.index[0], type(x.index[0])))
         pass
-
-    return x.to_dict()
-
-
-def _mongo_frame(x):
-    """ Convert a pandas DataFrame into a dictionary of dictionaries (for Mongo)"""
-    assert isinstance(x, pd.DataFrame), "The argument is of type {0}. It has to be a Pandas DataFrame".format(type(x))
-    try:
-        # This is better than calling x.index.strftime directly as it also works for dates
-        x.index = [a.strftime("%Y%m%d") for a in x.index]
-    except AttributeError:
-        pass
-
-    return {asset: _mongo_series(x[asset]) for asset in x.keys()}
+    return y.to_dict()
 
 
 class MongoArchive(Archive):
@@ -110,11 +99,11 @@ class MongoArchive(Archive):
                 # look for the asset in database
                 if self.db.find_one(m):
                     # asset already in database
-                    self.logger.debug({name: _mongo_series(ts)})
-                    self.db.update(m, {"$set": _flatten({name: _mongo_series(ts)})}, upsert=True)
+                    self.logger.debug({name: _mongo(ts)})
+                    self.db.update(m, {"$set": _flatten({name: _mongo(ts)})}, upsert=True)
                 else:
                     # asset not in the database
-                    self.db.insert_one({"_id": asset, name: _mongo_series(ts)})
+                    self.db.insert_one({"_id": asset, name: _mongo(ts)})
 
         def update_all(self, frame, name="PX_LAST"):
             """ Update assets with a frame. One asset per column"""
@@ -150,7 +139,7 @@ class MongoArchive(Archive):
         def __setitem__(self, key, value):
             # value has to be a dict!
             for k in value.keys():
-                self.db.insert_one({"_id": key, k: _mongo_series(value[k])})
+                self.db.insert_one({"_id": key, k: _mongo(value[k])})
 
     class __Symbols(__DB):
         def __init__(self, db, logger=None):
@@ -231,16 +220,16 @@ class MongoArchive(Archive):
             if key in self.keys() and not portfolio.empty:
                 # If there is any data left after the truncation process write into database
                 #if not portfolio.empty:
-                self.db.update(q, {"$set": _flatten({"weight": _mongo_frame(portfolio.weights)})}, upsert=True)
-                self.db.update(q, {"$set": _flatten({"price": _mongo_frame(portfolio.prices)})}, upsert=True)
+                self.db.update(q, {"$set": _flatten({"weight": _mongo(portfolio.weights)})}, upsert=True)
+                self.db.update(q, {"$set": _flatten({"price": _mongo(portfolio.prices)})}, upsert=True)
                 r = portfolio.nav.pct_change().dropna()
                 if len(r.index) > 0:
-                    self.db.update(q, {"$set": _flatten({"returns": _mongo_series(r)})}, upsert=True)
+                    self.db.update(q, {"$set": _flatten({"returns": _mongo(r)})}, upsert=True)
             else:
                 # write the entire database into the database, one has to make sure _flatten and to_json are compatible
-                self.db.insert_one({"_id": key, "weight": _mongo_frame(portfolio.weights),
-                                     "price": _mongo_frame(portfolio.prices),
-                                     "returns": _mongo_series(portfolio.nav.pct_change().fillna(0.0))})
+                self.db.insert_one({"_id": key, "weight": _mongo(portfolio.weights),
+                                     "price": _mongo(portfolio.prices),
+                                     "returns": _mongo(portfolio.nav.pct_change().fillna(0.0))})
 
             now = pd.Timestamp("now")
             self.db.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)
@@ -250,9 +239,9 @@ class MongoArchive(Archive):
             now = pd.Timestamp("now")
 
             self.db.insert_one({"_id": key,
-                                "weight": _mongo_frame(value.weights),
-                                "price": _mongo_frame(value.prices),
-                                "returns": _mongo_series(value.nav.pct_change().fillna(0.0)),
+                                "weight": _mongo(value.weights),
+                                "price": _mongo(value.prices),
+                                "returns": _mongo(value.nav.pct_change().fillna(0.0)),
                                 "time": now,
                                 "group": "",
                                 "comment": ""
@@ -301,5 +290,3 @@ class MongoArchive(Archive):
     # bad idea to make history a property as we may have different names, e.g PX_LAST, PX_VOLUME, etc...
     def history(self, assets=None, name="PX_LAST"):
         return self.assets.frame(assets, name)
-
-

@@ -13,7 +13,7 @@ class TestAssets(TestCase):
         frame = read_frame("price.csv", parse_dates=True)
         cls.archive.assets.update_all(frame=frame)
         cls.assets = cls.archive.assets
-        cls.assets.update("A", ts=frame["A"].tail(10))
+        #cls.assets.update("A", ts=frame["A"].tail(10))
 
     def test_Keys(self):
         self.assertListEqual(self.assets.keys(), ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
@@ -34,7 +34,7 @@ class TestAssets(TestCase):
             self.archive.history(assets=["XYZ"], name="PX_LAST")
 
     def test_update(self):
-        self.assets.update(asset="B", ts=pd.Series(index=["2016-07-18"], data=[1.0]))
+        self.assets.update(asset="B", ts=pd.Series(index=[pd.Timestamp("2016-07-18")], data=[1.0]))
         self.assertAlmostEqual(self.assets["B"]["PX_LAST"]["2016-07-18"], 1.0, places=10)
 
     def test_unknown_series_warning(self):
@@ -126,9 +126,6 @@ class TestSymbols(TestCase):
         result = self.archive.symbols.remove("Peter Maffay is in da house")
         self.assertEqual(result["n"], 0, "No element has been deleted")
 
-    def test_stats(self):
-        print(self.archive.symbols.stats)
-        assert False
 
 class TestPortfolio(TestCase):
     @classmethod
