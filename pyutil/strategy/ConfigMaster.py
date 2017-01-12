@@ -1,5 +1,6 @@
 import abc
 import logging
+
 from ..mongo.abcArchive import Archive
 
 
@@ -37,9 +38,13 @@ class ConfigMaster(object):
         return
 
     def prices(self, name="PX_LAST"):
+        assert not self.empty(), "Please specify a list of assets."
         return self.archive.history(assets=self.assets, name=name).truncate(before=self.t0).copy()
 
     def count(self):
         """ Number of assets """
         return len(self.assets)
+
+    def empty(self):
+        return self.count() == 0
 

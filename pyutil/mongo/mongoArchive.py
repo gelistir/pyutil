@@ -60,7 +60,7 @@ class MongoArchive(Archive):
                 return None
 
         def items(self):
-            return [(k, self[k]) for k in self.keys()]
+            yield ((k, self[k]) for k in self.keys())
 
         def __setitem__(self, key, value):
             # this is implemented in the children

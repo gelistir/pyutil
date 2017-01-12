@@ -14,7 +14,7 @@ class Configuration(ConfigMaster):
 
     def portfolio(self):
         p = self.prices()
-        return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / len(p.keys())))
+        return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / self.count()))
 
     @property
     def name(self):
@@ -31,8 +31,19 @@ class TestCconfigMaster(TestCase):
         archive = CsvArchive({"PX_LAST": read_frame("price.csv", parse_dates=True)})
 
         configuration = Configuration(archive, t0=pd.Timestamp("2013-01-01"))
-        self.assertEqual(configuration.name, "test")
+        self.assertEquals(configuration.name, "test")
         self.assertEquals(configuration.group, "testgroup")
 
-        portfolio=configuration.portfolio()
+        portfolio = configuration.portfolio()
         self.assertAlmostEquals(portfolio.nav.sharpe_ratio(), -0.27817227635204395, places=5)
+        self.assertEquals(configuration.empty(), False)
+        self.assertEquals(configuration.count(), 3)
+
+    def test_empty(self):
+        archive = CsvArchive({"PX_LAST": read_frame("price.csv", parse_dates=True)})
+        configuration = Configuration(archive, t0=pd.Timestamp("2013-01-01"))
+        configuration.assets = []
+
+        with self.assertRaises(AssertionError):
+            configuration.prices()
+
