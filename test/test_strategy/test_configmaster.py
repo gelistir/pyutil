@@ -10,10 +10,10 @@ from test.config import read_frame
 class Configuration(ConfigMaster):
     def __init__(self, archive, t0, logger=None):
         super().__init__(archive=archive, t0=t0, logger=logger)
-        self.configuration["prices"] = self.prices(["A", "B", "C"])
+        self.assets = ["A", "B", "C"]
 
     def portfolio(self):
-        p = self.configuration["prices"]
+        p = self.prices()
         return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / len(p.keys())))
 
     @property

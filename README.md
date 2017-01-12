@@ -30,8 +30,8 @@ Although inheritance is rarely used in Python we use it here to enforce a small 
 	class Configuration(ConfigMaster):
 		def __init__(self, archive, logger=None):
 			super().__init__(archive=archive, logger=logger)
-			self.configuration["assets"] = ["A", "B", "C"]
-			self.configuration["start"] = pd.Timestamp("2002-01-01")
+			self.assets = ["A", "B", "C"]
+			self.t0 = "2002-01-01"
 ```
 
 Once we have instantiated a Configuration object we could still modify the configuration dictionary which is a simple
@@ -39,7 +39,7 @@ member variable. In this example we define the parameters assets and start.
 
 ```python
      c = Configuration(archive)
-     c.configuration["assets"] = ["A", "B", "D"]
+     c.assets = ["A", "B", "D"]
 ```
 
 We replace the asset C by D. We shall talk briefly about Archives. Archives provide 
@@ -67,12 +67,12 @@ ConfigMaster is exposing the abstract portfolio method, e.g. we extend the Confi
 	class Configuration(ConfigMaster):
 		def __init__(self, archive, logger=None):
 			super().__init__(archive=archive, logger=logger)
-			self.configuration["assets"] = ["A", "B", "C"]
-			self.configuration["start"] = pd.Timestamp("2002-01-01")
+			self.assets = ["A", "B", "C"]
+			self.t0 = "2002-01-01"
 			
 		def portfolio(self):
-			a = self.configuration["assets"]
-			p = self.archive.history(assets=a).truncate(before=self.configuration["start"])
+			a = self.assets
+			p = self.prices
 			return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0/len(a)))
 ```
 The actual strategy is therefore executed as 
@@ -85,7 +85,7 @@ The actual strategy is therefore executed as
 	c = Configuration(archive=archive)
 	
 	# alternate any parameters for your backtest
-	c.configurations["assets"]=["A","B","D"]
+	c.assets=["A","B","D"]
 	
 	# compute the portfolio
 	p = c.portfolio()

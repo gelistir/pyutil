@@ -1,8 +1,5 @@
 import abc
-
-import pandas as pd
 import logging
-from typing import List
 from ..mongo.abcArchive import Archive
 
 
@@ -12,7 +9,7 @@ class ConfigMaster(object):
     def __repr__(self, *args, **kwargs):
         return 'Name: {0}, Group: {1}'.format(self.name, self.group)
 
-    def __init__(self, archive: Archive, t0=pd.Timestamp("2002-01-01"), logger=None):
+    def __init__(self, archive, t0="2002-01-01", logger=None):
         """
         Abstract base class for all strategies
 
@@ -25,6 +22,7 @@ class ConfigMaster(object):
         self.logger = logger or logging.getLogger(__name__)
         self.archive = archive
         self.t0 = t0
+        self.assets = []
 
     @abc.abstractproperty
     def group(self)->str:
@@ -38,5 +36,10 @@ class ConfigMaster(object):
     def portfolio(self):
         return
 
-    def prices(self, assets: List[str]) -> pd.DataFrame:
-        return self.archive.history(assets=assets).truncate(before=self.t0)
+    def prices(self, name="PX_LAST"):
+        return self.archive.history(assets=self.assets, name=name).truncate(before=self.t0).copy()
+
+    def count(self):
+        """ Number of assets """
+        return len(self.assets)
+
