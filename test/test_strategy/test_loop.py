@@ -1,25 +1,9 @@
 from unittest import TestCase
 
 from pyutil.mongo.csvArchive import CsvArchive
-from pyutil.strategy.Loop import loop, loop_configurations
+from pyutil.strategy.Loop import loop_configurations
 from test.config import read_frame
 
-
-class TestLoop(TestCase):
-    def test_loop(self):
-        path = "/pyutil/test/test_strategy/scripts"
-
-        length = len([x for x in loop(path=path, prefix="test.test_strategy.scripts.")])
-        self.assertEquals(length, 2)
-
-    def test_assert(self):
-        with self.assertRaises(AssertionError):
-            len([x for x in loop(path=2, prefix="test.test_strategy.scripts.")])
-
-    def test_dont_exist(self):
-        path = "/abc"
-        with self.assertRaises(AssertionError):
-            len([x for x in loop(path=path, prefix="test.test_strategy.scripts.")])
 
 
 class TestLoopConfigurations(TestCase):
