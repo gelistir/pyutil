@@ -1,4 +1,5 @@
 import collections
+from collections import OrderedDict
 
 import pandas as pd
 import logging
@@ -32,6 +33,13 @@ def _flatten(d, parent_key=None, sep='.'):
     return dict(items)
 
 
+def _to_dict(data):
+    if isinstance(data, pd.DataFrame):
+        return {k: data[k].dropna().to_dict() for k,v in data.items()}
+    else:
+        return data.to_dict()
+
+
 def _mongo(x):
     y = x.copy()
     try:
@@ -41,7 +49,8 @@ def _mongo(x):
         warnings.warn("You are trying to convert the indizes of Pandas object into str. "
                       "They are currently {0} and of type {1}".format(x.index[0], type(x.index[0])))
         pass
-    return y.to_dict()
+
+    return _to_dict(data=y)
 
 
 class MongoArchive(Archive):
