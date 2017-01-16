@@ -210,9 +210,7 @@ class MongoArchive(Archive):
 
         @property
         def nav(self):
-            frame = pd.DataFrame({x["_id"]: fromReturns(pd.Series(x["returns"])) for x in self.db.find({}, {"_id": 1, "returns": 1})})
-            return _f(frame)
-
+            return _f(pd.DataFrame({name: portfolio.nav for name, portfolio in self.items()}))
 
         def update(self, key, portfolio, group, comment=""):
             self.logger.info("Key {0}, Group {1}".format(key, group))
@@ -220,17 +218,11 @@ class MongoArchive(Archive):
             q = {"_id": key}
             if key in self.keys() and not portfolio.empty:
                 # If there is any data left after the truncation process write into database
-                #if not portfolio.empty:
                 self.db.update(q, {"$set": _flatten({"weight": _mongo(portfolio.weights)})}, upsert=True)
                 self.db.update(q, {"$set": _flatten({"price": _mongo(portfolio.prices)})}, upsert=True)
-                r = portfolio.nav.pct_change().dropna()
-                if len(r.index) > 0:
-                    self.db.update(q, {"$set": _flatten({"returns": _mongo(r)})}, upsert=True)
             else:
                 # write the entire database into the database, one has to make sure _flatten and to_json are compatible
-                self.db.insert_one({"_id": key, "weight": _mongo(portfolio.weights),
-                                     "price": _mongo(portfolio.prices),
-                                     "returns": _mongo(portfolio.nav.pct_change().fillna(0.0))})
+                self.db.insert_one({"_id": key, "weight": _mongo(portfolio.weights), "price": _mongo(portfolio.prices)})
 
             now = pd.Timestamp("now")
             self.db.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)
@@ -242,7 +234,6 @@ class MongoArchive(Archive):
             self.db.insert_one({"_id": key,
                                 "weight": _mongo(value.weights),
                                 "price": _mongo(value.prices),
-                                "returns": _mongo(value.nav.pct_change().fillna(0.0)),
                                 "time": now,
                                 "group": "",
                                 "comment": ""
