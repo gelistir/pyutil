@@ -39,7 +39,7 @@ class ConfigMaster(object):
 
     def prices(self, name="PX_LAST"):
         assert not self.empty(), "Please specify a list of assets."
-        return self.archive.history(assets=self.assets, name=name).truncate(before=self.t0).copy()
+        return self.archive.history(assets=self.assets, name=name).truncate(before=self.t0).copy().dropna(how="all", axis=0)
 
     def count(self):
         """ Number of assets """

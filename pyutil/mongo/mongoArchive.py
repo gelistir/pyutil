@@ -135,7 +135,8 @@ class MongoArchive(Archive):
                 p = self.db.find({name: {"$exists":1}}, {"_id": 1, name: 1})
                 frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p})
 
-            return _f(frame)
+            # delete rows that are all NaN...
+            return _f(frame).dropna(how="all", axis=0)
 
         def __setitem__(self, key, value):
             # value has to be a dict!

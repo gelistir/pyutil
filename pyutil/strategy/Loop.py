@@ -14,9 +14,14 @@ def loop_configurations(archive, t0, path, prefix, logger=None):
     logger.info("Prefix: {0}".format(prefix))
 
     for module, source in __loop(path=path, prefix=prefix):
-        config = module.Configuration(archive=archive, t0=t0, logger=logger)
-        portfolio = config.portfolio()
+        # module
+        logger.debug("Module: {0}".format(module))
 
+        config = module.Configuration(archive=archive, t0=t0, logger=logger)
+        logger.debug("Name: {0}".format(config.name))
+        logger.debug("Group: {0}".format(config.group))
+
+        portfolio = config.portfolio()
         yield Result(name=config.name, portfolio=portfolio, source=source, group=config.group)
 
 
