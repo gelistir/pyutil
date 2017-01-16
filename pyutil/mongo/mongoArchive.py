@@ -60,7 +60,8 @@ class MongoArchive(Archive):
                 return None
 
         def items(self):
-            yield ((k, self[k]) for k in self.keys())
+            for k in self.keys():
+                yield (k, self[k])
 
         def __setitem__(self, key, value):
             # this is implemented in the children
@@ -162,7 +163,7 @@ class MongoArchive(Archive):
 
         @property
         def frame(self):
-            return pd.DataFrame({id: self[id] for id in self.keys()}).transpose()
+            return pd.DataFrame({id: x for id, x in self.items()}).transpose()
 
 
     class __Portfolios(__DB):

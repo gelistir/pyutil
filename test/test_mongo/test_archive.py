@@ -85,9 +85,9 @@ class TestFrames(TestCase):
 
     def test_del_frame(self):
         self.frames["Peter"] = pd.DataFrame()
-        self.assertTrue("Peter" in self.frames.keys())
+        self.assertTrue("Peter" in list(self.frames.keys()))
         del self.frames["Peter"]
-        self.assertTrue("Peter" not in self.frames.keys())
+        self.assertTrue("Peter" not in list(self.frames.keys()))
 
 class TestSymbols(TestCase):
     @classmethod
