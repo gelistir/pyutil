@@ -1,40 +1,17 @@
-import logging
-
 import numpy as np
 import pandas as pd
 
-from .leverage import Leverage
 from ..performance.summary import fromReturns
 from .maths import xround, buy_or_sell
 from ..performance.periods import period_returns, periods
 from ..timeseries.timeseries import ytd, mtd
 
-def merge(portfolios, axis=0, logger=None):
+def merge(portfolios, axis=0):
     prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
     weights = pd.concat([p.weights for p in portfolios], axis=axis, verify_integrity=True)
-    return Portfolio(prices, weights.fillna(0.0), logger=logger)
+    return Portfolio(prices, weights.fillna(0.0))
 
 class Portfolio(object):
-    @staticmethod
-    def __forward(w1, p1, p2):
-        # w1 weight at time t1
-        # p1 price at time t1
-        # p2 price at time t2
-        # return the extrapolated weights at time t2
-
-        # not a single weight is valid
-        cash = 1.0 - np.nansum(w1)
-        # note that it's not possible that p1 is defined but p2 is nan... prices are forward interpolated
-        p2[np.isnan(p2)] = p1[np.isnan(p2)]
-
-        value = w1 * (p2 / p1)
-        w = value / (np.nansum(value) + cash)
-        # interpolate the nan values with 0
-        w[np.isnan(w)] = 0
-
-        return w
-
-
     def iron_threshold(self, threshold=0.02):
         """
         Iron a portfolio, do not touch the last index
@@ -42,59 +19,61 @@ class Portfolio(object):
         :param threshold:
         :return:
         """
+        portfolio = Portfolio(prices=self.prices, weights=self.weights)
 
-        # make sure the order is correct...
-        w = self.weights[self.assets].values
-        p = self.prices[self.assets].values
+        for yesterday, today in zip(self.index[:-2], self.index[1:-1]):
+            if (portfolio.weights.ix[today] - portfolio.weights.ix[yesterday]).abs().max() <= threshold:
+                portfolio.forward(today, yesterday=yesterday)
 
-        assert w.shape == p.shape
-
-        for i in range(1, p.shape[0] - 1):
-            if np.abs(w[i] - w[i - 1]).max() <= threshold:
-                w[i] = self.__forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
-            else:
-                # now we do nothing. We do not forward interpolate the old weights. Rather we use the weights computed by the algo
-                pass
-
-        p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
-        w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
-
-        return Portfolio(prices=p, weights=w, logger=self.__logger)
+        return portfolio
 
     def iron_time(self, rule):
         # make sure the order is correct...
-        w = self.weights[self.assets].values
-        p = self.prices[self.assets].values
+        portfolio = Portfolio(self.prices, self.weights)
 
-        assert w.shape == p.shape
+        moments = [self.index[0]]
 
-        # take the weights of the underlying portfolio
-        index = self.weights.index
+        # we need timestamps from the underlying series not the end of intervals!
+        resample = self.weights.resample(rule=rule).last()
+        for t in resample.index:
+            moments.append(self.weights[self.weights.index <= t].index[-1])
 
-        moments = [0]
+        for date in self.weights.index[:-1]:
+            if date not in moments:
+                portfolio.forward(date)
 
-        for t in self.weights.ix[:-1].resample(rule=rule).last().index:
-            moments.append(len(index[index <= t]) - 1)
+        return portfolio
 
-        for i in range(1, p.shape[0] - 1):
-            if i not in moments:
-                w[i] = self.__forward(w1=w[i - 1], p1=p[i - 1], p2=p[i])
 
-        p = pd.DataFrame(index=self.prices.index, columns=self.assets, data=p)
-        w = pd.DataFrame(index=self.weights.index, columns=self.assets, data=w)
+    def forward(self, t, yesterday=None):
+        # We move weights to t
+        yesterday = yesterday or self.__before[t]
 
-        return Portfolio(prices=p, weights=w, logger=self.__logger)
+        w1 = self.__weights.ix[yesterday].dropna()
 
-    def __init__(self, prices, weights, logger=None):
-        self.__logger = logger or logging.getLogger(__name__)
+        # fraction of the cash in the portfolio yesterday
+        cash = 1 - w1.sum()
 
+        # new value of each position
+        value = w1 * (self.asset_returns.ix[t] + 1)
+
+        self.weights.ix[t] = value / (value.sum() + cash)
+
+        return self
+
+    def __init__(self, prices, weights=None):
+        # if you don't specify any weights, we initialize them with nan
+        if weights is None:
+            weights = pd.DataFrame(index=prices.index, columns=prices.keys(), data=np.nan)
+
+        # If weights is a Series, each weight per asset!
         if isinstance(weights, pd.Series):
+
             w = pd.DataFrame(index=prices.index, columns=weights.keys())
             for t in w.index:
                 w.ix[t] = weights
 
             weights = w
-
 
         assert set(weights.keys()) <= set(prices.keys()), "Key for weights not subset of keys for prices"
         assert prices.index.equals(weights.index), "Index for prices and weights have to match"
@@ -106,14 +85,30 @@ class Portfolio(object):
         assert weights.index.is_monotonic_increasing, "Weight Index is not increasing"
 
         self.__prices = prices.ffill()
-        self.__weights = weights.fillna(0.0)
+
+        for key, w in weights.items():
+            # check the weight series...
+            series = w.copy()
+            series.index = range(0, len(series))
+            # remove all nans
+            series = series.dropna()
+
+            # compute the length of the maximal gap
+            max_gap = pd.Series(data=series.index).diff().dropna().max()
+            assert not max_gap > 1, "There are gaps in the series {0} and gap {1}".format(w, max_gap)
+
+        self.__weights = weights
+
+        # todo: this looks like an odd construction
+        self.__before = {prices.index[i]: prices.index[i-1] for i in range(1, len(prices.index))}
+        self.__r = self.__prices.pct_change()
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
 
     @property
     def cash(self):
-        return 1.0 - self.weights.ffill().sum(axis=1)
+        return 1.0 - self.leverage
 
     @property
     def assets(self):
@@ -121,30 +116,24 @@ class Portfolio(object):
 
     @property
     def prices(self):
-        return self.__prices.sort_index(axis=1)
+        return self.__prices
 
     @property
     def weights(self):
-        return self.__weights.sort_index(axis=1)
+        return self.__weights
 
     @property
     def asset_returns(self):
-        return self.prices.pct_change()
+        return self.__r
 
     @property
     def nav(self):
-        return fromReturns(self.weighted_returns.sum(axis=1)) # + 1).cumprod().dropna())
+        return fromReturns(self.weighted_returns.sum(axis=1))
 
     @property
     def weighted_returns(self):
-        d = dict()
-        for asset in self.assets:
-            # the stream of returns starts with a zero!
-            rr = self.prices[asset].dropna().pct_change().fillna(0.0)
-            ww = self.weights[asset].dropna().shift(1).fillna(0.0)
-            d[asset] = ww * rr
-
-        return pd.DataFrame(d)
+        r = self.asset_returns.fillna(0.0)
+        return pd.DataFrame({a: r[a]*self.weights[a].dropna().shift(1).fillna(0.0) for a in self.assets})
 
     @property
     def index(self):
@@ -152,7 +141,7 @@ class Portfolio(object):
 
     @property
     def leverage(self):
-        return Leverage(self.weights.ffill().sum(axis=1).dropna())
+        return self.weights.sum(axis=1).dropna()
 
     def summary(self, t0=None, t1=None, alpha=0.95, periods=None, r_f=0):
         x = self.nav.truncate(before=t0, after=t1).summary(alpha=alpha, periods=periods, r_f=r_f)
@@ -161,7 +150,7 @@ class Portfolio(object):
 
     def truncate(self, before=None, after=None):
         return Portfolio(prices=self.prices.truncate(before=before, after=after),
-                         weights=self.weights.truncate(before=before, after=after), logger=self.__logger)
+                         weights=self.weights.truncate(before=before, after=after))
 
     @property
     def empty(self):
@@ -212,35 +201,29 @@ class Portfolio(object):
     def tail(self, n=10):
         w = self.weights.tail(n)
         p = self.prices.ix[w.index]
-        return Portfolio(p, w, logger=self.__logger)
+        return Portfolio(p, w)
 
     @property
     def position(self):
         return pd.DataFrame({k: self.weights[k] * self.nav / self.prices[k] for k in self.assets})
 
     def subportfolio(self, assets):
-        return Portfolio(prices=self.prices[assets], weights=self.weights[assets], logger=self.__logger)
+        return Portfolio(prices=self.prices[assets], weights=self.weights[assets])
 
     def __mul__(self, other):
-        return Portfolio(self.prices, other * self.weights, self.__logger)
+        return Portfolio(self.prices, other * self.weights)
 
     def __rmul__(self, other):
         return self.__mul__(other)
 
     def apply(self, function, axis=0):
-        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis), logger=self.__logger)
+        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))
 
     @property
     def trading_days(self):
         __fundsize = 1e6
         days = (__fundsize * self.position).diff().abs().sum(axis=1)
         return sorted(list(days[days > 1].index))
-
-    def ffill(self, prices=False):
-        if prices:
-            return Portfolio(prices=self.prices.ffill(), weights=self.weights.ffill(), logger=self.__logger)
-        else:
-            return Portfolio(prices=self.prices, weights=self.weights.ffill(), logger=self.__logger)
 
     def transaction_report(self, capital=1e7, n=2):
         d = dict()
@@ -272,34 +255,25 @@ class Portfolio(object):
         p["Type"] = p["Amount"].apply(buy_or_sell)
         return p
 
-
     def ytd(self, today=None):
-        return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today),
-                         logger=self.__logger)
+        return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today))
 
     def mtd(self, today=None):
-        return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today),
-                         logger=self.__logger)
+        return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today))
 
     @property
     def state(self):
         trade_events = self.trading_days[-5:-1]
-        self.__logger.debug("Trade events: {0}".format(trade_events))
         today = self.index[-1]
-        yesterday = self.index[-2]
-        self.__logger.debug("Last dates: {0}, {1}".format(today, yesterday))
         trade_events.append(today)
 
         weights = self.weights.ffill().ix[trade_events].transpose()
+        p = Portfolio(prices=self.prices, weights=self.weights.copy()).forward(today)
 
-        extrapolated = self.__forward(w1=self.weights.ffill().ix[yesterday],
-                                      p1=self.prices.ffill().ix[yesterday],
-                                      p2=self.prices.ffill().ix[today])
-
-        gap = weights[today] - extrapolated
+        gap = self.weights.ix[today] - p.weights.ix[today]
 
         weights = 100.0 * weights.rename(columns=lambda x: x.strftime("%d-%b-%y"))
-        weights["Extrapolated"] = 100.0 * extrapolated
+        weights["Extrapolated"] = 100.0 * p.weights.ix[today]
         weights["Gap"] = 100.0 * gap
 
         return weights
@@ -323,7 +297,7 @@ class Portfolio(object):
         plt.legend(["Drawdown"], loc=2)
 
         ax3 = plt.subplot(414, sharex=ax1)
-        (100 * self.leverage.series).plot(ax=ax3, color='green')
+        (100 * self.leverage).plot(ax=ax3, color='green')
         ax3.set_ylim([-10, 110])
 
         (100 * self.weights.max(axis=1)).plot(ax=ax3, color='blue')

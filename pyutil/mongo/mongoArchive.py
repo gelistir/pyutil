@@ -1,5 +1,4 @@
 import collections
-from collections import OrderedDict
 
 import pandas as pd
 import logging
@@ -8,7 +7,6 @@ import warnings
 from pymongo import MongoClient
 from pymongo.database import Database
 
-from ..performance.summary import fromReturns
 from ..portfolio.portfolio import Portfolio
 
 from .abcArchive import Archive
@@ -35,7 +33,7 @@ def _flatten(d, parent_key=None, sep='.'):
 
 def _to_dict(data):
     if isinstance(data, pd.DataFrame):
-        return {k: data[k].dropna().to_dict() for k,v in data.items()}
+        return {k: v.dropna().to_dict() for k,v in data.items()}
     else:
         return data.to_dict()
 
@@ -189,7 +187,7 @@ class MongoArchive(Archive):
                 weights = _f(pd.DataFrame(a["weight"]))
                 prices = prices.ix[weights.index]
 
-                return Portfolio(prices=prices, weights=weights, logger=self.logger)
+                return Portfolio(prices=prices, weights=weights)
             else:
                 return None
 
