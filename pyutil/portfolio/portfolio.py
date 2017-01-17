@@ -20,7 +20,6 @@ class Portfolio(object):
         :return:
         """
         portfolio = Portfolio(prices=self.prices, weights=self.weights)
-
         for yesterday, today in zip(self.index[:-2], self.index[1:-1]):
             if (portfolio.weights.ix[today] - portfolio.weights.ix[yesterday]).abs().max() <= threshold:
                 portfolio.forward(today, yesterday=yesterday)
@@ -55,7 +54,7 @@ class Portfolio(object):
         cash = 1 - w1.sum()
 
         # new value of each position
-        value = w1 * (self.asset_returns.ix[t] + 1)
+        value = w1 * (self.asset_returns.ix[t].fillna(0.0) + 1)
 
         self.weights.ix[t] = value / (value.sum() + cash)
 
@@ -99,8 +98,7 @@ class Portfolio(object):
 
         self.__weights = weights
 
-        # todo: this looks like an odd construction
-        self.__before = {prices.index[i]: prices.index[i-1] for i in range(1, len(prices.index))}
+        self.__before = {today : yesterday for today, yesterday in zip(prices.index[1:], prices.index[:-1])}
         self.__r = self.__prices.pct_change()
 
     def __repr__(self):
