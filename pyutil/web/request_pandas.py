@@ -32,7 +32,7 @@ class RequestPandas(object):
     def json(self):
         return json.dumps(self.__data, sort_keys=True)
 
-    def get_scalar(self, name, default=None):
+    def get(self, name, default=None):
         assert name in self.__data.keys(), "The key {0} is unknown".format(name)
         return self.__data[name] if name in self.__data.keys() else default
 
