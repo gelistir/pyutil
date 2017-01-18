@@ -3,8 +3,13 @@ import pandas as pd
 
 
 class RequestPandas(object):
-    def __init__(self, data=None):
-        self.__data = data or dict()
+    # data is a json document
+    def __init__(self, json_str=None):
+        if json_str:
+            # weird construction, but if data is None, you can not apply json.loads
+            self.__data = json.loads(json_str)
+        else:
+            self.__data = dict()
 
     def keys(self):
         return self.__data.keys()
@@ -21,7 +26,7 @@ class RequestPandas(object):
         self.__data[key] = value
 
     def json(self):
-        return json.dumps(self.__data)
+        return json.dumps(self.__data, sort_keys=True)
 
     def get_scalar(self, name, default=None):
         assert name in self.__data.keys(), "The key {0} is unknown".format(name)
