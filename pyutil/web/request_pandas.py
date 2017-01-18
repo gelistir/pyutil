@@ -6,8 +6,12 @@ class RequestPandas(object):
     # data is a json document
     def __init__(self, json_str=None):
         if json_str:
-            # weird construction, but if data is None, you can not apply json.loads
-            self.__data = json.loads(json_str)
+            if isinstance(json_str, str):
+                # weird construction, but if data is None, you can not apply json.loads
+                self.__data = json.loads(json_str)
+            else:
+                self.__data = json.loads(json_str.data.decode("utf-8"))
+
         else:
             self.__data = dict()
 
