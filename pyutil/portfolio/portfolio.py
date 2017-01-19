@@ -19,7 +19,7 @@ class Portfolio(object):
         :param threshold:
         :return:
         """
-        portfolio = Portfolio(prices=self.prices, weights=self.weights)
+        portfolio = Portfolio(prices=self.prices, weights=self.weights, **self.meta)
         for yesterday, today in zip(self.index[:-2], self.index[1:-1]):
             if (portfolio.weights.ix[today] - portfolio.weights.ix[yesterday]).abs().max() <= threshold:
                 portfolio.forward(today, yesterday=yesterday)
@@ -28,7 +28,7 @@ class Portfolio(object):
 
     def iron_time(self, rule):
         # make sure the order is correct...
-        portfolio = Portfolio(self.prices, self.weights)
+        portfolio = Portfolio(self.prices, self.weights, **self.meta)
 
         moments = [self.index[0]]
 
@@ -60,7 +60,7 @@ class Portfolio(object):
 
         return self
 
-    def __init__(self, prices, weights=None):
+    def __init__(self, prices, weights=None, **kwargs):
         # if you don't specify any weights, we initialize them with nan
         if weights is None:
             weights = pd.DataFrame(index=prices.index, columns=prices.keys(), data=np.nan)
@@ -100,6 +100,12 @@ class Portfolio(object):
 
         self.__before = {today : yesterday for today, yesterday in zip(prices.index[1:], prices.index[:-1])}
         self.__r = self.__prices.pct_change()
+
+        self.__dict = kwargs
+
+    @property
+    def meta(self):
+        return self.__dict
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
@@ -148,7 +154,8 @@ class Portfolio(object):
 
     def truncate(self, before=None, after=None):
         return Portfolio(prices=self.prices.truncate(before=before, after=after),
-                         weights=self.weights.truncate(before=before, after=after))
+                    weights=self.weights.truncate(before=before, after=after), **self.meta)
+
 
     @property
     def empty(self):
@@ -199,23 +206,23 @@ class Portfolio(object):
     def tail(self, n=10):
         w = self.weights.tail(n)
         p = self.prices.ix[w.index]
-        return Portfolio(p, w)
+        return Portfolio(p, w, **self.meta)
 
     @property
     def position(self):
         return pd.DataFrame({k: self.weights[k] * self.nav / self.prices[k] for k in self.assets})
 
     def subportfolio(self, assets):
-        return Portfolio(prices=self.prices[assets], weights=self.weights[assets])
+        return Portfolio(prices=self.prices[assets], weights=self.weights[assets], **self.meta)
 
     def __mul__(self, other):
-        return Portfolio(self.prices, other * self.weights)
+        return Portfolio(self.prices, other * self.weights, **self.meta)
 
     def __rmul__(self, other):
         return self.__mul__(other)
 
     def apply(self, function, axis=0):
-        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))
+        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis), **self.meta)
 
     @property
     def trading_days(self):
@@ -254,10 +261,10 @@ class Portfolio(object):
         return p
 
     def ytd(self, today=None):
-        return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today))
+        return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today), **self.meta)
 
     def mtd(self, today=None):
-        return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today))
+        return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today), **self.meta)
 
     @property
     def state(self):
@@ -266,7 +273,7 @@ class Portfolio(object):
         trade_events.append(today)
 
         weights = self.weights.ffill().ix[trade_events].transpose()
-        p = Portfolio(prices=self.prices, weights=self.weights.copy()).forward(today)
+        p = Portfolio(prices=self.prices, weights=self.weights.copy(), **self.meta).forward(today)
 
         gap = self.weights.ix[today] - p.weights.ix[today]
 

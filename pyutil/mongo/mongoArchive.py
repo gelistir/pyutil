@@ -146,9 +146,11 @@ class MongoArchive(Archive):
             return _f(frame).dropna(how="all", axis=0)
 
         def __setitem__(self, key, value):
+            raise NotImplementedError
+
             # value has to be a dict!
-            for k in value.keys():
-                self.db.insert_one({"_id": key, k: _mongo(value[k])})
+            #for k in value.keys():
+            #    self.db.insert_one({"_id": key, k: _mongo(value[k])})
 
     class __Symbols(__DB):
         def __init__(self, db, logger=None):
@@ -173,7 +175,6 @@ class MongoArchive(Archive):
         def frame(self):
             return pd.DataFrame({id: x for id, x in self.items()}).transpose()
 
-
     class __Portfolios(__DB):
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
@@ -182,12 +183,15 @@ class MongoArchive(Archive):
         def __getitem__(self, item):
             self.logger.debug("Portfolio: {0}".format(item))
             a = super().__getitem__(item)
+
             if a:
                 prices = _f(pd.DataFrame(a["price"]))
                 weights = _f(pd.DataFrame(a["weight"]))
                 prices = prices.ix[weights.index]
+                del a["price"]
+                del a["weight"]
 
-                return Portfolio(prices=prices, weights=weights)
+                return Portfolio(prices=prices, weights=weights, **a)
             else:
                 return None
 
@@ -212,16 +216,16 @@ class MongoArchive(Archive):
 
         @property
         def strategies(self):
-            portfolios = self.db.find({}, {"_id": 1, "group": 1, "time": 1, "comment": 1})
-            d = {p["_id"]: pd.Series({"group": p["group"], "time": p["time"], "comment": p["comment"]}) for p in portfolios}
-            return pd.DataFrame(d).transpose()
+            portfolios = self.db.find({}, {"weight": 0, "price": 0}) #, "_id": 1, "group": 1, "time": 1, "comment": 1})
+            d = {p["_id"]: pd.Series(p) for p in portfolios}
+            return pd.DataFrame(d).drop("_id").transpose()
 
         @property
         def nav(self):
             return _f(pd.DataFrame({name: portfolio.nav for name, portfolio in self.items()}))
 
-        def update(self, key, portfolio, group, comment=""):
-            self.logger.info("Key {0}, Group {1}".format(key, group))
+        def update(self, key, portfolio):
+            self.logger.info("Key {0}".format(key))
 
             q = {"_id": key}
             if key in self.keys() and not portfolio.empty:
@@ -232,20 +236,23 @@ class MongoArchive(Archive):
                 # write the entire database into the database, one has to make sure _flatten and to_json are compatible
                 self.db.insert_one({"_id": key, "weight": _mongo(portfolio.weights), "price": _mongo(portfolio.prices)})
 
-            now = pd.Timestamp("now")
-            self.db.update(q, {"$set": {"group": group, "time": now, "comment": comment}}, upsert=True)
+            if portfolio.meta:
+                self.db.update(q, {"$set": portfolio.meta}, upsert=True)
+
             return self[key]
 
         def __setitem__(self, key, value):
-            now = pd.Timestamp("now")
+            raise NotImplementedError
 
-            self.db.insert_one({"_id": key,
-                                "weight": _mongo(value.weights),
-                                "price": _mongo(value.prices),
-                                "time": now,
-                                "group": "",
-                                "comment": ""
-                                })
+            #now = pd.Timestamp("now")
+
+            #self.db.insert_one({"_id": key,
+            #                    "weight": _mongo(value.weights),
+            #                    "price": _mongo(value.prices),
+            #                    "time": now,
+            #                    "group": "",
+            #                    "comment": ""
+            #                    })
 
 
 

@@ -1,5 +1,7 @@
 from unittest import TestCase
 
+import pandas as pd
+
 from pyutil.mongo.mongoArchive import MongoArchive
 from pyutil.strategy.Loop import Result
 from pyutil.strategy.Updater import update_portfolio
@@ -9,8 +11,11 @@ class TestUpdater(TestCase):
     def test_update(self):
         archive = MongoArchive()
         portfolio = test_portfolio()
+        portfolio.meta["time"] = pd.Timestamp("now")
+        portfolio.meta["group"] = "g"
+        portfolio.meta["comment"] = ""
 
-        r = Result(name="test", group="test", source="test", portfolio=portfolio)
+        r = Result(name="test", portfolio=portfolio)
         with self.assertWarns(Warning):
             # unknown portfolio
             update_portfolio(archive=archive, result=r, n=5)

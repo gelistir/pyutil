@@ -42,14 +42,8 @@ class TestAssets(TestCase):
             self.archive.history(assets=["A", "B"], name="XYZ")
 
     def test_set(self):
-        self.archive.assets["TEST"] = self.archive.assets["B"]
-        #print(self.archive.assets.keys())
-        self.assertAlmostEqual(self.assets["TEST"]["PX_LAST"]["2014-07-18"], 23454.79, places=5)
-
-        del self.archive.assets["TEST"]
-        print(self.archive.assets.keys())
-
-
+        with self.assertRaises(NotImplementedError):
+            self.archive.assets["A"] = 0
 
 class TestFrames(TestCase):
     @classmethod
@@ -133,7 +127,15 @@ class TestPortfolio(TestCase):
         cls.archive = MongoArchive()
         # need this for sector-weights
         cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
-        cls.archive.portfolios.update("test", test_portfolio(), group="test", comment="test")
+        p = test_portfolio()
+        p.meta["group"] = "test"
+        p.meta["comment"] = "test"
+        p.meta["time"] = pd.Timestamp("01-01-1980")
+        cls.archive.portfolios.update("test", p)
+
+    def test_get(self):
+        p = self.archive.portfolios["test"]
+        self.assertDictEqual(p.meta, {'comment': 'test', 'time': pd.Timestamp("01-01-1980"), 'group': 'test'})
 
     def test_symbols(self):
         r = self.archive.portfolios.strategies
@@ -155,7 +157,7 @@ class TestPortfolio(TestCase):
 
     def test_update(self):
         portfolio = test_portfolio()
-        self.archive.portfolios.update(key="test", portfolio=portfolio.tail(10), group="test", comment="test")
+        self.archive.portfolios.update(key="test", portfolio=portfolio.tail(10))
 
         g = self.archive.portfolios["test"]
         pdt.assert_frame_equal(portfolio.prices, g.prices)

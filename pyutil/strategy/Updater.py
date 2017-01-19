@@ -22,4 +22,4 @@ def update_portfolio(archive, result, n=1):
         warnings.warn("The portfolio {0} is unknown in the database".format(result.name))
         portfolio = result.portfolio
 
-    return archive.portfolios.update(key=result.name, portfolio=portfolio, group=result.group, comment=result.source)
+    return archive.portfolios.update(key=result.name, portfolio=portfolio)

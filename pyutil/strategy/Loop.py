@@ -5,7 +5,10 @@ import inspect
 import logging
 
 from collections import namedtuple
-Result = namedtuple('Result', ['name', 'portfolio', 'source', 'group'])
+
+import pandas as pd
+
+Result = namedtuple('Result', ['name', 'portfolio'])
 
 
 def loop_configurations(archive, t0, path, prefix, logger=None):
@@ -22,7 +25,11 @@ def loop_configurations(archive, t0, path, prefix, logger=None):
         logger.debug("Group: {0}".format(config.group))
 
         portfolio = config.portfolio()
-        yield Result(name=config.name, portfolio=portfolio, source=source, group=config.group)
+        portfolio.meta["group"] = config.group
+        portfolio.meta["comment"] = source
+        portfolio.meta["time"] = pd.Timestamp("now")
+
+        yield Result(name=config.name, portfolio=portfolio)
 
 
 def __loop(path, prefix):
