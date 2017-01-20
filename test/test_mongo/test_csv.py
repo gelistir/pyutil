@@ -7,7 +7,7 @@ from test.config import read_frame
 class TestCsv(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.reader = CsvArchive({"price": read_frame("price.csv", parse_dates=True)})
+        cls.reader = CsvArchive(price=read_frame("price.csv", parse_dates=True))
 
     def test_csv_1(self):
         a=self.reader.history(["A","B","C"], name="price")

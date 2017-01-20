@@ -92,7 +92,6 @@ class MongoArchive(Archive):
         def isempty(self):
             return self.db.count() == 0
 
-
     class __Assets(__DB):
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
@@ -147,7 +146,6 @@ class MongoArchive(Archive):
 
         def __setitem__(self, key, value):
             raise NotImplementedError
-
 
     class __Symbols(__DB):
         def __init__(self, db, logger=None):
@@ -222,7 +220,6 @@ class MongoArchive(Archive):
         def __setitem__(self, key, value):
             raise NotImplementedError
 
-
     class __Frames(__DB):
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
@@ -248,11 +245,19 @@ class MongoArchive(Archive):
                 frame = value.to_json(orient="split")
                 self.db.update({"_id": key}, {"_id": key, "data": frame}, upsert=True)
 
-
     def __init__(self, name=str(uuid.uuid4()), host="mongo", port=27017, logger=None):
+        """
+        Mongo Archive for data
+        :param name: Name of the Mongo Database, e.g. "production"
+        :param host: Host
+        :param port: Port
+        :param logger: Logger
+        """
         self.logger = logger or logging.getLogger(__name__)
         self.__db = Database(MongoClient(host, port=port), name)
         self.logger.info("Archive (read-access) at {0}".format(self.__db))
+
+        # the database will have (at least) 4 collections.
         self.portfolios = self.__Portfolios(self.__db.strategy, logger=self.logger)
         self.symbols = self.__Symbols(db=self.__db.symbols, logger=self.logger)
         self.assets = self.__Assets(db=self.__db.assets, logger=self.logger)

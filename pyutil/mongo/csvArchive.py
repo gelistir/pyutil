@@ -7,8 +7,9 @@ class CsvArchive(Archive):
     data remains immutable. You can only access copies of the original data. You may pay some performance penalty
     for it but we sacrifice some performance for safety here...
     """
-    def __init__(self, dictionary):
-        self.__data = dictionary
+    def __init__(self, **kwargs):
+        self.__data = {key: item for key, item in kwargs.items()}
+
 
     def history(self, assets=None, name="PX_LAST"):
         if assets:
