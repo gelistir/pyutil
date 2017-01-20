@@ -29,10 +29,6 @@ class TestTimeseries(TestCase):
         a = ytd(nav, today=pd.Timestamp("2014-05-07"))
         pdt.assert_series_equal(a, nav.truncate(before="2014-01-01", after="2014-05-07"))
 
-    def test_id(self):
-        a = id(nav, today=pd.Timestamp("2015-01-06"))
-        self.assertEqual(a.index[-1], pd.Timestamp("2015-01-06"))
-
 
     def test_mtd(self):
         a = mtd(nav, today=pd.Timestamp("2015-02-10"))

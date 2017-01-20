@@ -75,16 +75,6 @@ def mtd(ts: pd.Series, today=None) -> pd.Series:
     return ts.truncate(before=first_day_of_month, after=today)
 
 
-def id(ts: pd.Series, today=None) -> pd.Series:
-    """
-    Same interface as mtd and ytd!
-    :param ts:
-    :param today:
-    :return:
-    """
-    today = today or pd.Timestamp("today")
-    return ts.truncate(after=today)
-
 def consecutive(ts: pd.Series)->pd.Series:
     d = pd.Series(index = ts.index)
     last = 0
