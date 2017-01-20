@@ -3,7 +3,7 @@ from test.config import read_series
 
 nav = read_series("nav.csv", parse_dates=True)
 
-from pyutil.timeseries.timeseries import subsample, adjust, ytd, mtd, consecutive
+from pyutil.timeseries.timeseries import subsample, adjust, ytd, mtd, id, consecutive
 import pandas as pd
 import pandas.util.testing as pdt
 
@@ -11,8 +11,7 @@ import pandas.util.testing as pdt
 class TestTimeseries(TestCase):
     def test_subsample_index(self):
         b = subsample(nav, day=15, incl=True)
-        print(b)
-        self.assertAlmostEqual(b[pd.Timestamp("2015-01-15")], 1.3028672967110184, places=5)
+        self.assertAlmostEqual(b["2015-01-15"], 1.3028672967110184, places=5)
 
     def test_subsample_index2(self):
         b = subsample(nav, day=15, incl=True)
@@ -27,13 +26,17 @@ class TestTimeseries(TestCase):
         self.assertEqual(x.ix[x.index[0]], 1.0)
 
     def test_ytd(self):
-        a = ytd(nav, today=pd.Timestamp("2014-05-07"))
-        pdt.assert_series_equal(a, nav.truncate(before=pd.Timestamp("2014-01-01"), after=pd.Timestamp("2014-05-07")))
+        a = ytd(nav, today="2014-05-07")
+        pdt.assert_series_equal(a, nav.truncate(before="2014-01-01", after="2014-05-07"))
+
+    def test_id(self):
+        a = id(nav, today="2015-01-06")
+        self.assertEqual(a.index[-1], pd.Timestamp("2015-01-06"))
+
 
     def test_mtd(self):
-        a = mtd(nav, today=pd.Timestamp("2015-02-10"))
-        print(a)
-        pdt.assert_series_equal(a, nav.truncate(before=pd.Timestamp("2015-02-01"), after=pd.Timestamp("2015-02-10")))
+        a = mtd(nav, today="2015-02-10")
+        pdt.assert_series_equal(a, nav.truncate(before="2015-02-01", after="2015-02-10"))
 
     def test_consecutive(self):
         x = pd.Series(index=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], data=[1, 0, 0, 1, 1, 1, 0, 0, 1, 1])
