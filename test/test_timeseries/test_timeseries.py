@@ -26,16 +26,16 @@ class TestTimeseries(TestCase):
         self.assertEqual(x.ix[x.index[0]], 1.0)
 
     def test_ytd(self):
-        a = ytd(nav, today="2014-05-07")
+        a = ytd(nav, today=pd.Timestamp("2014-05-07"))
         pdt.assert_series_equal(a, nav.truncate(before="2014-01-01", after="2014-05-07"))
 
     def test_id(self):
-        a = id(nav, today="2015-01-06")
+        a = id(nav, today=pd.Timestamp("2015-01-06"))
         self.assertEqual(a.index[-1], pd.Timestamp("2015-01-06"))
 
 
     def test_mtd(self):
-        a = mtd(nav, today="2015-02-10")
+        a = mtd(nav, today=pd.Timestamp("2015-02-10"))
         pdt.assert_series_equal(a, nav.truncate(before="2015-02-01", after="2015-02-10"))
 
     def test_consecutive(self):
