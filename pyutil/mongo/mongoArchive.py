@@ -148,9 +148,6 @@ class MongoArchive(Archive):
         def __setitem__(self, key, value):
             raise NotImplementedError
 
-            # value has to be a dict!
-            #for k in value.keys():
-            #    self.db.insert_one({"_id": key, k: _mongo(value[k])})
 
     class __Symbols(__DB):
         def __init__(self, db, logger=None):
@@ -195,28 +192,9 @@ class MongoArchive(Archive):
             else:
                 return None
 
-        # fast bypass to get the index underlying the portfolio
-        def index(self, item):
-            return self.weights(item).index
-
-        def weights(self, item):
-            p = self.db.find_one({"_id": item}, {"_id": 1, "weight": 1})
-            assert p
-            return _f(pd.DataFrame(p["weight"])).fillna(0.0)
-
-        def prices(self, item):
-            p = self.db.find_one({"_id": item}, {"_id": 1, "price": 1})
-            assert p
-            return _f(pd.DataFrame(p["price"]))
-
-        def sector_weights(self, item, symbolmap):
-            frame = self.weights(item).ffill().groupby(by=symbolmap, axis=1).sum()
-            frame["total"] = frame.sum(axis=1)
-            return frame
-
         @property
         def strategies(self):
-            portfolios = self.db.find({}, {"weight": 0, "price": 0}) #, "_id": 1, "group": 1, "time": 1, "comment": 1})
+            portfolios = self.db.find({}, {"weight": 0, "price": 0})
             d = {p["_id"]: pd.Series(p) for p in portfolios}
             return pd.DataFrame(d).drop("_id").transpose()
 
@@ -243,17 +221,6 @@ class MongoArchive(Archive):
 
         def __setitem__(self, key, value):
             raise NotImplementedError
-
-            #now = pd.Timestamp("now")
-
-            #self.db.insert_one({"_id": key,
-            #                    "weight": _mongo(value.weights),
-            #                    "price": _mongo(value.prices),
-            #                    "time": now,
-            #                    "group": "",
-            #                    "comment": ""
-            #                    })
-
 
 
     class __Frames(__DB):

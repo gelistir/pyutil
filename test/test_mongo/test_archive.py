@@ -152,7 +152,7 @@ class TestPortfolio(TestCase):
 
     def test_sector_weights(self):
         symbolmap = self.archive.symbols.frame["group"]
-        sector_w = self.archive.portfolios.sector_weights("test", symbolmap)
+        sector_w = self.archive.portfolios["test"].sector_weights(symbolmap)
         self.assertAlmostEqual(sector_w["Equity"]["2013-01-04"], 0.24351702703439526, places=5)
 
     def test_update(self):
