@@ -1,7 +1,5 @@
 from unittest import TestCase
 
-import pandas as pd
-
 from pyutil.mongo.csvArchive import CsvArchive
 from test.config import read_frame
 from test.test_strategy.scripts.script_a import Configuration
@@ -12,7 +10,8 @@ class TestCconfigMaster(TestCase):
         archive = CsvArchive(PX_LAST=read_frame("price.csv", parse_dates=True))
 
 
-        configuration = Configuration(archive, t0=pd.Timestamp("2013-01-01"))
+        configuration = Configuration(archive)
+
         self.assertEquals(configuration.name, "test_a")
         self.assertEquals(configuration.group, "testgroup_a")
 

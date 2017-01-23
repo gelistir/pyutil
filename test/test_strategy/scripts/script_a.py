@@ -4,11 +4,12 @@ from pyutil.strategy.ConfigMaster import ConfigMaster
 
 
 class Configuration(ConfigMaster):
-    def __init__(self, archive, t0, logger=None):
-        super().__init__(archive=archive, assets=["A", "B", "C"], t0=t0, logger=logger)
+    def __init__(self, archive, logger=None):
+        super().__init__(archive=archive, logger=logger)
+        self.symbols = ["A", "B", "C"]
 
     def portfolio(self):
-        p = self.data()
+        p = self.assets.frame()
         return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / self.count()))
 
     @property

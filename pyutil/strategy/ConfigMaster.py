@@ -11,7 +11,7 @@ class ConfigMaster(object):
     def __repr__(self, *args, **kwargs):
         return 'Name: {0}, Group: {1}'.format(self.name, self.group)
 
-    def __init__(self, archive, assets, t0="2002-01-01", logger=None):
+    def __init__(self, archive, logger=None):
         """
         Abstract base class for all strategies
 
@@ -20,10 +20,10 @@ class ConfigMaster(object):
         :param logger: logger
         """
         assert isinstance(archive, Archive), "The archive variable has to be of type Archive. It is {0}".format(type(archive))
+        self.__archive = archive
         self.configuration = dict()
         self.logger = logger or logging.getLogger(__name__)
-        self.t0 = t0
-        self.assets = from_archive(archive, assets)
+        self.symbols = []
 
 
     @abc.abstractproperty
@@ -38,8 +38,10 @@ class ConfigMaster(object):
     def portfolio(self):
         return
 
-    def data(self, name="PX_LAST"):
-        return self.assets.frame(key=name).truncate(before=self.t0).copy().dropna(how="all", axis=0)
+    @property
+    def assets(self):
+        # this is expensive. Avoid calling it too often...
+        return from_archive(archive=self.__archive, names=self.symbols)
 
     def count(self):
         """ Number of assets """
