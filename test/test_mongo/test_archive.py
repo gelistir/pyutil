@@ -4,57 +4,54 @@ from pyutil.mongo.mongoArchive import MongoArchive
 from test.config import read_frame, test_portfolio
 from unittest import TestCase
 import pandas.util.testing as pdt
-from nose.tools import raises
 
+
+prices = read_frame("price.csv", parse_dates=True)
+symbols = read_frame("symbols.csv")
 
 class TestMongoArchive(TestCase):
     @classmethod
-    def setUpClass(cls):
-        cls.archive = MongoArchive()
-        cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
-        cls.archive.assets.update_all(frame=read_frame("price.csv", parse_dates=True))
+    def setUp(self):
+        self.archive = MongoArchive()
+        self.archive.drop()
+        self.archive.symbols.update_all(frame=symbols)
+        self.archive.assets.update_all(frame=prices)
 
     def test_history(self):
-        assert False
+        pdt.assert_frame_equal(self.archive.history(), prices)
+        pdt.assert_frame_equal(self.archive.history(name="PX_LAST"), prices)
+        pdt.assert_frame_equal(self.archive.history(assets=["A", "B"]), prices[["A","B"]])
 
     def test_symbols(self):
-        assert False
-
-
-class TestAssets(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.archive = MongoArchive()
-        frame = read_frame("price.csv", parse_dates=True)
-        cls.archive.assets.update_all(frame=frame)
-        cls.assets = cls.archive.assets
-        #cls.assets.update("A", ts=frame["A"].tail(10))
-
-    def test_Keys(self):
-        self.assertListEqual(self.assets.keys(), ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
-
-    def test_history(self):
-        a = self.archive.history(name="PX_LAST", assets=["A", "B"])
-        self.assertAlmostEqual(a["B"]["2014-07-18"], 23454.79, places=5)
-
-        a = self.archive.history(name="PX_LAST")
-        self.assertAlmostEqual(a["B"]["2014-07-18"], 23454.79, places=5)
-
-    def test_assets_item(self):
-        a = self.assets["B"]["PX_LAST"]
-        self.assertAlmostEqual(a["2014-07-18"], 23454.79, places=5)
+        pdt.assert_frame_equal(self.archive.reference().sort_index(axis=1), symbols.sort_index(axis=1), check_dtype=False)
 
     def test_unknown_series(self):
         with self.assertRaises(AssertionError):
             self.archive.history(assets=["XYZ"], name="PX_LAST")
 
-    def test_update(self):
-        self.assets.update(asset="B", ts=pd.Series(index=[pd.Timestamp("2016-07-18")], data=[1.0]))
-        self.assertAlmostEqual(self.assets["B"]["PX_LAST"]["2016-07-18"], 1.0, places=10)
-
     def test_unknown_series_warning(self):
         with self.assertWarns(Warning):
             self.archive.history(assets=["A", "B"], name="XYZ")
+
+
+class TestAssets(TestCase):
+    @classmethod
+    def setUp(self):
+        self.archive = MongoArchive()
+        self.archive.drop()
+        self.archive.symbols.update_all(frame=symbols)
+        self.archive.assets.update_all(frame=prices)
+
+    def test_Keys(self):
+        self.assertListEqual(list(self.archive.assets.keys()), ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
+
+    def test_assets_item(self):
+        pdt.assert_series_equal(self.archive.assets["B"]["PX_LAST"], prices["B"].dropna(), check_names=False)
+
+    def test_update(self):
+        # update database, make sure you delete entry again
+        self.archive.assets.update(asset="B", ts=pd.Series(index=[pd.Timestamp("2016-07-07")], data=1.0))
+        self.assertAlmostEqual(self.archive.assets["B"]["PX_LAST"][pd.Timestamp("2016-07-07")], 1.0, places=10)
 
     def test_set(self):
         with self.assertRaises(NotImplementedError):
@@ -62,10 +59,10 @@ class TestAssets(TestCase):
 
 class TestFrames(TestCase):
     @classmethod
-    def setUpClass(cls):
-        cls.archive = MongoArchive()
-        cls.archive.frames["Peter Maffay"] = pd.DataFrame(columns=["A", "B"], data=[[1.2, 2.5]])
-        cls.frames = cls.archive.frames
+    def setUp(self):
+        self.archive = MongoArchive()
+        self.archive.drop()
+        self.archive.frames["Peter Maffay"] = pd.DataFrame(columns=["A", "B"], data=[[1.2, 2.5]])
 
     def test_frame(self):
         x = self.archive.frames["Peter Maffay"]
@@ -83,26 +80,26 @@ class TestFrames(TestCase):
         x = pd.DataFrame(columns=["C1"], index=["A","B"], data=[[2], [3]])
         self.archive.frames["MyFrame"] = x
         pdt.assert_frame_equal(self.archive.frames["MyFrame"], x)
-        del self.archive.frames["MyFrame"]
 
-    @raises(AssertionError)
     def test_multiindex_3(self):
         tuples = [("Maffay", "X"), ("Maffay", "Y"), ("Peter", "A"), ("Peter", "B")]
         index = pd.MultiIndex.from_tuples(tuples=tuples)
         x = pd.DataFrame(columns=["C1"], index=index, data=[[2], [3], [0], [1]])
-        self.archive.frames["MyFrame"] = x
+        with self.assertRaises(AssertionError):
+            self.archive.frames["MyFrame"] = x
 
     def test_del_frame(self):
-        self.frames["Peter"] = pd.DataFrame()
-        self.assertTrue("Peter" in list(self.frames.keys()))
-        del self.frames["Peter"]
-        self.assertTrue("Peter" not in list(self.frames.keys()))
+        self.archive.frames["Peter"] = pd.DataFrame()
+        self.assertTrue("Peter" in list(self.archive.frames.keys()))
+        del self.archive.frames["Peter"]
+        self.assertTrue("Peter" not in list(self.archive.frames.keys()))
 
 class TestSymbols(TestCase):
     @classmethod
-    def setUpClass(cls):
-        cls.archive = MongoArchive()
-        cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
+    def setUp(self):
+        self.archive = MongoArchive()
+        self.archive.drop()
+        self.archive.symbols.update_all(frame=symbols)
 
     def test_frame(self):
         s = self.archive.symbols.frame
@@ -113,7 +110,7 @@ class TestSymbols(TestCase):
         self.assertEqual(s["group"], "Alternatives")
 
     def test_keys(self):
-        self.assertListEqual(self.archive.symbols.keys(), ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
+        self.assertListEqual(list(self.archive.symbols.keys()), ['A', 'B', 'C', 'D', 'E', 'F', 'G'])
 
     def test_set(self):
         self.archive.symbols["T"] = {"prop1": "2.0", "prop2": "Peter Maffay"}
@@ -124,11 +121,11 @@ class TestSymbols(TestCase):
         self.assertTrue("prop1" not in self.archive.symbols["T"].index)
         self.assertTrue("prop2" in self.archive.symbols["T"].index)
 
-        del self.archive.symbols["T"]
+        #del self.archive.symbols["T"]
 
     def test_drop(self):
         self.archive.symbols.drop()
-        self.assertTrue(self.archive.symbols.isempty, msg="There are no symbols left in the database")
+        self.assertTrue(self.archive.symbols.empty, msg="There are no symbols left in the database")
         self.archive.symbols.update_all(frame=read_frame("symbols.csv"))
 
     def test_del_unknown(self):
@@ -137,16 +134,14 @@ class TestSymbols(TestCase):
 
 
 class TestPortfolio(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.archive = MongoArchive()
+    def setUp(self):
+        self.archive = MongoArchive()
+        self.archive.drop()
+
         # need this for sector-weights
-        cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
-        p = test_portfolio()
-        p.meta["group"] = "test"
-        p.meta["comment"] = "test"
-        p.meta["time"] = pd.Timestamp("01-01-1980")
-        cls.archive.portfolios.update("test", p)
+        self.archive.symbols.update_all(frame=symbols)
+        p = test_portfolio(group="test", comment="test", time=pd.Timestamp("1980-01-01"))
+        self.archive.portfolios.update("test", p)
 
     def test_get(self):
         p = self.archive.portfolios["test"]
@@ -166,7 +161,7 @@ class TestPortfolio(TestCase):
         assert not p
 
     def test_sector_weights(self):
-        symbolmap = self.archive.symbols.frame["group"]
+        symbolmap = self.archive.reference()["group"]
         sector_w = self.archive.portfolios["test"].sector_weights(symbolmap)
         self.assertAlmostEqual(sector_w["Equity"]["2013-01-04"], 0.24351702703439526, places=5)
 

@@ -1,3 +1,5 @@
+import pandas as pd
+import copy
 from .abcArchive import Archive
 
 
@@ -8,23 +10,26 @@ class CsvArchive(Archive):
     data remains immutable. You can only access copies of the original data. You may pay some performance penalty
     for it but we sacrifice some performance for safety here...
     """
-
     def __init__(self, symbols=None, **kwargs):
         if symbols is not None:
-            self.__symbols = symbols
+            self.__symbols = copy.deepcopy(symbols)
         else:
-            self.__symbols = []
+            self.__symbols = pd.DataFrame({})
 
-        self.__data = {key: item for key, item in kwargs.items()}
+        self.__data = kwargs
 
     def history(self, assets=None, name="PX_LAST"):
-        if assets:
+        if assets is not None:
             return self.__data[name][assets].copy()
         else:
             return self.__data[name].copy()
 
-    def symbols(self):
+    def reference(self):
         return self.__symbols
 
     def keys(self):
         return self.__data.keys()
+
+    def drop(self):
+        raise NotImplementedError
+

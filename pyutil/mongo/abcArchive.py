@@ -15,5 +15,9 @@ class Archive(object):
         return
 
     @abc.abstractclassmethod
-    def symbols(self):
+    def reference(self):
+        return
+
+    @abc.abstractmethod
+    def drop(self):
         return

@@ -89,7 +89,7 @@ class MongoArchive(Archive):
             return self.db.count()
 
         @property
-        def isempty(self):
+        def empty(self):
             return self.db.count() == 0
 
     class __Assets(__DB):
@@ -270,5 +270,17 @@ class MongoArchive(Archive):
     def history(self, assets=None, name="PX_LAST"):
         return self.assets.frame(assets, name)
 
-    def symbols(self):
+    def reference(self):
         return self.symbols.frame
+
+    def drop(self):
+        self.portfolios.drop()
+        self.symbols.drop()
+        self.assets.drop()
+        self.frames.drop()
+
+        assert self.portfolios.empty
+        assert self.symbols.empty
+        assert self.assets.empty
+        assert self.frames.empty
+

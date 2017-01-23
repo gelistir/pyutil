@@ -3,7 +3,7 @@ from test.config import read_series
 
 nav = read_series("nav.csv", parse_dates=True)
 
-from pyutil.timeseries.timeseries import subsample, adjust, ytd, mtd, id, consecutive
+from pyutil.timeseries.timeseries import subsample, adjust, ytd, mtd, consecutive
 import pandas as pd
 import pandas.util.testing as pdt
 

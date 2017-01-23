@@ -17,8 +17,8 @@ def read_series(name, parse_dates=True, index_col=0, cname=None):
     return pd.read_csv(resource(name), index_col=index_col, header=None, squeeze=True, parse_dates=parse_dates, names=[cname])
 
 
-def test_portfolio():
-    return Portfolio(prices=read_frame("price.csv"), weights=read_frame("weight.csv"))
+def test_portfolio(**kwargs):
+    return Portfolio(prices=read_frame("price.csv"), weights=read_frame("weight.csv"),**kwargs)
 
 
 if __name__ == '__main__':
