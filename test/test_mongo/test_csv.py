@@ -43,3 +43,8 @@ class TestCsv(TestCase):
         r.reference()["a"]["a"] = 2.0
         self.assertEqual(r.reference()["a"]["a"], 2.0)
 
+    def test_asset(self):
+        x = self.reader.asset(name="A")
+        self.assertEquals(x.reference["internal"], "Gold")
+
+

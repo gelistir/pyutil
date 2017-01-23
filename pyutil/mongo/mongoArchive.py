@@ -7,6 +7,7 @@ import warnings
 from pymongo import MongoClient
 from pymongo.database import Database
 
+from pyutil.mongo.asset import Asset
 from ..portfolio.portfolio import Portfolio
 
 from .abcArchive import Archive
@@ -147,6 +148,7 @@ class MongoArchive(Archive):
         def __setitem__(self, key, value):
             raise NotImplementedError
 
+
     class __Symbols(__DB):
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
@@ -272,6 +274,9 @@ class MongoArchive(Archive):
 
     def reference(self):
         return self.symbols.frame
+
+    def asset(self, name):
+        return Asset(name=name, data=pd.DataFrame(self.assets[name]), **self.symbols[name].to_dict())
 
     def drop(self):
         self.portfolios.drop()

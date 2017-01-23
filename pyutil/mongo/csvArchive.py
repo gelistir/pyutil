@@ -1,5 +1,7 @@
 import pandas as pd
 import copy
+
+from pyutil.mongo.asset import Asset
 from .abcArchive import Archive
 
 
@@ -30,6 +32,8 @@ class CsvArchive(Archive):
     def keys(self):
         return self.__data.keys()
 
-    def drop(self):
-        raise NotImplementedError
-
+    def asset(self, name):
+        if name in self.reference().index:
+            return Asset(name=name, data=pd.DataFrame({key: data[name] for key, data in self.__data.items()}), **self.reference().ix[name].to_dict())
+        else:
+            return Asset(name=name, data=pd.DataFrame({key: data[name] for key, data in self.__data.items()}))

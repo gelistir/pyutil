@@ -18,6 +18,7 @@ class Archive(object):
     def reference(self):
         return
 
+
     @abc.abstractmethod
-    def drop(self):
+    def asset(self, name):
         return

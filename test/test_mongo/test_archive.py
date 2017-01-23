@@ -33,6 +33,10 @@ class TestMongoArchive(TestCase):
         with self.assertWarns(Warning):
             self.archive.history(assets=["A", "B"], name="XYZ")
 
+    def test_asset(self):
+        a = self.archive.asset("A")
+        self.assertEquals(a.reference["internal"], "Gold")
+
 
 class TestAssets(TestCase):
     @classmethod
