@@ -19,7 +19,7 @@ class Asset(object):
     def data(self, key=None, default=np.NaN):
         if key:
             if key in self.__data.keys():
-                return self.__data[key]
+                return self.__data[key].dropna()
             else:
                 return default
         else:

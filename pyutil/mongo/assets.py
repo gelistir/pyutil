@@ -24,8 +24,8 @@ class Assets(object):
         for k in self.keys():
             yield (k, self[k])
 
-    def frame(self, key="PX_LAST", default=np.NaN):
-        return pd.DataFrame({name: asset.data(key, default) for name, asset in self.items()})
+    def frame(self, key="PX_LAST", default=np.NaN, t0=pd.Timestamp("2002-01-01")):
+        return pd.DataFrame({name: asset.data(key, default) for name, asset in self.items()}).dropna(how="all", axis=0).truncate(before=t0)
 
     def __repr__(self):
         return str.join("\n", [str(self[asset]) for asset in self.keys()])
