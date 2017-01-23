@@ -13,3 +13,7 @@ class Archive(object):
         :return: DataFrame of historic data
         """
         return
+
+    @abc.abstractclassmethod
+    def symbols(self):
+        return

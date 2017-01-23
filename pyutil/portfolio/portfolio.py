@@ -6,10 +6,12 @@ from .maths import xround, buy_or_sell
 from ..performance.periods import period_returns, periods
 from ..timeseries.timeseries import ytd, mtd
 
+
 def merge(portfolios, axis=0):
     prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
     weights = pd.concat([p.weights for p in portfolios], axis=axis, verify_integrity=True)
     return Portfolio(prices, weights.fillna(0.0))
+
 
 class Portfolio(object):
     def iron_threshold(self, threshold=0.02):
@@ -42,7 +44,6 @@ class Portfolio(object):
                 portfolio.forward(date)
 
         return portfolio
-
 
     def forward(self, t, yesterday=None):
         # We move weights to t
@@ -282,7 +283,6 @@ class Portfolio(object):
         weights["Gap"] = 100.0 * gap
 
         return weights
-
 
     def plot(self, tradingDays=False, figsize=(16,10)):
 

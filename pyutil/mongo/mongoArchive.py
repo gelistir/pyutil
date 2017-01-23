@@ -269,3 +269,6 @@ class MongoArchive(Archive):
     # bad idea to make history a property as we may have different names, e.g PX_LAST, PX_VOLUME, etc...
     def history(self, assets=None, name="PX_LAST"):
         return self.assets.frame(assets, name)
+
+    def symbols(self):
+        return self.symbols.frame

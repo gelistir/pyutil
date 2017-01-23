@@ -6,6 +6,21 @@ from unittest import TestCase
 import pandas.util.testing as pdt
 from nose.tools import raises
 
+
+class TestMongoArchive(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.archive = MongoArchive()
+        cls.archive.symbols.update_all(frame=read_frame("symbols.csv"))
+        cls.archive.assets.update_all(frame=read_frame("price.csv", parse_dates=True))
+
+    def test_history(self):
+        assert False
+
+    def test_symbols(self):
+        assert False
+
+
 class TestAssets(TestCase):
     @classmethod
     def setUpClass(cls):
