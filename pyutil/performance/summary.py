@@ -177,19 +177,19 @@ class NavSeries(pd.Series):
 
     @property
     def monthly(self):
-        return NavSeries(self.resample("M").last())
+        return NavSeries(self.__res("M"))
 
     @property
     def annual(self):
-        return NavSeries(self.resample("A").last())
+        return NavSeries(self.__res("A"))
 
     @property
     def weekly(self):
-        return NavSeries(self.resample("W").last())
+        return NavSeries(self.__res("W"))
 
-    @property
-    def daily(self):
-        return NavSeries(self.resample("D").last())
+    #@property
+    #def daily(self):
+    #    return NavSeries(self.__res("D"))
 
     def fee(self, daily_fee_basis_pts=0.5):
         ret = self.pct_change().fillna(0.0) - daily_fee_basis_pts / 10000.0
@@ -198,3 +198,26 @@ class NavSeries(pd.Series):
     @property
     def drawdown_periods(self):
         return dp(self)
+
+    @property
+    def annual_returns(self):
+        x = self.annual.pct_change().dropna()
+        x.index = [a.year for a in x.index]
+        return x
+
+    def __res(self, rule="M"):
+        ### refactor NAV at the end but keep the first element. Important for return computations!
+
+        # todo: check if self.head(1) is contained in self.resample...
+
+        a = pd.concat((self.head(1), self.resample(rule).last()), axis=0)
+        # overwrite the last index with the trust last index
+        print(a.index[-1])
+        print(type(a.index[:-1]))
+        print(len(a.index))
+        print(len(a.index[:-1]))
+
+        a.index = a.index[:-1].append(pd.DatetimeIndex([self.index[-1]]))
+            #= self.index[-1]
+
+        return a

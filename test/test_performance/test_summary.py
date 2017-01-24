@@ -2,6 +2,7 @@ from unittest import TestCase
 import pandas as pd
 
 from pyutil.performance.summary import NavSeries, performance
+from pyutil.timeseries.timeseries import adjust
 from test.config import read_series
 
 import pandas.util.testing as pdt
@@ -51,5 +52,14 @@ class TestSummary(TestCase):
         self.assertAlmostEqual(s.annual[pd.Timestamp("2014-12-31")], 1.2934720900884369, places=5)
 
     def test_weekly(self):
-        self.assertEqual(len(s.weekly.index), 69)
-        self.assertEqual(len(s.daily.index), 477)
+        self.assertEqual(len(s.weekly.index), 70)
+        #print(s.daily)
+        #self.assertEqual(len(s.daily.index), 477)
+
+    def test_annual_returns(self):
+        aaa = adjust(s)
+        #print(aaa.truncate(after=pd.Timestamp("2015-01-01")))
+
+        xx = s.annual_returns
+        print(xx)
+
