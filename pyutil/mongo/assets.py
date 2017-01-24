@@ -1,17 +1,23 @@
 import pandas as pd
 import numpy as np
 
-
-def from_archive(archive, names):
-    assert not len(names)==0, "Please specify a list of assets."
-    return Assets([archive.asset(name) for name in names])
+from pyutil.mongo.asset import Asset
 
 
 class Assets(object):
-    def __init__(self, assets):
-        self.__asset = {asset.name: asset for asset in assets}
+    def __init__(self, assets=None):
+        """
+        Group of assets
+
+        :param assets:
+        """
+        if assets is None:
+            self.__asset = dict()
+        else:
+            self.__asset = {asset.name: asset for asset in assets}
 
     def __getitem__(self, item):
+        # get a particular asset
         return self.__asset[item]
 
     def __len__(self):
@@ -31,5 +37,9 @@ class Assets(object):
         return str.join("\n", [str(self[asset]) for asset in self.keys()])
 
     @property
-    def symbols(self):
+    def reference(self):
         return pd.DataFrame({name: asset.reference for name, asset in self.items()}).transpose()
+
+    def add(self, asset):
+        assert isinstance(asset, Asset)
+        self.__asset[asset.name] = asset

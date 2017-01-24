@@ -1,7 +1,5 @@
 import abc
 import logging
-
-from pyutil.mongo.assets import from_archive
 from ..mongo.abcArchive import Archive
 
 
@@ -41,7 +39,8 @@ class ConfigMaster(object):
     @property
     def assets(self):
         # this is expensive. Avoid calling it too often...
-        return from_archive(archive=self.__archive, names=self.symbols)
+        return self.__archive.equity(names=self.symbols)
+
 
     def count(self):
         """ Number of assets """

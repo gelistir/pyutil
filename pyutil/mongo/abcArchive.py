@@ -1,5 +1,7 @@
 import abc
 
+from pyutil.mongo.assets import Assets
+
 
 class Archive(object):
     __metaclass__ = abc.ABCMeta
@@ -22,3 +24,7 @@ class Archive(object):
     @abc.abstractmethod
     def asset(self, name):
         return
+
+    def equity(self, names):
+        assert not len(names) == 0, "Please specify a list of assets."
+        return Assets([self.asset(name) for name in names])
