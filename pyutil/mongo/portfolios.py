@@ -58,9 +58,8 @@ class Portfolios(object):
         r = self.nav().pct_change().apply(mm, today=today)
         return self.__g(r, format="%b %d")
 
-    @property
-    def recent(self):
-        r = self.nav().pct_change().tail(15)
+    def recent(self, n=15):
+        r = self.nav().pct_change().tail(n)
         return self.__g(r, format="%b %d")
 
     def ytd(self, today=None):
