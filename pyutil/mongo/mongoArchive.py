@@ -192,16 +192,6 @@ class MongoArchive(Archive):
             else:
                 return None
 
-        @property
-        def strategies(self):
-            portfolios = self.db.find({}, {"weight": 0, "price": 0})
-            d = {p["_id"]: pd.Series(p) for p in portfolios}
-            return pd.DataFrame(d).drop("_id").transpose()
-
-        @property
-        def nav(self):
-            return _f(pd.DataFrame({name: portfolio.nav for name, portfolio in self.items()}))
-
         def update(self, key, portfolio):
             self.logger.info("Key {0}".format(key))
 

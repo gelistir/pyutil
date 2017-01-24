@@ -47,11 +47,10 @@ class Asset(object):
         return pd.Series(self.__ref)
 
     def __repr__(self):
-        return "Asset {0} with series {1} and reference {2}".format(self.name, list(self.series_names()), self.__ref)
+        return "Asset {0} with series {1} and reference {2}".format(self.name, list(self.series_names()), sorted(self.__ref.items()))
 
     def series_names(self):
         return self.__data.keys()
 
     def reference_names(self):
         return self.__ref.keys()
-

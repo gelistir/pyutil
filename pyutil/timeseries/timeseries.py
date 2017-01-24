@@ -57,7 +57,8 @@ def ytd(ts: pd.Series, today=None)->pd.Series:
     today = today or pd.Timestamp("today")
     assert isinstance(ts.index[0], pd.Timestamp)
     first_day_of_year = (today + pd.offsets.YearBegin(-1)).date()
-    return ts.truncate(before=first_day_of_year, after=today)
+    last_day_of_month = (today + pd.offsets.MonthEnd(0)).date()
+    return ts.truncate(before=first_day_of_year, after=last_day_of_month)
 
 
 def mtd(ts: pd.Series, today=None) -> pd.Series:

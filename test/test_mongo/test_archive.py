@@ -151,23 +151,23 @@ class TestPortfolio(TestCase):
         p = self.archive.portfolios["test"]
         self.assertDictEqual(p.meta, {'comment': 'test', 'time': pd.Timestamp("01-01-1980"), 'group': 'test'})
 
-    def test_symbols(self):
-        r = self.archive.portfolios.strategies
-        self.assertEqual(r["group"]["test"], "test")
+    #def test_symbols(self):
+    #    r = self.archive.portfolios.strategies
+    #    self.assertEqual(r["group"]["test"], "test")
 
-    def test_nav(self):
-        r = self.archive.portfolios.nav["test"]
-        # test the nav
-        self.assertAlmostEqual(r["2015-04-22"], 1.0070191775792583, places=5)
+    #def test_nav(self):
+    #    r = self.archive.portfolios.nav["test"]
+    #    # test the nav
+    #    self.assertAlmostEqual(r["2015-04-22"], 1.0070191775792583, places=5)
 
     def test_porfolio_none(self):
         p = self.archive.portfolios["abc"]
         assert not p
 
-    def test_sector_weights(self):
-        symbolmap = self.archive.reference()["group"]
-        sector_w = self.archive.portfolios["test"].sector_weights(symbolmap)
-        self.assertAlmostEqual(sector_w["Equity"]["2013-01-04"], 0.24351702703439526, places=5)
+    #def test_sector_weights(self):
+    #    symbolmap = self.archive.reference()["group"]
+    #    sector_w = self.archive.portfolios["test"].sector_weights(symbolmap)
+    #    self.assertAlmostEqual(sector_w["Equity"]["2013-01-04"], 0.24351702703439526, places=5)
 
     def test_update(self):
         portfolio = test_portfolio()
