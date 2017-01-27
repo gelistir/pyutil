@@ -61,43 +61,6 @@ class TestAssets(TestCase):
         with self.assertRaises(NotImplementedError):
             self.archive.assets["A"] = 0
 
-class TestFrames(TestCase):
-    @classmethod
-    def setUp(self):
-        self.archive = MongoArchive()
-        self.archive.drop()
-        self.archive.frames["Peter Maffay"] = pd.DataFrame(columns=["A", "B"], data=[[1.2, 2.5]])
-
-    def test_frame(self):
-        x = self.archive.frames["Peter Maffay"]
-        pdt.assert_frame_equal(x, pd.DataFrame(columns=["A", "B"], data=[[1.2, 2.5]]))
-
-    def test_multiindex_1(self):
-        tuples = [("Maffay", "X"), ("Maffay", "Y"), ("Peter", "A"), ("Peter", "B")]
-        index = pd.MultiIndex.from_tuples(tuples=tuples, names=["number", "color"])
-        x = pd.DataFrame(columns=["C1"], index=index, data=[[2], [3], [0], [1]])
-        self.archive.frames["MyFrame"] = x
-        pdt.assert_frame_equal(self.archive.frames["MyFrame"], x)
-        del self.archive.frames["MyFrame"]
-
-    def test_multiindex_2(self):
-        x = pd.DataFrame(columns=["C1"], index=["A","B"], data=[[2], [3]])
-        self.archive.frames["MyFrame"] = x
-        pdt.assert_frame_equal(self.archive.frames["MyFrame"], x)
-
-    def test_multiindex_3(self):
-        tuples = [("Maffay", "X"), ("Maffay", "Y"), ("Peter", "A"), ("Peter", "B")]
-        index = pd.MultiIndex.from_tuples(tuples=tuples)
-        x = pd.DataFrame(columns=["C1"], index=index, data=[[2], [3], [0], [1]])
-        with self.assertRaises(AssertionError):
-            self.archive.frames["MyFrame"] = x
-
-    def test_del_frame(self):
-        self.archive.frames["Peter"] = pd.DataFrame()
-        self.assertTrue("Peter" in list(self.archive.frames.keys()))
-        del self.archive.frames["Peter"]
-        self.assertTrue("Peter" not in list(self.archive.frames.keys()))
-
 class TestSymbols(TestCase):
     @classmethod
     def setUp(self):

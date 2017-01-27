@@ -149,7 +149,6 @@ class MongoArchive(Archive):
         def __setitem__(self, key, value):
             raise NotImplementedError
 
-
     class __Symbols(__DB):
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
@@ -213,31 +212,6 @@ class MongoArchive(Archive):
         def __setitem__(self, key, value):
             raise NotImplementedError
 
-    class __Frames(__DB):
-        def __init__(self, db, logger=None):
-            super().__init__(db=db, logger=logger)
-
-        def __getitem__(self, item):
-            a = super().__getitem__(item)
-            if a:
-                if "index" in a.keys():
-                    return pd.read_json(a["data"], orient="split").set_index(a["index"])
-                else:
-                    return pd.read_json(a["data"], orient="split")
-            else:
-                return None
-
-        def __setitem__(self, key, value):
-            if len(value.index.names) > 1:
-                frame=value.reset_index().to_json(orient="split")
-                for name in value.index.names:
-                    assert name, "Using a multiindex all levels need to have names"
-
-                self.db.update({"_id": key}, {"_id": key, "data": frame, "index": value.index.names}, upsert=True)
-            else:
-                frame = value.to_json(orient="split")
-                self.db.update({"_id": key}, {"_id": key, "data": frame}, upsert=True)
-
     def __init__(self, name=str(uuid.uuid4()), host="mongo", port=27017, logger=None):
         """
         Mongo Archive for data
@@ -254,7 +228,6 @@ class MongoArchive(Archive):
         self.portfolios = self.__Portfolios(self.__db.strategy, logger=self.logger)
         self.symbols = self.__Symbols(db=self.__db.symbols, logger=self.logger)
         self.assets = self.__Assets(db=self.__db.assets, logger=self.logger)
-        self.frames = self.__Frames(db=self.__db.free, logger=self.logger)
 
     def __repr__(self):
         return "Reader for {0}".format(self.__db)
@@ -281,10 +254,7 @@ class MongoArchive(Archive):
         self.portfolios.drop()
         self.symbols.drop()
         self.assets.drop()
-        self.frames.drop()
 
         assert self.portfolios.empty
         assert self.symbols.empty
         assert self.assets.empty
-        assert self.frames.empty
-
