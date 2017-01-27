@@ -6,6 +6,10 @@ from pyutil.timeseries.timeseries import ytd as yy, mtd as mm, adjust
 
 
 class Portfolios(object):
+    """
+    Dictionary of Portfolios
+    """
+
     def __init__(self):
         self.__portfolio = dict()
 
@@ -54,17 +58,19 @@ class Portfolios(object):
         frame["total"] = (frame.fillna(0.0) + 1.0).prod(axis=1) - 1.0
         return 100 * frame
 
-    def mtd(self, today=None):
-        r = self.nav().pct_change().apply(mm, today=today)
-        return self.__g(r, format="%b %d")
+    @property
+    def mtd(self):
+        r = self.nav().pct_change().dropna(axis=1, how="all")
+        return self.__g(r.apply(mm, today=r.index[-1]), format="%b %d")
 
     def recent(self, n=15):
         r = self.nav().pct_change().tail(n)
         return self.__g(r, format="%b %d")
 
-    def ytd(self, today=None):
-        r = self.nav().resample("M").last().pct_change().apply(yy, today=today)
-        return self.__g(r, format="%b")
+    @property
+    def ytd(self):
+        r = self.nav().resample("M").last().pct_change().dropna(axis=1, how="all")
+        return self.__g(r.apply(yy, today=r.index[-1]), format="%b")
 
     @property
     def period_returns(self):

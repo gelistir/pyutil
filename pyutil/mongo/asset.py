@@ -19,8 +19,10 @@ class Asset(object):
 
         self.__ref = copy.deepcopy(kwargs)
 
+
     @property
     def name(self):
+        """ Name of the asset. Immutable """
         return self.__name
 
     def data(self, key=None, default=np.NaN):
@@ -44,13 +46,27 @@ class Asset(object):
 
     @property
     def reference(self):
-        return pd.Series(self.__ref)
+        """
+        Reference data for an asset. Given as a Pandas Series
+        """
+        return pd.Series(self.__ref).sort_index(axis=0)
 
     def __repr__(self):
         return "Asset {0} with series {1} and reference {2}".format(self.name, list(self.series_names()), sorted(self.__ref.items()))
 
     def series_names(self):
+        """
+        Names for all series data, e.g. PX_LAST, FX, VOLUME, ...
+        :return:
+        """
         return self.__data.keys()
 
-    def reference_names(self):
-        return self.__ref.keys()
+    @property
+    def price(self):
+        return self.data(key="price").dropna()
+
+    #def reference_names(self):
+    #    """
+    #    :return:
+    #    """
+    #    return self.__ref.keys()

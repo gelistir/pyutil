@@ -23,8 +23,16 @@ class Archive(object):
 
     @abc.abstractmethod
     def asset(self, name):
+        """
+        Construct an asset based on a name
+        :param name:
+        :return: An asset (see
+        """
         return
 
     def equity(self, names):
+        """
+        Construct assets based on a list of names
+        """
         assert not len(names) == 0, "Please specify a list of assets."
         return Assets([self.asset(name) for name in names])

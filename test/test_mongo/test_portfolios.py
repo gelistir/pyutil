@@ -29,11 +29,11 @@ class TestPortfolios(TestCase):
         self.assertAlmostEqual(sector_w["Equity"]["test"], 21.437411662111511, places=5)
 
     def test_ytd(self):
-        m = self.portfolios.ytd(today=pd.Timestamp("2015-04-22").date())
+        m = self.portfolios.ytd
         self.assertAlmostEqual(m["Apr"]["test"], 1.4133604922211385, places=10)
 
     def test_mtd(self):
-        m = self.portfolios.mtd(today=pd.Timestamp("2015-04-22").date())
+        m = self.portfolios.mtd
         self.assertAlmostEqual(m["Apr 10"]["test"], 0.26611289332396648, places=10)
 
     def test_recent(self):

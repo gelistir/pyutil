@@ -8,6 +8,7 @@ from pymongo import MongoClient
 from pymongo.database import Database
 
 from pyutil.mongo.asset import Asset
+from pyutil.mongo.portfolios import Portfolios
 from ..portfolio.portfolio import Portfolio
 
 from .abcArchive import Archive
@@ -262,11 +263,19 @@ class MongoArchive(Archive):
     def history(self, assets=None, name="PX_LAST"):
         return self.assets.frame(assets, name)
 
+    @property
     def reference(self):
         return self.symbols.frame
 
     def asset(self, name):
         return Asset(name=name, data=pd.DataFrame(self.assets[name]), **self.symbols[name].to_dict())
+
+    @property
+    def strategies(self):
+        p = Portfolios()
+        for name, portfolio in self.portfolios.items():
+            p[name] = portfolio
+        return p
 
     def drop(self):
         self.portfolios.drop()

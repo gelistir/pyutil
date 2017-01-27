@@ -23,7 +23,7 @@ class TestMongoArchive(TestCase):
         pdt.assert_frame_equal(self.archive.history(assets=["A", "B"]), prices[["A","B"]])
 
     def test_symbols(self):
-        pdt.assert_frame_equal(self.archive.reference().sort_index(axis=1), symbols.sort_index(axis=1), check_dtype=False)
+        pdt.assert_frame_equal(self.archive.reference.sort_index(axis=1), symbols.sort_index(axis=1), check_dtype=False)
 
     def test_unknown_series(self):
         with self.assertRaises(AssertionError):
