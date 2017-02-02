@@ -212,7 +212,7 @@ class MongoArchive(Archive):
         def __setitem__(self, key, value):
             raise NotImplementedError
 
-    def __init__(self, name=str(uuid.uuid4()), host="mongo", port=27017, logger=None):
+    def __init__(self, name=str(uuid.uuid4()), host="mongo", port=27017, user=None, password=None, logger=None):
         """
         Mongo Archive for data
         :param name: Name of the Mongo Database, e.g. "production"
@@ -222,6 +222,10 @@ class MongoArchive(Archive):
         """
         self.logger = logger or logging.getLogger(__name__)
         self.__db = Database(MongoClient(host, port=port), name)
+
+        if user and password:
+            self.__db.authenticate(name=user, password=password)
+
         self.logger.info("Archive (read-access) at {0}".format(self.__db))
 
         # the database will have (at least) 4 collections.

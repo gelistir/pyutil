@@ -100,7 +100,7 @@ class NavSeries(pd.Series):
     @property
     def mtd(self):
         """
-        Compute the return in the last available month
+        Compute the return in the last available month, note that you need at least one point in the previous month, too. Otherwise NaN
         :return:
         """
         return self.resample("M").last().dropna().pct_change().tail(1).values[0]
@@ -108,7 +108,7 @@ class NavSeries(pd.Series):
     @property
     def ytd(self):
         """
-        Compute the return in the last available year
+        Compute the return in the last available year, note that you need at least one point in the previous year, too. Otherwise NaN
         :return:
         """
         return self.resample("A").last().dropna().pct_change().tail(1).values[0]
@@ -208,16 +208,7 @@ class NavSeries(pd.Series):
     def __res(self, rule="M"):
         ### refactor NAV at the end but keep the first element. Important for return computations!
 
-        # todo: check if self.head(1) is contained in self.resample...
-
         a = pd.concat((self.head(1), self.resample(rule).last()), axis=0)
         # overwrite the last index with the trust last index
-        print(a.index[-1])
-        print(type(a.index[:-1]))
-        print(len(a.index))
-        print(len(a.index[:-1]))
-
         a.index = a.index[:-1].append(pd.DatetimeIndex([self.index[-1]]))
-            #= self.index[-1]
-
         return a
