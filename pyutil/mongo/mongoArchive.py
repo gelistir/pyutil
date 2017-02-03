@@ -221,14 +221,15 @@ class MongoArchive(Archive):
         :param logger: Logger
         """
         self.logger = logger or logging.getLogger(__name__)
-        self.__db = Database(MongoClient(host, port=port), name)
+        client = MongoClient(host, port=port)
 
         if user and password:
-            self.__db.authenticate(name=user, password=password)
+            client.admin.authenticate(name=user, password=password)
 
+        self.__db = Database(client, name)
         self.logger.info("Archive (read-access) at {0}".format(self.__db))
 
-        # the database will have (at least) 4 collections.
+        # the database will have (at least) 3 collections.
         self.portfolios = self.__Portfolios(self.__db.strategy, logger=self.logger)
         self.symbols = self.__Symbols(db=self.__db.symbols, logger=self.logger)
         self.assets = self.__Assets(db=self.__db.assets, logger=self.logger)
