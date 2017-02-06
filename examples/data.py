@@ -16,4 +16,4 @@ def f(logger, archive):
 
 
 if __name__ == '__main__':
-    f(logger=logging.getLogger(__name__), archive=MongoArchive(name="production", host="quantsrv"))
+    f(logger=logging.getLogger(__name__), archive=MongoArchive(db="production", host="quantsrv"))

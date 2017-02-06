@@ -1,6 +1,7 @@
 import abc
 import logging
-from ..mongo.abcArchive import Archive
+
+from pyutil.mongo.assets import Assets
 
 
 class ConfigMaster(object):
@@ -9,16 +10,16 @@ class ConfigMaster(object):
     def __repr__(self, *args, **kwargs):
         return 'Name: {0}, Group: {1}'.format(self.name, self.group)
 
-    def __init__(self, archive, logger=None):
+    def __init__(self, assets, logger=None):
         """
         Abstract base class for all strategies
 
-        :param archive: Archive is the wrapper providing access to historic data
+        :param assets: Archive is the wrapper providing access to historic data
         :param t0: timestamp for starting the strategy
         :param logger: logger
         """
-        assert isinstance(archive, Archive), "The archive variable has to be of type Archive. It is {0}".format(type(archive))
-        self.__archive = archive
+        assert isinstance(assets, Assets), "The assets variable has to be of type Assets. It is {0}".format(type(assets))
+        self.__assets = assets
         self.configuration = dict()
         self.logger = logger or logging.getLogger(__name__)
         self.symbols = []
@@ -39,7 +40,7 @@ class ConfigMaster(object):
     @property
     def assets(self):
         # this is expensive. Avoid calling it too often...
-        return self.__archive.equity(names=self.symbols)
+        return self.__assets.sub(assets=self.symbols)
 
 
     def count(self):

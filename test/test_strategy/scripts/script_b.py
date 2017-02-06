@@ -4,8 +4,8 @@ from pyutil.strategy.ConfigMaster import ConfigMaster
 
 
 class Configuration(ConfigMaster):
-    def __init__(self, archive, logger=None):
-        super().__init__(archive=archive, logger=logger)
+    def __init__(self, assets, logger=None):
+        super().__init__(assets=assets, logger=logger)
         self.symbols = ["A", "B", "C", "D"]
 
     def portfolio(self):

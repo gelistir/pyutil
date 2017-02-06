@@ -8,15 +8,21 @@ from pymongo import MongoClient
 from pymongo.database import Database
 
 from pyutil.mongo.asset import Asset
+from pyutil.mongo.assets import Assets
 from pyutil.mongo.portfolios import Portfolios
 from ..portfolio.portfolio import Portfolio
 
-from .abcArchive import Archive
 
 import uuid
 
-def _f(frame):
-    f = frame.copy()
+
+def _is_pandas(x):
+    return isinstance(x, pd.DataFrame) or isinstance(x, pd.Series)
+
+def _f(x):
+    # change index of a frame or series
+    assert _is_pandas(x)
+    f = x.copy()
     f.index = [pd.Timestamp(x) for x in f.index]
     return f
 
@@ -33,11 +39,13 @@ def _flatten(d, parent_key=None, sep='.'):
     return dict(items)
 
 
-def _to_dict(data):
-    if isinstance(data, pd.DataFrame):
-        return {k: v.dropna().to_dict() for k,v in data.items()}
+def _to_dict(x):
+    assert _is_pandas(x)
+    if isinstance(x, pd.DataFrame):
+        return {k: v.dropna().to_dict() for k,v in x.items()}
     else:
-        return data.to_dict()
+        # series to dictionary
+        return x.dropna().to_dict()
 
 
 def _mongo(x):
@@ -50,10 +58,10 @@ def _mongo(x):
                       "They are currently {0} and of type {1}".format(x.index[0], type(x.index[0])))
         pass
 
-    return _to_dict(data=y)
+    return _to_dict(x=y)
 
 
-class MongoArchive(Archive):
+class MongoArchive(object):
     class __DB(object):
         def __init__(self, db, logger):
             self.logger = logger
@@ -98,7 +106,7 @@ class MongoArchive(Archive):
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
 
-        def update(self, asset, ts, name="PX_LAST"):
+        def __update(self, asset, ts, name="PX_LAST"):
             """Update time series data for an asset"""
             self.logger.debug("Asset: {0}, Name of ts: {1}, Len of ts: {2}".format(asset, name, len(ts.dropna().index)))
 
@@ -107,70 +115,39 @@ class MongoArchive(Archive):
                 m = {"_id": asset}
                 # look for the asset in database
                 if self.db.find_one(m):
-                    # asset already in database
+                    # asset already in database, kind of slow to write
                     self.logger.debug({name: _mongo(ts)})
                     self.db.update(m, {"$set": _flatten({name: _mongo(ts)})}, upsert=True)
                 else:
                     # asset not in the database
                     self.db.insert_one({"_id": asset, name: _mongo(ts)})
 
-        def update_all(self, frame, name="PX_LAST"):
-            """ Update assets with a frame. One asset per column"""
-            for asset in frame.keys():
-                self.update(asset, ts=frame[asset].dropna(), name=name)
+        def update(self, asset):
+            """Update time series data for an asset"""
+            #for name, asset in assets.items():
+            for series in asset.series_names():
+                self.__update(asset=asset.name, ts=asset[series], name=series)
 
         def __getitem__(self, item):
             d = super().__getitem__(item)
             if d:
-                return {key: _f(pd.Series(values)) for key, values in d.items()}
+                return Asset(name=item, data=_f(pd.DataFrame({key: pd.Series(values) for key, values in d.items()})))
             else:
                 return None
-
-        def frame(self, assets=None, name="PX_LAST"):
-            if assets:
-                # a list of items (e.g. assets) has been specified.
-                for asset in assets:
-                    assert asset in self.keys(), "The asset {asset} is unknown".format(asset=asset)
-
-                p = self.db.find({"_id": {"$in": assets}, name: {"$exists":1}}, {"_id": 1, name: 1})
-                # now p is a cursor, each element is a dictionary with "_id" and name as keys
-                frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p})
-                for asset in assets:
-                    if not asset in frame.keys():
-                        warnings.warn("For asset {0} we could not find series {1}".format(asset, name))
-            else:
-                # no items (e.g. assets) have been specified. Find now all assets where name is specified for
-                p = self.db.find({name: {"$exists":1}}, {"_id": 1, name: 1})
-                frame = pd.DataFrame({x["_id"]: pd.Series(x[name]) for x in p})
-
-            # delete rows that are all NaN...
-            return _f(frame).dropna(how="all", axis=0)
-
-        def __setitem__(self, key, value):
-            raise NotImplementedError
 
     class __Symbols(__DB):
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
 
-        def update(self, asset, dictionary):
+        def update(self, asset):
             # this is slow if we update an empty database
-            self.db.update({"_id": asset}, {"$set": _flatten(dictionary)}, upsert=True)
-
-        def update_all(self, frame):
-            for asset, row in frame.iterrows():
-                self.update(asset, dictionary=row.to_dict())
+            if asset.reference.empty:
+                pass
+            else:
+                self.db.update({"_id": asset.name}, {"$set": _flatten(asset.reference)}, upsert=True)
 
         def __getitem__(self, item):
             return pd.Series(super().__getitem__(item))
-
-        def __setitem__(self, key, value):
-            # this will overwrite information
-            self.db.update({"_id": key}, value, upsert=True)
-
-        @property
-        def frame(self):
-            return pd.DataFrame({id: x for id, x in self.items()}).transpose()
 
     class __Portfolios(__DB):
         def __init__(self, db, logger=None):
@@ -212,41 +189,35 @@ class MongoArchive(Archive):
         def __setitem__(self, key, value):
             raise NotImplementedError
 
-    def __init__(self, name=str(uuid.uuid4()), host="mongo", port=27017, user=None, password=None, logger=None):
+    def __init__(self, db=str(uuid.uuid4()), host="mongo", port=27017, user=None, password=None, logger=None):
         """
         Mongo Archive for data
-        :param name: Name of the Mongo Database, e.g. "production"
+        :param db: Name of the Mongo Database, e.g. "production"
         :param host: Host
         :param port: Port
         :param logger: Logger
         """
         self.logger = logger or logging.getLogger(__name__)
-        client = MongoClient(host, port=port)
+        client = MongoClient(host=host, port=port)
+        self.logger.info("Client: {0}".format(client))
 
         if user and password:
+            self.logger.info("User: {0}".format(user))
             client.admin.authenticate(name=user, password=password)
 
-        self.__db = Database(client, name)
+        self.__db = Database(client, db)
         self.logger.info("Archive (read-access) at {0}".format(self.__db))
 
         # the database will have (at least) 3 collections.
         self.portfolios = self.__Portfolios(self.__db.strategy, logger=self.logger)
-        self.symbols = self.__Symbols(db=self.__db.symbols, logger=self.logger)
-        self.assets = self.__Assets(db=self.__db.assets, logger=self.logger)
+        self.__symbols = self.__Symbols(db=self.__db.symbols, logger=self.logger)
+        self.__assets = self.__Assets(db=self.__db.assets, logger=self.logger)
 
     def __repr__(self):
         return "Reader for {0}".format(self.__db)
 
-    # bad idea to make history a property as we may have different names, e.g PX_LAST, PX_VOLUME, etc...
-    def history(self, assets=None, name="PX_LAST"):
-        return self.assets.frame(assets, name)
-
-    @property
-    def reference(self):
-        return self.symbols.frame
-
     def asset(self, name):
-        return Asset(name=name, data=pd.DataFrame(self.assets[name]), **self.symbols[name].to_dict())
+        return Asset(name=name, data=self.__assets[name].data, **self.__symbols[name].to_dict())
 
     @property
     def strategies(self):
@@ -255,11 +226,19 @@ class MongoArchive(Archive):
             p[name] = portfolio
         return p
 
-    def drop(self):
-        self.portfolios.drop()
-        self.symbols.drop()
-        self.assets.drop()
+    def update_asset(self, asset):
+        assert isinstance(asset, Asset)
+        self.__symbols.update(asset)
+        self.__assets.update(asset)
 
-        assert self.portfolios.empty
-        assert self.symbols.empty
-        assert self.assets.empty
+    def names(self):
+        return self.__symbols.keys()
+
+    def assets(self, names=None):
+        """
+        Construct assets based on a list of names
+        """
+        if names is not None:
+            return Assets([self.asset(name) for name in names])
+        else:
+            return Assets([self.asset(name) for name in self.names()])

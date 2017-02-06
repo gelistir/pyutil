@@ -11,7 +11,7 @@ import pandas as pd
 Result = namedtuple('Result', ['name', 'portfolio'])
 
 
-def loop_configurations(archive, path, prefix, logger=None):
+def loop_configurations(assets, path, prefix, logger=None):
     logger = logger or logging.getLogger(__name__)
     logger.info("Search Path: {0}".format(path))
     logger.info("Prefix: {0}".format(prefix))
@@ -20,7 +20,7 @@ def loop_configurations(archive, path, prefix, logger=None):
         # module
         logger.debug("Module: {0}".format(module))
 
-        config = module.Configuration(archive=archive, logger=logger)
+        config = module.Configuration(assets=assets, logger=logger)
         logger.debug("Name: {0}".format(config.name))
         logger.debug("Group: {0}".format(config.group))
 

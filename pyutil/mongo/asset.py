@@ -1,4 +1,3 @@
-import numpy as np
 import copy
 
 import pandas as pd
@@ -19,30 +18,19 @@ class Asset(object):
 
         self.__ref = copy.deepcopy(kwargs)
 
-
     @property
     def name(self):
         """ Name of the asset. Immutable """
         return self.__name
 
-    def data(self, key=None, default=np.NaN):
-        """
-        Get a time series
+    def __getitem__(self, item):
+        """ get a particular time series """
+        #
+        return self.__data[item]
 
-        :param key:
-        :param default:
-        :return:
-        """
-        if key:
-            # user specified a key
-            if key in self.__data.keys():
-                # return the series
-                return self.__data[key].dropna()
-            else:
-                # if the key doesn't exist (think of "fx"), construct a constant series with a default value
-                return pd.Series(index=self.__data.index, data=default)
-        else:
-            return self.__data
+    @property
+    def data(self):
+        return self.__data
 
     @property
     def reference(self):
@@ -65,8 +53,3 @@ class Asset(object):
     def price(self):
         return self.data(key="price").dropna()
 
-    #def reference_names(self):
-    #    """
-    #    :return:
-    #    """
-    #    return self.__ref.keys()

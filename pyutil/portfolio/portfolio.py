@@ -68,7 +68,6 @@ class Portfolio(object):
 
         # If weights is a Series, each weight per asset!
         if isinstance(weights, pd.Series):
-
             w = pd.DataFrame(index=prices.index, columns=weights.keys())
             for t in w.index:
                 w.ix[t] = weights
