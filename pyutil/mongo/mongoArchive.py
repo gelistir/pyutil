@@ -67,10 +67,7 @@ class MongoArchive(object):
             return self.db.distinct("_id")
 
         def __getitem__(self, item):
-            if item in self.keys():
-                return self.db.find_one({"_id": item}, {"_id": 0})
-            else:
-                return None
+            return self.db.find_one({"_id": item}, {"_id": 0})
 
         def items(self):
             for k in self.keys():
@@ -112,18 +109,18 @@ class MongoArchive(object):
                 # look for the asset in database
                 if self.db.find_one(m):
                     # asset already in database, kind of slow to write
-                    self.logger.debug({series_name: _mongo(series)})
                     self.db.update(m, {"$set": _flatten({series_name: _mongo(series)})}, upsert=True)
                 else:
                     # asset not in the database
                     self.db.insert_one({"_id": asset_name, series_name: _mongo(series)})
 
         def __getitem__(self, item):
+            """ return a DataFrame! """
             d = super().__getitem__(item)
-            if d:
-                return Asset(name=item, data=_f(pd.DataFrame({key: pd.Series(values) for key, values in d.items()})))
+            if d is not None:
+                return _f(pd.DataFrame({key: pd.Series(values) for key, values in d.items()}))
             else:
-                return None
+                raise KeyError("The asset {0} is not known in the time series database".format(item))
 
         def update_all(self, frame, name="PX_LAST"):
             for key in frame.keys():
@@ -264,7 +261,7 @@ class MongoArchive(object):
         return "Reader for {0}".format(self.__db)
 
     def asset(self, name):
-        return Asset(name=name, data=self.time_series[name].time_series, **self.symbols[name].to_dict())
+        return Asset(name=name, data=self.time_series[name], **self.symbols[name].to_dict())
 
     @property
     def strategies(self):
@@ -278,4 +275,18 @@ class MongoArchive(object):
         Construct assets based on a list of names
         """
         return Assets([self.asset(name) for name in names])
+
+    @property
+    def history(self):
+        """
+        get entire history, returns a Multiindex
+        history()["PX_LAST"], etc
+        """
+        x = pd.concat({key: self.time_series[key] for key in self.time_series.keys()}, axis=1)
+        return x.swaplevel(axis=1)
+
+    @property
+    def reference(self):
+        return pd.DataFrame({key: self.symbols[key] for key in self.symbols.keys()}).transpose().sort_index(axis=1)
+
 

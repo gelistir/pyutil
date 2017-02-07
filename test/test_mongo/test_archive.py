@@ -44,3 +44,29 @@ class TestMongoArchive(TestCase):
         g = self.archive.portfolios["test"]
         pdt.assert_frame_equal(portfolio.prices, g.prices)
         pdt.assert_frame_equal(portfolio.weights, g.weights)
+
+    def test_history_entire(self):
+        pdt.assert_frame_equal(self.archive.history["PX_LAST"], prices)
+
+    def test_history_columns(self):
+        pdt.assert_series_equal(self.archive.history["PX_LAST"]["A"], prices["A"], check_names=False)
+
+
+    def test_time_series(self):
+        pdt.assert_series_equal(self.archive.time_series["A"]["PX_LAST"], prices["A"], check_names=False)
+
+    def test_no_time_series(self):
+        with self.assertRaises(KeyError):
+            self.archive.time_series["Peter Maffay"]
+
+    def test_wrong_field(self):
+        with self.assertRaises(KeyError):
+            self.archive.time_series["A"]["Peter Maffay"]
+
+    def test_reference(self):
+        print(self.archive.reference)
+        pdt.assert_frame_equal(self.archive.reference, symbols.sort_index(axis=1), check_dtype=False)
+
+
+
+
