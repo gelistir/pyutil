@@ -6,7 +6,6 @@ import pandas.util.testing as pdt
 import matplotlib as mpl
 mpl.use('Agg')
 
-#from nose.tools import raises
 from pyutil.portfolio.portfolio import Portfolio
 from test.config import test_portfolio, read_frame
 from unittest import TestCase
@@ -29,8 +28,8 @@ class TestPortfolio(TestCase):
     def test_top_flop(self):
         x = portfolio.top_flop(day_final=pd.Timestamp("2015-01-01"))
         self.assertAlmostEqual(x["Value"].values[16], 0.00025637273414469419, places=5)
-        self.assertEqual(x.index.names[0],"category")
-        self.assertEqual(x.index.names[1],"rank")
+        self.assertEqual(x.index.names[0], "category")
+        self.assertEqual(x.index.names[1], "rank")
 
     def test_tail(self):
         x = portfolio.tail(5)

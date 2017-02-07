@@ -10,19 +10,17 @@ class ConfigMaster(object):
     def __repr__(self, *args, **kwargs):
         return 'Name: {0}, Group: {1}'.format(self.name, self.group)
 
-    def __init__(self, assets, logger=None):
+    def __init__(self, reader, logger=None):
         """
         Abstract base class for all strategies
 
-        :param assets: Archive is the wrapper providing access to historic data
+        :param reader: is a function accepting a name as an argument. Returns an Asset...
         :param t0: timestamp for starting the strategy
         :param logger: logger
         """
-        assert isinstance(assets, Assets), "The assets variable has to be of type Assets. It is {0}".format(type(assets))
-        self.__assets = assets
+        self.__reader = reader
         self.configuration = dict()
         self.logger = logger or logging.getLogger(__name__)
-        self.symbols = []
 
 
     @abc.abstractproperty
@@ -37,16 +35,16 @@ class ConfigMaster(object):
     def portfolio(self):
         return
 
-    @property
-    def assets(self):
-        # this is expensive. Avoid calling it too often...
-        return self.__assets.sub(assets=self.symbols)
+    def asset(self, name):
+        return self.__reader(name)
 
+    def frame(self, names, key="PX_LAST"):
+        return self.assets(names=names).frame(key=key)
 
-    def count(self):
-        """ Number of assets """
-        return len(self.assets)
-
-    def empty(self):
-        return self.count() == 0
-
+    def assets(self, names):
+        """
+        Using the reader construct an Assets object
+        :param names:
+        :return:
+        """
+        return Assets([self.asset(name) for name in names])

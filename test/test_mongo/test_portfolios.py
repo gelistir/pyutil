@@ -10,10 +10,10 @@ symbols = read_frame("symbols.csv")
 
 class TestPortfolios(TestCase):
     @classmethod
-    def setUp(self):
-        self.portfolios = Portfolios()
+    def setUpClass(cls):
+        cls.portfolios = Portfolios()
         p = test_portfolio(group="test", comment="test", time=pd.Timestamp("1980-01-01"))
-        self.portfolios["test"] = p
+        cls.portfolios["test"] = p
 
     def test_assets_add(self):
         r = self.portfolios.nav()["test"]

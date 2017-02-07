@@ -26,7 +26,6 @@ def _f(x):
     f.index = [pd.Timestamp(x) for x in f.index]
     return f
 
-
 def _flatten(d, parent_key=None, sep='.'):
     """ flatten dictonaries of dictionaries (of dictionaries of dict... you get it)"""
     items = []
@@ -38,7 +37,6 @@ def _flatten(d, parent_key=None, sep='.'):
             items.append((new_key, v))
     return dict(items)
 
-
 def _to_dict(x):
     assert _is_pandas(x)
     if isinstance(x, pd.DataFrame):
@@ -46,7 +44,6 @@ def _to_dict(x):
     else:
         # series to dictionary
         return x.dropna().to_dict()
-
 
 def _mongo(x):
     y = x.copy()
@@ -59,7 +56,6 @@ def _mongo(x):
         pass
 
     return _to_dict(x=y)
-
 
 class MongoArchive(object):
     class __DB(object):
@@ -106,27 +102,21 @@ class MongoArchive(object):
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
 
-        def __update(self, asset, ts, name="PX_LAST"):
+        def update_series(self, asset_name, series, series_name="PX_LAST"):
             """Update time series data for an asset"""
-            self.logger.debug("Asset: {0}, Name of ts: {1}, Len of ts: {2}".format(asset, name, len(ts.dropna().index)))
+            self.logger.debug("Asset: {0}, Name of ts: {1}, Len of ts: {2}".format(asset_name, series_name, len(series.dropna().index)))
 
             # ts empty? Get out here...
-            if not ts.empty:
-                m = {"_id": asset}
+            if not series.empty:
+                m = {"_id": asset_name}
                 # look for the asset in database
                 if self.db.find_one(m):
                     # asset already in database, kind of slow to write
-                    self.logger.debug({name: _mongo(ts)})
-                    self.db.update(m, {"$set": _flatten({name: _mongo(ts)})}, upsert=True)
+                    self.logger.debug({series_name: _mongo(series)})
+                    self.db.update(m, {"$set": _flatten({series_name: _mongo(series)})}, upsert=True)
                 else:
                     # asset not in the database
-                    self.db.insert_one({"_id": asset, name: _mongo(ts)})
-
-        def update(self, asset):
-            """Update time series data for an asset"""
-            #for name, asset in assets.items():
-            for series in asset.series_names():
-                self.__update(asset=asset.name, ts=asset[series], name=series)
+                    self.db.insert_one({"_id": asset_name, series_name: _mongo(series)})
 
         def __getitem__(self, item):
             d = super().__getitem__(item)
@@ -135,19 +125,27 @@ class MongoArchive(object):
             else:
                 return None
 
+        def update_all(self, frame, name="PX_LAST"):
+            for key in frame.keys():
+                self.update_series(key, series=frame[key], series_name=name)
+
     class __Symbols(__DB):
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
 
-        def update(self, asset):
+        def update(self, asset_name, ref_series):
             # this is slow if we update an empty database
-            if asset.reference.empty:
+            if ref_series.empty:
                 pass
             else:
-                self.db.update({"_id": asset.name}, {"$set": _flatten(asset.reference)}, upsert=True)
+                self.db.update({"_id": asset_name}, {"$set": _flatten(ref_series)}, upsert=True)
 
         def __getitem__(self, item):
             return pd.Series(super().__getitem__(item))
+
+        def update_all(self, frame):
+            for key in frame.index:
+                self.update(asset_name=key, ref_series=frame.ix[key])
 
     class __Portfolios(__DB):
         def __init__(self, db, logger=None):
@@ -189,6 +187,54 @@ class MongoArchive(object):
         def __setitem__(self, key, value):
             raise NotImplementedError
 
+    # class __Portfolios2(__DB):
+    #     def __init__(self, db, logger=None):
+    #         super().__init__(db=db, logger=logger)
+    #
+    #     def __setitem__(self, key, value):
+    #         raise NotImplementedError
+    #
+    #     def update(self, key, portfolio):
+    #         self.logger.info("Key {0}".format(key))
+    #
+    #         q = {"_id": key}
+    #         if key in self.keys() and not portfolio.empty:
+    #             # If there is any data left after the truncation process write into database
+    #             self.db.update(q, {"$set": _flatten({"time_series.weight": _mongo(portfolio.weights)})}, upsert=True)
+    #             self.db.update(q, {"$set": _flatten({"time_series.price": _mongo(portfolio.prices)})}, upsert=True)
+    #         else:
+    #             # write the entire database into the database, one has to make sure _flatten and to_json are compatible
+    #             self.db.insert_one({"_id": key, "time_series": {"weight": _mongo(portfolio.weights), "price": _mongo(portfolio.prices)}})
+    #
+    #         if portfolio.meta:
+    #             self.db.update(q, {"$set": _flatten({"meta": portfolio.meta})}, upsert=True)
+    #
+    #         return self[key]
+    #
+    #     # # return a dictionary portfolio
+    #     # def __getitem__(self, item):
+    #     #     self.logger.debug("Portfolio: {0}".format(item))
+    #     #     a = super().__getitem__(item)
+    #     #
+    #     #     if a:
+    #     #         keys = a["time_series"].keys()
+    #     #         frames = {key: _f(pd.DataFrame(a["time_series"][key])) for key in a["time_series"].keys()}
+    #     #
+    #     #         Asset(name=, frames[key][n], )
+    #     #         print(frames)
+    #     #         assert False
+    #     #
+    #     #
+    #     #         prices = _f(pd.DataFrame(a["time_series"]["price"]))
+    #     #         weights = _f(pd.DataFrame(a["time_series"]["weight"]))
+    #     #         prices = prices.ix[weights.index]
+    #     #         #del a["price"]
+    #     #         #del a["weight"]
+    #     #
+    #     #         return Portfolio(prices=prices, weights=weights, **a["meta"])
+    #     #     else:
+    #     #         return None
+
     def __init__(self, db=str(uuid.uuid4()), host="mongo", port=27017, user=None, password=None, logger=None):
         """
         Mongo Archive for data
@@ -210,14 +256,15 @@ class MongoArchive(object):
 
         # the database will have (at least) 3 collections.
         self.portfolios = self.__Portfolios(self.__db.strategy, logger=self.logger)
-        self.__symbols = self.__Symbols(db=self.__db.symbols, logger=self.logger)
-        self.__assets = self.__Assets(db=self.__db.assets, logger=self.logger)
+        self.symbols = self.__Symbols(db=self.__db.symbols, logger=self.logger)
+        self.time_series = self.__Assets(db=self.__db.assets, logger=self.logger)
+        #self.portfolios2 = self.__Portfolios2(self.__db.strategy2, logger=self.logger)
 
     def __repr__(self):
         return "Reader for {0}".format(self.__db)
 
     def asset(self, name):
-        return Asset(name=name, data=self.__assets[name].data, **self.__symbols[name].to_dict())
+        return Asset(name=name, data=self.time_series[name].time_series, **self.symbols[name].to_dict())
 
     @property
     def strategies(self):
@@ -226,19 +273,9 @@ class MongoArchive(object):
             p[name] = portfolio
         return p
 
-    def update_asset(self, asset):
-        assert isinstance(asset, Asset)
-        self.__symbols.update(asset)
-        self.__assets.update(asset)
-
-    def names(self):
-        return self.__symbols.keys()
-
-    def assets(self, names=None):
+    def assets(self, names):
         """
         Construct assets based on a list of names
         """
-        if names is not None:
-            return Assets([self.asset(name) for name in names])
-        else:
-            return Assets([self.asset(name) for name in self.names()])
+        return Assets([self.asset(name) for name in names])
+

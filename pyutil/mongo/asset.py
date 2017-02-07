@@ -23,13 +23,8 @@ class Asset(object):
         """ Name of the asset. Immutable """
         return self.__name
 
-    def __getitem__(self, item):
-        """ get a particular time series """
-        #
-        return self.__data[item]
-
     @property
-    def data(self):
+    def time_series(self):
         return self.__data
 
     @property
@@ -40,16 +35,10 @@ class Asset(object):
         return pd.Series(self.__ref).sort_index(axis=0)
 
     def __repr__(self):
-        return "Asset {0} with series {1} and reference {2}".format(self.name, list(self.series_names()), sorted(self.__ref.items()))
+        return "Asset {0} with series {1} and reference {2}".format(self.name, list(self.time_series.keys()), sorted(self.__ref.items()))
 
-    def series_names(self):
-        """
-        Names for all series data, e.g. PX_LAST, FX, VOLUME, ...
-        :return:
-        """
-        return self.__data.keys()
-
-    @property
-    def price(self):
-        return self.data(key="price").dropna()
+    def __setitem__(self, key, value):
+        assert not value.index.has_duplicates, "Data Index has duplicates"
+        assert value.index.is_monotonic_increasing, "Data Index is not increasing"
+        self.__data[key] = value
 
