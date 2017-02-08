@@ -4,12 +4,7 @@ import importlib
 import inspect
 import logging
 
-from collections import namedtuple
-
 import pandas as pd
-
-Result = namedtuple('Result', ['name', 'portfolio'])
-
 
 def loop_configurations(reader, path, prefix, logger=None):
     logger = logger or logging.getLogger(__name__)
@@ -29,8 +24,7 @@ def loop_configurations(reader, path, prefix, logger=None):
         portfolio.meta["comment"] = source
         portfolio.meta["time"] = pd.Timestamp("now")
 
-        yield Result(name=config.name, portfolio=portfolio)
-
+        yield config.name, portfolio
 
 def __loop(path, prefix):
 
