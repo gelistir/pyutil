@@ -1,6 +1,8 @@
 import abc
 import logging
 
+import pandas as pd
+
 from pyutil.mongo.assets import Assets
 
 
@@ -38,8 +40,8 @@ class ConfigMaster(object):
     def asset(self, name):
         return self.__reader(name)
 
-    def frame(self, names, key="PX_LAST"):
-        return self.assets(names=names).frame(key=key)
+    def frame(self, names, key="PX_LAST", before=pd.Timestamp("2002-01-01")):
+        return self.assets(names=names).frame(key=key).dropna(axis=0, how="all").truncate(before=before)
 
     def assets(self, names):
         """

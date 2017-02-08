@@ -118,7 +118,7 @@ class MongoArchive(object):
             """ return a DataFrame! """
             d = super().__getitem__(item)
             if d is not None:
-                return _f(pd.DataFrame({key: pd.Series(values) for key, values in d.items()}))
+                return _f(pd.DataFrame({key: pd.Series(values) for key, values in d.items()})).sort_index(axis=1).dropna(how="all", axis=0)
             else:
                 raise KeyError("The asset {0} is not known in the time series database".format(item))
 
@@ -280,7 +280,7 @@ class MongoArchive(object):
     def history(self):
         """
         get entire history, returns a Multiindex
-        history()["PX_LAST"], etc
+        history["PX_LAST"][[asset_a, asset_b, ...]], etc
         """
         x = pd.concat({key: self.time_series[key] for key in self.time_series.keys()}, axis=1)
         return x.swaplevel(axis=1)
