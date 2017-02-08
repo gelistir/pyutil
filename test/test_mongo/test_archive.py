@@ -20,7 +20,7 @@ class TestMongoArchive(TestCase):
         cls.archive.portfolios.update("test", testp)
 
     def test_history(self):
-        pdt.assert_frame_equal(self.archive.assets(names=["A", "B"]).frame(), prices[["A", "B"]])
+        pdt.assert_frame_equal(self.archive.history["PX_LAST"][["A","B"]], prices[["A", "B"]])
 
     #def test_symbols(self):
     #    pdt.assert_frame_equal(self.archive.assets().reference.sort_index(axis=1), symbols.sort_index(axis=1), check_dtype=False)

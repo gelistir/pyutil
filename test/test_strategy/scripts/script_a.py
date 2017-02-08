@@ -7,11 +7,11 @@ from pyutil.strategy.ConfigMaster import ConfigMaster
 
 class Configuration(ConfigMaster):
     def __init__(self, reader, logger=None):
-        super().__init__(reader=reader, logger=logger)
+        super().__init__(reader=reader, names=["A", "B", "C"], logger=logger)
 
     def portfolio(self):
         # extract the assets (using the reader)
-        p = self.assets(names=["A", "B", "C"]).frame()
+        p = self.assets.history["PX_LAST"] #(names=["A","B","C"])
         return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / 3.0))
 
     @property

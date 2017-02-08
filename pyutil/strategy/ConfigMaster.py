@@ -1,8 +1,6 @@
 import abc
 import logging
 
-import pandas as pd
-
 from pyutil.mongo.assets import Assets
 
 
@@ -12,7 +10,7 @@ class ConfigMaster(object):
     def __repr__(self, *args, **kwargs):
         return 'Name: {0}, Group: {1}'.format(self.name, self.group)
 
-    def __init__(self, reader, logger=None):
+    def __init__(self, reader, names, logger=None):
         """
         Abstract base class for all strategies
 
@@ -20,7 +18,8 @@ class ConfigMaster(object):
         :param t0: timestamp for starting the strategy
         :param logger: logger
         """
-        self.__reader = reader
+        self.__assets = Assets([reader(name) for name in names])
+
         self.configuration = dict()
         self.logger = logger or logging.getLogger(__name__)
 
@@ -37,16 +36,11 @@ class ConfigMaster(object):
     def portfolio(self):
         return
 
-    def asset(self, name):
-        return self.__reader(name)
-
-    def frame(self, names, key="PX_LAST", before=pd.Timestamp("2002-01-01")):
-        return self.assets(names=names).frame(key=key).dropna(axis=0, how="all").truncate(before=before)
-
-    def assets(self, names):
+    @property
+    def assets(self):
         """
         Using the reader construct an Assets object
         :param names:
         :return:
         """
-        return Assets([self.asset(name) for name in names])
+        return self.__assets

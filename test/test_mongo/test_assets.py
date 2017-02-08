@@ -14,11 +14,12 @@ symbols = read_frame("symbols.csv")
 
 class TestAssets(TestCase):
     def test_assets_add(self):
-        assets = Assets()
+        #assets = Assets()
         asset = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
-        assets.add(asset)
+        #assets.add(asset)
+        assets = Assets([asset])
 
-        self.assertSetEqual(set(assets.keys()), {"Peter Maffay"})
+        self.assertSetEqual(set(assets.asset_names()), {"Peter Maffay"})
         pdt.assert_frame_equal(assets["Peter Maffay"].time_series, prices)
         pdt.assert_series_equal(assets["Peter Maffay"].reference, pd.Series(index=["a", "b"], data=[2.0, 3.0]))
 
