@@ -74,7 +74,7 @@ class MongoArchive(object):
                 yield (k, self[k])
 
         def __setitem__(self, key, value):
-            # this is implemented in the children
+            # this is not implemented, use update routines
             raise NotImplementedError
 
         def __delitem__(self, key):
@@ -126,6 +126,7 @@ class MongoArchive(object):
             for key in frame.keys():
                 self.update_series(key, series=frame[key], series_name=name)
 
+
     class __Symbols(__DB):
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
@@ -143,6 +144,7 @@ class MongoArchive(object):
         def update_all(self, frame):
             for key in frame.index:
                 self.update(asset_name=key, ref_series=frame.ix[key])
+
 
     class __Portfolios(__DB):
         def __init__(self, db, logger=None):
@@ -181,56 +183,6 @@ class MongoArchive(object):
 
             return self[key]
 
-        def __setitem__(self, key, value):
-            raise NotImplementedError
-
-    # class __Portfolios2(__DB):
-    #     def __init__(self, db, logger=None):
-    #         super().__init__(db=db, logger=logger)
-    #
-    #     def __setitem__(self, key, value):
-    #         raise NotImplementedError
-    #
-    #     def update(self, key, portfolio):
-    #         self.logger.info("Key {0}".format(key))
-    #
-    #         q = {"_id": key}
-    #         if key in self.keys() and not portfolio.empty:
-    #             # If there is any data left after the truncation process write into database
-    #             self.db.update(q, {"$set": _flatten({"time_series.weight": _mongo(portfolio.weights)})}, upsert=True)
-    #             self.db.update(q, {"$set": _flatten({"time_series.price": _mongo(portfolio.prices)})}, upsert=True)
-    #         else:
-    #             # write the entire database into the database, one has to make sure _flatten and to_json are compatible
-    #             self.db.insert_one({"_id": key, "time_series": {"weight": _mongo(portfolio.weights), "price": _mongo(portfolio.prices)}})
-    #
-    #         if portfolio.meta:
-    #             self.db.update(q, {"$set": _flatten({"meta": portfolio.meta})}, upsert=True)
-    #
-    #         return self[key]
-    #
-    #     # # return a dictionary portfolio
-    #     # def __getitem__(self, item):
-    #     #     self.logger.debug("Portfolio: {0}".format(item))
-    #     #     a = super().__getitem__(item)
-    #     #
-    #     #     if a:
-    #     #         keys = a["time_series"].keys()
-    #     #         frames = {key: _f(pd.DataFrame(a["time_series"][key])) for key in a["time_series"].keys()}
-    #     #
-    #     #         Asset(name=, frames[key][n], )
-    #     #         print(frames)
-    #     #         assert False
-    #     #
-    #     #
-    #     #         prices = _f(pd.DataFrame(a["time_series"]["price"]))
-    #     #         weights = _f(pd.DataFrame(a["time_series"]["weight"]))
-    #     #         prices = prices.ix[weights.index]
-    #     #         #del a["price"]
-    #     #         #del a["weight"]
-    #     #
-    #     #         return Portfolio(prices=prices, weights=weights, **a["meta"])
-    #     #     else:
-    #     #         return None
 
     def __init__(self, db=str(uuid.uuid4()), host="mongo", port=27017, user=None, password=None, logger=None):
         """
@@ -260,8 +212,13 @@ class MongoArchive(object):
     def __repr__(self):
         return "Reader for {0}".format(self.__db)
 
-    def asset(self, name):
-        return Asset(name=name, data=self.time_series[name], **self.symbols[name].to_dict())
+    @property
+    def reader(self):
+        """
+        Exposes a function pointer. This is given to the strategies. They can then only extract the information needed.
+        :return:
+        """
+        return lambda name: Asset(name=name, data=self.time_series[name], **self.symbols[name].to_dict())
 
     @property
     def strategies(self):
@@ -274,7 +231,7 @@ class MongoArchive(object):
         """
         Construct assets based on a list of names
         """
-        return Assets([self.asset(name) for name in names])
+        return Assets([self.reader(name) for name in names])
 
     @property
     def history(self):

@@ -11,9 +11,13 @@ class TestConfigMaster(TestCase):
     def test_master(self):
         symbols = read_frame("symbols.csv")
         prices = read_frame("price.csv")
+
+        # Assets may contain a lot of assets, This is quite a monster in memory
+        # However, this can also be a huge database,
         assets = Assets([Asset(name, data=prices[name].to_frame(name="PX_LAST"), **symbols.ix[name].to_dict()) for name in prices.keys()])
 
-        # only hand over a function and evaluate on demand rather than creating a monster object in memory
+        # only hand over a function to read individual assets. This avoids reading the entire database! The strategy will extract only what
+        # it needs
         configuration = Configuration(reader=assets.reader)
 
         self.assertEquals(configuration.name, "test_a")

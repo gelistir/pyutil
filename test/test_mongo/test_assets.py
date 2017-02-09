@@ -19,7 +19,7 @@ class TestAssets(TestCase):
         #assets.add(asset)
         assets = Assets([asset])
 
-        self.assertSetEqual(set(assets.asset_names()), {"Peter Maffay"})
+        self.assertSetEqual(set(assets.asset_names), {"Peter Maffay"})
         pdt.assert_frame_equal(assets["Peter Maffay"].time_series, prices)
         pdt.assert_series_equal(assets["Peter Maffay"].reference, pd.Series(index=["a", "b"], data=[2.0, 3.0]))
 

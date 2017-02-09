@@ -11,7 +11,7 @@ class Configuration(ConfigMaster):
 
     def portfolio(self):
         # extract the assets (using the reader)
-        p = self.assets.history["PX_LAST"] #(names=["A","B","C"])
+        p = self.assets.history["PX_LAST"]
         return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / 3.0))
 
     @property
