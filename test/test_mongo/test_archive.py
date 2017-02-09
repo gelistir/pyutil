@@ -20,7 +20,7 @@ class TestMongoArchive(TestCase):
         cls.archive.portfolios.update("test", testp)
 
     def test_history(self):
-        pdt.assert_frame_equal(self.archive.history["PX_LAST"][["A","B"]], prices[["A", "B"]])
+        pdt.assert_frame_equal(self.archive.history("PX_LAST")[["A","B"]], prices[["A", "B"]])
 
     #def test_symbols(self):
     #    pdt.assert_frame_equal(self.archive.assets().reference.sort_index(axis=1), symbols.sort_index(axis=1), check_dtype=False)
@@ -46,10 +46,10 @@ class TestMongoArchive(TestCase):
         pdt.assert_frame_equal(portfolio.weights, g.weights)
 
     def test_history_entire(self):
-        pdt.assert_frame_equal(self.archive.history["PX_LAST"], prices)
+        pdt.assert_frame_equal(self.archive.history("PX_LAST"), prices)
 
     def test_history_columns(self):
-        pdt.assert_series_equal(self.archive.history["PX_LAST"]["A"], prices["A"], check_names=False)
+        pdt.assert_series_equal(self.archive.history("PX_LAST")["A"], prices["A"], check_names=False)
 
 
     def test_time_series(self):

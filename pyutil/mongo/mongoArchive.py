@@ -222,10 +222,13 @@ class MongoArchive(object):
 
     @property
     def strategies(self):
-        p = Portfolios()
-        for name, portfolio in self.portfolios.items():
-            p[name] = portfolio
-        return p
+        if self.portfolios.empty:
+            return None
+        else:
+            p = Portfolios()
+            for name, portfolio in self.portfolios.items():
+                p[name] = portfolio
+            return p
 
     def assets(self, names):
         """
@@ -233,14 +236,31 @@ class MongoArchive(object):
         """
         return Assets([self.reader(name) for name in names])
 
-    @property
-    def history(self):
-        """
-        get entire history, returns a Multiindex
-        history["PX_LAST"][[asset_a, asset_b, ...]], etc
-        """
-        x = pd.concat({key: self.time_series[key] for key in self.time_series.keys()}, axis=1)
-        return x.swaplevel(axis=1)
+    # @property
+    # def __history(self):
+    #     """
+    #     get entire history, returns a Multiindex
+    #     history["PX_LAST"][[asset_a, asset_b, ...]], etc
+    #     """
+    #     asset_names = self.time_series.keys()
+    #     if not asset_names:
+    #         # no assets in database
+    #         return dict()
+    #     else:
+    #         x = pd.concat({key: self.time_series[key] for key in self.time_series.keys()}, axis=1)
+    #         return x.swaplevel(axis=1)
+
+    def history(self, name):
+        asset_names = self.time_series.keys()
+        if not asset_names:
+            # no assets in database
+            return pd.DataFrame()
+        else:
+            x = pd.concat({key: self.time_series[key] for key in self.time_series.keys()}, axis=1).swaplevel(axis=1)
+            if name in x.keys():
+                return x[name]
+            else:
+                return pd.DataFrame()
 
     @property
     def reference(self):

@@ -10,6 +10,8 @@ class Asset(object):
         :param data: DataFrame of time series data
         :param kwargs: any reference/static data
         """
+        assert isinstance(data, pd.DataFrame), "Data is of type {0}".format(type(data))
+
         self.__name = name
         self.__data = data
 
