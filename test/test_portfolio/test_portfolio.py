@@ -6,8 +6,8 @@ import pandas.util.testing as pdt
 import matplotlib as mpl
 mpl.use('Agg')
 
-from pyutil.portfolio.portfolio import Portfolio
-from test.config import test_portfolio, read_frame
+from pyutil.portfolio.portfolio import Portfolio, read_csv
+from test.config import test_portfolio, read_frame, resource
 from unittest import TestCase
 
 portfolio = test_portfolio()
@@ -159,3 +159,15 @@ class TestPortfolio(TestCase):
         p2 = Portfolio(p.prices, p.weights)
         p2.meta["Wurst"] = 1
         self.assertDictEqual(p2.meta, {"Wurst": 1})
+
+    #def test_csv(self):
+    #    test_portfolio().to_csv(resource("hans.csv"))
+        #assert False
+
+    def test_csv_back(self):
+        p = test_portfolio()
+        #p.to_csv("hans.csv")
+        portfolio = read_csv(resource("hans.csv"))
+        pdt.assert_frame_equal(portfolio.weights, p.weights)
+        pdt.assert_frame_equal(portfolio.prices, p.prices)
+

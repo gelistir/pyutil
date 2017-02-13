@@ -199,6 +199,12 @@ class MongoArchive(object):
         if user and password:
             self.logger.info("User: {0}".format(user))
             client.admin.authenticate(name=user, password=password)
+            db.authenticate('user', 'password', source='source_database')
+
+            #>> > from pymongo import MongoClient
+            #>> > client = MongoClient('example.com')
+            >> > db = client.the_database
+            >> > db.authenticate('user', 'password', source='source_database')
 
         self.__db = Database(client, db)
         self.logger.info("Archive (read-access) at {0}".format(self.__db))
@@ -207,7 +213,6 @@ class MongoArchive(object):
         self.portfolios = self.__Portfolios(self.__db.strategy, logger=self.logger)
         self.symbols = self.__Symbols(db=self.__db.symbols, logger=self.logger)
         self.time_series = self.__Assets(db=self.__db.assets, logger=self.logger)
-        #self.portfolios2 = self.__Portfolios2(self.__db.strategy2, logger=self.logger)
 
     def __repr__(self):
         return "Reader for {0}".format(self.__db)
@@ -236,27 +241,13 @@ class MongoArchive(object):
         """
         return Assets([self.reader(name) for name in names])
 
-    # @property
-    # def __history(self):
-    #     """
-    #     get entire history, returns a Multiindex
-    #     history["PX_LAST"][[asset_a, asset_b, ...]], etc
-    #     """
-    #     asset_names = self.time_series.keys()
-    #     if not asset_names:
-    #         # no assets in database
-    #         return dict()
-    #     else:
-    #         x = pd.concat({key: self.time_series[key] for key in self.time_series.keys()}, axis=1)
-    #         return x.swaplevel(axis=1)
-
     def history(self, name):
         asset_names = self.time_series.keys()
         if not asset_names:
             # no assets in database
             return pd.DataFrame()
         else:
-            x = pd.concat({key: self.time_series[key] for key in self.time_series.keys()}, axis=1).swaplevel(axis=1)
+            x = pd.concat({asset: self.time_series[asset] for asset in asset_names}, axis=1).swaplevel(axis=1)
             if name in x.keys():
                 return x[name]
             else:

@@ -17,6 +17,10 @@ class Portfolios(object):
         # get a particular asset
         return self.__portfolio[item]
 
+    @property
+    def empty(self):
+        return len(self) == 0
+
     def __len__(self):
         return len(self.__portfolio)
 
@@ -78,4 +82,5 @@ class Portfolios(object):
         # compute the periods
         offset = pp(today=frame.index[-1])
         return 100*frame.apply(pr, offset=offset).transpose()
+
 
