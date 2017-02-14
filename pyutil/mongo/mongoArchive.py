@@ -201,11 +201,6 @@ class MongoArchive(object):
             client.admin.authenticate(name=user, password=password)
             db.authenticate('user', 'password', source='source_database')
 
-            #>> > from pymongo import MongoClient
-            #>> > client = MongoClient('example.com')
-            >> > db = client.the_database
-            >> > db.authenticate('user', 'password', source='source_database')
-
         self.__db = Database(client, db)
         self.logger.info("Archive (read-access) at {0}".format(self.__db))
 

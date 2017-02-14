@@ -20,4 +20,5 @@ def monthlytable(nav):
     # make sure that you don't include the column for the STDev in your computation
     frame["YTD"] = a
     frame.index.name = "year"
-    return frame
+    # most recent years on top
+    return frame.iloc[::-1]

@@ -8,6 +8,8 @@ class TestMongoArchive(TestCase):
     def setUpClass(cls):
         cls.archive = MongoArchive()
         cls.archive.time_series.drop()
+        cls.archive.portfolios.drop()
+        cls.archive.symbols.drop()
 
     def test_history_empty(self):
         x = self.archive.history("PX_LAST")
