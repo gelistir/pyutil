@@ -42,6 +42,9 @@ class NavSeries(pd.Series):
         # => A = exp(Sum [log a_i] // n)
         return np.exp(np.mean(np.log(a)))
 
+    def truncate(self, before=None, after=None):
+        return NavSeries(super().truncate(before=before, after=after))
+
     @property
     def monthlytable(self):
         return monthlytable(self)

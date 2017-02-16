@@ -1,5 +1,4 @@
 import copy
-
 import pandas as pd
 
 
@@ -10,6 +9,9 @@ class Asset(object):
         :param data: DataFrame of time series data
         :param kwargs: any reference/static data
         """
+        if isinstance(data, pd.Series):
+            data=data.to_frame(name="PX_LAST")
+
         assert isinstance(data, pd.DataFrame), "Data is of type {0}".format(type(data))
 
         self.__name = name
@@ -40,7 +42,23 @@ class Asset(object):
         return "Asset {0} with series {1} and reference {2}".format(self.name, list(self.time_series.keys()), sorted(self.__ref.items()))
 
     def __setitem__(self, key, value):
+        ### add a series
+        assert isinstance(value, pd.Series)
         assert not value.index.has_duplicates, "Data Index has duplicates"
         assert value.index.is_monotonic_increasing, "Data Index is not increasing"
+        for a in value.index:
+            assert a in self.__data.index, "The index {0} is unknown".format(a)
+
         self.__data[key] = value
 
+    #def apply(self, f):
+        ### apply a function to all data in f
+    #    return Asset(name=self.name, data=f(self.__data), **self.__ref)
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__data.equals(other.__data) and self.name == other.name and self.reference.equals(other.reference)
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)

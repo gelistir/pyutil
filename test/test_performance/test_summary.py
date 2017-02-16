@@ -63,3 +63,7 @@ class TestSummary(TestCase):
         xx = s.annual_returns
         print(xx)
 
+    def test_truncate(self):
+        x = s.truncate(before="2015-01-01")
+        self.assertEquals(x.index[0], pd.Timestamp("2015-01-01"))
+

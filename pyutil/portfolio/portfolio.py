@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import copy
 
 from ..performance.summary import fromReturns
 from .maths import xround, buy_or_sell
@@ -104,7 +105,7 @@ class Portfolio(object):
         self.__before = {today : yesterday for today, yesterday in zip(prices.index[1:], prices.index[:-1])}
         self.__r = self.__prices.pct_change()
 
-        self.__dict = kwargs
+        self.__dict = copy.deepcopy(kwargs)
 
     @property
     def meta(self):
@@ -319,3 +320,10 @@ class Portfolio(object):
         pd.concat({"price": self.prices, "weight": self.weights}, axis=1).to_csv(file)
 
 
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.prices.equals(other.prices) and self.weights == other.weights and self.meta == other.meta
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
