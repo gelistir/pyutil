@@ -199,7 +199,6 @@ class MongoArchive(object):
         if user and password:
             self.logger.info("User: {0}".format(user))
             client.admin.authenticate(name=user, password=password)
-            db.authenticate('user', 'password', source='source_database')
 
         self.__db = Database(client, db)
         self.logger.info("Archive (read-access) at {0}".format(self.__db))
