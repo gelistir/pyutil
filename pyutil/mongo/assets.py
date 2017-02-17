@@ -5,11 +5,9 @@ from pyutil.mongo.asset import Asset
 def from_csv(file, ref_file):
     frame = pd.read_csv(file, index_col=0, parse_dates=True, header=[0, 1])
     reference = pd.read_csv(ref_file, index_col=0)
-    #for asset in frame.keys().levels[0]:
     return Assets([Asset(name=asset, data=frame[asset], **reference.ix[asset].to_dict()) for asset in frame.keys().levels[0]])
 
-    #print(frame.keys().levels[0])
-    #print(frame)
+
 
 class Assets(object):
     def __init__(self, assets):

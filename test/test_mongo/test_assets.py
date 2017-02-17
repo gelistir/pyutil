@@ -57,8 +57,9 @@ class TestAssets(TestCase):
     def test_csv(self):
         asset_a = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
         asset_b = Asset(name="Falco", data=prices, b=4.0, a=2.0)
-        assets = Assets([asset_a, asset_b])
-        assets.to_csv(resource("assets_ts.csv"), resource("assets_ref.csv"))
+
+        #assets = Assets([asset_a, asset_b])
+        #assets.to_csv(resource("assets_ts.csv"), resource("assets_ref.csv"))
 
 
         x = from_csv(resource("assets_ts.csv"), resource("assets_ref.csv"))

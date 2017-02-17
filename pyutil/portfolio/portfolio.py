@@ -272,19 +272,21 @@ class Portfolio(object):
 
     @property
     def state(self):
+        # get the last 5 trading days
         trade_events = self.trading_days[-5:-1]
         today = self.index[-1]
-        trade_events.append(today)
+        if today not in trade_events:
+            trade_events.append(today)
 
+        # extract the weights at all those trade events
         weights = self.weights.ffill().ix[trade_events].transpose()
-        p = Portfolio(prices=self.prices, weights=self.weights.copy(), **self.meta).forward(today)
 
-        gap = self.weights.ix[today] - p.weights.ix[today]
+        # that's the portfolio where today has been forwarded to (from yesterday),
+        p = Portfolio(prices=self.prices, weights=self.weights.copy()).forward(today)
 
         weights = 100.0 * weights.rename(columns=lambda x: x.strftime("%d-%b-%y"))
         weights["Extrapolated"] = 100.0 * p.weights.ix[today]
-        weights["Gap"] = 100.0 * gap
-
+        weights["Gap"] = 100.0 * (self.weights.ix[today] - p.weights.ix[today])
         return weights
 
     def plot(self, tradingDays=False, figsize=(16,10)):
