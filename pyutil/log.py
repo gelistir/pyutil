@@ -67,7 +67,7 @@ def FileHandler(file="/log/lobnek.log", level=logging.INFO, format=None, mode="a
 
 def SentryHandler(dns=None, level=logging.WARNING):
     from raven.handlers.logging import SentryHandler
-    dns = dns or os.environ.get("SENTRY")
+    dns = dns or os.environ["SENTRY"]
     sentry_handler = SentryHandler(dns)
     sentry_handler.level = level
     return sentry_handler
