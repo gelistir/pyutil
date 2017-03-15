@@ -15,6 +15,7 @@ import time
 
 
 class Parent(object):
+    # see http://arnavk.com/posts/python-context-managers/
     def __init__(self, log=None):
         self.__logger = log or logging.getLogger(__name__)
         self.__time = time.time()

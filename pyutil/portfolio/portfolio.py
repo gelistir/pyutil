@@ -329,3 +329,18 @@ class Portfolio(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    @property
+    def trade_usd(self):
+        # the amount of USD traded per asset on trading days
+        return self.trade_abs * self.prices.ix[self.trading_days]
+
+    @property
+    def trade_rel(self):
+        # the fraction of capital traded on trading days
+        return self.trade_usd.div(self.nav.ix[self.trading_days], axis=0)
+
+    @property
+    def trade_abs(self):
+        # the number of shares (etc.) traded on trading days assuming a fundsize of 1
+        return (self.position.fillna(0.0).diff()).ix[self.trading_days]
