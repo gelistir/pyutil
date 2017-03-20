@@ -19,7 +19,7 @@ services:
        - ./test/config.py:/pyutil/config.py
        - ./test/resources:/pyutil/resources
 
-     command: python config.py
+     command: python /pyutil/config.py
 
 
 

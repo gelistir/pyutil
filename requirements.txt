@@ -1,0 +1,5 @@
+raven==5.27.1
+premailer
+xlrd
+jinja2
+xlsxwriter
