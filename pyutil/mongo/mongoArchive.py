@@ -127,7 +127,7 @@ class MongoArchive(object):
                 self.update_series(key, series=series.dropna(), series_name=name)
 
 
-    class __Symbols(__DB):d
+    class __Symbols(__DB):
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
 
