@@ -18,6 +18,9 @@ def read_csv(file):
     return Portfolio(x["price"], x["weight"])
 
 class Portfolio(object):
+    def copy(self):
+        return Portfolio(prices=self.prices.copy(), weights=self.weights.copy(), **dict(self.meta))
+
     def iron_threshold(self, threshold=0.02):
         """
         Iron a portfolio, do not touch the last index
@@ -25,7 +28,7 @@ class Portfolio(object):
         :param threshold:
         :return:
         """
-        portfolio = Portfolio(prices=self.prices, weights=self.weights, **self.meta)
+        portfolio = self.copy()
         for yesterday, today in zip(self.index[:-2], self.index[1:-1]):
             if (portfolio.weights.ix[today] - portfolio.weights.ix[yesterday]).abs().max() <= threshold:
                 portfolio.forward(today, yesterday=yesterday)
@@ -34,7 +37,7 @@ class Portfolio(object):
 
     def iron_time(self, rule):
         # make sure the order is correct...
-        portfolio = Portfolio(self.prices, self.weights, **self.meta)
+        portfolio = self.copy()
 
         moments = [self.index[0]]
 

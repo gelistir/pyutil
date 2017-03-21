@@ -123,11 +123,11 @@ class MongoArchive(object):
                 raise KeyError("The asset {0} is not known in the time series database".format(item))
 
         def update_all(self, frame, name="PX_LAST"):
-            for key in frame.keys():
-                self.update_series(key, series=frame[key], series_name=name)
+            for key, series in frame.iteritems():
+                self.update_series(key, series=series.dropna(), series_name=name)
 
 
-    class __Symbols(__DB):
+    class __Symbols(__DB):d
         def __init__(self, db, logger=None):
             super().__init__(db=db, logger=logger)
 
