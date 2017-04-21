@@ -23,12 +23,13 @@ class ConfigMaster(object):
         self.configuration = dict()
         self.logger = logger or logging.getLogger(__name__)
 
-
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def group(self)->str:
         return
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def name(self)-> str:
         return
 
