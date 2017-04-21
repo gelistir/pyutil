@@ -1,6 +1,5 @@
 import pandas as pd
 
-from pyutil.mongo.assets import Assets
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.strategy.ConfigMaster import ConfigMaster
 
