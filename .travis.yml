@@ -2,7 +2,10 @@
 sudo: required
 dist: trusty
 
-cache: conda pip
+cache:
+  - conda
+  - pip
+
 
 install:
   # Update docker-engine using Ubuntu 'trusty' apt repo
@@ -24,3 +27,5 @@ install:
 script:
   - ./test.sh
 
+after_success:
+  - coveralls
