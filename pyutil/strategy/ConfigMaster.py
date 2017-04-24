@@ -5,6 +5,7 @@ from pyutil.mongo.assets import Assets
 
 
 class ConfigMaster(object):
+    """ Every strategy is described by a configuration object. Each such object inherits from the ConfigMaster class."""
     __metaclass__ = abc.ABCMeta
 
     def __repr__(self, *args, **kwargs):
@@ -18,9 +19,14 @@ class ConfigMaster(object):
         :param t0: timestamp for starting the strategy
         :param logger: logger
         """
+
+        # the reader in action. Assets takes a list of Asset objects as argument
         self.__assets = Assets([reader(name) for name in names])
 
+        # this dictionary can be manipulated from the child
         self.configuration = dict()
+
+        # the logger
         self.logger = logger or logging.getLogger(__name__)
 
     @property

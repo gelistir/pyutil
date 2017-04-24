@@ -8,6 +8,16 @@ import pandas as pd
 
 
 def loop_configurations(reader, path, prefix, logger=None):
+    """
+    This function is right at the core of all our trading systems.
+    
+    :param reader: Is a function that takes a string argument and returns an Asset (object)
+    :param path: The path where the scripts live... Use an absolute path to be safe
+    :param prefix: The prefix used when loading those scripts
+    :param logger: A logger (object)
+    
+    :return: Yields(!) configuration name and the computed portfolio 
+    """
     logger = logger or logging.getLogger(__name__)
     logger.info("Search Path: {0}".format(path))
     logger.info("Prefix: {0}".format(prefix))
