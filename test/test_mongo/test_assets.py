@@ -53,16 +53,11 @@ class TestAssets(TestCase):
         pdt.assert_frame_equal(xxx["Peter Maffay"].time_series, prices.tail(5))
         pdt.assert_series_equal(xxx["Peter Maffay"].reference, pd.Series({"b":3.0, "a": 2.0}))
 
-
     def test_csv(self):
         asset_a = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
         asset_b = Asset(name="Falco", data=prices, b=4.0, a=2.0)
 
-        #assets = Assets([asset_a, asset_b])
-        #assets.to_csv(resource("assets_ts.csv"), resource("assets_ref.csv"))
-
-
-        x = from_csv(resource("assets_ts.csv"), resource("assets_ref.csv"))
+        x = from_csv(file=resource("assets_ts.csv"), ref_file=resource("assets_ref.csv"))
         self.assertTrue(x["Peter Maffay"] == asset_a)
         self.assertTrue(x["Falco"] == asset_b)
 

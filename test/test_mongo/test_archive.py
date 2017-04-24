@@ -11,6 +11,7 @@ prices = read_frame("price.csv", parse_dates=True)
 symbols = read_frame("symbols.csv")
 testp = test_portfolio(group="test", comment="test", time=pd.Timestamp("1980-01-01"))
 
+
 class TestMongoArchive(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -22,10 +23,7 @@ class TestMongoArchive(TestCase):
     def test_history(self):
         pdt.assert_frame_equal(self.archive.history("PX_LAST")[["A","B"]], prices[["A", "B"]])
 
-    #def test_symbols(self):
-    #    pdt.assert_frame_equal(self.archive.assets().reference.sort_index(axis=1), symbols.sort_index(axis=1), check_dtype=False)
-
-    def test_asset(self):
+    def test_assets(self):
         a = self.archive.assets(names=["A"])
         self.assertEquals(a["A"].reference["internal"], "Gold")
 
