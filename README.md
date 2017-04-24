@@ -1,6 +1,7 @@
 # pyutil
 
 Set of utility code used by Lobnek Wealth Management.
+[![Build Status](https://travis-ci.org/lobnek/pyutil.svg?branch=master)](https://travis-ci.org/lobnek/pyutil)
 
 ## Installation
 ```python

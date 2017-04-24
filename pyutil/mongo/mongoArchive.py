@@ -19,12 +19,14 @@ import uuid
 def _is_pandas(x):
     return isinstance(x, pd.DataFrame) or isinstance(x, pd.Series)
 
+
 def _f(x):
     # change index of a frame or series
     assert _is_pandas(x)
     f = x.copy()
     f.index = [pd.Timestamp(x) for x in f.index]
     return f
+
 
 def _flatten(d, parent_key=None, sep='.'):
     """ flatten dictonaries of dictionaries (of dictionaries of dict... you get it)"""
@@ -37,6 +39,7 @@ def _flatten(d, parent_key=None, sep='.'):
             items.append((new_key, v))
     return dict(items)
 
+
 def _to_dict(x):
     assert _is_pandas(x)
     if isinstance(x, pd.DataFrame):
@@ -44,6 +47,7 @@ def _to_dict(x):
     else:
         # series to dictionary
         return x.dropna().to_dict()
+
 
 def _mongo(x):
     y = x.copy()
@@ -56,6 +60,7 @@ def _mongo(x):
         pass
 
     return _to_dict(x=y)
+
 
 class MongoArchive(object):
     class __DB(object):
