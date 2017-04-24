@@ -21,7 +21,8 @@ class ConfigMaster(object):
         """
 
         # the reader in action. Assets takes a list of Asset objects as argument
-        self.__assets = Assets([reader(name) for name in names])
+        self.__reader = reader
+        self.__assets = Assets([self.__reader(name) for name in names])
 
         # this dictionary can be manipulated from the child
         self.configuration = dict()
@@ -51,3 +52,7 @@ class ConfigMaster(object):
         :return:
         """
         return self.__assets
+
+    @property
+    def reader(self):
+        return self.__reader

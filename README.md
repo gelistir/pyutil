@@ -23,65 +23,27 @@ For testing purposes we fire up and populate a MongoDB Docker image
 whereas in production we run a MongoDB server providing access to our latest data.
 
 Each strategy is described by a class Configuration and is a child of the ConfigMaster class.
+
+[ConfigMaster](pyutil/strategy/ConfigMaster.py)
+
 Although inheritance is rarely used in Python we use it here to enforce a small common interface for all strategies.
+A simple test strategy is implemented here:
 
-```python
-	from pyutil.strategy.ConfigMaster import ConfigMaster
-	
-	
-	class Configuration(ConfigMaster):
-		def __init__(self, reader, names, logger=None):
-			super().__init__(reader=reader, names=names, logger=logger)
-			
-```
+[Test Strategy](test/test_strategy/scripts/script_a.py)
 
-Once we have instantiated a Configuration object we could still modify the configuration dictionary which is a simple
-member variable. In this example we define the parameters start.
+The ConfigMaster class offers an assets property. Assets are a collection of Asset objects:
 
-```python
-     c = Configuration(reader, names=["A","B","C"])
-     c.configurations["risk"]=1.0
+[Asset](pyutil/mongo/asset.py)
 
-```
+and
 
-We shall talk briefly about Readers. Readers are functions 
-providing access to historice data and reference data for any asset
+[Assets](pyutil/mongo/assets.py)
 
-```python
-    def reader(name):
-        return Asset(...)
-        
-```
-The actual implementation depends of course on the underlying technology used to store this data.
 
-So far, we have only mentioned to instantiate a Configuration object and pointed it to an archive. To build the portfolio the
-ConfigMaster is exposing the abstract portfolio method, e.g. we extend the Configuration class by 
+The link between an actual data source (e.g. a database) and the ConfigMaster is done via the reader function.
+The reader function maps the name of an asset to an actual Asset object as shown in
 
-```python
-	from pyutil.portfolio.portfolio import Portfolio
-	from pyutil.strategy.ConfigMaster import ConfigMaster
-	
-	
-	class Configuration(ConfigMaster):
-		def __init__(self, reader, logger=None):
-			super().__init__(reader=reader, names=["A", "B", "C"], logger=logger)
-	
-		def portfolio(self):
-			# extract the assets (using the reader)
-			p = self.assets.history["PX_LAST"]
-			return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / 3.0))
-```
-The actual strategy is therefore executed as 
+[Test ConfigMaster](test/test_strategy/test_configmaster.py)
 
-```python	
-	# define a Configuration object
-	c = Configuration(reader=reader, names=["A","B","C"])
-	
-	# modify the configuration dictionary here...
-	c.configuration["Peter"]="Maffay"
-	
-	# compute the portfolio
-	p = c.portfolio()
-```
-
-There is a wealth of tools to analyse the portfolio objects. 
+Note that there are many alternative implementations of such a reader function possible. This very much depends
+on the underlying technology used to store data.
