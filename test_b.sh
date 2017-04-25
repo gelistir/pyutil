@@ -8,7 +8,7 @@ docker run -p 27017:27017 --name mongo -d mongo:latest
 docker run --rm --link mongo \
  	-v $(pwd)/test:/pyutil/test \
  	-v $(pwd)/pyutil:/pyutil/pyutil \
- 	pyutil:latest nosetests -w /pyutil/test --with-timer
+ 	pyutil:latest
 
 # delete the mongo container
 docker rm -f mongo
