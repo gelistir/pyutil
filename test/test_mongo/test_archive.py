@@ -49,7 +49,6 @@ class TestMongoArchive(TestCase):
     def test_history_columns(self):
         pdt.assert_series_equal(self.archive.history("PX_LAST")["A"], prices["A"], check_names=False)
 
-
     def test_time_series(self):
         pdt.assert_series_equal(self.archive.time_series["A"]["PX_LAST"], prices["A"], check_names=False)
 
