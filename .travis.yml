@@ -21,11 +21,9 @@ install:
      -o Dpkg::Options::="--force-confold" --assume-yes install docker-engine
   - docker version
   # Update docker-compose via pip
-  #- sudo pip install docker-compose
-  #- docker-compose version
 
 script:
-  - ./test_b.sh
+  - ./test.sh
 
 after_success:
   - coveralls

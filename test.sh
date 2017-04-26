@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
-docker-compose -p test -f docker-compose.test.yml build
-docker-compose -p test -f docker-compose.test.yml run sut
-exit_code=`docker wait test_sut_run_1`
-docker-compose -p test -f docker-compose.test.yml down
-exit ${exit_code}
+docker build --file Dockerfile-Test --tag pyutil:latest .
+
+# run a mongo container
+docker run -p 27017:27017 --name mongo -d mongo:latest
+
+# run all tests, seems to be slow on teamcity
+docker run --rm --link mongo \
+ 	-v $(pwd)/test:/pyutil/test \
+ 	-v $(pwd)/pyutil:/pyutil/pyutil \
+ 	-v $(pwd)/html-coverage:/html-coverage \
+ 	pyutil:latest
+
+# delete the mongo container
+docker rm -f mongo
