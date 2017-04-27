@@ -5,11 +5,10 @@ docker build --file Dockerfile-Test --tag pyutil:latest .
 docker run -p 27017:27017 --name mongo -d mongo:latest
 
 # run all tests, seems to be slow on teamcity
-docker run --rm --link mongo \
- 	-v $(pwd)/test:/pyutil/test \
- 	-v $(pwd)/pyutil:/pyutil/pyutil \
- 	-v $(pwd)/html-coverage:/html-coverage \
- 	pyutil:latest
+docker run --rm --link mongo pyutil:latest
+
+ret=$?
 
 # delete the mongo container
 docker rm -f mongo
+exit $ret

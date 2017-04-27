@@ -12,4 +12,7 @@ RUN pip install httpretty nose coverage nose-timer
 # Import this to run construct the font-cache
 RUN python -c "from matplotlib.font_manager import FontManager"
 
+ADD ./pyutil   /pyutil/pyutil
+ADD ./test     /pyutil/test
+
 CMD nosetests -w /pyutil/test --with-coverage --cover-html --cover-erase --cover-package=pyutil --cover-html-dir=/html-coverage --with-timer
