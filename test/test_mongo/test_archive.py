@@ -65,5 +65,9 @@ class TestMongoArchive(TestCase):
         pdt.assert_frame_equal(self.archive.reference, symbols.sort_index(axis=1), check_dtype=False)
 
 
+    def test_reference_mapping(self):
+        import numpy as np
+        p = self.archive.reference_mapping(assets=["A","B"], keys=["PX_LAST", "FUND_INCEPT_DT"])
+        assert p.dtypes["PX_LAST"]==np.float64
 
 

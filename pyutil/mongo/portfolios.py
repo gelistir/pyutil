@@ -45,7 +45,6 @@ class Portfolios(object):
             s["time"] = s["time"].apply(lambda t: t.strftime("%Y-%m-%d"))
         return s
 
-
     def __repr__(self):
         return str.join("\n", [str(self[portfolio]) for portfolio in self.keys()])
 

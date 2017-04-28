@@ -256,4 +256,31 @@ class MongoArchive(object):
     def reference(self):
         return pd.DataFrame({key: self.symbols[key] for key in self.symbols.keys()}).transpose().sort_index(axis=1)
 
+    def reference_mapping(self, assets, keys, map_dict=None):
+        map_dict = map_dict or self.map_dict
+
+        # extract the right reference data...
+        refdata = self.reference[keys].ix[assets]
+
+        # convert to datatypes
+        for name in keys:
+            if name in map_dict:
+                # convert the column if in the dict above
+                refdata[[name]] = refdata[[name]].apply(map_dict[name])
+
+        return refdata
+
+    @property
+    def map_dict(self):
+        map_dict = dict()
+        map_dict["CHG_PCT_1D"] = lambda x: pd.to_numeric(x)
+        map_dict["CHG_PCT_MTD"] = lambda x: pd.to_numeric(x)
+        map_dict["CHG_PCT_YTD"] = lambda x: pd.to_numeric(x)
+        map_dict["PX_LAST"] = lambda x: pd.to_numeric(x)
+        map_dict["PX_CLOSE_DT"] = lambda x: pd.to_datetime(1e6 * x)
+        map_dict["FUND_INCEPT_DT"] = lambda x: pd.to_datetime(1e6 * x)
+        map_dict["PX_VOLUME"] = lambda x: pd.to_numeric(x)
+        map_dict["VOLATILITY_20D"] = lambda x: pd.to_numeric(x)
+        return map_dict
+
 

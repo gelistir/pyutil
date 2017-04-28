@@ -19,6 +19,9 @@ class TestConfigMaster(TestCase):
         self.assertEquals(configuration.name, "test_a")
         self.assertEquals(configuration.group, "testgroup_a")
 
+        #print(configuration.assets)
+        #assert False
+
         portfolio = configuration.portfolio()
         self.assertAlmostEquals(portfolio.nav.sharpe_ratio(), -0.27817227635204395, places=5)
 
