@@ -100,3 +100,15 @@ class Symbol(Document):
     @staticmethod
     def reference():
         return pd.DataFrame({asset.name: asset.ref for asset in Symbol.objects}).transpose().sort_index(axis=1)
+
+    @staticmethod
+    def history():
+        #if len(Symbol.objects.empty:
+        #    print("empty")
+        #else:
+        a = {asset.name : asset.hist for asset in Symbol.objects} #, axis=1).swaplevel(axis=1)
+        if (len(a) > 0):
+            return pd.concat(a, axis=1).swaplevel(axis=1)
+        else:
+            return pd.DataFrame()
+

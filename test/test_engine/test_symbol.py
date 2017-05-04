@@ -8,7 +8,7 @@ from pyutil.mongo.asset import Asset
 class TestSymbol(TestCase):
     @classmethod
     def setUpClass(cls):
-        connect(host="mongo", port=27017)
+        connect(db="testSymbol", host="mongo", port=27017, alias="default")
 
         # Create a text-based post
         sym1 = Symbol(name="XYZ", internal="XYZ internal", group="A")
