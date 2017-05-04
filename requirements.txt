@@ -3,3 +3,4 @@ premailer
 xlrd
 jinja2
 xlsxwriter
+mongoengine

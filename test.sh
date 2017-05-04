@@ -11,4 +11,5 @@ ret=$?
 
 # delete the mongo container
 docker rm -f mongo
+
 exit $ret
