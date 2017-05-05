@@ -4,8 +4,6 @@ import importlib
 import inspect
 import logging
 
-import pandas as pd
-
 
 def loop_configurations(reader, path, prefix, logger=None):
     """
@@ -37,6 +35,5 @@ def loop_configurations(reader, path, prefix, logger=None):
         portfolio = config.portfolio()
         portfolio.meta["group"] = config.group
         portfolio.meta["comment"] = inspect.getsource(object=module)
-        portfolio.meta["time"] = pd.Timestamp("now")
 
         yield config.name, portfolio

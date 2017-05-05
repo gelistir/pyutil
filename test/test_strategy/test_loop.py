@@ -7,11 +7,10 @@ from test.config import read_frame
 
 class TestLoopConfigurations(TestCase):
     def test_loop_config(self):
-        symbols = read_frame("symbols.csv")
         prices = read_frame("price.csv")
 
         # we need the reader function...
-        reader = lambda name: Asset(name, data=prices[name].to_frame(name="PX_LAST"), **symbols.ix[name].to_dict())
+        reader = lambda name: Asset(name, data=prices[name].to_frame(name="PX_LAST"))
 
         path = "/pyutil/test/test_strategy/scripts"
         results = {name: portfolio for name, portfolio in loop_configurations(reader=reader, path=path, prefix="test.test_strategy.scripts.")}
