@@ -5,6 +5,7 @@ from pyutil.engine.symbol import Symbol, asset_builder
 from pyutil.mongo.asset import Asset
 
 
+
 class TestSymbol(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -28,3 +29,4 @@ class TestSymbol(TestCase):
         x = asset_builder(name="aaa")
         print(x)
         assert isinstance(x, Asset)
+

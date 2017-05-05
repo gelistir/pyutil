@@ -1,10 +1,9 @@
-import warnings
-
 import collections
 import pandas as pd
 
 from mongoengine import *
 
+from pyutil.mongo.portfolios import Portfolios
 from pyutil.portfolio.portfolio import Portfolio
 
 
@@ -19,8 +18,13 @@ def portfolio_builder(name):
     p.meta["comment"] = sym.source
     p.meta["time"] = sym.time
     return p
-    #return Portfolio(name=sym.name, prices=sym.prices, weights=sym.weights, group=sym.group, comment=sym.source, time=sym.time)
 
+
+def portfolios():
+    p = Portfolios()
+    for strategy in Strat.objects:
+        p[strategy.name] = strategy.portfolio
+    return p
 
 class Strat(Document):
     name = StringField(required=True, max_length=200, unique=True)
