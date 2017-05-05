@@ -9,10 +9,10 @@ def __frame2html(frame, classes="table"):
                          escape=False).replace('border="1"', 'border="0"')
 
 
-def link(name: str) -> str:
-    x = name.lstrip().split(" ")
-    assert len(x) >= 1, "Problem with {0}".format(name)
-    return "<a href=http://www.bloomberg.com/quote/{0}:{1}>{2}</a>".format(x[0], x[1], name.lstrip())
+#def link(name: str) -> str:
+#    x = name.lstrip().split(" ")
+#    assert len(x) >= 1, "Problem with {0}".format(name)
+#    return "<a href=http://www.bloomberg.com/quote/{0}:{1}>{2}</a>".format(x[0], x[1], name.lstrip())
 
 
 def __getTemplate(tpl_path):

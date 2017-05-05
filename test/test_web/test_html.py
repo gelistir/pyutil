@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import pandas as pd
 
-from pyutil.web.html import link, compile2html
+from pyutil.web.html import compile2html
 
 transformed="""<!DOCTYPE html>
 <html lang="en">
@@ -33,9 +33,6 @@ transformed="""<!DOCTYPE html>
 """
 
 class TestHtml(TestCase):
-    def test_link(self):
-        self.assertEqual(link("CARMPAT FP Equity"), "<a href=http://www.bloomberg.com/quote/CARMPAT:FP>CARMPAT FP Equity</a>")
-
     def test_compile2html(self):
         d = dict()
         d["latest"] = pd.DataFrame(data=[[2.0]])

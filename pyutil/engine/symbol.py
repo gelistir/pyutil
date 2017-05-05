@@ -93,6 +93,13 @@ class Symbol(Document):
     def ref(self):
         return {**self.properties, **{"internal": self.internal, "group": self.group}}
 
+    @property
+    def link(self):
+        x = self.name.lstrip().split(" ")
+        assert len(x) >= 1, "Problem with {0}".format(x)
+        return "<a href=http://www.bloomberg.com/quote/{0}:{1}>{2}</a>".format(x[0], x[1], x.lstrip())
+
+
     @staticmethod
     def names():
         return [symbol.name for symbol in Symbol.objects]
