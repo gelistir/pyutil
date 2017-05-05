@@ -103,10 +103,7 @@ class Symbol(Document):
 
     @staticmethod
     def history():
-        #if len(Symbol.objects.empty:
-        #    print("empty")
-        #else:
-        a = {asset.name : asset.hist for asset in Symbol.objects} #, axis=1).swaplevel(axis=1)
+        a = {asset.name : asset.hist for asset in Symbol.objects}
         if (len(a) > 0):
             return pd.concat(a, axis=1).swaplevel(axis=1)
         else:

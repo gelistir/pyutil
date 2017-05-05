@@ -24,9 +24,6 @@ class TestSymbol(TestCase):
     def test_count(self):
         assert Symbol.objects.count()==2
 
-    #def test_ref(self):
-    #    print()
-
     def test_builder(self):
         x = asset_builder(name="aaa")
         print(x)

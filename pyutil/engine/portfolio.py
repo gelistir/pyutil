@@ -9,12 +9,17 @@ from pyutil.portfolio.portfolio import Portfolio
 
 
 def portfolio_names():
-    return [portfolio.name for portfolio in Strat.objects]
+    return set([portfolio.name for portfolio in Strat.objects])
 
 
 def portfolio_builder(name):
     sym = Strat.objects(name=name)[0]
-    return Portfolio(name=sym.name, prices=sym.prices, weights=sym.weights)
+    p = sym.portfolio
+    p.meta["group"] = sym.group
+    p.meta["comment"] = sym.source
+    p.meta["time"] = sym.time
+    return p
+    #return Portfolio(name=sym.name, prices=sym.prices, weights=sym.weights, group=sym.group, comment=sym.source, time=sym.time)
 
 
 class Strat(Document):
@@ -40,14 +45,7 @@ class Strat(Document):
     @staticmethod
     def __mongo(x):
         y = x.copy()
-        try:
-            # This is better than calling x.index.strftime directly as it also works for dates
-            y.index = [a.strftime("%Y%m%d") for a in y.index]
-        except AttributeError:
-            warnings.warn("You are trying to convert the indizes of Pandas object into str. "
-                          "They are currently {0} and of type {1}".format(x.index[0], type(x.index[0])))
-            pass
-
+        y.index = [a.strftime("%Y%m%d") for a in y.index]
         return {k: v.dropna().to_dict() for k, v in y.items()}
 
     @property
