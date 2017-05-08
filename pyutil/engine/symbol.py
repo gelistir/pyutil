@@ -42,7 +42,7 @@ class Symbol(Document):
     def asset(self):
         return Asset(name=self.name, data=self.__hist(), **{**self.properties, **{"internal": self.internal, "group": self.group}})
 
-    def update_ts(self, name, ts):
+    def update_ts(self, ts, name="PX_LAST"):
         collection = self._get_collection()
         m = {"name": self.name}
         ts = ts.dropna()

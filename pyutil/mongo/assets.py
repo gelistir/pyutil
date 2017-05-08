@@ -98,7 +98,7 @@ class Assets(object):
         mapd = mapd or Assets.map_dict()
 
         # extract the right reference data...
-        refdata = self.reference()[keys]
+        refdata = self.reference[keys]
 
         # convert to datatypes
         for name in keys:

@@ -30,11 +30,11 @@ class TestSymbol(TestCase):
     def test_empty(self):
         s = Symbol.objects(name="aaa")[0]
         with self.assertWarns(Warning):
-            s.update_ts("test", ts=pd.Series())
+            s.update_ts(name="test", ts=pd.Series())
 
     def test_update(self):
         s = Symbol.objects(name="aaa")[0]
-        s = s.update_ts("test", ts=pd.Series(index=["20100101","20150502"], data=5.0))
+        s = s.update_ts(name="test", ts=pd.Series(index=["20100101","20150502"], data=5.0))
         pdt.assert_series_equal(s.asset.time_series["test"], pd.Series(index=[pd.Timestamp("20100101"),pd.Timestamp("20150502")], data=5.0, name="test"))
 
     def test_assets(self):
