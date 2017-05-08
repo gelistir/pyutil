@@ -72,3 +72,7 @@ class TestAssets(TestCase):
 
         self.assertTrue(assets_1 == assets_2)
         self.assertFalse(assets_1 != assets_2)
+
+    def test_reference_mapping(self):
+        x = Assets.map_dict()
+        self.assertTrue("CHG_PCT_1D" in x.keys())

@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.performance.summary import NavSeries
-
+from mongoengine import connect as connect_mongo
 
 def resource(name):
     base_dir = os.path.dirname(__file__)
@@ -19,6 +19,14 @@ def read_series(name, parse_dates=True, index_col=0, cname=None):
 
 def test_portfolio(**kwargs):
     return Portfolio(prices=read_frame("price.csv"), weights=read_frame("weight.csv"),**kwargs)
+
+
+def connect():
+    # this will connect to an empty database...
+    db = connect_mongo('test', host="testmongo", alias="default")
+    # oddly enough, this doesn't really work
+    for name in db.database_names():
+        db.drop_database(name)
 
 
 if __name__ == '__main__':

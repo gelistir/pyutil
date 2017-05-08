@@ -1,40 +1,35 @@
-import uuid
 from unittest import TestCase
-from pyutil.engine.symbol import Symbol, asset_builder
 
-from mongoengine import connect
+from pyutil.engine.portfolio import Strat, portfolios
+from pyutil.engine.symbol import Symbol, assets
 
 # An empty database requires special care, we do that here...
+from test.config import connect
+
+
 class TestMongoArchive(TestCase):
     @classmethod
-    def setUpClass(cls):
-        connect(db="testEmpty", alias="default")
-        Symbol.drop_collection()
-
-        #cls.archive = MongoArchive()
-        #cls.archive.time_series.drop()
-        #cls.archive.portfolios.drop()
-        #cls.archive.symbols.drop()
+    def setUpClas(cls):
+        connect()
 
     def test_history_empty(self):
-        x = Symbol.history()
-        self.assertTrue(x.empty)
-        self.assertFalse("Peter" in x.keys())
+        self.assertEqual(Strat.objects.count(), 0)
+        self.assertEqual(Symbol.objects.count(), 0)
 
-    #def test_symbols_empty(self):
-    #    x = self.archive.reference
-    #    self.assertTrue(x.empty)
+        a = assets()
+        p = portfolios()
 
-    #def test_strategies(self):
-    #    x = .strategies
-    #    self.assertIsNone(x)
+        self.assertTrue(a.empty)
+        self.assertTrue(p.empty)
 
-    def test_reader(self):
+    def test_asset_builder(self):
         with self.assertRaises(IndexError):
-            asset_builder(name="Peter Maffay")
+            assets(names=["a"])
 
-    def test_loop(self):
-        assert Symbol.objects.count() == 0, "It is {0}".format(Symbol.objects.count())
+    def test_portfolio_builder(self):
+        with self.assertRaises(IndexError):
+            portfolios(names=["a"])
+
 
 
 

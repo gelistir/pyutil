@@ -1,21 +1,19 @@
 from unittest import TestCase
 
 import pandas as pd
-from mongoengine import connect
 
-from pyutil.engine.portfolio import Strat, portfolio_builder, portfolio_names
+from pyutil.engine.portfolio import Strat, portfolios
 from pyutil.portfolio.portfolio import Portfolio
-from test.config import test_portfolio
+from test.config import test_portfolio, connect
 import pandas.util.testing as pdt
 
 portfolio = test_portfolio(group="A", comment="Peter Maffay", time=pd.Timestamp("now"))
 
 
-
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        connect(db="testPortfolio", host="mongo", port=27017, alias="default")
+        connect()
 
         # Create a text-based post
         s1 = Strat(name="strat1", group="A", source="Peter Maffay", time=portfolio.meta["time"])
@@ -26,19 +24,25 @@ class TestPortfolio(TestCase):
         s2.save()
         s2.update_portfolio(portfolio)
 
-    def test_names(self):
-        self.assertSetEqual(portfolio_names(), {"strat1","strat2"})
+    @classmethod
+    def tearDownClass(cls):
+        Strat.drop_collection()
 
     def test_count(self):
-        assert Strat.objects.count()==2
+        assert Strat.objects.count() == 2
 
-    def test_builder(self):
-        x = portfolio_builder("strat2")
-        assert isinstance(x, Portfolio)
+    def test_update(self):
+        s = Strat.objects(name="strat1")[0]
+        x = s.update_portfolio((2*portfolio).tail(10))
+        #print(x.portfolio.weights.tail(10))
+        #print(portfolio.weights.tail(10))
+        pdt.assert_frame_equal(2*portfolio.weights.tail(10), x.portfolio.weights.tail(10))
 
-        p = test_portfolio()
-        pdt.assert_frame_equal(p.prices, x.prices)
-        pdt.assert_frame_equal(p.weights, x.weights)
-    #     x = asset_builder(name="aaa")
-    #     print(x)
-    #     assert isinstance(x, Asset)
+    def test_portfolios(self):
+        x = portfolios()
+        self.assertSetEqual({"strat1","strat2"}, set(x.keys()))
+
+        x = portfolios(names=["strat1"])
+        self.assertEquals(len(x), 1)
+
+

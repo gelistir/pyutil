@@ -7,23 +7,14 @@ from pyutil.mongo.portfolios import Portfolios
 from pyutil.portfolio.portfolio import Portfolio
 
 
-def portfolio_names():
-    return set([portfolio.name for portfolio in Strat.objects])
-
-
-def portfolio_builder(name):
-    sym = Strat.objects(name=name)[0]
-    p = sym.portfolio
-    p.meta["group"] = sym.group
-    p.meta["comment"] = sym.source
-    p.meta["time"] = sym.time
-    return p
-
-
-def portfolios():
+def portfolios(names=None):
     p = Portfolios()
-    for strategy in Strat.objects:
-        p[strategy.name] = strategy.portfolio
+    if names:
+        for name in names:
+            p[name] = Strat.objects(name=name)[0].portfolio
+    else:
+        for strategy in Strat.objects:
+            p[strategy.name] = strategy.portfolio
     return p
 
 class Strat(Document):
@@ -58,17 +49,24 @@ class Strat(Document):
             x = pd.DataFrame(x)
             x.index = [pd.Timestamp(a) for a in x.index]
             return x
-        return Portfolio(prices=f(self.prices), weights=f(self.weights))
+
+        x = Portfolio(prices=f(self.prices), weights=f(self.weights))
+        x.meta["group"] = self.group
+        x.meta["comment"] = self.source
+        x.meta["time"] = self.time
+        return x
 
     def update_portfolio(self, portfolio):
         if not portfolio.empty:
             w = Strat.__mongo(portfolio.weights)
             p = Strat.__mongo(portfolio.prices)
             if self.weights == {} and self.prices == {}:
+                # fresh data...
                 self.update(weights=w, prices=p)
             else:
                 self._get_collection().update({"name": self.name},
                                               {"$set": Strat.__flatten({**{"weights": w}, **{"prices": p}})},
                                               upsert=True)
 
-        return self.portfolio
+        return Strat.objects(name=self.name)[0]
+

@@ -4,38 +4,14 @@ import warnings
 
 from mongoengine import *
 from pyutil.mongo.asset import Asset
+from pyutil.mongo.assets import Assets
 
 
-def asset_builder(name):
-    return Symbol.objects(name=name)[0].asset
-
-
-def reference_mapping(assets, keys, mapd=None):
-    mapd = mapd or map_dict()
-
-    # extract the right reference data...
-    refdata = Symbol.reference()[keys].ix[assets]
-
-    # convert to datatypes
-    for name in keys:
-        if name in mapd:
-            # convert the column if in the dict above
-            refdata[[name]] = refdata[[name]].apply(mapd[name])
-
-    return refdata
-
-def map_dict():
-    map_dict = dict()
-    map_dict["CHG_PCT_1D"] = lambda x: pd.to_numeric(x)
-    map_dict["CHG_PCT_MTD"] = lambda x: pd.to_numeric(x)
-    map_dict["CHG_PCT_YTD"] = lambda x: pd.to_numeric(x)
-    map_dict["PX_LAST"] = lambda x: pd.to_numeric(x)
-    map_dict["PX_CLOSE_DT"] = lambda x: pd.to_datetime(1e6 * x)
-    map_dict["FUND_INCEPT_DT"] = lambda x: pd.to_datetime(1e6 * x)
-    map_dict["PX_VOLUME"] = lambda x: pd.to_numeric(x)
-    map_dict["VOLATILITY_20D"] = lambda x: pd.to_numeric(x)
-    map_dict["VOLATILITY_260D"] = lambda x: pd.to_numeric(x)
-    return map_dict
+def assets(names=None):
+    if names:
+        return Assets([Symbol.objects(name=name)[0].asset for name in names])
+    else:
+        return Assets([s.asset for s in Symbol.objects])
 
 
 class Symbol(Document):
@@ -57,28 +33,14 @@ class Symbol(Document):
                 items.append((new_key, v))
         return dict(items)
 
-
-    def __str__(self):
-        return self.name + str(self.properties)
-
-    def last(self, name="PX_LAST", day_0=pd.Timestamp("2000-01-01"), offset=pd.offsets.BDay(n=10)):
-        try:
-            return self.hist[name].last_valid_index() - offset
-        except KeyError:
-            return day_0
-
-    @property
-    def hist(self):
-        def f(timeseries):
-            return pd.DataFrame({name: pd.Series(data) for name, data in timeseries.items()})
-
-        x = f(self.timeseries)
+    def __hist(self):
+        x = pd.DataFrame({name: pd.Series(data) for name, data in self.timeseries.items()})
         x.index = [pd.Timestamp(a) for a in x.index]
         return x
 
     @property
     def asset(self):
-        return Asset(name=self.name, data=self.hist, **self.ref)
+        return Asset(name=self.name, data=self.__hist(), **{**self.properties, **{"internal": self.internal, "group": self.group}})
 
     def update_ts(self, name, ts):
         collection = self._get_collection()
@@ -86,33 +48,6 @@ class Symbol(Document):
         ts = ts.dropna()
         if len(ts) > 0:
             collection.update(m, {"$set": Symbol.__flatten({"timeseries": {name: ts.to_dict()}})}, upsert=True)
+            return Symbol.objects(name=self.name)[0]
         else:
             warnings.warn("No data in update for {asset}".format(asset=self.name))
-
-    @property
-    def ref(self):
-        return {**self.properties, **{"internal": self.internal, "group": self.group}}
-
-    @property
-    def link(self):
-        x = self.name.lstrip().split(" ")
-        assert len(x) >= 1, "Problem with {0}".format(x)
-        return "<a href=http://www.bloomberg.com/quote/{0}:{1}>{2}</a>".format(x[0], x[1], x.lstrip())
-
-
-    @staticmethod
-    def names():
-        return [symbol.name for symbol in Symbol.objects]
-
-    @staticmethod
-    def reference():
-        return pd.DataFrame({asset.name: asset.ref for asset in Symbol.objects}).transpose().sort_index(axis=1)
-
-    @staticmethod
-    def history():
-        a = {asset.name : asset.hist for asset in Symbol.objects}
-        if (len(a) > 0):
-            return pd.concat(a, axis=1).swaplevel(axis=1)
-        else:
-            return pd.DataFrame()
-

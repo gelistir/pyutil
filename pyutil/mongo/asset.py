@@ -14,6 +14,7 @@ class Asset(object):
         if isinstance(data, pd.Series):
             data = data.to_frame(name="PX_LAST")
 
+
         for key in data.keys():
             self[key] = data[key]
 
@@ -58,3 +59,15 @@ class Asset(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    @property
+    def link(self):
+        x = self.name.lstrip().split(" ")
+        assert len(x) >= 1, "Problem with {0}".format(x)
+        return "<a href=http://www.bloomberg.com/quote/{0}:{1}>{2}</a>".format(x[0], x[1], self.name.lstrip())
+
+    def last(self, name="PX_LAST", day_0=pd.Timestamp("2000-01-01"), offset=pd.offsets.BDay(n=10)):
+        try:
+            return self.time_series[name].last_valid_index() - offset
+        except KeyError:
+            return day_0

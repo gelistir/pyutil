@@ -88,3 +88,36 @@ class Assets(object):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    @property
+    def empty(self):
+        return len(self.__asset) == 0
+
+
+    def reference_mapping(self, keys, mapd=None):
+        mapd = mapd or Assets.map_dict()
+
+        # extract the right reference data...
+        refdata = self.reference()[keys]
+
+        # convert to datatypes
+        for name in keys:
+            if name in mapd:
+                # convert the column if in the dict above
+                refdata[[name]] = refdata[[name]].apply(mapd[name])
+
+        return refdata
+
+    @staticmethod
+    def map_dict():
+        map_dict = dict()
+        map_dict["CHG_PCT_1D"] = lambda x: pd.to_numeric(x)
+        map_dict["CHG_PCT_MTD"] = lambda x: pd.to_numeric(x)
+        map_dict["CHG_PCT_YTD"] = lambda x: pd.to_numeric(x)
+        map_dict["PX_LAST"] = lambda x: pd.to_numeric(x)
+        map_dict["PX_CLOSE_DT"] = lambda x: pd.to_datetime(1e6 * x)
+        map_dict["FUND_INCEPT_DT"] = lambda x: pd.to_datetime(1e6 * x)
+        map_dict["PX_VOLUME"] = lambda x: pd.to_numeric(x)
+        map_dict["VOLATILITY_20D"] = lambda x: pd.to_numeric(x)
+        map_dict["VOLATILITY_260D"] = lambda x: pd.to_numeric(x)
+        return map_dict
