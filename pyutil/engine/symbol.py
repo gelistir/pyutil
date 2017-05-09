@@ -1,8 +1,9 @@
-import collections
-import pandas as pd
 import warnings
 
+import pandas as pd
 from mongoengine import *
+
+from pyutil.engine.aux import frame2dict, flatten, dict2frame
 from pyutil.mongo.asset import Asset
 from pyutil.mongo.assets import Assets
 
@@ -14,40 +15,35 @@ def assets(names=None):
         return Assets([s.asset for s in Symbol.objects])
 
 
+def reference(names=None):
+    if names:
+        return pd.DataFrame({name: Symbol.objects(name=name)[0].properties for name in names}).transpose()
+    else:
+        return pd.DataFrame({s.name: s.properties for s in Symbol.objects}).transpose()
+
+
+
+
+def from_asset(asset):
+    return Symbol(name=asset.name, properties=asset.reference.to_dict(), timeseries = frame2dict(asset.time_series))
+
+
 class Symbol(Document):
     name = StringField(required=True, max_length=200, unique=True)
-    internal = StringField(required=True, max_length=200)
-    group = StringField(max_length=200)
     properties = DictField()
     timeseries = DictField()
 
-    @staticmethod
-    def __flatten(d, parent_key=None, sep='.'):
-        """ flatten dictonaries of dictionaries (of dictionaries of dict... you get it)"""
-        items = []
-        for k, v in d.items():
-            new_key = parent_key + sep + k if parent_key else k
-            if isinstance(v, collections.MutableMapping):
-                items.extend(Symbol.__flatten(v, new_key, sep=sep).items())
-            else:
-                items.append((new_key, v))
-        return dict(items)
-
-    def __hist(self):
-        x = pd.DataFrame({name: pd.Series(data) for name, data in self.timeseries.items()})
-        x.index = [pd.Timestamp(a) for a in x.index]
-        return x
-
     @property
     def asset(self):
-        return Asset(name=self.name, data=self.__hist(), **{**self.properties, **{"internal": self.internal, "group": self.group}})
+        return Asset(name=self.name, data=dict2frame(self.timeseries), **self.properties)
 
     def update_ts(self, ts, name="PX_LAST"):
         collection = self._get_collection()
         m = {"name": self.name}
         ts = ts.dropna()
         if len(ts) > 0:
-            collection.update(m, {"$set": Symbol.__flatten({"timeseries": {name: ts.to_dict()}})}, upsert=True)
+            collection.update(m, {"$set": flatten({"timeseries": {name: ts.to_dict()}})}, upsert=True)
             return Symbol.objects(name=self.name)[0]
         else:
             warnings.warn("No data in update for {asset}".format(asset=self.name))
+

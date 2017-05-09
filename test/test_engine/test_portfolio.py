@@ -2,8 +2,7 @@ from unittest import TestCase
 
 import pandas as pd
 
-from pyutil.engine.portfolio import Strat, portfolios
-from pyutil.portfolio.portfolio import Portfolio
+from pyutil.engine.portfolio import Strat, portfolios, from_portfolio
 from test.config import test_portfolio, connect
 import pandas.util.testing as pdt
 
@@ -15,14 +14,9 @@ class TestPortfolio(TestCase):
     def setUpClass(cls):
         connect()
 
-        # Create a text-based post
-        s1 = Strat(name="strat1", group="A", source="Peter Maffay", time=portfolio.meta["time"])
-        s1.save()
-        s1.update_portfolio(portfolio)
+        from_portfolio(name="strat1", portfolio=portfolio, group="A").save()
+        from_portfolio(name="strat2", portfolio=portfolio, group="A").save()
 
-        s2 = Strat(name="strat2", group="A", source="Peter Maffay", time=portfolio.meta["time"])
-        s2.save()
-        s2.update_portfolio(portfolio)
 
     @classmethod
     def tearDownClass(cls):
@@ -34,8 +28,6 @@ class TestPortfolio(TestCase):
     def test_update(self):
         s = Strat.objects(name="strat1")[0]
         x = s.update_portfolio((2*portfolio).tail(10))
-        #print(x.portfolio.weights.tail(10))
-        #print(portfolio.weights.tail(10))
         pdt.assert_frame_equal(2*portfolio.weights.tail(10), x.portfolio.weights.tail(10))
 
     def test_portfolios(self):

@@ -2,22 +2,25 @@ from unittest import TestCase
 
 import pandas as pd
 
-from pyutil.engine.symbol import Symbol, assets
+from pyutil.engine.symbol import Symbol, assets, reference, from_asset
 from pyutil.mongo.asset import Asset
-from test.config import connect
+from test.config import connect, test_asset
 import pandas.util.testing as pdt
 
 class TestSymbol(TestCase):
     @classmethod
     def setUpClass(cls):
         connect()
+        from_asset(asset=test_asset(name="A")).save()
+        from_asset(asset=test_asset(name="B")).save()
+
 
         # Create a text-based post
-        sym1 = Symbol(name="XYZ", internal="XYZ internal", group="A")
-        sym1.save()
+        #sym1 = Symbol(name="XYZ", properties={"A": 5})
+        #sym1.save()
 
-        sym2 = Symbol(name="aaa", internal="aaa internal", group="B")
-        sym2.save()
+        #sym2 = Symbol(name="aaa", properties={"A": 2, "C": "hah"})
+        #sym2.save()
 
     @classmethod
     def tearDownClass(cls):
@@ -28,19 +31,31 @@ class TestSymbol(TestCase):
 
 
     def test_empty(self):
-        s = Symbol.objects(name="aaa")[0]
+        s = Symbol.objects(name="A")[0]
         with self.assertWarns(Warning):
             s.update_ts(name="test", ts=pd.Series())
 
     def test_update(self):
-        s = Symbol.objects(name="aaa")[0]
+        s = Symbol.objects(name="A")[0]
         s = s.update_ts(name="test", ts=pd.Series(index=["20100101","20150502"], data=5.0))
-        pdt.assert_series_equal(s.asset.time_series["test"], pd.Series(index=[pd.Timestamp("20100101"),pd.Timestamp("20150502")], data=5.0, name="test"))
+        pdt.assert_series_equal(s.asset.time_series["test"].dropna(), pd.Series(index=[pd.Timestamp("20100101"),pd.Timestamp("20150502")], data=5.0, name="test"))
 
     def test_assets(self):
         x = assets()
         self.assertEquals(len(x), 2)
 
-        x = assets(names=["aaa"])
+        x = assets(names=["A"])
         self.assertEquals(len(x), 1)
+
+    def test_reference(self):
+        x = reference()
+        print(x)
+        self.assertEquals(x["group"]["A"],"Equity")
+
+        x = reference(names=["A"])
+        print(x)
+        self.assertEquals(x["group"]["A"],"Equity")
+
+
+
 

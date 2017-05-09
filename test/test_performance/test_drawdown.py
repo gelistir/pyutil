@@ -14,4 +14,4 @@ class TestDrawdown(TestCase):
 
     def test_periods(self):
         x = drawdown_periods(ts)
-        pdt.assert_equal(x[pd.Timestamp("2014-06-20")], 217)
+        self.assertEquals(x[pd.Timestamp("2014-06-20")], 217)
