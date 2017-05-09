@@ -10,9 +10,14 @@ from pyutil.mongo.assets import Assets
 
 def assets(names=None):
     if names:
-        return Assets([Symbol.objects(name=name)[0].asset for name in names])
+        return Assets([asset(name=name) for name in names])
     else:
         return Assets([s.asset for s in Symbol.objects])
+
+
+# we need this is for strategies
+def asset(name):
+    return Symbol.objects(name=name)[0].asset
 
 
 def reference(names=None):
@@ -20,8 +25,6 @@ def reference(names=None):
         return pd.DataFrame({name: Symbol.objects(name=name)[0].properties for name in names}).transpose()
     else:
         return pd.DataFrame({s.name: s.properties for s in Symbol.objects}).transpose()
-
-
 
 
 def from_asset(asset):
