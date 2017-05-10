@@ -46,7 +46,7 @@ class Symbol(Document):
         ts = ts.dropna()
         if len(ts) > 0:
             collection.update(m, {"$set": flatten({"timeseries": {name: ts.to_dict()}})}, upsert=True)
-            return Symbol.objects(name=self.name)[0]
         else:
             warnings.warn("No data in update for {asset}".format(asset=self.name))
 
+        return Symbol.objects(name=self.name)[0]

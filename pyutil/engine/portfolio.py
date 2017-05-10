@@ -1,4 +1,3 @@
-import collections
 import pandas as pd
 
 from mongoengine import *
@@ -21,6 +20,23 @@ def portfolios(names=None):
 
 def from_portfolio(portfolio, name, group, time=pd.Timestamp("now"), source=""):
     return Strat(name=name, weights=frame2dict(portfolio.weights), prices=frame2dict(portfolio.prices), group=group, time=time, source=source)
+
+
+def update_incremental(portfolio, name, n=5):
+    # full write access here...
+
+    s = Strat.objects(name=name)
+    if len(s) == 0:
+        p = from_portfolio(portfolio=portfolio, name=name, group=portfolio.meta["group"], source=portfolio.meta["comment"])
+        p.save()
+    else:
+        object = s[0]
+        object.update(time=pd.Timestamp("now"), source=portfolio.meta["comment"])
+
+        # truncate the portfolio...
+        last_valid = object.portfolio.index[-n]
+        portfolio = portfolio.truncate(before=last_valid + pd.DateOffset(seconds=1))
+        object.update_portfolio(portfolio=portfolio)
 
 
 class Strat(Document):
