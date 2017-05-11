@@ -12,5 +12,8 @@ ret=$?
 # delete the mongo container
 docker rm -f testmongo
 
-docker rmi -f pyutil:test
+# delete the images used...
+docker rmi mongo:latest
+docker rmi pyutil:test
+
 exit $ret
