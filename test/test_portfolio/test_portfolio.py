@@ -148,21 +148,6 @@ class TestPortfolio(TestCase):
         with self.assertRaises(AssertionError):
             Portfolio(prices=prices, weights=weights)
 
-    def test_meta(self):
-        p = test_portfolio()
-        p1 = Portfolio(p.prices, p.weights, Peter="Maffay", Comment="Nur Du")
-        self.assertDictEqual(p1.meta, {"Peter": "Maffay", "Comment": "Nur Du"})
-        p1.meta["Peter"] = "Haha"
-        self.assertDictEqual(p1.meta, {"Peter": "Haha", "Comment": "Nur Du"})
-
-        p2 = Portfolio(p.prices, p.weights)
-        p2.meta["Wurst"] = 1
-        self.assertDictEqual(p2.meta, {"Wurst": 1})
-
-    #def test_csv(self):
-    #    test_portfolio().to_csv(resource("hans.csv"))
-        #assert False
-
     def test_csv_back(self):
         p = test_portfolio()
         #p.to_csv("hans.csv")

@@ -6,6 +6,7 @@ from mongoengine import *
 from pyutil.engine.aux import frame2dict, flatten, dict2frame
 from pyutil.mongo.asset import Asset
 from pyutil.mongo.assets import Assets
+from pyutil.performance.summary import NavSeries
 
 
 def assets(names=None):
@@ -50,3 +51,7 @@ class Symbol(Document):
             warnings.warn("No data in update for {asset}".format(asset=self.name))
 
         return Symbol.objects(name=self.name)[0]
+
+    def nav(self, name="PX_LAST"):
+        return NavSeries(self.asset.time_series[name])
+

@@ -1,7 +1,5 @@
 from unittest import TestCase
 
-import pandas as pd
-
 from pyutil.mongo.portfolios import Portfolios
 from test.config import read_frame, test_portfolio
 
@@ -12,16 +10,13 @@ class TestPortfolios(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.portfolios = Portfolios()
-        p = test_portfolio(group="test", comment="test", time=pd.Timestamp("1980-01-01"))
+        p = test_portfolio()
         cls.portfolios["test"] = p
 
     def test_assets_add(self):
         r = self.portfolios.nav()["test"]
         # test the nav
         self.assertAlmostEqual(r["2015-04-22"], 1.0070191775792583, places=5)
-
-        r = self.portfolios.strategies
-        self.assertEqual(r["group"]["test"], "test")
 
     def test_sector_weights(self):
         symbolmap = symbols["group"]

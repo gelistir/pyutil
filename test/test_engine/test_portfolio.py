@@ -6,7 +6,7 @@ from pyutil.engine.portfolio import Strat, portfolios, from_portfolio
 from test.config import test_portfolio, connect
 import pandas.util.testing as pdt
 
-portfolio = test_portfolio(group="A", comment="Peter Maffay", time=pd.Timestamp("now"))
+portfolio = test_portfolio()
 
 
 class TestPortfolio(TestCase):

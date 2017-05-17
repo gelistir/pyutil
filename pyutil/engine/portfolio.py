@@ -22,16 +22,16 @@ def from_portfolio(portfolio, name, group, time=pd.Timestamp("now"), source=""):
     return Strat(name=name, weights=frame2dict(portfolio.weights), prices=frame2dict(portfolio.prices), group=group, time=time, source=source)
 
 
-def update_incremental(portfolio, name, n=5):
+def update_incremental(portfolio, name, group, source, n=5):
     # full write access here...
 
     s = Strat.objects(name=name)
     if len(s) == 0:
-        p = from_portfolio(portfolio=portfolio, name=name, group=portfolio.meta["group"], source=portfolio.meta["comment"])
+        p = from_portfolio(portfolio=portfolio, name=name, group=group, source=source)
         p.save()
     else:
         object = s[0]
-        object.update(time=pd.Timestamp("now"), source=portfolio.meta["comment"])
+        object.update(time=pd.Timestamp("now"), source=source, group=group)
 
         # truncate the portfolio...
         last_valid = object.portfolio.index[-n]
@@ -55,9 +55,9 @@ class Strat(Document):
             return x
 
         x = Portfolio(prices=f(self.prices), weights=f(self.weights))
-        x.meta["group"] = self.group
-        x.meta["comment"] = self.source
-        x.meta["time"] = self.time
+        #x.meta["group"] = self.group
+        #x.meta["comment"] = self.source
+        #x.meta["time"] = self.time
         return x
 
     def update_portfolio(self, portfolio):

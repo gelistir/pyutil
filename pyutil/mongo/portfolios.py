@@ -38,12 +38,12 @@ class Portfolios(object):
     def nav(self, before=None):
         return pd.DataFrame({name: portfolio.nav for name, portfolio in self.items()}).truncate(before=before).apply(adjust)
 
-    @property
-    def strategies(self):
-        s = pd.DataFrame({name: portfolio.meta for name, portfolio in self.items()}).transpose()
-        if "time" in s.keys():
-            s["time"] = s["time"].apply(lambda t: t.strftime("%Y-%m-%d"))
-        return s
+    #@property
+    #def strategies(self):
+    #    s = pd.DataFrame({name: portfolio.meta for name, portfolio in self.items()}).transpose()
+    #    if "time" in s.keys():
+    #        s["time"] = s["time"].apply(lambda t: t.strftime("%Y-%m-%d"))
+    #    return s
 
     def __repr__(self):
         return str.join("\n", [str(self[portfolio]) for portfolio in self.keys()])

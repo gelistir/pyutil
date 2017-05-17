@@ -33,7 +33,4 @@ def loop_configurations(reader, path, prefix, logger=None):
         logger.debug("Group: {0}".format(config.group))
 
         portfolio = config.portfolio()
-        portfolio.meta["group"] = config.group
-        portfolio.meta["comment"] = inspect.getsource(object=module)
-
-        yield config.name, portfolio
+        yield config.name, {"portfolio": portfolio, "source": inspect.getsource(object=module), "group": config.group}

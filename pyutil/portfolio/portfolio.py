@@ -19,7 +19,7 @@ def read_csv(file):
 
 class Portfolio(object):
     def copy(self):
-        return Portfolio(prices=self.prices.copy(), weights=self.weights.copy(), **dict(self.meta))
+        return Portfolio(prices=self.prices.copy(), weights=self.weights.copy())
 
     def iron_threshold(self, threshold=0.02):
         """
@@ -68,7 +68,7 @@ class Portfolio(object):
 
         return self
 
-    def __init__(self, prices, weights=None, **kwargs):
+    def __init__(self, prices, weights=None): #, **kwargs):
         # if you don't specify any weights, we initialize them with nan
         if weights is None:
             weights = pd.DataFrame(index=prices.index, columns=prices.keys(), data=np.nan)
@@ -108,11 +108,11 @@ class Portfolio(object):
         self.__before = {today : yesterday for today, yesterday in zip(prices.index[1:], prices.index[:-1])}
         self.__r = self.__prices.pct_change()
 
-        self.__dict = copy.deepcopy(kwargs)
+        #self.__dict = copy.deepcopy(kwargs)
 
-    @property
-    def meta(self):
-        return self.__dict
+    #@property
+    #def meta(self):
+    #    return self.__dict
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
@@ -161,7 +161,7 @@ class Portfolio(object):
 
     def truncate(self, before=None, after=None):
         return Portfolio(prices=self.prices.truncate(before=before, after=after),
-                    weights=self.weights.truncate(before=before, after=after), **self.meta)
+                    weights=self.weights.truncate(before=before, after=after))
 
 
     @property
@@ -213,23 +213,23 @@ class Portfolio(object):
     def tail(self, n=10):
         w = self.weights.tail(n)
         p = self.prices.ix[w.index]
-        return Portfolio(p, w, **self.meta)
+        return Portfolio(p, w)
 
     @property
     def position(self):
         return pd.DataFrame({k: self.weights[k] * self.nav / self.prices[k] for k in self.assets})
 
     def subportfolio(self, assets):
-        return Portfolio(prices=self.prices[assets], weights=self.weights[assets], **self.meta)
+        return Portfolio(prices=self.prices[assets], weights=self.weights[assets])
 
     def __mul__(self, other):
-        return Portfolio(self.prices, other * self.weights, **self.meta)
+        return Portfolio(self.prices, other * self.weights)
 
     def __rmul__(self, other):
         return self.__mul__(other)
 
     def apply(self, function, axis=0):
-        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis), **self.meta)
+        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))
 
     @property
     def trading_days(self):
@@ -268,10 +268,10 @@ class Portfolio(object):
         return p
 
     def ytd(self, today=None):
-        return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today), **self.meta)
+        return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today))
 
     def mtd(self, today=None):
-        return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today), **self.meta)
+        return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today))
 
     @property
     def state(self):
@@ -327,7 +327,7 @@ class Portfolio(object):
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self.prices.equals(other.prices) and self.weights == other.weights and self.meta == other.meta
+            return self.prices.equals(other.prices) and self.weights == other.weights
         return False
 
     def __ne__(self, other):

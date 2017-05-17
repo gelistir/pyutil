@@ -13,13 +13,16 @@ services:
   testdata:
      build:
        context: .
-       dockerfile: Dockerfile
+       dockerfile: Dockerfile-Test
 
      volumes:
-       - ./test/config.py:/pyutil/config.py
-       - ./test/resources:/pyutil/resources
+       - ./pyutil:/pyutil/pyutil
+       - ./test:/pyutil/test
+     #command: python /pyutil/config.py
 
-     command: python /pyutil/config.py
+     links:
+       - testmongo
 
-
+  testmongo:
+     image: mongo
 
