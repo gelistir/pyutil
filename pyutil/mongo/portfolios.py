@@ -52,11 +52,3 @@ class Portfolios(dict):
         # compute the periods
         offset = pp(today=frame.index[-1])
         return 100*frame.apply(pr, offset=offset).transpose()
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self.__portfolio == other.__portfolio
-        return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
