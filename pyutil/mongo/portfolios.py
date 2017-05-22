@@ -5,45 +5,16 @@ from pyutil.portfolio.portfolio import Portfolio
 from pyutil.timeseries.timeseries import ytd as yy, mtd as mm, adjust
 
 
-class Portfolios(object):
+class Portfolios(dict):
     """
     Dictionary of Portfolios
     """
-
-    def __init__(self):
-        self.__portfolio = dict()
-
-    def __getitem__(self, item):
-        # get a particular asset
-        return self.__portfolio[item]
-
     @property
     def empty(self):
         return len(self) == 0
 
-    def __len__(self):
-        return len(self.__portfolio)
-
-    def __setitem__(self, key, value):
-        assert isinstance(value, Portfolio)
-        self.__portfolio[key] = value
-
-    def keys(self):
-        return self.__portfolio.keys()
-
-    def items(self):
-        for k in self.keys():
-            yield (k, self[k])
-
     def nav(self, before=None):
         return pd.DataFrame({name: portfolio.nav for name, portfolio in self.items()}).truncate(before=before).apply(adjust)
-
-    #@property
-    #def strategies(self):
-    #    s = pd.DataFrame({name: portfolio.meta for name, portfolio in self.items()}).transpose()
-    #    if "time" in s.keys():
-    #        s["time"] = s["time"].apply(lambda t: t.strftime("%Y-%m-%d"))
-    #    return s
 
     def __repr__(self):
         return str.join("\n", [str(self[portfolio]) for portfolio in self.keys()])

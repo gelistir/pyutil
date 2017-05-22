@@ -19,7 +19,7 @@ class ConfigMaster(object):
 
         # the reader in action. Assets takes a list of Asset objects as argument
         self.__reader = reader
-        self.__assets = Assets([self.__reader(name) for name in names])
+        self.__assets = Assets({name: self.__reader(name) for name in names})
 
         # this dictionary can be manipulated from the child
         self.configuration = dict()

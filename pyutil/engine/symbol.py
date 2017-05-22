@@ -11,9 +11,9 @@ from pyutil.performance.summary import NavSeries
 
 def assets(names=None):
     if names:
-        return Assets([asset(name=name) for name in names])
+        return Assets({name : asset(name=name) for name in names})
     else:
-        return Assets([s.asset for s in Symbol.objects])
+        return Assets({s.name : s.asset for s in Symbol.objects})
 
 
 # we need this is for strategies

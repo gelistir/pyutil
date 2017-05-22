@@ -14,9 +14,9 @@ symbols = read_frame("symbols.csv")
 class TestAssets(TestCase):
     def test_assets_add(self):
         asset = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
-        assets = Assets([asset])
+        assets = Assets({asset.name: asset})
 
-        self.assertSetEqual(set(assets.names), {"Peter Maffay"})
+        self.assertSetEqual(set(assets.keys()), {"Peter Maffay"})
         pdt.assert_frame_equal(assets["Peter Maffay"].time_series, prices)
         pdt.assert_series_equal(assets["Peter Maffay"].reference, pd.Series(index=["a", "b"], data=[2.0, 3.0]))
 
@@ -34,21 +34,21 @@ class TestAssets(TestCase):
 
     def test_truncate(self):
         asset = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
-        assets = Assets([asset])
+        assets = Assets({"Peter Maffay": asset})
         a = assets.apply(f=lambda x: x.truncate(before=pd.Timestamp("2015-01-01"))).history["B"].dropna()
         self.assertEquals(a.index[0], pd.Timestamp("2015-01-02"))
 
     def test_sub(self):
         asset_a = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
         asset_b = Asset(name="Falco", data=prices, b=4.0, a=2.0)
-        assets = Assets([asset_a, asset_b])
+        assets = Assets({"Peter Maffay": asset_a, "Falco": asset_b})
         assets_sub = assets.sub(names=["Falco"])
         print(assets_sub)
 
     def test_tail(self):
         asset_a = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
         asset_b = Asset(name="Falco", data=prices, b=4.0, a=2.0)
-        assets = Assets([asset_a, asset_b])
+        assets = Assets({"Peter Maffay": asset_a, "Falco": asset_b})
         xxx = assets.tail(5)
         pdt.assert_frame_equal(xxx["Peter Maffay"].time_series, prices.tail(5))
         pdt.assert_series_equal(xxx["Peter Maffay"].reference, pd.Series({"b":3.0, "a": 2.0}))
@@ -64,11 +64,12 @@ class TestAssets(TestCase):
     def test_equals(self):
         asset_a = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
         asset_b = Asset(name="Falco", data=prices, b=4.0, a=2.0)
-        assets_1 = Assets([asset_a, asset_b])
+        assets_1 = Assets({"Peter Maffay": asset_a, "Falco": asset_b})
+
 
         asset_a = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
         asset_b = Asset(name="Falco", data=prices, b=4.0, a=2.0)
-        assets_2 = Assets([asset_a, asset_b])
+        assets_2 = Assets({"Peter Maffay": asset_a, "Falco": asset_b})
 
         self.assertTrue(assets_1 == assets_2)
         self.assertFalse(assets_1 != assets_2)
@@ -78,7 +79,7 @@ class TestAssets(TestCase):
         self.assertTrue("CHG_PCT_1D" in x.keys())
         asset_a = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
         asset_b = Asset(name="Falco", data=prices, b=4.0, a=2.0)
-        assets = Assets([asset_a, asset_b])
+        assets = Assets({"Peter Maffay": asset_a, "Falco": asset_b})
         xx = assets.reference_mapping(keys=["a","b"])
         self.assertEquals(xx["b"]["Falco"],4.0)
 

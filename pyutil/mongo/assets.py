@@ -10,57 +10,25 @@ def from_csv(file, ref_file):
     def __reader(name):
         return Asset(name=name, data=frame[name], **reference.ix[name].to_dict())
 
-    return Assets([__reader(asset) for asset in frame.keys().levels[0]])
+    return Assets({asset: __reader(asset) for asset in frame.keys().levels[0]})
 
 
-class Assets(object):
-    def __init__(self, assets):
-        """
-        Group of assets
-
-        :param assets:
-        """
-        self.__asset = dict()
-
-        for asset in assets:
-            assert isinstance(asset, Asset), "asset is of type {0}".format(type(asset))
-            self.__asset[asset.name] = asset
-
-    def __getitem__(self, item):
-        """ get a particular asset """
-        #
-        return self.__asset[item]
-
-    def __len__(self):
-        """ Number of assets """
-        return len(self.__asset)
-
-    @property
-    def names(self):
-        """ Keys of those assets """
-        return self.__asset.keys()
-
+class Assets(dict):
     def __repr__(self):
-        return str.join("\n", [str(self[asset]) for asset in self.names])
+        return str.join("\n", [str(self[asset]) for asset in self.keys()])
 
     @property
     def reference(self):
         """ reference data """
-        return pd.DataFrame({asset.name: asset.reference for asset in self}).transpose()
-
-    def __iter__(self):
-        for k in self.__asset.keys():
-            yield self[k]
+        return pd.DataFrame({name: asset.reference for name, asset in self.items()}).transpose()
 
     @property
     def history(self):
-        x = pd.concat({asset.name: asset.time_series for asset in self}, axis=1)
-        return x.swaplevel(axis=1)
+        return pd.concat({name: asset.time_series for name, asset in self.items()}, axis=1).swaplevel(axis=1)
 
     def apply(self, f):
         # apply a function f to each asset
-        return Assets(
-            [Asset(name=asset.name, data=f(asset.time_series), **asset.reference.to_dict()) for asset in self])
+        return Assets({name: Asset(name=name, data=f(asset.time_series), **asset.reference.to_dict()) for name, asset in self.items()})
 
     def to_csv(self, file, ref_file):
         # write time series data to a file
@@ -73,26 +41,16 @@ class Assets(object):
         """
         Extract a subgroup of assets
         """
-        return Assets([self[name] for name in names])
+        return Assets({name: self[name] for name in names})
 
     def tail(self, n):
         # swap levels, assets first, time series name second
         data = self.history.tail(n).swaplevel(axis=1)
-        return Assets(
-            [Asset(name=asset, data=data[asset], **self[asset].reference.to_dict()) for asset in data.keys().levels[0]])
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self.__asset == other.__asset
-        return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
+        return Assets({name : Asset(name=name, data=data[name], **self[name].reference.to_dict()) for name in self.keys()})
 
     @property
     def empty(self):
-        return len(self.__asset) == 0
-
+        return len(self) == 0
 
     def reference_mapping(self, keys, mapd=None):
         mapd = mapd or Assets.map_dict()
