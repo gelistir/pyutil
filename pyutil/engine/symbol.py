@@ -11,14 +11,17 @@ from pyutil.performance.summary import NavSeries
 
 def assets(names=None):
     if names:
-        return Assets({name : asset(name=name) for name in names})
+        return Assets({name: asset(name=name) for name in names})
     else:
-        return Assets({s.name : s.asset for s in Symbol.objects})
+        return Assets({s.name: s.asset for s in Symbol.objects})
 
 
 # we need this is for strategies
 def asset(name):
-    return Symbol.objects(name=name)[0].asset
+    try:
+        return Symbol.objects(name=name)[0].asset
+    except IndexError:
+        raise IndexError("The symbol {0} is unknown".format(name))
 
 
 def reference(names=None):

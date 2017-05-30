@@ -2,8 +2,7 @@ from unittest import TestCase
 
 import pandas as pd
 
-from pyutil.engine.symbol import Symbol, assets, reference, from_asset
-from pyutil.mongo.asset import Asset
+from pyutil.engine.symbol import Symbol, assets, reference, from_asset, asset
 from test.config import connect, test_asset
 import pandas.util.testing as pdt
 
@@ -55,6 +54,10 @@ class TestSymbol(TestCase):
         x = reference(names=["A"])
         print(x)
         self.assertEquals(x["group"]["A"],"Equity")
+
+    def test_unknown(self):
+        with self.assertRaises(Exception):
+            asset(name="XYZ")
 
 
 
