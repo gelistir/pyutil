@@ -59,6 +59,10 @@ class TestSymbol(TestCase):
         with self.assertRaises(Exception):
             asset(name="XYZ")
 
+    def test_last(self):
+        s = Symbol.objects(name="B")[0]
+        self.assertIsNone(s.last(name="PX_LASTO"))
+        self.assertEquals(s.last(name="PX_LAST"), pd.Timestamp("20150422"))
 
 
 

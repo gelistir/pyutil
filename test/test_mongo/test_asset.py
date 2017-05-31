@@ -52,7 +52,3 @@ class TestAsset(TestCase):
     def test_link(self):
         asset = Asset(name="Peter Maffay Equity", data=prices)
         self.assertEquals(asset.link, "<a href=http://www.bloomberg.com/quote/Peter:Maffay>Peter Maffay Equity</a>")
-
-    def test_last(self):
-        asset = Asset(name="Peter", data=pd.Series(index=[1,2,3], data=[1,2,3]))
-        self.assertEquals(asset.last(name="not there"), pd.Timestamp("2000-01-01"))

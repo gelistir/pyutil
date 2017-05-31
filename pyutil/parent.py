@@ -12,13 +12,15 @@ import time
 #         raise
 #     finally:
 #         log.debug("Bye")
+import pandas as pd
 
 
 class Parent(object):
     # see http://arnavk.com/posts/python-context-managers/
-    def __init__(self, log=None):
+    def __init__(self, log=None, width=None):
         self.__logger = log or logging.getLogger(__name__)
         self.__time = time.time()
+        pd.options.display.width = (width or 250)
 
     @property
     def logger(self):
@@ -36,4 +38,5 @@ class Parent(object):
             self.logger.exception(exc_val)
             return False
 
+        self.logger.info("Time elapsed: {0}".format(self.elapsed))
         return True

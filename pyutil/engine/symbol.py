@@ -42,7 +42,11 @@ class Symbol(Document):
 
     @property
     def asset(self):
-        return Asset(name=self.name, data=dict2frame(self.timeseries), **self.properties)
+        return Asset(name=self.name, data=self.ts, **self.properties)
+
+    @property
+    def ts(self):
+        return dict2frame(self.timeseries)
 
     def update_ts(self, ts, name="PX_LAST"):
         collection = self._get_collection()
@@ -55,6 +59,11 @@ class Symbol(Document):
 
         return Symbol.objects(name=self.name)[0]
 
-    def nav(self, name="PX_LAST"):
-        return NavSeries(self.asset.time_series[name])
+    #def nav(self, name="PX_LAST"):
+    #    return NavSeries(self.asset.time_series[name])
 
+    def last(self, name="PX_LAST"):
+        if name in self.timeseries.keys():
+            return self.ts[name].last_valid_index()
+        else:
+            return None

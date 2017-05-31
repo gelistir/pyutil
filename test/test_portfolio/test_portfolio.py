@@ -61,9 +61,10 @@ class TestPortfolio(TestCase):
         print((2 * portfolio).weights)
         pdt.assert_frame_equal(2 * portfolio.weights, (2 * portfolio).weights, check_names=False)
 
-    def test_plot(self):
-        x = portfolio.plot()
-        self.assertEqual(len(x.get_axes()), 3)
+
+    # def test_plot(self):
+    #     x = portfolio.plot()
+    #     self.assertEqual(len(x.get_axes()), 3)
 
     def test_iron_threshold(self):
         p1 = test_portfolio().iron_threshold(threshold=0.05)
