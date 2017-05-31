@@ -61,7 +61,6 @@ class TestSymbol(TestCase):
 
     def test_last(self):
         s = Symbol.objects(name="B")[0]
-        self.assertIsNone(s.last(name="PX_LASTO"))
         self.assertEquals(s.last(name="PX_LAST"), pd.Timestamp("20150422"))
 
 

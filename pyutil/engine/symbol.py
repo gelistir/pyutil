@@ -6,7 +6,6 @@ from mongoengine import *
 from pyutil.engine.aux import frame2dict, flatten, dict2frame
 from pyutil.mongo.asset import Asset
 from pyutil.mongo.assets import Assets
-from pyutil.performance.summary import NavSeries
 
 
 def assets(names=None):
@@ -59,11 +58,9 @@ class Symbol(Document):
 
         return Symbol.objects(name=self.name)[0]
 
-    #def nav(self, name="PX_LAST"):
-    #    return NavSeries(self.asset.time_series[name])
-
     def last(self, name="PX_LAST"):
         if name in self.timeseries.keys():
             return self.ts[name].last_valid_index()
         else:
-            return None
+            # return NAT
+            return pd.Timestamp("NaT")
