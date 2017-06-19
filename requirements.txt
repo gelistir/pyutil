@@ -4,3 +4,4 @@ xlrd
 jinja2
 xlsxwriter
 mongoengine
+quandl
