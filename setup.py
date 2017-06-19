@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pyutil',
-    version='1.9.79',
+    version='1.9.80',
     packages=find_packages(include=["pyutil*"]),
     author='Lobnek Wealth Management',
     author_email='thomas.schmelzer@lobnek.com',
