@@ -1,7 +1,5 @@
 from unittest import TestCase
 
-import pandas as pd
-
 from pyutil.engine.portfolio import Strat, portfolios, from_portfolio
 from test.config import test_portfolio, connect
 import pandas.util.testing as pdt
