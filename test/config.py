@@ -23,7 +23,7 @@ def test_portfolio():
     return Portfolio(prices=read_frame("price.csv"), weights=read_frame("weight.csv"))
 
 def test_asset(name="TEST FP Equity"):
-    return Asset(name=name, data=read_frame("price.csv")["B"], **read_frame("symbols.csv").ix["B"].to_dict())
+    return Asset(name=name, data=read_frame("price.csv")["B"], **read_frame("symbols.csv").loc["B"].to_dict())
 
 def connect():
     # this will connect to an empty database...

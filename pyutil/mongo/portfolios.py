@@ -21,7 +21,7 @@ class Portfolios(dict):
 
     def sector_weights(self, symbolmap):
         def f(x):
-            return x.ix[x.index[-1]]
+            return x.loc[x.index[-1]]
 
         return 100*pd.DataFrame({name: f(p.sector_weights(symbolmap)) for name, p in self.items()}).fillna(0.0).transpose()
 

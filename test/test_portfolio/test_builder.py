@@ -10,8 +10,8 @@ class TestPortfolioBuilder(TestCase):
         prices = pd.DataFrame(columns=["B", "A"], index=[1, 2], data=100)
 
         portfolio = Portfolio(prices=prices)
-        portfolio.weights.ix[1] = {"A": 0.5, "B": 0.5}
-        portfolio.weights.ix[2] = {"A": 0.3, "B": 0.7}
+        portfolio.weights.loc[1] = {"A": 0.5, "B": 0.5}
+        portfolio.weights.loc[2] = {"A": 0.3, "B": 0.7}
 
         self.assertEqual(portfolio.prices["A"][2], 100)
         self.assertEqual(portfolio.asset_returns["A"][2], 0.0)
@@ -23,7 +23,7 @@ class TestPortfolioBuilder(TestCase):
 
         portfolio = Portfolio(prices = prices)
 
-        portfolio.weights.ix[1] = {"A": 0.5, "B": 0.4}
+        portfolio.weights.loc[1] = {"A": 0.5, "B": 0.4}
 
         # forward the weights from the previous state
         portfolio.forward(2)

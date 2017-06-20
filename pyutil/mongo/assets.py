@@ -8,7 +8,7 @@ def from_csv(file, ref_file):
     reference = pd.read_csv(ref_file, index_col=0)
 
     def __reader(name):
-        return Asset(name=name, data=frame[name], **reference.ix[name].to_dict())
+        return Asset(name=name, data=frame[name], **reference.loc[name].to_dict())
 
     return Assets({asset: __reader(asset) for asset in frame.keys().levels[0]})
 

@@ -28,9 +28,9 @@ def subsample(ts, day=15, incl=False):
 
     # attach the latest point if isn't already contained
     if ts.index[-1] > dates.values[-1]:
-        return pd.concat((ts.ix[dates.values], ts.tail(1)), axis=0)
+        return pd.concat((ts.loc[dates.values], ts.tail(1)), axis=0)
     else:
-        return ts.ix[dates.values]
+        return ts.loc[dates.values]
 
 
 def adjust(ts: pd.Series) -> pd.Series:

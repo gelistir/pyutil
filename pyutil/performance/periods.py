@@ -49,7 +49,7 @@ def period_returns(returns, offset=None):
     p_returns = {key: __cumreturn(returns.truncate(before=period.start, after=period.end)) for key, period in offset.iteritems()}
 
     # preserve the order of the elements in the offset series
-    return pd.Series(p_returns).ix[offset.index]
+    return pd.Series(p_returns).loc[offset.index]
 
 
 

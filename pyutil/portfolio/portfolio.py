@@ -29,7 +29,7 @@ class Portfolio(object):
         """
         portfolio = self.copy()
         for yesterday, today in zip(self.index[:-2], self.index[1:-1]):
-            if (portfolio.weights.ix[today] - portfolio.weights.ix[yesterday]).abs().max() <= threshold:
+            if (portfolio.weights.loc[today] - portfolio.weights.loc[yesterday]).abs().max() <= threshold:
                 portfolio.forward(today, yesterday=yesterday)
 
         return portfolio
@@ -55,15 +55,15 @@ class Portfolio(object):
         # We move weights to t
         yesterday = yesterday or self.__before[t]
 
-        w1 = self.__weights.ix[yesterday].dropna()
+        w1 = self.__weights.loc[yesterday].dropna()
 
         # fraction of the cash in the portfolio yesterday
         cash = 1 - w1.sum()
 
         # new value of each position
-        value = w1 * (self.asset_returns.ix[t].fillna(0.0) + 1)
+        value = w1 * (self.asset_returns.loc[t].fillna(0.0) + 1)
 
-        self.weights.ix[t] = value / (value.sum() + cash)
+        self.weights.loc[t] = value / (value.sum() + cash)
 
         return self
 
@@ -76,7 +76,7 @@ class Portfolio(object):
         if isinstance(weights, pd.Series):
             w = pd.DataFrame(index=prices.index, columns=weights.keys())
             for t in w.index:
-                w.ix[t] = weights
+                w.loc[t] = weights
 
             weights = w
 
@@ -175,7 +175,7 @@ class Portfolio(object):
     @property
     def weight_current(self):
         w = self.weights.ffill()
-        a = w.ix[w.index[-1]]
+        a = w.loc[w.index[-1]]
         a.index.name = "weight"
         return a
 
@@ -192,7 +192,7 @@ class Portfolio(object):
             ["Month-to-Date", "Year-to-Date"]]
         t = self.trading_days[-n:]
 
-        b = self.weights.ffill().ix[t].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
+        b = self.weights.ffill().loc[t].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
         return pd.concat((a, b), axis=1)
 
     def top_flop(self, day_final=pd.Timestamp("today")):
@@ -211,7 +211,7 @@ class Portfolio(object):
 
     def tail(self, n=10):
         w = self.weights.tail(n)
-        p = self.prices.ix[w.index]
+        p = self.prices.loc[w.index]
         return Portfolio(p, w)
 
     @property
@@ -244,11 +244,11 @@ class Portfolio(object):
         old_position = pd.Series({asset: 0.0 for asset in self.assets})
 
         for trading_day in self.trading_days:
-            nav_today = nav.ix[trading_day]
-            p = prices.ix[trading_day]
+            nav_today = nav.loc[trading_day]
+            p = prices.loc[trading_day]
 
             # new goal position
-            pos = self.weights.ix[trading_day] * capital * nav_today / p
+            pos = self.weights.loc[trading_day] * capital * nav_today / p
             pos = pos.apply(xround, (n,))
 
             # compute the trade to get to position
@@ -259,7 +259,7 @@ class Portfolio(object):
             old_position = pos
 
             units = trade
-            amounts = units * p.ix[trade.index]
+            amounts = units * p.loc[trade.index]
             d[trading_day] = pd.DataFrame({"Amount": amounts, "Units": units})
 
         p = pd.concat(d)
@@ -281,14 +281,14 @@ class Portfolio(object):
             trade_events.append(today)
 
         # extract the weights at all those trade events
-        weights = self.weights.ffill().ix[trade_events].transpose()
+        weights = self.weights.ffill().loc[trade_events].transpose()
 
         # that's the portfolio where today has been forwarded to (from yesterday),
         p = Portfolio(prices=self.prices, weights=self.weights.copy()).forward(today)
 
         weights = 100.0 * weights.rename(columns=lambda x: x.strftime("%d-%b-%y"))
-        weights["Extrapolated"] = 100.0 * p.weights.ix[today]
-        weights["Gap"] = 100.0 * (self.weights.ix[today] - p.weights.ix[today])
+        weights["Extrapolated"] = 100.0 * p.weights.loc[today]
+        weights["Gap"] = 100.0 * (self.weights.loc[today] - p.weights.loc[today])
         return weights
 
     def plot(self, tradingDays=False, figsize=(16,10)):
@@ -335,14 +335,14 @@ class Portfolio(object):
     @property
     def trade_usd(self):
         # the amount of USD traded per asset on trading days
-        return self.trade_abs * self.prices.ix[self.trading_days]
+        return self.trade_abs * self.prices.loc[self.trading_days]
 
     @property
     def trade_rel(self):
         # the fraction of capital traded on trading days
-        return self.trade_usd.div(self.nav.ix[self.trading_days], axis=0)
+        return self.trade_usd.div(self.nav.loc[self.trading_days], axis=0)
 
     @property
     def trade_abs(self):
         # the number of shares (etc.) traded on trading days assuming a fundsize of 1
-        return (self.position.fillna(0.0).diff()).ix[self.trading_days]
+        return (self.position.fillna(0.0).diff()).loc[self.trading_days]
