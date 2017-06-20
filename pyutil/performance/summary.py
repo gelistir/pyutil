@@ -3,7 +3,6 @@ from collections import OrderedDict
 import pandas as pd
 import numpy as np
 
-from pyutil.timeseries.timeseries import adjust
 from .month import monthlytable
 from .drawdown import drawdown as dd, drawdown_periods as dp
 from .periods import period_returns, periods
@@ -176,7 +175,11 @@ class NavSeries(pd.Series):
         return period_returns(self.returns, periods(today=self.index[-1]))
 
     def adjust(self, value=100.0):
-        return NavSeries(adjust(self) * value)
+        #c = self.dropna()
+        #c = c/ c[c.dropna().index[0]]
+        first = self[self.dropna().index[0]]
+        return NavSeries(self * value / first)
+        #return NavSeries(adjust(self) * value)
 
     @property
     def monthly(self):

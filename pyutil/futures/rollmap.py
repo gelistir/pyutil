@@ -57,8 +57,5 @@ class _Rollmap(object):
     def __repr__(self):
         return str(pd.Series(index=self.__d.keys(), data=[self.__d[key].name for key in self.__d.keys()]))
 
-        #return str(self.__d)
-        #return str(pd.Series(self.__d))
-
     def __getitem__(self, item):
         return self.__d[item]

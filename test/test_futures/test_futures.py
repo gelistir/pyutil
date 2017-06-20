@@ -25,10 +25,6 @@ class TestFutures(TestCase):
         self.assertFalse("A" in f.gen_month)
 
 
-    def test_contracts_emtpy(self):
-        f = Futures(name="A", internal="A_internal").save()
-        self.assertListEqual(f.contracts(), [])
-
     def test_contracts(self):
         f = Futures(name="A", internal="A_internal", properties={"FUT_GEN_MONTH": "HMUZ"}).save()
 

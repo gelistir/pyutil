@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import copy
 
 from ..performance.summary import fromReturns
 from .maths import xround, buy_or_sell
