@@ -3,17 +3,28 @@ import pandas as pd
 from pyutil.mongo.asset import Asset
 
 
-def from_csv(file, ref_file):
-    frame = pd.read_csv(file, index_col=0, parse_dates=True, header=[0, 1])
-    reference = pd.read_csv(ref_file, index_col=0)
+class Assets(object):
+    def __init__(self, dict):
+        self.__assets = dict
 
-    def __reader(name):
-        return Asset(name=name, data=frame[name], **reference.loc[name].to_dict())
+    def __getitem__(self, item):
+        return self.__assets[item]
 
-    return Assets({asset: __reader(asset) for asset in frame.keys().levels[0]})
+    def items(self):
+        for name, asset in self.__assets.items():
+            yield name, asset
+
+    def keys(self):
+        return self.__assets.keys()
+
+    @property
+    def empty(self):
+        return self.len() == 0
+
+    def len(self):
+        return len(self.__assets)
 
 
-class Assets(dict):
     def __repr__(self):
         return str.join("\n", [str(self[asset]) for asset in self.keys()])
 
@@ -30,12 +41,12 @@ class Assets(dict):
         # apply a function f to each asset
         return Assets({name: Asset(name=name, data=f(asset.time_series), **asset.reference.to_dict()) for name, asset in self.items()})
 
-    def to_csv(self, file, ref_file):
-        # write time series data to a file
-        pd.concat({asset.name: asset.time_series for asset in self}, axis=1).to_csv(file)
+    #def to_csv(self, file, ref_file):
+    #    # write time series data to a file
+    #    pd.concat({asset.name: asset.time_series for asset in self}, axis=1).to_csv(file)
 
         # write reference data to a file
-        self.reference.to_csv(ref_file)
+    #    self.reference.to_csv(ref_file)
 
     def sub(self, names):
         """
@@ -47,10 +58,6 @@ class Assets(dict):
         # swap levels, assets first, time series name second
         data = self.history.tail(n).swaplevel(axis=1)
         return Assets({name : Asset(name=name, data=data[name], **self[name].reference.to_dict()) for name in self.keys()})
-
-    @property
-    def empty(self):
-        return len(self) == 0
 
     def reference_mapping(self, keys, mapd=None):
         mapd = mapd or Assets.map_dict()
@@ -79,3 +86,6 @@ class Assets(dict):
         map_dict["VOLATILITY_20D"] = lambda x: pd.to_numeric(x)
         map_dict["VOLATILITY_260D"] = lambda x: pd.to_numeric(x)
         return map_dict
+
+    def __eq__(self, other):
+        return self.__assets == other.__assets

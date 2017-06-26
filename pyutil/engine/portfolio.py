@@ -2,41 +2,28 @@ import pandas as pd
 
 from mongoengine import *
 
-from pyutil.engine.aux import flatten, dict2frame, frame2dict
+from pyutil.engine.aux import flatten, frame2dict
 from pyutil.mongo.portfolios import Portfolios
 from pyutil.portfolio.portfolio import Portfolio
 
 
 def portfolios(names=None):
-    p = Portfolios()
     if names:
-        for name in names:
-            p[name] = Strat.objects(name=name)[0].portfolio
+        return Portfolios({name: Strat.objects(name=name)[0].portfolio for name in names})
     else:
-        for strategy in Strat.objects:
-            p[strategy.name] = strategy.portfolio
-    return p
-
-
-def from_portfolio(portfolio, name, group, time=pd.Timestamp("now"), source=""):
-    return Strat(name=name, weights=frame2dict(portfolio.weights), prices=frame2dict(portfolio.prices), group=group, time=time, source=source)
+        return Portfolios({strategy.name: strategy.portfolio for strategy in Strat.objects})
 
 
 def update_incremental(portfolio, name, group, source, n=5):
     # full write access here...
+    s = Strat.objects(name=name).update_one(name=name, group=group, source=source, time=pd.Timestamp("now"), upsert=True)
+    s.reload()
 
-    s = Strat.objects(name=name)
-    if len(s) == 0:
-        p = from_portfolio(portfolio=portfolio, name=name, group=group, source=source)
-        p.save()
-    else:
-        object = s[0]
-        object.update(time=pd.Timestamp("now"), source=source, group=group)
-
-        # truncate the portfolio...
-        last_valid = object.portfolio.index[-n]
+    if not s.weights == {}:
+        last_valid = s.portfolio.index[-n]
         portfolio = portfolio.truncate(before=last_valid + pd.DateOffset(seconds=1))
-        object.update_portfolio(portfolio=portfolio)
+
+    s.update_portfolio(portfolio=portfolio)
 
 
 class Strat(Document):
@@ -55,9 +42,6 @@ class Strat(Document):
             return x
 
         x = Portfolio(prices=f(self.prices), weights=f(self.weights))
-        #x.meta["group"] = self.group
-        #x.meta["comment"] = self.source
-        #x.meta["time"] = self.time
         return x
 
     def update_portfolio(self, portfolio):

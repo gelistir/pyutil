@@ -1,23 +1,38 @@
 import pandas as pd
 
 from pyutil.performance.periods import periods as pp, period_returns as pr
-from pyutil.portfolio.portfolio import Portfolio
 from pyutil.timeseries.timeseries import ytd as yy, mtd as mm, adjust
 
 
-class Portfolios(dict):
+class Portfolios(object):
     """
     Dictionary of Portfolios
     """
+    def __init__(self, dict):
+        self.__portfolios = dict
+
+    def __getitem__(self, item):
+        return self.__portfolios[item]
+
+    def items(self):
+        for name, portfolio in self.__portfolios.items():
+            yield name, portfolio
+
+    def keys(self):
+        return self.__portfolios.keys()
+
     @property
     def empty(self):
-        return len(self) == 0
+        return len(self.__portfolios) == 0
+
+    def len(self):
+        return len(self.__portfolios)
 
     def nav(self, before=None):
         return pd.DataFrame({name: portfolio.nav for name, portfolio in self.items()}).truncate(before=before).apply(adjust)
 
     def __repr__(self):
-        return str.join("\n", [str(self[portfolio]) for portfolio in self.keys()])
+        return str.join("\n", [str(self[portfolio]) for portfolio in self.__portfolios.keys()])
 
     def sector_weights(self, symbolmap):
         def f(x):

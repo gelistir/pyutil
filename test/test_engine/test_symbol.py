@@ -2,24 +2,24 @@ from unittest import TestCase
 
 import pandas as pd
 
-from pyutil.engine.symbol import Symbol, assets, reference, from_asset, asset
+from pyutil.engine.aux import frame2dict
+from pyutil.engine.symbol import Symbol, assets, reference, asset
 from test.config import connect, test_asset
 import pandas.util.testing as pdt
 
 class TestSymbol(TestCase):
+
     @classmethod
     def setUpClass(cls):
+
+        def from_asset(asset):
+            return Symbol(name=asset.name, properties=asset.reference.to_dict(),
+                          timeseries=frame2dict(asset.time_series))
+
         connect()
+
         from_asset(asset=test_asset(name="A")).save()
         from_asset(asset=test_asset(name="B")).save()
-
-
-        # Create a text-based post
-        #sym1 = Symbol(name="XYZ", properties={"A": 5})
-        #sym1.save()
-
-        #sym2 = Symbol(name="aaa", properties={"A": 2, "C": "hah"})
-        #sym2.save()
 
     @classmethod
     def tearDownClass(cls):
@@ -41,18 +41,16 @@ class TestSymbol(TestCase):
 
     def test_assets(self):
         x = assets()
-        self.assertEquals(len(x), 2)
+        self.assertEquals(x.len(), 2)
 
         x = assets(names=["A"])
-        self.assertEquals(len(x), 1)
+        self.assertEquals(x.len(), 1)
 
     def test_reference(self):
         x = reference()
-        print(x)
         self.assertEquals(x["group"]["A"],"Equity")
 
         x = reference(names=["A"])
-        print(x)
         self.assertEquals(x["group"]["A"],"Equity")
 
     def test_unknown(self):

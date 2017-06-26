@@ -4,11 +4,21 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.mongo.asset import Asset
-from pyutil.mongo.assets import Assets, from_csv
+from pyutil.mongo.assets import Assets
 from test.config import read_frame, resource
 
 prices = read_frame("price.csv", parse_dates=True)
 symbols = read_frame("symbols.csv")
+
+
+def from_csv(file, ref_file):
+    frame = pd.read_csv(file, index_col=0, parse_dates=True, header=[0, 1])
+    reference = pd.read_csv(ref_file, index_col=0)
+
+    def __reader(name):
+        return Asset(name=name, data=frame[name], **reference.loc[name].to_dict())
+
+    return Assets({asset: __reader(asset) for asset in frame.keys().levels[0]})
 
 
 class TestAssets(TestCase):
@@ -20,7 +30,7 @@ class TestAssets(TestCase):
         pdt.assert_frame_equal(assets["Peter Maffay"].time_series, prices)
         pdt.assert_series_equal(assets["Peter Maffay"].reference, pd.Series(index=["a", "b"], data=[2.0, 3.0]))
 
-        self.assertEquals(len(assets), 1)
+        self.assertEquals(assets.len(), 1)
 
         pdt.assert_frame_equal(assets.reference, pd.DataFrame(index=["Peter Maffay"], columns=["a", "b"], data=[[2.0, 3.0]]))
 

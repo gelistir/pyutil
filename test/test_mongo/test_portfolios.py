@@ -9,9 +9,7 @@ symbols = read_frame("symbols.csv")
 class TestPortfolios(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.portfolios = Portfolios()
-        p = test_portfolio()
-        cls.portfolios["test"] = p
+        cls.portfolios = Portfolios({"test": test_portfolio()})
 
     def test_assets_add(self):
         r = self.portfolios.nav()["test"]

@@ -30,10 +30,6 @@ def reference(names=None):
         return pd.DataFrame({s.name: s.properties for s in Symbol.objects}).transpose()
 
 
-def from_asset(asset):
-    return Symbol(name=asset.name, properties=asset.reference.to_dict(), timeseries = frame2dict(asset.time_series))
-
-
 class Symbol(Document):
     name = StringField(required=True, max_length=200, unique=True)
     properties = DictField()
@@ -60,7 +56,7 @@ class Symbol(Document):
 
     def last(self, name="PX_LAST"):
         if name in self.timeseries.keys():
-            return self.ts[name].last_valid_index()
+            return pd.Timestamp(sorted(self.timeseries[name].keys())[-1])
         else:
             # return NAT
             return pd.Timestamp("NaT")
