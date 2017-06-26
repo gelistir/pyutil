@@ -57,4 +57,3 @@ class Strat(Document):
                                               upsert=True)
 
         return Strat.objects(name=self.name)[0]
-
