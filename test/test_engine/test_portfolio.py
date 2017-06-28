@@ -12,8 +12,8 @@ class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
         connect()
-        portfolio(name="strat1").update(weights=frame2dict(p.weights), prices=frame2dict(p.prices), group="A")
-        portfolio(name="strat2").update(weights=frame2dict(p.weights), prices=frame2dict(p.prices), group="A")
+        portfolio(name="strat1", upsert=True).update(weights=frame2dict(p.weights), prices=frame2dict(p.prices), group="A")
+        portfolio(name="strat2", upsert=True).update(weights=frame2dict(p.weights), prices=frame2dict(p.prices), group="A")
 
     @classmethod
     def tearDownClass(cls):

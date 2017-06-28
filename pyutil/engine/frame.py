@@ -5,15 +5,11 @@ from io import BytesIO
 
 
 def store(name, object, metadata=None):
-    f = load(name)
-    f.put(frame=object)
-    f.update(metadata=metadata)
-    f.reload()
-    return f
-
+    Frame.objects(name=name).update_one(name=name, metadata=metadata, upsert=True)
+    return load(name).put(frame=object)
 
 def load(name):
-    Frame.objects(name=name).update_one(name=name, upsert=True)
+    # this will return None if the Frame does not exist!
     return Frame.objects(name=name).first()
 
 
@@ -44,3 +40,4 @@ class Frame(Document):
             self.data.close()
 
         self.save()
+        return self.reload()

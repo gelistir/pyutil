@@ -15,10 +15,10 @@ class TestSymbol(TestCase):
         connect()
 
         asset = test_asset(name="A")
-        symbol(name="A").update(properties=asset.reference.to_dict(), timeseries=frame2dict(asset.time_series))
+        symbol(name="A", upsert=True).update(properties=asset.reference.to_dict(), timeseries=frame2dict(asset.time_series))
 
         asset = test_asset(name="B")
-        symbol(name="B").update(properties=asset.reference.to_dict(), timeseries=frame2dict(asset.time_series))
+        symbol(name="B", upsert=True).update(properties=asset.reference.to_dict(), timeseries=frame2dict(asset.time_series))
 
     @classmethod
     def tearDownClass(cls):
@@ -54,7 +54,8 @@ class TestSymbol(TestCase):
 
     def test_unknown(self):
         with self.assertRaises(Exception):
-            asset(name="XYZ")
+            x = asset(name="XYZ")
+            print(x)
 
     def test_last(self):
         s = symbol(name="B")

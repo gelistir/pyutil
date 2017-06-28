@@ -15,13 +15,6 @@ def assets(names=None):
         return Assets({s.name: s.asset for s in Symbol.objects})
 
 
-# we need this is for strategies
-def asset(name):
-    try:
-        return Symbol.objects(name=name)[0].asset
-    except IndexError:
-        raise IndexError("The symbol {0} is unknown".format(name))
-
 
 def reference(names=None):
     if names:
@@ -30,9 +23,18 @@ def reference(names=None):
         return pd.DataFrame({s.name: s.properties for s in Symbol.objects}).transpose()
 
 
-def symbol(name):
-    Symbol.objects(name=name).update_one(name=name, upsert=True)
-    return Symbol.objects(name=name).first()
+def symbol(name, upsert=False):
+    if upsert:
+        Symbol.objects(name=name).update_one(name=name, upsert=True)
+
+    s = Symbol.objects(name=name).first()
+    assert s, "The asset {name} is unknown".format(name=name)
+    return s
+
+# we need this is for strategies
+def asset(name):
+    return symbol(name=name).asset
+
 
 class Symbol(Document):
     name = StringField(required=True, max_length=200, unique=True)
@@ -56,7 +58,8 @@ class Symbol(Document):
         else:
             warnings.warn("No data in update for {asset}".format(asset=self.name))
 
-        return Symbol.objects(name=self.name)[0]
+        self.reload()
+        return self
 
     def last(self, name="PX_LAST"):
         if name in self.timeseries.keys():

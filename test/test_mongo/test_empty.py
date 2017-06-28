@@ -23,11 +23,11 @@ class TestMongoArchive(TestCase):
         self.assertTrue(p.empty)
 
     def test_asset_builder(self):
-        with self.assertRaises(IndexError):
+        with self.assertRaises(AssertionError):
             assets(names=["a"])
 
     def test_portfolio_builder(self):
-        with self.assertRaises(IndexError):
+        with self.assertRaises(AssertionError):
             portfolios(names=["a"])
 
 

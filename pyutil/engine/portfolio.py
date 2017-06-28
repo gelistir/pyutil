@@ -9,26 +9,29 @@ from pyutil.portfolio.portfolio import Portfolio
 
 def portfolios(names=None):
     if names:
-        return Portfolios({name: Strat.objects(name=name)[0].portfolio for name in names})
+        return Portfolios({name: portfolio(name).portfolio for name in names})
     else:
         return Portfolios({strategy.name: strategy.portfolio for strategy in Strat.objects})
 
 
 def update_incremental(portfolio, name, group, source, n=5):
     # full write access here...
-    s = Strat.objects(name=name).update_one(name=name, group=group, source=source, time=pd.Timestamp("now"), upsert=True)
+    s = portfolio(name, upsert=True).update_one(name=name, group=group, source=source, time=pd.Timestamp("now"), upsert=True)
     s.reload()
 
-    if not s.weights == {}:
+    if not s.empty:
         last_valid = s.portfolio.index[-n]
         portfolio = portfolio.truncate(before=last_valid + pd.DateOffset(seconds=1))
 
     s.update_portfolio(portfolio=portfolio)
 
 
-def portfolio(name):
-    Strat.objects(name=name).update_one(name=name, upsert=True)
-    return Strat.objects(name=name).first()
+def portfolio(name, upsert=False):
+    if upsert:
+        Strat.objects(name=name).update_one(name=name, upsert=True)
+    s = Strat.objects(name=name).first()
+    assert s, "The Portfolio {name} is unknown".format(name=name)
+    return s
 
 
 class Strat(Document):
@@ -49,11 +52,15 @@ class Strat(Document):
         x = Portfolio(prices=f(self.prices), weights=f(self.weights))
         return x
 
+    @property
+    def empty(self):
+        return self.weights == {} and self.prices == {}
+
     def update_portfolio(self, portfolio):
         if not portfolio.empty:
             w = frame2dict(portfolio.weights)
             p = frame2dict(portfolio.prices)
-            if self.weights == {} and self.prices == {}:
+            if self.empty:
                 # fresh data...
                 self.update(weights=w, prices=p)
             else:
@@ -61,4 +68,8 @@ class Strat(Document):
                                               {"$set": flatten({**{"weights": w}, **{"prices": p}})},
                                               upsert=True)
 
-        return Strat.objects(name=self.name)[0]
+            self.reload()
+
+        return self
+
+        #return Strat.objects(name=self.name).first()
