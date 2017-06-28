@@ -1,29 +1,19 @@
 from unittest import TestCase
 
-import pandas as pd
-
 from pyutil.engine.aux import frame2dict
-from pyutil.engine.portfolio import Strat, portfolios
+from pyutil.engine.portfolio import Strat, portfolios, portfolio
 from test.config import test_portfolio, connect
 import pandas.util.testing as pdt
 
-portfolio = test_portfolio()
+p = test_portfolio()
 
 
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-
-        def from_portfolio(portfolio, name, group, time=pd.Timestamp("now"), source=""):
-            return Strat(name=name, weights=frame2dict(portfolio.weights), prices=frame2dict(portfolio.prices),
-                         group=group, time=time, source=source)
-
-
         connect()
-
-        from_portfolio(name="strat1", portfolio=portfolio, group="A").save()
-        from_portfolio(name="strat2", portfolio=portfolio, group="A").save()
-
+        portfolio(name="strat1").update(weights=frame2dict(p.weights), prices=frame2dict(p.prices), group="A")
+        portfolio(name="strat2").update(weights=frame2dict(p.weights), prices=frame2dict(p.prices), group="A")
 
     @classmethod
     def tearDownClass(cls):
@@ -33,9 +23,9 @@ class TestPortfolio(TestCase):
         assert Strat.objects.count() == 2
 
     def test_update(self):
-        s = Strat.objects(name="strat1")[0]
-        x = s.update_portfolio((2*portfolio).tail(10))
-        pdt.assert_frame_equal(2*portfolio.weights.tail(10), x.portfolio.weights.tail(10))
+        s = portfolio(name="strat1")
+        x = s.update_portfolio((2 * p).tail(10))
+        pdt.assert_frame_equal(2 * p.weights.tail(10), x.portfolio.weights.tail(10))
 
     def test_portfolios(self):
         x = portfolios()

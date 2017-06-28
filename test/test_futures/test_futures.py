@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import pandas as pd
 
-from pyutil.futures.futures import Futures, Contracts
+from pyutil.futures.futures import Futures, Contracts, futures
 
 # An empty database requires special care, we do that here...
 from test.config import connect
@@ -26,7 +26,9 @@ class TestFutures(TestCase):
 
 
     def test_contracts(self):
-        f = Futures(name="A", internal="A_internal", properties={"FUT_GEN_MONTH": "HMUZ"}).save()
+        futures(name="A").update(internal="A_internal", properties={"FUT_GEN_MONTH": "HMUZ"})
+        f = futures(name="A")
+        #f = Futures(name="A", internal="A_internal", properties={"FUT_GEN_MONTH": "HMUZ"}).save()
 
         c1 = Contracts(future=f, name="A_1", figi="1", notice=pd.Timestamp("2010-01-01"), properties={"FUT_MONTH_YR": "MAR 07"}).save()
         c2 = Contracts(future=f, name="A_2", figi="2", notice=pd.Timestamp("2011-01-01"), properties={"FUT_MONTH_YR": "JUN 07"}).save()

@@ -26,13 +26,18 @@ def update_incremental(portfolio, name, group, source, n=5):
     s.update_portfolio(portfolio=portfolio)
 
 
+def portfolio(name):
+    Strat.objects(name=name).update_one(name=name, upsert=True)
+    return Strat.objects(name=name).first()
+
+
 class Strat(Document):
     name = StringField(required=True, max_length=200, unique=True)
     group = StringField(max_length=200)
     weights = DictField()
     prices = DictField()
-    time = DateTimeField()
-    source = StringField()
+    time = DateTimeField(default=pd.Timestamp("now"))
+    source = StringField(default="")
 
     @property
     def portfolio(self):

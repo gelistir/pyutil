@@ -9,6 +9,11 @@ from pyutil.engine.aux import dict2frame, flatten, frame2dict
 from pyutil.futures.rollmap import roll_builder
 
 
+def futures(name):
+    Futures.objects(name=name).update_one(name=name, upsert=True)
+    return Futures.objects(name=name).first()
+
+
 class Futures(db.Document):
     name = db.StringField(required=True, max_length=200, unique=True)
     internal = db.StringField(required=True, max_length=200)

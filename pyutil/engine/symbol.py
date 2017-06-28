@@ -30,6 +30,10 @@ def reference(names=None):
         return pd.DataFrame({s.name: s.properties for s in Symbol.objects}).transpose()
 
 
+def symbol(name):
+    Symbol.objects(name=name).update_one(name=name, upsert=True)
+    return Symbol.objects(name=name).first()
+
 class Symbol(Document):
     name = StringField(required=True, max_length=200, unique=True)
     properties = DictField()
