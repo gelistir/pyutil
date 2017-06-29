@@ -3,24 +3,9 @@ import warnings
 import pandas as pd
 from mongoengine import *
 
-from pyutil.engine.aux import frame2dict, flatten, dict2frame
+from pyutil.engine.aux import flatten, dict2frame
 from pyutil.mongo.asset import Asset
 from pyutil.mongo.assets import Assets
-
-
-def assets(names=None):
-    if names:
-        return Assets({name: asset(name=name) for name in names})
-    else:
-        return Assets({s.name: s.asset for s in Symbol.objects})
-
-
-
-def reference(names=None):
-    if names:
-        return pd.DataFrame({name: Symbol.objects(name=name)[0].properties for name in names}).transpose()
-    else:
-        return pd.DataFrame({s.name: s.properties for s in Symbol.objects}).transpose()
 
 
 def symbol(name, upsert=False):
@@ -31,9 +16,28 @@ def symbol(name, upsert=False):
     assert s, "The asset {name} is unknown".format(name=name)
     return s
 
+
+def assets(names=None):
+    if names:
+        return Assets({name: symbol(name=name).asset for name in names})
+    else:
+        return Assets({s.name: s.asset for s in Symbol.objects})
+
+
+def reference(names=None):
+    if names:
+        return pd.DataFrame({name: symbol(name=name).properties for name in names}).transpose()
+    else:
+        return pd.DataFrame({s.name: s.properties for s in Symbol.objects.only('name','properties')}).transpose()
+
+
 # we need this is for strategies
 def asset(name):
     return symbol(name=name).asset
+
+
+def frame(timeseries="PX_LAST", names=None):
+    return assets(names=names).history[timeseries]
 
 
 class Symbol(Document):
@@ -50,20 +54,26 @@ class Symbol(Document):
         return dict2frame(self.timeseries)
 
     def update_ts(self, ts, name="PX_LAST"):
+        """
+        Update a time series in the time series dicitionary. Index should already be a string
+
+        :param ts: ts is a timeseries
+        :param name: name of the timeseries in the timeseries dictionary
+        :return:
+        """
         collection = self._get_collection()
-        m = {"name": self.name}
         ts = ts.dropna()
         if len(ts) > 0:
-            collection.update(m, {"$set": flatten({"timeseries": {name: ts.to_dict()}})}, upsert=True)
+            collection.update({"name": self.name}, {"$set": flatten({"timeseries": {name: ts.to_dict()}})}, upsert=True)
         else:
             warnings.warn("No data in update for {asset}".format(asset=self.name))
 
-        self.reload()
-        return self
+        return self.reload()
 
-    def last(self, name="PX_LAST"):
-        if name in self.timeseries.keys():
-            return pd.Timestamp(sorted(self.timeseries[name].keys())[-1])
-        else:
-            # return NAT
-            return pd.Timestamp("NaT")
+    def update_ref(self, ref):
+        self._get_collection().update({"name": self.name}, {"$set": flatten({"properties": ref})})
+        return self.reload()
+
+
+    def __repr__(self):
+        return "{name}: {prop}".format(name=self.name, prop=self.properties)
