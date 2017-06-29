@@ -10,7 +10,7 @@ from pyutil.futures.rollmap import roll_builder
 
 
 def futures(name):
-    Futures.objects(name=name).update_one(name=name, upsert=True)
+    # internal is required
     return Futures.objects(name=name).first()
 
 

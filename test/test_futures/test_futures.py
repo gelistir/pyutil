@@ -26,8 +26,8 @@ class TestFutures(TestCase):
 
 
     def test_contracts(self):
-        futures(name="A").update(internal="A_internal", properties={"FUT_GEN_MONTH": "HMUZ"})
-        f = futures(name="A")
+        f = Futures(name="A", internal="A_internal", properties={"FUT_GEN_MONTH": "HMUZ"}).save()
+
         #f = Futures(name="A", internal="A_internal", properties={"FUT_GEN_MONTH": "HMUZ"}).save()
 
         c1 = Contracts(future=f, name="A_1", figi="1", notice=pd.Timestamp("2010-01-01"), properties={"FUT_MONTH_YR": "MAR 07"}).save()
