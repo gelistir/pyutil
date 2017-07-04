@@ -14,18 +14,6 @@ def portfolios(names=None):
         return Portfolios({strategy.name: strategy.portfolio for strategy in Strat.objects})
 
 
-def update_incremental(portfolio, name, group, source, n=5):
-    # full write access here...
-    s = portfolio(name, upsert=True).update_one(name=name, group=group, source=source, time=pd.Timestamp("now"), upsert=True)
-    s.reload()
-
-    if not s.empty:
-        last_valid = s.portfolio.index[-n]
-        portfolio = portfolio.truncate(before=last_valid + pd.DateOffset(seconds=1))
-
-    s.update_portfolio(portfolio=portfolio)
-
-
 def portfolio(name, upsert=False):
     if upsert:
         Strat.objects(name=name).update_one(name=name, upsert=True)
@@ -49,8 +37,8 @@ class Strat(Document):
             x.index = [pd.Timestamp(a) for a in x.index]
             return x
 
-        x = Portfolio(prices=f(self.prices), weights=f(self.weights))
-        return x
+        return Portfolio(prices=f(self.prices), weights=f(self.weights))
+
 
     @property
     def empty(self):
@@ -65,11 +53,6 @@ class Strat(Document):
                 self.update(weights=w, prices=p)
             else:
                 self._get_collection().update({"name": self.name},
-                                              {"$set": flatten({**{"weights": w}, **{"prices": p}})},
-                                              upsert=True)
+                                              {"$set": flatten({**{"weights": w}, **{"prices": p}})})
 
-            self.reload()
-
-        return self
-
-        #return Strat.objects(name=self.name).first()
+        return self.reload()
