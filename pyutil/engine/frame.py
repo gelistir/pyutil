@@ -1,15 +1,22 @@
+import logging
 import pandas as pd
 from mongoengine import Document, StringField, FileField, DictField
 
 from io import BytesIO
 
 
-def store(name, object, metadata=None):
+def store(name, pandas_object, metadata=None, logger=None):
+    logger = logger or logging.getLogger(__name__)
+    logger.debug("Update frame object {name}".format(name=name))
     Frame.objects(name=name).update_one(name=name, metadata=metadata, upsert=True)
-    return load(name).put(frame=object)
+    logger.debug("Store pandas object in frame object {name}".format(name=name))
+    return load(name).put(frame=pandas_object)
 
-def load(name):
+
+def load(name, logger=None):
+    logger = logger or logging.getLogger(__name__)
     # this will return None if the Frame does not exist!
+    logger.debug("Load frame object {name}".format(name=name))
     return Frame.objects(name=name).first()
 
 
@@ -19,14 +26,27 @@ class Frame(Document):
     data = FileField()
     metadata = DictField(default={})
 
+    def __decode(self):
+        return BytesIO(self.data.read()).read().decode()
+
+    def __read_json(self, typ="frame"):
+        return pd.read_json(self.__decode(), typ=typ, orient="split")
+
     @property
     def frame(self):
-        str_data = BytesIO(self.data.read()).read().decode()
+        """
+        Return the pandas DataFrame object
+        :return:
+        """
+        return self.__read_json(typ="frame")
 
-        try:
-            return pd.read_json(str_data, typ="frame", orient="split")
-        except ValueError:
-            return pd.read_json(str_data, typ="series", orient="split")
+    @property
+    def series(self):
+        """
+        Return the pandas Series object
+        :return:
+        """
+        return self.__read_json(typ="series")
 
     def __str__(self):
         return "{name}: \n{frame}".format(name=self.name, frame=self.frame)

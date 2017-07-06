@@ -39,7 +39,6 @@ class Strat(Document):
 
         return Portfolio(prices=f(self.prices), weights=f(self.weights))
 
-
     @property
     def empty(self):
         return self.weights == {} and self.prices == {}

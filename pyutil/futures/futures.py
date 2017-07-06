@@ -52,11 +52,14 @@ class Futures(db.Document):
 
         return list(new_contracts)
 
-    def contracts(self, only_liquid=True):
+    def contracts(self, only_liquid=True, before=None):
         cs = sorted(Contracts.objects(future = self), key=attrgetter("notice"))
 
         if only_liquid:
             return [c for c in cs if c.month_x in self.gen_month]
+
+        if before:
+            return [c for c in cs if c.notice <= before]
 
         return cs
 
