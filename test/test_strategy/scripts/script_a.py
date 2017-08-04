@@ -12,11 +12,3 @@ class Configuration(ConfigMaster):
         # extract the assets (using the reader)
         p = self.assets.history["PX_LAST"]
         return Portfolio(p, weights=pd.DataFrame(index=p.index, columns=p.keys(), data=1.0 / 3.0))
-
-    @property
-    def name(self):
-        return "test_a"
-
-    @property
-    def group(self):
-        return "testgroup_a"

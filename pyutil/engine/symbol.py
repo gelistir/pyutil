@@ -40,6 +40,10 @@ def frame(timeseries="PX_LAST", names=None):
     return assets(names=names).history[timeseries]
 
 
+def names():
+    return set([s.name for s in Symbol.objects.only('name')])
+
+
 class Symbol(Document):
     name = StringField(required=True, max_length=200, unique=True)
     properties = DictField()

@@ -29,7 +29,7 @@ class TestSymbol(TestCase):
         Symbol.drop_collection()
 
     def test_count(self):
-        assert Symbol.objects.count()==2
+        assert Symbol.objects.count()==3
 
     def test_update_ts_warning(self):
         s = symbol(name="A")
@@ -49,7 +49,7 @@ class TestSymbol(TestCase):
 
     def test_assets(self):
         x = assets()
-        self.assertEquals(x.len(), 2)
+        self.assertEquals(x.len(), 3)
 
         x = assets(names=["A"])
         self.assertEquals(x.len(), 1)

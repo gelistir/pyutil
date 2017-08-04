@@ -30,18 +30,8 @@ class ConfigMaster(object):
     def __repr__(self, *args, **kwargs):
         return 'Name: {0}, Group: {1}'.format(self.name, self.group)
 
-    @property
-    @abc.abstractmethod
-    def group(self)->str:
-        """ Group of the configuration """
-        return
 
     @property
-    @abc.abstractmethod
-    def name(self)-> str:
-        """ Name of the Configuration """
-        return
-
     @abc.abstractmethod
     def portfolio(self):
         """ Portfolio described by the Configuration """
