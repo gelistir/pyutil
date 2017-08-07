@@ -6,7 +6,7 @@ from mongoengine import *
 from pyutil.engine.aux import flatten, dict2frame
 from pyutil.mongo.asset import Asset
 from pyutil.mongo.assets import Assets
-
+from pymongo import UpdateOne
 
 def symbol(name, upsert=False):
     if upsert:
@@ -44,19 +44,25 @@ def names():
     return set([s.name for s in Symbol.objects.only('name')])
 
 
-def bulk_update(frame):
+def bulk_update_ref(frame):
     bulk_operations = []
-
-    from pymongo import UpdateOne
 
     # update now for all assets the dynamic fields
     for asset, row in frame.iterrows():
-        u = UpdateOne({"name": asset}, {'$set': flatten({"properties": row.to_dict()})})
-        bulk_operations.append(u)
+        bulk_operations.append(UpdateOne({"name": asset}, {'$set': flatten({"properties": row.to_dict()})}, upsert=True))
 
     Symbol._get_collection().bulk_write(bulk_operations, ordered=False)
 
 
+def bulk_update_ts(frame, field):
+    bulk_operations = []
+
+    for asset, data in frame.items():
+        data = data.dropna()
+        if len(data) > 0:
+            bulk_operations.append(UpdateOne({"name": asset}, {'$set': flatten({"timeseries": {field: data.to_dict()}})}, upsert=True))
+
+    Symbol._get_collection().bulk_write(bulk_operations, ordered=False)
 
 class Symbol(Document):
     name = StringField(required=True, max_length=200, unique=True)

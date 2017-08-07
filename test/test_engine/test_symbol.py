@@ -3,8 +3,8 @@ from unittest import TestCase
 import pandas as pd
 
 from pyutil.engine.aux import frame2dict
-from pyutil.engine.symbol import Symbol, assets, reference, asset, symbol, frame, bulk_update
-from test.config import connect, test_asset
+from pyutil.engine.symbol import Symbol, assets, reference, asset, symbol, frame, bulk_update_ref, bulk_update_ts
+from test.config import connect, test_asset, read_frame
 import pandas.util.testing as pdt
 
 class TestSymbol(TestCase):
@@ -71,12 +71,18 @@ class TestSymbol(TestCase):
         self.assertSetEqual(set(f.keys()),{"A","B"})
 
 
-    def test_bulk(self):
+    def test_bulk_ref(self):
         frame = pd.DataFrame(index=["A","B","C"], columns=["VOLATILITY_20D"], data=[[20.0],[30.0],[40.0]])
-        bulk_update(frame=frame)
+        bulk_update_ref(frame=frame)
 
         self.assertEquals(symbol(name="A").properties["VOLATILITY_20D"], 20.0)
         self.assertEquals(symbol(name="B").properties["VOLATILITY_20D"], 30.0)
         self.assertEquals(symbol(name="C").properties["VOLATILITY_20D"], 40.0)
+
+    def test_bulk_ts(self):
+        frame = read_frame("price.csv")[["A","B","C"]]
+        frame.index = [a.strftime("%Y%m%d") for a in frame.index]
+        bulk_update_ts(frame=frame, field="PX_LAST")
+
 
 
