@@ -51,7 +51,8 @@ def bulk_update_ref(frame):
     for asset, row in frame.iterrows():
         bulk_operations.append(UpdateOne({"name": asset}, {'$set': flatten({"properties": row.to_dict()})}, upsert=True))
 
-    Symbol._get_collection().bulk_write(bulk_operations, ordered=False)
+    if len(bulk_operations) > 0:
+        Symbol._get_collection().bulk_write(bulk_operations, ordered=False)
 
 
 def bulk_update_ts(frame, field):
@@ -62,7 +63,8 @@ def bulk_update_ts(frame, field):
         if len(data) > 0:
             bulk_operations.append(UpdateOne({"name": asset}, {'$set': flatten({"timeseries": {field: data.to_dict()}})}, upsert=True))
 
-    Symbol._get_collection().bulk_write(bulk_operations, ordered=False)
+    if len(bulk_operations) > 0:
+        Symbol._get_collection().bulk_write(bulk_operations, ordered=False)
 
 class Symbol(Document):
     name = StringField(required=True, max_length=200, unique=True)
