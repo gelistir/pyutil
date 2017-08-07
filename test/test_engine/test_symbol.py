@@ -3,7 +3,7 @@ from unittest import TestCase
 import pandas as pd
 
 from pyutil.engine.aux import frame2dict
-from pyutil.engine.symbol import Symbol, assets, reference, asset, symbol, frame
+from pyutil.engine.symbol import Symbol, assets, reference, asset, symbol, frame, bulk_update
 from test.config import connect, test_asset
 import pandas.util.testing as pdt
 
@@ -69,5 +69,14 @@ class TestSymbol(TestCase):
     def test_frame(self):
         f = frame(timeseries="PX_LAST")
         self.assertSetEqual(set(f.keys()),{"A","B"})
+
+
+    def test_bulk(self):
+        frame = pd.DataFrame(index=["A","B","C"], columns=["VOLATILITY_20D"], data=[[20.0],[30.0],[40.0]])
+        bulk_update(frame=frame)
+
+        self.assertEquals(symbol(name="A").properties["VOLATILITY_20D"], 20.0)
+        self.assertEquals(symbol(name="B").properties["VOLATILITY_20D"], 30.0)
+        self.assertEquals(symbol(name="C").properties["VOLATILITY_20D"], 40.0)
 
 

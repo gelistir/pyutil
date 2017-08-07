@@ -44,6 +44,20 @@ def names():
     return set([s.name for s in Symbol.objects.only('name')])
 
 
+def bulk_update(frame):
+    bulk_operations = []
+
+    from pymongo import UpdateOne
+
+    # update now for all assets the dynamic fields
+    for asset, row in frame.iterrows():
+        u = UpdateOne({"name": asset}, {'$set': flatten({"properties": row.to_dict()})})
+        bulk_operations.append(u)
+
+    Symbol._get_collection().bulk_write(bulk_operations, ordered=False)
+
+
+
 class Symbol(Document):
     name = StringField(required=True, max_length=200, unique=True)
     properties = DictField()

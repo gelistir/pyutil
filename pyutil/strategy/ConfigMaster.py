@@ -27,10 +27,6 @@ class ConfigMaster(object):
         # the logger
         self.logger = logger or logging.getLogger(__name__)
 
-    def __repr__(self, *args, **kwargs):
-        return 'Name: {0}, Group: {1}'.format(self.name, self.group)
-
-
     @property
     @abc.abstractmethod
     def portfolio(self):
