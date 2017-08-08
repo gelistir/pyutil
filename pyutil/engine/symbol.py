@@ -44,15 +44,14 @@ def names():
     return set([s.name for s in Symbol.objects.only('name')])
 
 
-def bulk_update_ref(frame):
-    bulk_operations = []
 
-    # update now for all assets the dynamic fields
-    for asset, row in frame.iterrows():
-        bulk_operations.append(UpdateOne({"name": asset}, {'$set': flatten({"properties": row.to_dict()})}, upsert=True))
-
+def __bulk(bulk_operations):
     if len(bulk_operations) > 0:
         Symbol._get_collection().bulk_write(bulk_operations, ordered=False)
+
+
+def bulk_update_ref(frame):
+    __bulk([UpdateOne({"name": asset}, {'$set': flatten({"properties": row.to_dict()})}, upsert=True) for asset, row in frame.iterrows()])
 
 
 def bulk_update_ts(frame, field):
@@ -63,8 +62,8 @@ def bulk_update_ts(frame, field):
         if len(data) > 0:
             bulk_operations.append(UpdateOne({"name": asset}, {'$set': flatten({"timeseries": {field: data.to_dict()}})}, upsert=True))
 
-    if len(bulk_operations) > 0:
-        Symbol._get_collection().bulk_write(bulk_operations, ordered=False)
+    return __bulk(bulk_operations=bulk_operations)
+
 
 class Symbol(Document):
     name = StringField(required=True, max_length=200, unique=True)

@@ -5,3 +5,4 @@ jinja2
 xlsxwriter
 mongoengine
 quandl
+psycopg2
