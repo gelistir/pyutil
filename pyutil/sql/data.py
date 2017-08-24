@@ -49,8 +49,8 @@ class Database(object):
     def reference(self):
         return self.__reference_sql()
 
-    def history(self, name="PX_LAST"):
-        return self.__history_sql(names=[name])[name]
+    def history(self, name="PX_LAST", assets=None):
+        return self.__history_sql(names=[name], assets=assets)[name]
 
     def assets(self, names):
         return Assets({name: self.asset(name) for name in names})
