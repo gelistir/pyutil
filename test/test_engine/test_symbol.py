@@ -68,7 +68,7 @@ class TestSymbol(TestCase):
 
     def test_frame(self):
         f = frame(timeseries="PX_LAST")
-        self.assertSetEqual(set(f.keys()),{"A","B"})
+        self.assertSetEqual(set(f.keys()),{"A","B","C"})
 
 
     def test_bulk_ref(self):

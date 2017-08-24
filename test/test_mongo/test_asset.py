@@ -48,7 +48,3 @@ class TestAsset(TestCase):
 
         with self.assertRaises(AssertionError):
             asset["weight"] = pd.Series(index=[1,2, 4   ],data=10)
-
-    def test_link(self):
-        asset = Asset(name="Peter Maffay Equity", data=prices)
-        self.assertEquals(asset.link, "<a href=http://www.bloomberg.com/quote/Peter:Maffay>Peter Maffay Equity</a>")

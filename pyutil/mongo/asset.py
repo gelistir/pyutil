@@ -60,8 +60,8 @@ class Asset(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    @property
-    def link(self):
-        x = self.name.lstrip().split(" ")
-        assert len(x) >= 1, "Problem with {0}".format(x)
-        return "<a href=http://www.bloomberg.com/quote/{0}:{1}>{2}</a>".format(x[0], x[1], self.name.lstrip())
+    #@property
+    #def link(self):
+    #    x = self.name.lstrip().split(" ")
+    #    assert len(x) >= 1, "Problem with {0}".format(x)
+    #    return "<a href=http://www.bloomberg.com/quote/{0}:{1}>{2}</a>".format(x[0], x[1], self.name.lstrip())

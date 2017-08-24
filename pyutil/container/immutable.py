@@ -35,4 +35,7 @@ class ImmutableDict(collections.Mapping):
 
 if __name__ == '__main__':
     d = {"a":2 , "b": 3}
+    x = ImmutableDict(d)
+    print(x)
+    x._dict["a"] = 10
 
