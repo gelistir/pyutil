@@ -1,5 +1,7 @@
 import pandas as pd
 from pyutil.mongo.asset import Asset
+from pyutil.mongo.assets import Assets
+
 
 class Database(object):
     def __init__(self, connection):
@@ -35,7 +37,6 @@ class Database(object):
         x = x.unstack(level=["name"])
         return x
 
-
     def asset(self, name):
         data = self.__history_sql(assets=[name])
         data.columns = data.columns.droplevel(level=1)
@@ -43,6 +44,16 @@ class Database(object):
         rdata = self.__reference_sql(assets=[name])
         x = rdata.transpose()[name].to_dict()
         return Asset(name=name, data=data, **x)
+
+    @property
+    def reference(self):
+        return self.__reference_sql()
+
+    def history(self, name="PX_LAST"):
+        return self.__history_sql(names=[name])[name]
+
+    def assets(self, names):
+        return Assets({name: self.asset(name) for name in names})
 
 
 if __name__ == '__main__':
