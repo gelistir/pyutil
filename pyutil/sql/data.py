@@ -50,7 +50,12 @@ class Database(object):
         return self.__reference_sql()
 
     def history(self, name="PX_LAST", assets=None):
-        return self.__history_sql(names=[name], assets=assets)[name]
+        frame = self.__history_sql(names=[name], assets=assets)
+        if not frame.empty:
+            return frame[name]
+        else:
+            return frame
+
 
     def assets(self, names):
         return Assets({name: self.asset(name) for name in names})

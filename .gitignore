@@ -1,5 +1,5 @@
 .idea
-sandbox
+sandbox/*
 *.pyc
 */__pycache__/
 todo
