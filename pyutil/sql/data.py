@@ -39,7 +39,7 @@ class Database(object):
             return f[0]
 
 
-    def __history_sql(self, assets=None, names=None):
+    def _history_sql(self, assets=None, names=None):
         cond = []
         if names:
             cond.append("ts_name in {names}".format(names=tuple(names)).replace(',)', ')'))
@@ -54,7 +54,7 @@ class Database(object):
         x = x.unstack(level=["ts_name", "bloomberg_symbol"])
         return x
 
-    def __reference_sql(self, names=None, assets=None):
+    def _reference_sql(self, names=None, assets=None):
         cond = []
         if names:
             cond.append("name in {names}".format(names=tuple(names)).replace(',)', ')'))
@@ -70,19 +70,19 @@ class Database(object):
         return x
 
     def asset(self, name):
-        data = self.__history_sql(assets=[name])
+        data = self._history_sql(assets=[name])
         data.columns = data.columns.droplevel(level=1)
 
-        rdata = self.__reference_sql(assets=[name])
+        rdata = self._reference_sql(assets=[name])
         x = rdata.transpose()[name].to_dict()
         return Asset(name=name, data=data, **x)
 
     @property
     def reference(self):
-        return self.__reference_sql()
+        return self._reference_sql()
 
     def history(self, name="PX_LAST", assets=None):
-        frame = self.__history_sql(names=[name], assets=assets)
+        frame = self._history_sql(names=[name], assets=assets)
         if not frame.empty:
             return frame[name]
         else:
@@ -112,77 +112,6 @@ class Database(object):
         return pd.read_sql("SELECT date, value FROM ts_data_complete WHERE bloomberg_symbol='{asset}' "
                         "AND ts_name='{name}'".format(asset=asset, name=name), con=self.__con,
                         index_col=["date"])["value"]
-
-    def upsert_portfolio(self, portfolio, name):
-        upsert = """
-                    INSERT INTO "strat_data"
-                    (date, asset_id, strategy_id, price, weight)
-                    VALUES 
-                    (%(date)S, %(asset_id)S::INTEGER, %(strategy_id)S::INTEGER, %(price)S, %(weight)S)
-                    ON CONFLICT ON CONSTRAINT time_asset_strategy
-                    DO UPDATE SET price=%(price)S, weight=%(weight)S
-                    WHERE 
-                      strat_data.strategy_id=%(strategy_id)S AND 
-                      strat_data.date=%(date)S AND 
-                      strat_data.asset_id=%(asset_id)S
-                 """
-
-        with self.__con.cursor() as cursor:
-            strategy_id = self._strat_id(name)
-            for asset in portfolio.assets:
-                asset_id = self._symbol_id(ticker=asset)
-                for date in portfolio.index:
-                    price = portfolio.prices.loc[date][asset]
-                    weight = portfolio.weights.loc[date][asset]
-                    data = {"date": date, "asset_id": asset_id, "strategy_id": strategy_id, "price": price,
-                            "weight": weight}
-                    cursor.execute(upsert, data)
-
-
-
-        #x = x.unstack(level=["ts_name", "bloomberg_symbol"])
-
-
-    def upsert_timeseries(self, ts, asset, field):
-        """ Update a timeseries in the database """
-        if len(ts) > 0:
-            asset_id = self._symbol_id(ticker=asset)
-            insert = """
-                INSERT INTO ts_name (asset_id, name) VALUES
-                (%(asset_id)s::INTEGER, %(field)s)
-                ON CONFLICT ON CONSTRAINT name_asset DO NOTHING
-            """
-
-            with self.__con.cursor() as cursor:
-                cursor.execute(insert, {"asset_id": asset_id, "field": field})
-                self.__con.commit()
-
-                ts_id = self._ts_id(ticker=asset, field=field)
-
-                for date, value in ts.items():
-                    command = "INSERT INTO ts_data (date, value, ts_id) VALUES ('{date}', {value}, {ts_id}) " \
-                              "ON CONFLICT ON CONSTRAINT ts_date_unique " \
-                              "DO UPDATE SET value={value} WHERE ts_data.ts_id={ts_id} AND ts_data.date='{date}'".format(date=date, value=value, ts_id=ts_id)
-                    cursor.execute(command)
-                    self.__con.commit()
-
-
-    # def upsert_reference(self, frame):
-    #     with self.__con.cursor() as cursor:
-    #         for ticker, row in frame.iterrows():
-    #             field_id = self._field_id(field=row["field"])
-    #             asset_id = self._symbol_id(ticker=ticker)
-    #             content = row["content"]
-    #
-    #             x = "INSERT INTO symbolsapp_reference_data (field_id, symbol_id, content) " \
-    #                 "VALUES ({field_id}, {symbol_id}, '{content}') " \
-    #                 "ON CONFLICT ON CONSTRAINT reference_data_unique " \
-    #                 "DO UPDATE SET content='{content}' WHERE " \
-    #                 "symbolsapp_reference_data.field_id={field_id} and symbolsapp_reference_data.symbol_id={symbol_id}".format(
-    #                 field_id=field_id, symbol_id=asset_id, content=content)
-    #
-    #             cursor.execute(x)
-    #         self.__con.commit()
 
     @property
     def connection(self):
