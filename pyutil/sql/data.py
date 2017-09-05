@@ -78,7 +78,7 @@ class Database(object):
         data.columns = data.columns.droplevel(level=1)
         xxx = self.query("SELECT * FROM assets WHERE bloomberg_symbol='{ticker}'".format(ticker=name), index_col="bloomberg_symbol").loc[name]
         ref = self.query("SELECT name, content FROM reference_data WHERE bloomberg_symbol='{ticker}'".format(ticker=name), index_col="name")
-        return Asset(name=name, data=data, group=xxx["group_name"], internal=xxx["internal"], link=xxx["webpage"], **ref.to_dict())
+        return Asset(name=name, data=data, group=xxx["group_name"], internal=xxx["internal"], link=xxx["webpage"], **ref["content"].to_dict())
 
     @property
     def reference(self):
