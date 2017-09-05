@@ -19,7 +19,7 @@ class Database(object):
 
     def _symbol_id(self, ticker):
         with self.__con.cursor() as cursor:
-            cursor.execute("SELECT id FROM asset WHERE bloomberg_symbol=%(ticker)s;", {"ticker": ticker})
+            cursor.execute("SELECT id FROM assets WHERE bloomberg_symbol=%(ticker)s;", {"ticker": ticker})
             f = cursor.fetchone()
             assert f is not None, "The ticker {ticker} does not exist in the database".format(ticker=ticker)
             return f[0]
