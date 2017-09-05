@@ -56,10 +56,7 @@ class TestSymbol(TestCase):
 
     def test_reference(self):
         x = reference()
-        self.assertEquals(x["group"]["A"], "Equity")
-
-        x = reference(names=["A"])
-        self.assertEquals(x["group"]["A"], "Equity")
+        self.assertAlmostEqual(x["PX_LAST"]["A"], 24018.8, places=10)
 
     def test_unknown(self):
         # should raise an error as symbol does not exist and upsert not set to true to create it (on the fly)

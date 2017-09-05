@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 
 from pyutil.mongo.asset import Asset
@@ -7,7 +9,8 @@ from pyutil.sql.io import postgresql
 
 
 class Database(object):
-    def __init__(self, connection=None):
+    def __init__(self, connection=None, logger=None):
+        self.__logger = logger or logging.getLogger(__name__)
         self.__con = connection or postgresql()
 
     def _strat_id(self, strategy_name):
@@ -120,4 +123,8 @@ class Database(object):
         return self.__con
 
     def query(self, query, index_col=None):
+        self.__logger.debug("Query {query}".format(query=query))
         return pd.read_sql(sql=query, con=self.connection, index_col=index_col)
+
+    def __str__(self):
+        return str(self.__con)

@@ -10,7 +10,7 @@ def store(name, pandas_object, metadata=None, logger=None):
     logger.debug("Update frame object {name}".format(name=name))
     Frame.objects(name=name).update_one(name=name, metadata=metadata, upsert=True)
     logger.debug("Store pandas object in frame object {name}".format(name=name))
-    return load(name).put(frame=pandas_object)
+    return load(name, logger=logger).put(frame=pandas_object)
 
 
 def load(name, logger=None):
