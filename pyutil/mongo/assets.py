@@ -89,3 +89,11 @@ class Assets(object):
 
     def __eq__(self, other):
         return self.__assets == other.__assets
+
+    @property
+    def internal(self):
+        return pd.Series({name: self[name].internal for name in self.keys()})
+
+    @property
+    def group(self):
+        return pd.Series({name: self[name].group for name in self.keys()})

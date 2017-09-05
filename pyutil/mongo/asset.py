@@ -3,7 +3,7 @@ import pandas as pd
 
 
 class Asset(object):
-    def __init__(self, name, data, **kwargs):
+    def __init__(self, name, data, group="", internal="", link="", **kwargs):
         """
         :param name: Name of the Asset
         :param data: DataFrame of time series data
@@ -20,6 +20,9 @@ class Asset(object):
 
         self.__name = name
         self.__ref = copy.deepcopy(kwargs)
+        self.__group = group
+        self.__internal = internal
+        self.__link = link
 
     @property
     def name(self):
@@ -36,6 +39,14 @@ class Asset(object):
         Reference data for an asset. Given as a Pandas Series
         """
         return pd.Series(self.__ref).sort_index(axis=0)
+
+    @property
+    def internal(self):
+        return self.__internal
+
+    @property
+    def group(self):
+        return self.__group
 
     def __repr__(self):
         return "Asset {0} with series {1} and reference {2}".format(self.name, list(self.time_series.keys()),
@@ -60,8 +71,7 @@ class Asset(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    #@property
-    #def link(self):
-    #    x = self.name.lstrip().split(" ")
-    #    assert len(x) >= 1, "Problem with {0}".format(x)
-    #    return "<a href=http://www.bloomberg.com/quote/{0}:{1}>{2}</a>".format(x[0], x[1], self.name.lstrip())
+    @property
+    def link(self):
+        return self.__link
+

@@ -16,6 +16,7 @@ def read_csv(file):
     x = pd.read_csv(file, header=[0,1], index_col=0, parse_dates=True)
     return Portfolio(x["price"], x["weight"])
 
+
 class Portfolio(object):
     def copy(self):
         return Portfolio(prices=self.prices.copy(), weights=self.weights.copy())
