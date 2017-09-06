@@ -11,16 +11,22 @@ def store_portfolio(name, portfolio):
 
 
 def load_portfolio(name):
-    prices = load(name + "_price").frame
-    weights = load(name + "_weight").frame
-    return Portfolio(prices=prices, weights=weights)
+    try:
+        prices = load(name + "_price").frame
+        weights = load(name + "_weight").frame
+        return Portfolio(prices=prices, weights=weights)
+    except AttributeError:
+        return None
 
 
 def update_portfolio(name, portfolio):
     p_old = load_portfolio(name)
-    start = portfolio.index[0]
-    p_old = p_old.truncate(after=start - pd.offsets.Second(n=1))
-    store_portfolio(name, merge([p_old, portfolio], axis=0))
+    if p_old:
+        start = portfolio.index[0]
+        p_old = p_old.truncate(after=start - pd.offsets.Second(n=1))
+        store_portfolio(name, merge([p_old, portfolio], axis=0))
+    else:
+        store_portfolio(name, portfolio)
 
 
 def portfolio_names():
@@ -41,3 +47,8 @@ if __name__ == '__main__':
 
     print(portfolio_names())
     print(portfolios())
+    p1 = load_portfolio("MDT")
+    print(p1)
+
+    update_portfolio("wurst", p1)
+    xxx = load_portfolio("wurst")

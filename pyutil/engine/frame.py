@@ -24,7 +24,7 @@ def keys():
     return [frame.name for frame in Frame.objects]
 
 
-# I would love to hide this class better
+# I would love to hide this class better, can't do because Mongo wouldn't like that...
 class Frame(Document):
     name = StringField(required=True, max_length=200, unique=True)
     data = FileField()
