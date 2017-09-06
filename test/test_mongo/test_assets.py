@@ -84,12 +84,4 @@ class TestAssets(TestCase):
         self.assertTrue(assets_1 == assets_2)
         self.assertFalse(assets_1 != assets_2)
 
-    def test_reference_mapping(self):
-        x = Assets.map_dict()
-        self.assertTrue("CHG_PCT_1D" in x.keys())
-        asset_a = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
-        asset_b = Asset(name="Falco", data=prices, b=4.0, a=2.0)
-        assets = Assets({"Peter Maffay": asset_a, "Falco": asset_b})
-        xx = assets.reference_mapping(keys=["a","b"])
-        self.assertEquals(xx["b"]["Falco"],4.0)
 

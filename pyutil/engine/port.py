@@ -5,7 +5,7 @@ from pyutil.mongo.portfolios import Portfolios
 from pyutil.portfolio.portfolio import Portfolio, merge
 
 
-def store_portfolio(name, portfolio):
+def __store_portfolio(name, portfolio):
     store(name + "_price", portfolio.prices)
     store(name + "_weight", portfolio.weights)
 
@@ -19,14 +19,14 @@ def load_portfolio(name):
         return None
 
 
-def update_portfolio(name, portfolio):
+def upsert_portfolio(name, portfolio):
     p_old = load_portfolio(name)
     if p_old:
         start = portfolio.index[0]
         p_old = p_old.truncate(after=start - pd.offsets.Second(n=1))
-        store_portfolio(name, merge([p_old, portfolio], axis=0))
+        __store_portfolio(name, merge([p_old, portfolio], axis=0))
     else:
-        store_portfolio(name, portfolio)
+        __store_portfolio(name, portfolio)
 
 
 def portfolio_names():
@@ -50,5 +50,4 @@ if __name__ == '__main__':
     p1 = load_portfolio("MDT")
     print(p1)
 
-    update_portfolio("wurst", p1)
-    xxx = load_portfolio("wurst")
+

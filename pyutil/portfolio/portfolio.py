@@ -327,7 +327,7 @@ class Portfolio(object):
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self.prices.equals(other.prices) and self.weights == other.weights
+            return self.prices.equals(other.prices) and self.weights.equals(other.weights)
         return False
 
     def __ne__(self, other):

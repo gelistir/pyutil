@@ -3,7 +3,7 @@ from unittest import TestCase
 import pandas.util.testing as pdt
 
 from pyutil.engine.frame import Frame
-from pyutil.engine.port import store_portfolio, portfolio_names, load_portfolio, portfolios, update_portfolio
+from pyutil.engine.port import portfolio_names, load_portfolio, portfolios, upsert_portfolio
 from pyutil.mongo.connect import connect_mongo
 from pyutil.mongo.portfolios import Portfolios
 from test.config import test_portfolio
@@ -14,8 +14,8 @@ class TestPort(TestCase):
     def setUpClass(cls):
         connect_mongo('portfolios', host="testmongo", alias="default")
         p1 = test_portfolio()
-        store_portfolio(name="hans", portfolio=p1)
-        store_portfolio(name="panzer", portfolio=p1)
+        upsert_portfolio(name="hans", portfolio=p1)
+        upsert_portfolio(name="panzer", portfolio=p1)
 
     def test_load_portfolio(self):
         p1 = load_portfolio(name="panzer")
@@ -36,7 +36,7 @@ class TestPort(TestCase):
 
     def test_update(self):
         p1 = test_portfolio()
-        update_portfolio(name="hans", portfolio= 2*p1.tail(5))
+        upsert_portfolio(name="hans", portfolio= 2*p1.tail(5))
         p2 = load_portfolio(name="hans")
         self.assertAlmostEqual(p2.tail(5).weights.sum(axis=1).sum(), 2*p1.tail(5).weights.sum(axis=1).sum(), places=8)
 
