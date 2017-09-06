@@ -8,7 +8,7 @@ from ..timeseries.timeseries import ytd, mtd
 
 
 def merge(portfolios, axis=0):
-    prices = pd.concat([p.time_series for p in portfolios], axis=axis, verify_integrity=True)
+    prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
     weights = pd.concat([p.weights for p in portfolios], axis=axis, verify_integrity=True)
     return Portfolio(prices, weights.fillna(0.0))
 

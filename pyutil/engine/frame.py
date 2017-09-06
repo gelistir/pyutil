@@ -20,6 +20,10 @@ def load(name, logger=None):
     return Frame.objects(name=name).first()
 
 
+def keys():
+    return [frame.name for frame in Frame.objects]
+
+
 # I would love to hide this class better
 class Frame(Document):
     name = StringField(required=True, max_length=200, unique=True)

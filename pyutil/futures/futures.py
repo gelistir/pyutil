@@ -5,7 +5,7 @@ import mongoengine as db
 import numpy as np
 import pandas as pd
 
-from pyutil.engine.aux import dict2frame, flatten, frame2dict
+#from pyutil.engine.aux import dict2frame, flatten, frame2dict
 from pyutil.futures.rollmap import roll_builder
 
 
@@ -160,15 +160,15 @@ class Contracts(db.Document):
 
         return Contracts.objects(figi=self.figi)[0]
 
-    def update_ts_frame(self, frame):
-        collection = self._get_collection()
-        collection.update({"figi": self.figi}, {"$set": flatten({"timeseries": frame2dict(frame)})}, upsert=True)
-        return Contracts.objects(figi=self.figi)[0]
+    #def update_ts_frame(self, frame):
+    #    collection = self._get_collection()
+    #    collection.update({"figi": self.figi}, {"$set": flatten({"timeseries": frame2dict(frame)})}, upsert=True)
+    #    return Contracts.objects(figi=self.figi)[0]
 
 
-    @property
-    def ts(self):
-        return dict2frame(self.timeseries)
+    # @property
+    # def ts(self):
+    #     return dict2frame(self.timeseries)
 
     def last(self, name="PX_LAST"):
         if name in self.timeseries.keys():
