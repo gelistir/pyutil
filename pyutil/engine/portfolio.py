@@ -45,7 +45,7 @@ class Porto(Document):
     @property
     def portfolio(self):
         p = pd.read_json(self.__decodex(self.price), typ="frame", orient="split")
-        w = pd.read_json(self.__decodex(self.weight), typ="weight", orient="split")
+        w = pd.read_json(self.__decodex(self.weight), typ="frame", orient="split")
         return Portfolio(prices=p, weights=w)
 
     def put(self, portfolio):
