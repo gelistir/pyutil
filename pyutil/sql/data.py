@@ -4,7 +4,6 @@ import pandas as pd
 
 from pyutil.mongo.asset import Asset
 from pyutil.mongo.assets import Assets
-from pyutil.portfolio.portfolio import Portfolio
 from pyutil.sql.io import postgresql
 
 
@@ -42,6 +41,16 @@ class Database(object):
             f = cursor.fetchone()
             assert f is not None, "The timeseries for {ticker} and field {field} does not exist in the database".format(ticker=ticker, field=field)
             return f[0]
+
+    def _group_id(self, name):
+        with self.__con.cursor() as cursor:
+            cursor.execute(
+                "SELECT id FROM symbolsapp_group WHERE name=%(name)s;",
+                {"name": name})
+            f = cursor.fetchone()
+            assert f is not None, "The group for {group} does not exist in the database".format(group=name)
+            return f[0]
+
 
     def _history_sql(self, assets=None, names=None):
         cond = []
@@ -104,15 +113,6 @@ class Database(object):
     @property
     def ticker(self):
         return self.query("SELECT * FROM assets", index_col="bloomberg_symbol")
-
-    def portfolio(self, name):
-        index = ["date", "bloomberg_symbol"]
-        f = lambda x: "SELECT date, bloomberg_symbol, {field} FROM strategy_data WHERE name='{strategy}'".format(
-            strategy=name, field=x)
-
-        price = self.query(f("price"), index_col=index).unstack(level=1)["price"]
-        weight = self.query(f("weight"), index_col=index).unstack(level=1)["weight"]
-        return Portfolio(prices=price, weights=weight)
 
     def timeseries(self, asset, name):
         return self.query("SELECT date, value FROM ts_data_complete WHERE bloomberg_symbol='{asset}' "
