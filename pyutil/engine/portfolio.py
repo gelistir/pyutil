@@ -10,11 +10,13 @@ def __store_portfolio(name, portfolio):
     Porto.objects(name=name).update_one(name=name, upsert=True)
     Porto.objects(name=name).first().put(portfolio=portfolio)
 
+
 def load_portfolio(name):
     try:
-        Porto.objects(name=name).first().portfolio
+        return Porto.objects(name=name).first().portfolio
     except AttributeError:
         return None
+
 
 def upsert_portfolio(name, portfolio):
     p_old = load_portfolio(name)
@@ -25,8 +27,16 @@ def upsert_portfolio(name, portfolio):
     else:
         __store_portfolio(name, portfolio)
 
+    return load_portfolio(name)
+
+
+def save_portfolio(name, portfolio):
+    __store_portfolio(name, portfolio)
+
+
 def portfolio_names():
     return set([object.name for object in Porto.objects])
+
 
 def portfolios():
     return Portfolios({name: load_portfolio(name) for name in portfolio_names()})
@@ -38,9 +48,9 @@ class Porto(Document):
     weight = FileField()
     metadata = DictField(default={})
 
-    def __decodex(self, x):
+    @staticmethod
+    def __decodex(x):
         return BytesIO(x.read()).read().decode()
-
 
     @property
     def portfolio(self):
@@ -49,20 +59,22 @@ class Porto(Document):
         return Portfolio(prices=p, weights=w)
 
     def put(self, portfolio):
+        g = lambda x: x.to_json(orient="split").encode()
+
         if self.price:
-            self.price.replace(portfolio.prices.to_json(orient="split").encode())
+            self.price.replace(g(portfolio.prices))
 
         else:
             self.price.new_file()
-            self.price.write(portfolio.prices.to_json(orient="split").encode())
+            self.price.write(g(portfolio.prices))
             self.price.close()
 
         if self.weight:
-            self.weight.replace(portfolio.weights.to_json(orient="split").encode())
+            self.weight.replace(g(portfolio.weights))
 
         else:
             self.weight.new_file()
-            self.weight.write(portfolio.weights.to_json(orient="split").encode())
+            self.weight.write(g(portfolio.weights))
             self.weight.close()
 
         self.save()
