@@ -5,28 +5,28 @@ from pyutil.mongo.portfolios import Portfolios
 from pyutil.portfolio.portfolio import Portfolio, merge
 
 
-def __store_portfolio(name, portfolio):
-    store(name + "_price", portfolio.prices)
-    store(name + "_weight", portfolio.weights)
+def __store_portfolio(name, portfolio, logger=None):
+    store(name + "_price", portfolio.prices, logger=logger)
+    store(name + "_weight", portfolio.weights, logger=logger)
 
 
-def load_portfolio(name):
+def load_portfolio(name, logger=None):
     try:
-        prices = load(name + "_price").frame
-        weights = load(name + "_weight").frame
+        prices = load(name + "_price", logger=logger).frame
+        weights = load(name + "_weight", logger=logger).frame
         return Portfolio(prices=prices, weights=weights)
     except AttributeError:
         return None
 
 
-def upsert_portfolio(name, portfolio):
-    p_old = load_portfolio(name)
+def upsert_portfolio(name, portfolio, logger=None):
+    p_old = load_portfolio(name, logger=logger)
     if p_old:
         start = portfolio.index[0]
         p_old = p_old.truncate(after=start - pd.offsets.Second(n=1))
-        __store_portfolio(name, merge([p_old, portfolio], axis=0))
+        __store_portfolio(name, merge([p_old, portfolio], axis=0), logger=logger)
     else:
-        __store_portfolio(name, portfolio)
+        __store_portfolio(name, portfolio, logger=logger)
 
 
 def portfolio_names():
@@ -36,8 +36,8 @@ def portfolio_names():
     return set(x)
 
 
-def portfolios():
-    return Portfolios({name: load_portfolio(name) for name in portfolio_names()})
+def portfolios(logger=None):
+    return Portfolios({name: load_portfolio(name, logger=logger) for name in portfolio_names()})
 
 
 if __name__ == '__main__':
