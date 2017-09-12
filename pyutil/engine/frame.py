@@ -27,11 +27,11 @@ def keys():
 # I would love to hide this class better, can't do because Mongo wouldn't like that...
 class Frame(Document):
     name = StringField(required=True, max_length=200, unique=True)
-    data = FileField(collection_name="frame_files")
+    data = BinaryField()
     metadata = DictField(default={})
 
     def __decode(self):
-        return BytesIO(self.data.read()).read().decode()
+        return BytesIO(self.data).read().decode()
 
     def __read_json(self, typ="frame"):
         return pd.read_json(self.__decode(), typ=typ, orient="split")
@@ -56,12 +56,6 @@ class Frame(Document):
         return "{name}: \n{frame}".format(name=self.name, frame=self.frame)
 
     def put(self, frame):
-        if self.data:
-            self.data.replace(frame.to_json(orient="split").encode())
-        else:
-            self.data.new_file()
-            self.data.write(frame.to_json(orient="split").encode())
-            self.data.close()
-
+        self.data = frame.to_json(orient="split").encode()
         self.save()
         return self.reload()

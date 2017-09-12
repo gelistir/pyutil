@@ -6,3 +6,4 @@ xlsxwriter
 mongoengine
 quandl
 psycopg2
+odo

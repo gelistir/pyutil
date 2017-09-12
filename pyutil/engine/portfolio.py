@@ -1,7 +1,7 @@
 # I would love to hide this class better, can't do because Mongo wouldn't like that...
 import pandas as pd
 from io import BytesIO
-from mongoengine import Document, StringField, FileField, DictField
+from mongoengine import Document, StringField, FileField, DictField, BinaryField
 from pyutil.mongo.portfolios import Portfolios
 from pyutil.portfolio.portfolio import Portfolio, merge
 
@@ -58,24 +58,50 @@ class Porto(Document):
         w = pd.read_json(self.__decodex(self.weight), typ="frame", orient="split")
         return Portfolio(prices=p, weights=w)
 
+    # def put(self, portfolio):
+    #     g = lambda x: x.to_json(orient="split").encode()
+    #
+    #     if self.price:
+    #         self.price.replace(g(portfolio.prices))
+    #
+    #     else:
+    #         self.price.new_file()
+    #         self.price.write(g(portfolio.prices))
+    #         self.price.close()
+    #
+    #     if self.weight:
+    #         self.weight.replace(g(portfolio.weights))
+    #
+    #     else:
+    #         self.weight.new_file()
+    #         self.weight.write(g(portfolio.weights))
+    #         self.weight.close()
+    #
+    #     self.save()
+    #     return self.reload()
+
+
+class Porto3(Document):
+    name = StringField(required=True, max_length=200, unique=True)
+    price = BinaryField()
+    weight = BinaryField()
+    metadata = DictField(default={})
+
+    @staticmethod
+    def __decodex(x):
+        return BytesIO(x).read().decode()
+
+    @property
+    def portfolio(self):
+        p = pd.read_json(self.__decodex(self.price), typ="frame", orient="split")
+        w = pd.read_json(self.__decodex(self.weight), typ="frame", orient="split")
+        return Portfolio(prices=p, weights=w)
+
     def put(self, portfolio):
         g = lambda x: x.to_json(orient="split").encode()
 
-        if self.price:
-            self.price.replace(g(portfolio.prices))
-
-        else:
-            self.price.new_file()
-            self.price.write(g(portfolio.prices))
-            self.price.close()
-
-        if self.weight:
-            self.weight.replace(g(portfolio.weights))
-
-        else:
-            self.weight.new_file()
-            self.weight.write(g(portfolio.weights))
-            self.weight.close()
+        self.price = g(portfolio.prices)
+        self.weight = g(portfolio.weights)
 
         self.save()
         return self.reload()
