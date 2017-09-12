@@ -1,8 +1,8 @@
 import logging
-import pandas as pd
-from mongoengine import Document, StringField, FileField, DictField
-
 from io import BytesIO
+
+import pandas as pd
+from mongoengine import Document, StringField, DictField, BinaryField
 
 
 def store(name, pandas_object, metadata=None, logger=None):

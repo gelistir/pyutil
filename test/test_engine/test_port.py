@@ -3,7 +3,7 @@ from unittest import TestCase
 import pandas.util.testing as pdt
 
 from pyutil.engine.frame import Frame
-from pyutil.engine.port import portfolio_names, load_portfolio, portfolios, upsert_portfolio
+from pyutil.engine.portfolio import upsert_portfolio, load_portfolio, portfolios
 from pyutil.mongo.connect import connect_mongo
 from pyutil.mongo.portfolios import Portfolios
 from test.config import test_portfolio
@@ -22,8 +22,6 @@ class TestPort(TestCase):
         pdt.assert_frame_equal(test_portfolio().prices, p1.prices)
         pdt.assert_frame_equal(test_portfolio().weights, p1.weights)
 
-    def test_keys(self):
-        self.assertSetEqual(set(portfolio_names()), {"hans", "panzer"})
 
     def test_portfolios(self):
         x = portfolios()
