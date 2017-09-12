@@ -27,7 +27,7 @@ def keys():
 # I would love to hide this class better, can't do because Mongo wouldn't like that...
 class Frame(Document):
     name = StringField(required=True, max_length=200, unique=True)
-    data = FileField()
+    data = FileField(collection_name="frame_files")
     metadata = DictField(default={})
 
     def __decode(self):

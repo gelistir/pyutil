@@ -39,13 +39,13 @@ def portfolio_names():
 
 
 def portfolios():
-    return Portfolios({name: load_portfolio(name) for name in portfolio_names()})
+    return Portfolios({object.name : object.portfolio for object in Porto.objects})
 
 
 class Porto(Document):
     name = StringField(required=True, max_length=200, unique=True)
-    price = FileField()
-    weight = FileField()
+    price = FileField(collection_name="portfolio_files")
+    weight = FileField(collection_name="portfolio_files")
     metadata = DictField(default={})
 
     @staticmethod
