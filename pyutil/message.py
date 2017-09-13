@@ -74,6 +74,8 @@ class Mail(object):
         send an email
         """
         logger = logger or logging.getLogger(__name__)
+        assert text != "" or html, "Specify either some text or some html!"
+
         try:
             data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text}
             if html:
