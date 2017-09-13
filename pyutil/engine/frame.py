@@ -2,15 +2,15 @@ import logging
 from io import BytesIO
 
 import pandas as pd
-from mongoengine import Document, StringField, DictField, BinaryField
+from mongoengine import Document, StringField, DictField, BinaryField, ListField
 
 
-def store(name, pandas_object, metadata=None, logger=None):
+def store(name, frame, metadata=None, logger=None):
     logger = logger or logging.getLogger(__name__)
     logger.debug("Update frame object {name}".format(name=name))
     Frame.objects(name=name).update_one(name=name, metadata=metadata, upsert=True)
     logger.debug("Store pandas object in frame object {name}".format(name=name))
-    return load(name, logger=logger).put(frame=pandas_object)
+    return load(name, logger=logger).put(frame=frame)
 
 
 def load(name, logger=None):
@@ -25,16 +25,12 @@ def keys():
 
 
 # I would love to hide this class better, can't do because Mongo wouldn't like that...
+# todo: simpler serialization
 class Frame(Document):
     name = StringField(required=True, max_length=200, unique=True)
     data = BinaryField()
+    index = ListField()
     metadata = DictField(default={})
-
-    def __decode(self):
-        return BytesIO(self.data).read().decode()
-
-    def __read_json(self, typ="frame"):
-        return pd.read_json(self.__decode(), typ=typ, orient="split")
 
     @property
     def frame(self):
@@ -42,20 +38,17 @@ class Frame(Document):
         Return the pandas DataFrame object
         :return:
         """
-        return self.__read_json(typ="frame")
-
-    @property
-    def series(self):
-        """
-        Return the pandas Series object
-        :return:
-        """
-        return self.__read_json(typ="series")
+        json_str = BytesIO(self.data).read().decode()
+        return pd.read_json(json_str, orient="split").set_index(keys=self.index)
 
     def __str__(self):
         return "{name}: \n{frame}".format(name=self.name, frame=self.frame)
 
     def put(self, frame):
-        self.data = frame.to_json(orient="split").encode()
+        for x in frame.index.names:
+            assert x, "All columns need to have a name! {0}".format(frame.index.names)
+
+        self.index = frame.index.names
+        self.data = frame.reset_index().to_json(orient="split").encode()
         self.save()
         return self.reload()

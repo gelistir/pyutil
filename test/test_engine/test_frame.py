@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import pandas as pd
+import numpy as np
 
 from pyutil.engine.frame import store, load, keys, Frame
 from pyutil.mongo.connect import connect_mongo
@@ -12,9 +13,10 @@ class TestFrame(TestCase):
     @classmethod
     def setUpClass(cls):
         connect_mongo('frames', host="testmongo", alias="default")
+        frame = pd.DataFrame(index=["A", "B"], columns=["X", "Y"], data=[[2, 3], [10, 20]])
+        frame.index.names=["Hans"]
 
-        store(name="f1", pandas_object=pd.DataFrame(index=["A", "B"], columns=["X", "Y"], data=[[2, 3], [10, 20]]))
-        store(name="f2", pandas_object=pd.Series(index=["A", "B"], data=[1, 2]))
+        store(name="f1", frame=frame)
 
     @classmethod
     def tearDownClass(cls):
@@ -22,11 +24,18 @@ class TestFrame(TestCase):
 
 
     def test_get_frame(self):
-        pdt.assert_frame_equal(load(name="f1").frame,
-                               pd.DataFrame(index=["A", "B"], columns=["X", "Y"], data=[[2, 3], [10, 20]]))
-
-    def test_get_series(self):
-        pdt.assert_series_equal(load(name="f2").series, pd.Series(index=["A", "B"], data=[1, 2]))
+        frame = pd.DataFrame(index=["A", "B"], columns=["X", "Y"], data=[[2, 3], [10, 20]])
+        frame.index.names=["Hans"]
+        pdt.assert_frame_equal(load(name="f1").frame, frame)
 
     def test_keys(self):
-        self.assertSetEqual(set(keys()), {"f1", "f2"})
+        self.assertSetEqual(set(keys()), {"f1"})
+
+    def test_multi(self):
+        midx = pd.MultiIndex(levels=[['zero', 'one'], ['x', 'y']],
+                             labels = [[1, 1, 0, 0], [1, 0, 1, 0]],
+                             names=["hans","wurst"])
+
+        df = pd.DataFrame(np.random.randn(4, 2), index=midx, columns=["AA","BB"])
+        store(name="maffay", frame=df)
+        pdt.assert_frame_equal(load(name="maffay").frame, df)
