@@ -49,6 +49,6 @@ class Frame(Document):
             assert x, "All columns need to have a name! {0}".format(frame.index.names)
 
         self.index = frame.index.names
-        self.data = frame.reset_index().to_json(orient="split").encode()
+        self.data = frame.reset_index().to_json(orient="split", date_format="iso").encode()
         self.save()
         return self.reload()

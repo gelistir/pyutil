@@ -153,8 +153,8 @@ class NavSeries(pd.Series):
 
         d["Value at Risk (alpha = {alpha})".format(alpha=alpha)] = 100*self.var(alpha=alpha)
         d["Conditional Value at Risk (alpha = {alpha})".format(alpha=alpha)] = 100*self.cvar(alpha=alpha)
-        d["First"] = self.index[0].date()
-        d["Last"] = self.index[-1].date()
+        d["First_at"] = self.index[0].date()
+        d["Last_at"] = self.index[-1].date()
 
         x = pd.Series(d)
         x.index.name = "Performance number"
