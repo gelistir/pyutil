@@ -16,7 +16,7 @@ class TestSummary(TestCase):
         self.assertEqual(s.events, 340)
 
     def test_summary(self):
-        pdt.assert_series_equal(s.summary().apply(str), read_series("summary.csv").apply(str))
+        pdt.assert_series_equal(s.summary().apply(str), read_series("summary.csv").apply(str), check_names=False)
 
     def test_autocorrelation(self):
         self.assertAlmostEqual(s.autocorrelation, 0.070961153249184269, places=10)

@@ -156,7 +156,9 @@ class NavSeries(pd.Series):
         d["First"] = self.index[0].date()
         d["Last"] = self.index[-1].date()
 
-        return pd.Series(d)
+        x = pd.Series(d)
+        x.index.name = "Performance number"
+        return x
 
     def ewm_volatility(self, com=50, min_periods=50, periods=None):
         periods = periods or self.__periods_per_year
