@@ -58,11 +58,3 @@ def rand_asset_auto(corr=0, mu=0, sigma=0.01, t0="2010-01-01", t1="today"):
 
     r = pd.Series(index=x, data=signal)
     return (r+1).cumprod()
-
-
-if __name__ == '__main__':
-    x = rand_asset_auto(0.5)
-    print(x.pct_change().autocorr())
-
-    x = rand_asset_auto(0.99)
-    print(x)

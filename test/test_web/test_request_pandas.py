@@ -20,6 +20,7 @@ class TestRequestPandas(TestCase):
         pdt.assert_frame_equal(self.b, r.get_frame("Peter"))
         self.assertEqual(r.get(name="Nur Du"), 5.0)
         self.assertEqual(r.json(), '{"Maffay": "{\\"0\\":2,\\"1\\":3}", "Nur Du": 5.0, "Peter": "{\\"columns\\":[\\"A\\",\\"B\\"],\\"index\\":[0,1],\\"data\\":[[0,0],[0,0]]}"}')
+        self.assertSetEqual(set(r.keys()), {"Maffay", "Peter", "Nur Du"})
 
     def test_json_str(self):
         r = RequestPandas(json_str='{"Maffay": "{\\"0\\":2,\\"1\\":3}", "Peter": "{\\"columns\\":[\\"A\\",\\"B\\"],\\"index\\":[0,1],\\"data\\":[[0,0],[0,0]]}"}')

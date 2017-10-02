@@ -30,12 +30,3 @@ class ImmutableDict(collections.Mapping):
 
     def __repr__(self):
         return str(self._dict)
-
-
-
-if __name__ == '__main__':
-    d = {"a":2 , "b": 3}
-    x = ImmutableDict(d)
-    print(x)
-    x._dict["a"] = 10
-

@@ -15,6 +15,8 @@ class TestContainer(TestCase):
         with self.assertRaises(TypeError):
             d["c"] = 10
 
+        self.assertEquals(str(d), "{'a': 2, 'b': 3}")
+        self.assertEquals(d, ImmutableDict({"a": 2, "b": 3}))
 
 
 
