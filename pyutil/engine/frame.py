@@ -24,8 +24,7 @@ def keys():
     return [frame.name for frame in Frame.objects]
 
 
-# I would love to hide this class better, can't do because Mongo wouldn't like that...
-# todo: simpler serialization
+
 class Frame(Document):
     name = StringField(required=True, max_length=200, unique=True)
     data = BinaryField()
@@ -50,5 +49,44 @@ class Frame(Document):
 
         self.index = frame.index.names
         self.data = frame.reset_index().to_json(orient="split", date_format="iso").encode()
+        self.save()
+        return self.reload()
+
+# I would love to hide this class better, can't do because Mongo wouldn't like that...
+# todo: simpler serialization
+class Frame2(Document):
+    name = StringField(required=True, max_length=200, unique=True)
+    data = StringField()
+    index = ListField()
+    metadata = DictField(default={})
+    columns = ListField()
+    index2 = ListField()
+    data2 = ListField()
+
+    @property
+    def frame(self):
+        """
+        Return the pandas DataFrame object
+        :return:
+        """
+        #json_str = self.data.read()
+        return pd.read_json(self.data, orient="split").set_index(keys=self.index)
+
+    def __str__(self):
+        return "{name}: \n{frame}".format(name=self.name, frame=self.frame)
+
+    def put(self, frame):
+        for x in frame.index.names:
+            assert x, "All columns need to have a name! {0}".format(frame.index.names)
+
+        self.index = frame.index.names
+        self.data = frame.reset_index().to_json(orient="split", date_format="iso")
+
+        self.columns = list(frame.keys())
+        self.index2 = list(frame.index)
+        print([list(x) for x in frame.values])
+
+        # self.data2 = list(frame.values)
+
         self.save()
         return self.reload()

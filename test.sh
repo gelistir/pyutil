@@ -13,7 +13,7 @@ ret=$?
 docker rm -f testmongo
 
 # delete the images used...
-docker rmi mongo:latest
+docker rmi -f mongo:latest
 docker rmi pyutil:test
 
 exit $ret
