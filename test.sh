@@ -9,6 +9,8 @@ docker run --rm --link testmongo -v $(pwd)/html-coverage/:/html-coverage pyutil:
 
 ret=$?
 
+docker run --rm -v $(pwd)/source:/pyutil/source:ro -v $(pwd)/build:/pyutil/build pyutil:test sphinx-build source build
+
 # delete the mongo container
 docker rm -f testmongo
 

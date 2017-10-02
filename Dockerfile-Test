@@ -7,7 +7,7 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt && rm requirements.txt
 
 # this is used to mock http for testing
-RUN pip install httpretty nose coverage nose-timer
+RUN pip install httpretty nose coverage nose-timer sphinx
 
 # Import this to run construct the font-cache
 RUN python -c "from matplotlib.font_manager import FontManager"
