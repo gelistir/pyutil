@@ -3,9 +3,6 @@ import pandas as pd
 import numpy as np
 import pandas.util.testing as pdt
 
-#import matplotlib as mpl
-#mpl.use('Agg')
-
 from pyutil.portfolio.portfolio import Portfolio, read_csv
 from test.config import test_portfolio, read_frame, resource
 from unittest import TestCase

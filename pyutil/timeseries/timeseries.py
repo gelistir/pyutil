@@ -1,36 +1,4 @@
 import pandas as pd
-import numpy as np
-
-
-def subsample(ts, day=15, incl=False):
-    """
-    Monthly resampling of a series or a frame. We use the largest stamp smaller (or equal) than a given day.
-
-
-    :param ts: series or frame
-    :param day: the day, e.g. 15
-    :param incl: if False we use the largest stamp strictly smaller than day.
-
-    :return: a resampled series or frame
-    """
-    from functools import partial
-
-    def f(ts, day, incl):
-        if incl:
-            a = ts.index[ts.index.day <= day]
-        else:
-            a = ts.index[ts.index.day < day]
-
-        return a[-1] if len(a) > 0 else np.nan
-
-    func = partial(f, day=day, incl=incl)
-    dates = pd.Series(index=ts.index).resample("M").apply(func).dropna()
-
-    # attach the latest point if isn't already contained
-    if ts.index[-1] > dates.values[-1]:
-        return pd.concat((ts.loc[dates.values], ts.tail(1)), axis=0)
-    else:
-        return ts.loc[dates.values]
 
 
 def adjust(ts: pd.Series) -> pd.Series:

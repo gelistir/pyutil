@@ -108,12 +108,6 @@ class Portfolio(object):
         self.__before = {today : yesterday for today, yesterday in zip(prices.index[1:], prices.index[:-1])}
         self.__r = self.__prices.pct_change()
 
-        #self.__dict = copy.deepcopy(kwargs)
-
-    #@property
-    #def meta(self):
-    #    return self.__dict
-
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
 

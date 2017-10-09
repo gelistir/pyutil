@@ -1,6 +1,7 @@
 import abc
 import logging
 
+
 from pyutil.mongo.assets import Assets
 
 
