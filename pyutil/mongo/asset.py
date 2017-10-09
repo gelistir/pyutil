@@ -14,9 +14,12 @@ class Asset(object):
         if isinstance(data, pd.Series):
             data = data.to_frame(name="PX_LAST")
 
+        assert not data.index.has_duplicates, "Data Index has duplicates"
+        assert data.index.is_monotonic_increasing, "Data Index is not increasing"
 
-        for key in data.keys():
-            self[key] = data[key]
+        #for key in data.keys():
+        #    self[key] = data[key]
+        self.__data = data
 
         self.__name = name
         self.__ref = copy.deepcopy(kwargs)
@@ -52,24 +55,15 @@ class Asset(object):
         return "Asset {0} with series {1} and reference {2}".format(self.name, list(self.time_series.keys()),
                                                                     sorted(self.__ref.items()))
 
-    def __setitem__(self, key, value):
-        # add a series
-        assert isinstance(value, pd.Series)
-        assert not value.index.has_duplicates, "Data Index has duplicates"
-        assert value.index.is_monotonic_increasing, "Data Index is not increasing"
-        for a in value.index:
-            assert a in self.__data.index, "The index {0} is unknown".format(a)
+    #def __setitem__(self, key, value):
+    #    # add a series
+    #    assert isinstance(value, pd.Series)
+    #    assert not value.index.has_duplicates, "Data Index has duplicates"
+    #    assert value.index.is_monotonic_increasing, "Data Index is not increasing"
+    #    for a in value.index:
+    #        assert a in self.__data.index, "The index {0} is unknown".format(a)
 
-        self.__data[key] = value
-
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self.__data.equals(other.__data) and self.name == other.name and self.reference.equals(
-                other.reference)
-        return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
+    #    self.__data[key] = value
 
     @property
     def link(self):

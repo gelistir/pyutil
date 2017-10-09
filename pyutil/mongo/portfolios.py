@@ -23,7 +23,7 @@ class Portfolios(object):
 
     @property
     def empty(self):
-        return len(self.__portfolios) == 0
+        return self.len() == 0
 
     def len(self):
         return len(self.__portfolios)

@@ -32,10 +32,6 @@ def upsert_portfolio(name, portfolio):
     return load_portfolio(name)
 
 
-def save_portfolio(name, portfolio):
-    __store_portfolio(name, portfolio)
-
-
 def portfolios():
     return Portfolios({object.name : object.portfolio for object in PortfolioMongo.objects})
 

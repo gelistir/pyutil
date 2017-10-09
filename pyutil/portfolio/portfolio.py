@@ -292,34 +292,34 @@ class Portfolio(object):
         weights["Gap"] = 100.0 * (self.weights.loc[today] - p.weights.loc[today])
         return weights
 
-    def plot(self, tradingDays=False, figsize=(16,10)):
-
-        import matplotlib.pyplot as plt
-
-        f = plt.figure(figsize=figsize)
-
-        ax1 = f.add_subplot(211)
-        (100 * self.nav).plot(ax=ax1, color="blue")
-        if tradingDays:
-            x1, x2, y1, y2 = plt.axis()
-            plt.vlines(x=self.trading_days, ymin=y1, ymax=y2, colors="red")
-        plt.legend(["NAV"], loc=2)
-
-        ax2 = f.add_subplot(413,sharex=ax1)
-        (100*self.nav.drawdown).plot.area(ax=ax2, alpha=0.2, color="red", linewidth=2)
-        plt.legend(["Drawdown"], loc=2)
-
-        ax3 = plt.subplot(414, sharex=ax1)
-        (100 * self.leverage).plot(ax=ax3, color='green')
-        ax3.set_ylim([-10, 110])
-
-        (100 * self.weights.max(axis=1)).plot(ax=ax3, color='blue')
-        plt.legend(["Leverage","Max Weight"], loc=2)
-
-        f.subplots_adjust(hspace=0.05)
-        plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
-
-        return f
+    # def plot(self, tradingDays=False, figsize=(16,10)):
+    #
+    #     import matplotlib.pyplot as plt
+    #
+    #     f = plt.figure(figsize=figsize)
+    #
+    #     ax1 = f.add_subplot(211)
+    #     (100 * self.nav).plot(ax=ax1, color="blue")
+    #     if tradingDays:
+    #         x1, x2, y1, y2 = plt.axis()
+    #         plt.vlines(x=self.trading_days, ymin=y1, ymax=y2, colors="red")
+    #     plt.legend(["NAV"], loc=2)
+    #
+    #     ax2 = f.add_subplot(413,sharex=ax1)
+    #     (100*self.nav.drawdown).plot.area(ax=ax2, alpha=0.2, color="red", linewidth=2)
+    #     plt.legend(["Drawdown"], loc=2)
+    #
+    #     ax3 = plt.subplot(414, sharex=ax1)
+    #     (100 * self.leverage).plot(ax=ax3, color='green')
+    #     ax3.set_ylim([-10, 110])
+    #
+    #     (100 * self.weights.max(axis=1)).plot(ax=ax3, color='blue')
+    #     plt.legend(["Leverage","Max Weight"], loc=2)
+    #
+    #     f.subplots_adjust(hspace=0.05)
+    #     plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
+    #
+    #     return f
 
     def to_csv(self, file):
         pd.concat({"price": self.prices, "weight": self.weights}, axis=1).to_csv(file)

@@ -1,5 +1,6 @@
 import pandas as pd
 
+#from pyutil.mongo.asset import Asset
 from pyutil.mongo.asset import Asset
 
 
@@ -19,11 +20,10 @@ class Assets(object):
 
     @property
     def empty(self):
-        return self.len() == 0
+        return self.len()==0
 
     def len(self):
         return len(self.__assets)
-
 
     def __repr__(self):
         return str.join("\n", [str(self[asset]) for asset in self.keys()])
@@ -51,9 +51,6 @@ class Assets(object):
         # swap levels, assets first, time series name second
         data = self.history.tail(n).swaplevel(axis=1)
         return Assets({name : Asset(name=name, data=data[name], **self[name].reference.to_dict()) for name in self.keys()})
-
-    def __eq__(self, other):
-        return self.__assets == other.__assets
 
     @property
     def internal(self):

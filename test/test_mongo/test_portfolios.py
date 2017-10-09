@@ -36,3 +36,13 @@ class TestPortfolios(TestCase):
     def test_period_returns(self):
         m = self.portfolios.period_returns
         self.assertAlmostEqual(m["Month-to-Date"]["test"], 1.4133604922211385, places=10)
+
+    def test_empty(self):
+        p = Portfolios({})
+        self.assertTrue(p.empty)
+
+    def test_str(self):
+        self.assertEquals(str(self.portfolios), "Portfolio with assets: ['A', 'B', 'C', 'D', 'E', 'F', 'G']")
+
+
+
