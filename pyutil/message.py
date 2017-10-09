@@ -16,6 +16,7 @@ class Mail(object):
         self.__mailgun_api = mailgunapi or os.environ["MAILGUNAPI"]
         self.__mailgun_key = mailgunkey or os.environ["MAILGUNKEY"]
         self.__files = list()
+        self.__subject = ""
 
     def clear(self):
         # remove all attachments
