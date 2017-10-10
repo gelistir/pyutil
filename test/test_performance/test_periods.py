@@ -23,3 +23,9 @@ class TestPeriods(TestCase):
         s = read_series("ts.csv", parse_dates=True).pct_change().dropna()
         y = period_returns(s, offset=periods(today=s.index[-1]))
         pdt.assert_series_equal(y, read_series("periods.csv", parse_dates=False), check_names=False)
+
+
+    def test_period_returns_without_periods(self):
+        s = read_series("ts.csv", parse_dates=True).pct_change().dropna()
+        x = 100*period_returns(returns=s, today=pd.Timestamp("2015-05-01"))
+        self.assertAlmostEqual(x["Three Years"], 1.1645579858904798 , places=10)

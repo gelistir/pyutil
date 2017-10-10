@@ -5,7 +5,7 @@ import numpy as np
 
 from .month import monthlytable
 from .drawdown import drawdown as dd, drawdown_periods as dp
-from .periods import period_returns, periods
+from .periods import period_returns
 from .var import value_at_risk, conditional_value_at_risk
 
 
@@ -174,7 +174,7 @@ class NavSeries(pd.Series):
 
     @property
     def period_returns(self):
-        return period_returns(self.returns, periods(today=self.index[-1]))
+        return period_returns(self.returns, today=self.index[-1])
 
     def adjust(self, value=100.0):
         #c = self.dropna()

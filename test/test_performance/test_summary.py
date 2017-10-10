@@ -1,7 +1,7 @@
 from unittest import TestCase
 import pandas as pd
 
-from pyutil.performance.summary import NavSeries, performance
+from pyutil.performance.summary import NavSeries, performance, fromNav
 from pyutil.timeseries.timeseries import adjust
 from test.config import read_series
 
@@ -67,3 +67,14 @@ class TestSummary(TestCase):
         x = s.truncate(before="2015-01-01")
         self.assertEquals(x.index[0], pd.Timestamp("2015-01-01"))
 
+    def test_fromNav(self):
+        x = fromNav(ts=read_series("ts.csv", parse_dates=True))
+        self.assertAlmostEqual(x.autocorrelation, 0.070961153249184269, places=10)
+
+    def test_periods(self):
+        p=s.period_returns
+        self.assertAlmostEqual(p.loc["Three Years"], 0.011645579858904798, places=10)
+
+    def test_drawdown_periods(self):
+        p = s.drawdown_periods
+        self.assertEquals(p.loc[pd.Timestamp("2014-06-20").date()], 217)
