@@ -1,4 +1,5 @@
 import logging
+
 import requests
 import os
 
@@ -15,11 +16,6 @@ class Mail(object):
         # make sure that mailgun is of the correct type as specified in the config
         self.__mailgun_api = mailgunapi or os.environ["MAILGUNAPI"]
         self.__mailgun_key = mailgunkey or os.environ["MAILGUNKEY"]
-        self.__files = list()
-        self.__subject = ""
-
-    def clear(self):
-        # remove all attachments
         self.__files = list()
         self.__subject = ""
 
@@ -85,9 +81,11 @@ class Mail(object):
             for file in self.__files:
                 logger.info("type: {0}, name: {1}".format(file[0], file[1][0]))
 
-            return requests.post(self.__mailgun_api, auth=("api", self.__mailgun_key), files=self.__files, data=data)
+            r = requests.post(self.__mailgun_api, auth=("api", self.__mailgun_key), files=self.__files, data=data)
+            assert r.ok, "Something went wront sending the email"
 
         finally:
+
             for f in self.__files:
                 # List of tuples ("attachment or inline", (f[0], f[1]))
                 try:
@@ -118,3 +116,8 @@ class Mail(object):
     @toAdr.setter
     def toAdr(self, value):
         self.__toAdr = value
+
+    @property
+    def files(self):
+        # List of tuples ("attachment or inline", (f[0], f[1]))
+        return self.__files
