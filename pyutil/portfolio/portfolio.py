@@ -212,13 +212,13 @@ class Portfolio(object):
         s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()
         a = s.sort_values(by=["Year-to-Date"], ascending=False)[["Year-to-Date"]]
         b = s.sort_values(by=["Year-to-Date"], ascending=True)[["Year-to-Date"]]
-        return pd.concat((a.head(n), b.head(n)), axis=0)[["Year-to-Date"]]
+        return pd.concat((a.head(n), b.head(n)), axis=0)["Year-to-Date"]
 
     def top_flop_mtd(self, n=5, day_final=pd.Timestamp("today")):
         s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()
         a = s.sort_values(by=["Month-to-Date"], ascending=False)[["Month-to-Date"]]
         b = s.sort_values(by=["Month-to-Date"], ascending=True)[["Month-to-Date"]]
-        return pd.concat((a.head(n), b.head(n)), axis=0)[["Month-to-Date"]]
+        return pd.concat((a.head(n), b.head(n)), axis=0)["Month-to-Date"]
 
 
     def tail(self, n=10):
