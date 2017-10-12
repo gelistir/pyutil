@@ -194,19 +194,32 @@ class Portfolio(object):
         b = self.weights.ffill().loc[t].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
         return pd.concat((a, b), axis=1)
 
-    def top_flop(self, day_final=pd.Timestamp("today")):
+    def top_flop(self, n=5, day_final=pd.Timestamp("today")):
         d = dict()
         s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()
 
         a = s.sort_values(by=["Month-to-Date"], ascending=True)[["Month-to-Date"]]
-        d["flop MTD"] = a.head(5).reset_index().rename(columns={"Month-to-Date": "Value"})
+        d["flop MTD"] = a.head(n).reset_index().rename(columns={"Month-to-Date": "Value"})
         a = s.sort_values(by=["Month-to-Date"], ascending=False)[["Month-to-Date"]]
-        d["top MTD"] = a.head(5).reset_index().rename(columns={"Month-to-Date": "Value"})
+        d["top MTD"] = a.head(n).reset_index().rename(columns={"Month-to-Date": "Value"})
         a = s.sort_values(by=["Year-to-Date"], ascending=True)[["Year-to-Date"]]
-        d["flop YTD"] = a.head(5).reset_index().rename(columns={"Year-to-Date": "Value"})
+        d["flop YTD"] = a.head(n).reset_index().rename(columns={"Year-to-Date": "Value"})
         a = s.sort_values(by=["Year-to-Date"], ascending=False)[["Year-to-Date"]]
-        d["top YTD"] = a.head(5).reset_index().rename(columns={"Year-to-Date": "Value"})
+        d["top YTD"] = a.head(n).reset_index().rename(columns={"Year-to-Date": "Value"})
         return pd.concat(d, axis=0, names=["category","rank"])
+
+    def top_flop_ytd(self, n=5, day_final=pd.Timestamp("today")):
+        s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()
+        a = s.sort_values(by=["Year-to-Date"], ascending=False)[["Year-to-Date"]]
+        b = s.sort_values(by=["Year-to-Date"], ascending=True)[["Year-to-Date"]]
+        return pd.concat((a.head(n), b.head(n)), axis=0)
+
+    def top_flop_mtd(self, n=5, day_final=pd.Timestamp("today")):
+        s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()
+        a = s.sort_values(by=["Month-to-Date"], ascending=False)[["Month-to-Date"]]
+        b = s.sort_values(by=["Month-to-Date"], ascending=True)[["Month-to-Date"]]
+        return pd.concat((a.head(n), b.head(n)), axis=0)
+
 
     def tail(self, n=10):
         w = self.weights.tail(n)
