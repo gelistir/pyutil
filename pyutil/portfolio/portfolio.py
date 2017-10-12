@@ -179,6 +179,10 @@ class Portfolio(object):
         frame["total"] = frame.sum(axis=1)
         return frame
 
+    def sector_weights_final(self, symbolmap):
+        frame = self.weights.ffill().groupby(by=symbolmap, axis=1).sum()
+        return frame.loc[frame.index[-1]]
+
     def snapshot(self, n=5):
         today = self.index[-1]
         offsets = periods(today)

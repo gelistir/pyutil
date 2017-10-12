@@ -42,7 +42,7 @@ class Mail(object):
         self.__files.extend([("attachment", (name, stream))])
         return self
 
-    def inline(self, name, localpath, mode="r+b"):
+    def inline_file(self, name, localpath, mode="r+b"):
         """
         inline a file.
 

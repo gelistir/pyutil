@@ -17,8 +17,6 @@ class Asset(object):
         assert not data.index.has_duplicates, "Data Index has duplicates"
         assert data.index.is_monotonic_increasing, "Data Index is not increasing"
 
-        #for key in data.keys():
-        #    self[key] = data[key]
         self.__data = data
 
         self.__name = name
@@ -54,16 +52,6 @@ class Asset(object):
     def __repr__(self):
         return "Asset {0} with series {1} and reference {2}".format(self.name, list(self.time_series.keys()),
                                                                     sorted(self.__ref.items()))
-
-    #def __setitem__(self, key, value):
-    #    # add a series
-    #    assert isinstance(value, pd.Series)
-    #    assert not value.index.has_duplicates, "Data Index has duplicates"
-    #    assert value.index.is_monotonic_increasing, "Data Index is not increasing"
-    #    for a in value.index:
-    #        assert a in self.__data.index, "The index {0} is unknown".format(a)
-
-    #    self.__data[key] = value
 
     @property
     def link(self):
