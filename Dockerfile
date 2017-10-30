@@ -1,7 +1,7 @@
 # Set the base image to Ubuntu
 FROM continuumio/miniconda3
 
-RUN conda install -q -y python=3.6 pandas requests matplotlib pymongo openpyxl
+RUN conda install -q -y python=3.6 pandas requests pymongo
 
 COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt && rm requirements.txt
