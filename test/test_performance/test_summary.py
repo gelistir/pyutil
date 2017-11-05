@@ -65,7 +65,7 @@ class TestSummary(TestCase):
 
     def test_truncate(self):
         x = s.truncate(before="2015-01-01")
-        self.assertEquals(x.index[0], pd.Timestamp("2015-01-01"))
+        self.assertEqual(x.index[0], pd.Timestamp("2015-01-01"))
 
     def test_fromNav(self):
         x = fromNav(ts=read_series("ts.csv", parse_dates=True))
@@ -77,4 +77,4 @@ class TestSummary(TestCase):
 
     def test_drawdown_periods(self):
         p = s.drawdown_periods
-        self.assertEquals(p.loc[pd.Timestamp("2014-06-20").date()], 217)
+        self.assertEqual(p.loc[pd.Timestamp("2014-03-07").date()], pd.Timedelta(days=63))

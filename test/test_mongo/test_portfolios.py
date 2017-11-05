@@ -42,7 +42,7 @@ class TestPortfolios(TestCase):
         self.assertTrue(p.empty)
 
     def test_str(self):
-        self.assertEquals(str(self.portfolios), "Portfolio with assets: ['A', 'B', 'C', 'D', 'E', 'F', 'G']")
+        self.assertEqual(str(self.portfolios), "Portfolio with assets: ['A', 'B', 'C', 'D', 'E', 'F', 'G']")
 
 
 

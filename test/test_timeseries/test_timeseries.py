@@ -11,7 +11,7 @@ import pandas.util.testing as pdt
 class TestTimeseries(TestCase):
     def test_adjust(self):
         x = adjust(nav.truncate(before="2015-01-01"))
-        self.assertEqual(x.ix[x.index[0]], 1.0)
+        self.assertEqual(x.loc[x.index[0]], 1.0)
 
     def test_ytd(self):
         a = ytd(nav, today=pd.Timestamp("2014-05-07"))

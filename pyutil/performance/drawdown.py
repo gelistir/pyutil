@@ -11,16 +11,20 @@ def drawdown(price):
     :return: the drawdown
     """
     assert isinstance(price, pd.Series)
+    assert price.any() > 0
+    assert price.index.is_monotonic_increasing
+    assert price.index.is_all_dates
+
     high_water_mark = np.empty(len(price.index))
     moving_max_value = 0
     for i, value in enumerate(price.values):
         moving_max_value = max(moving_max_value, value)
         high_water_mark[i] = moving_max_value
 
-    return pd.Series(data=1.0 - (price / high_water_mark), index=price.index)
+    return pd.Series(data=1.0 - (price.values / high_water_mark), index=price.index)
 
 
-def drawdown_periods(price):
+def drawdown_periods(price, eps=0):
     """
     Compute the length of drawdown periods
 
@@ -29,13 +33,30 @@ def drawdown_periods(price):
     :return: Series with (t_i, n) = (last Day before drawdown, number of days in drawdown)
     """
     d = drawdown(price=price)
-    dd = d.reset_index(drop=True)
 
-    nodes = list(dd[dd == 0].index)
-    nodes.append(dd.index[-1])
+    # Drawdown days
+    is_down = d > eps
 
-    # different Tuesday, Monday = 1 => 0 drawdown
-    # Wednesday, Monday = 2 => 1
-    x = pd.Series({d.index[x[0]]: x[1]-x[0]-1 for x in zip(nodes[:-1], nodes[1:])})
+    # first day of drawdowns
+    is_first = ((~is_down).shift(1) * is_down)
+    is_first.iloc[0] = is_down.iloc[0]
+    is_first = is_first.apply(bool)
 
-    return x[x > 0].sort_values()
+    # last day of drawdowns
+    is_last = (is_down * (~is_down).shift(-1))
+    is_last.iloc[-1] = is_down.iloc[-1]
+    is_last = is_last.apply(bool)
+
+    is_first = list(is_first.loc[is_first].index)
+    is_last = list(is_last.loc[is_last].index)
+
+    return pd.Series({start: end - start for start, end in zip(is_first, is_last)})
+
+
+if __name__ == '__main__':
+    price = pd.Series(data=[0.5, 0.2, 0.3, 0.6, 0.2], index=
+    [pd.Timestamp("2017-01-10"), pd.Timestamp("2017-01-15"), pd.Timestamp("2017-01-17"), pd.Timestamp("2017-01-20"),
+     pd.Timestamp("2017-01-24")])
+    print(drawdown(price=price))
+    a = drawdown_periods(price=price)[pd.Timestamp("2017-01-15")]
+    print(dir(a))

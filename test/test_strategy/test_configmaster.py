@@ -18,7 +18,7 @@ class TestConfigMaster(TestCase):
         configuration = Configuration(reader=f_asset)
 
         portfolio = configuration.portfolio()
-        self.assertAlmostEquals(portfolio.nav.sharpe_ratio(), -0.27817227635204395, places=5)
+        self.assertAlmostEqual(portfolio.nav.sharpe_ratio(), -0.27817227635204395, places=5)
 
         x = configuration.reader("A")
         self.assertTrue(isinstance(x, Asset))

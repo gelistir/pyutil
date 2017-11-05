@@ -138,7 +138,7 @@ class TestPortfolio(TestCase):
         prices=pd.DataFrame(index=[0,1,2],columns=["A","B"])
         weights=pd.Series(index=["A","B"],data=[1.0,1.0])
         p=Portfolio(prices=prices, weights=weights)
-        self.assertEquals(p.weights["B"][2],1)
+        self.assertEqual(p.weights["B"][2],1)
 
     def test_gap(self):
         prices=pd.DataFrame(index=[0,1,2,3], columns=["A"], data=100)

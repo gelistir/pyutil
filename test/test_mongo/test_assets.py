@@ -30,15 +30,15 @@ class TestAssets(TestCase):
         pdt.assert_frame_equal(assets["Peter Maffay"].time_series, prices)
         pdt.assert_series_equal(assets["Peter Maffay"].reference, pd.Series(index=["a", "b"], data=[2.0, 3.0]))
 
-        self.assertEquals(assets.len(), 1)
+        self.assertEqual(assets.len(), 1)
 
         pdt.assert_frame_equal(assets.reference, pd.DataFrame(index=["Peter Maffay"], columns=["a", "b"], data=[[2.0, 3.0]]))
 
-        self.assertEquals(str(assets), "Asset Peter Maffay with series ['A', 'B', 'C', 'D', 'E', 'F', 'G'] and reference [('a', 2.0), ('b', 3.0)]")
+        self.assertEqual(str(assets), "Asset Peter Maffay with series ['A', 'B', 'C', 'D', 'E', 'F', 'G'] and reference [('a', 2.0), ('b', 3.0)]")
 
     def test_asset(self):
         asset = Asset(name="a", data=pd.DataFrame(index=[0,1], columns=["price"], data=[[2],[1]]), b=3.0, a=2.0)
-        self.assertEquals(asset.name, "a")
+        self.assertEqual(asset.name, "a")
         pdt.assert_series_equal(asset.reference, pd.Series(index=["a", "b"], data=[2.0, 3.0]))
         self.assertListEqual(list(asset.time_series.keys()), ["price"])
 
@@ -46,7 +46,7 @@ class TestAssets(TestCase):
         asset = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
         assets = Assets({"Peter Maffay": asset})
         a = assets.apply(f=lambda x: x.truncate(before=pd.Timestamp("2015-01-01"))).history["B"].dropna()
-        self.assertEquals(a.index[0], pd.Timestamp("2015-01-02"))
+        self.assertEqual(a.index[0], pd.Timestamp("2015-01-02"))
 
     def test_sub(self):
         asset_a = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)

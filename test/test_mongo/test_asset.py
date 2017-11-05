@@ -12,11 +12,11 @@ prices = read_frame("price.csv", parse_dates=True)
 class TestAsset(TestCase):
     def test_asset(self):
         asset = Asset(name="Peter Maffay", data=prices, group="A", internal="AA", link="www.maffay.com", b=3.0, a=2.0)
-        self.assertEquals(asset.name, "Peter Maffay")
+        self.assertEqual(asset.name, "Peter Maffay")
         self.assertDictEqual(asset.reference.to_dict(), {"b":3.0, "a": 2.0})
-        self.assertEquals(asset.group, "A")
-        self.assertEquals(asset.internal, "AA")
-        self.assertEquals(asset.link, "www.maffay.com")
+        self.assertEqual(asset.group, "A")
+        self.assertEqual(asset.internal, "AA")
+        self.assertEqual(asset.link, "www.maffay.com")
         pdt.assert_frame_equal(asset.time_series, prices)
 
     # def test_equals(self):

@@ -2,4 +2,4 @@ raven==5.27.1
 premailer
 jinja2
 mongoengine
-#psycopg2
+psycopg2
