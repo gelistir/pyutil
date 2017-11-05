@@ -51,12 +51,3 @@ def drawdown_periods(price, eps=0):
     is_last = list(is_last.loc[is_last].index)
 
     return pd.Series({start: end - start for start, end in zip(is_first, is_last)})
-
-
-if __name__ == '__main__':
-    price = pd.Series(data=[0.5, 0.2, 0.3, 0.6, 0.2], index=
-    [pd.Timestamp("2017-01-10"), pd.Timestamp("2017-01-15"), pd.Timestamp("2017-01-17"), pd.Timestamp("2017-01-20"),
-     pd.Timestamp("2017-01-24")])
-    print(drawdown(price=price))
-    a = drawdown_periods(price=price)[pd.Timestamp("2017-01-15")]
-    print(dir(a))

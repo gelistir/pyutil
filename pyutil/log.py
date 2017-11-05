@@ -2,41 +2,41 @@ import logging
 import os
 from io import StringIO
 
-from pyutil.message import Mail
+#from pyutil.message import Mail
 
 __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 __level = logging.DEBUG
 
 
-def MailHandler(toAdr, fromAdr=None, subject=None, level=logging.WARNING, format=None, mailgunapi=None, mailgunkey=None):
-    """
-    MailHandler, sending log messages directly via email
-
-    :param mailgunkey:
-    :param mailgunapi:
-    :param toAdr:
-    :param subject:
-    :param fromAdr:
-    :param level:
-    :param format:
-
-    :return: the handler
-    """
-    class mailhandler(logging.Handler):
-        def emit(self, record):
-            self.__mail.send(text=self.format(record))
-
-        def __init__(self, mail, format, level):
-            super().__init__(level=level)
-            self.__mail = mail
-            self.formatter = logging.Formatter(format)
-
-    __mail = Mail(mailgunapi, mailgunkey)
-    __mail.toAdr = toAdr
-    __mail.fromAdr = fromAdr or "logger@lobnek.com"
-    __mail.subject = subject or "LOG"
-
-    return mailhandler(mail=__mail, level=level or __level, format=format or __format)
+# def MailHandler(toAdr, fromAdr=None, subject=None, level=logging.WARNING, format=None, mailgunapi=None, mailgunkey=None):
+#     """
+#     MailHandler, sending log messages directly via email
+#
+#     :param mailgunkey:
+#     :param mailgunapi:
+#     :param toAdr:
+#     :param subject:
+#     :param fromAdr:
+#     :param level:
+#     :param format:
+#
+#     :return: the handler
+#     """
+#     class mailhandler(logging.Handler):
+#         def emit(self, record):
+#             self.__mail.send(text=self.format(record))
+#
+#         def __init__(self, mail, format, level):
+#             super().__init__(level=level)
+#             self.__mail = mail
+#             self.formatter = logging.Formatter(format)
+#
+#     __mail = Mail(mailgunapi, mailgunkey)
+#     __mail.toAdr = toAdr
+#     __mail.fromAdr = fromAdr or "logger@lobnek.com"
+#     __mail.subject = subject or "LOG"
+#
+#     return mailhandler(mail=__mail, level=level or __level, format=format or __format)
 
 
 def StreamHandler(level=None, format=None):
@@ -49,7 +49,7 @@ def StreamHandler(level=None, format=None):
     return handler
 
 
-def FileHandler(file="/log/lobnek.log", level=logging.INFO, format=None, mode="a"):
+def FileHandler(file, level=logging.INFO, format=None, mode="a"):
     """
     Filehandler, logs to a file
 
