@@ -5,20 +5,10 @@ import pandas.util.testing as pdt
 
 from pyutil.mongo.asset import Asset
 from pyutil.mongo.assets import Assets
-from test.config import read_frame, resource
+from test.config import read_frame
 
 prices = read_frame("price.csv", parse_dates=True)
 symbols = read_frame("symbols.csv")
-
-
-def from_csv(file, ref_file):
-    frame = pd.read_csv(file, index_col=0, parse_dates=True, header=[0, 1])
-    reference = pd.read_csv(ref_file, index_col=0)
-
-    def __reader(name):
-        return Asset(name=name, data=frame[name], **reference.loc[name].to_dict())
-
-    return Assets({asset: __reader(asset) for asset in frame.keys().levels[0]})
 
 
 class TestAssets(TestCase):
@@ -62,14 +52,6 @@ class TestAssets(TestCase):
         xxx = assets.tail(5)
         pdt.assert_frame_equal(xxx["Peter Maffay"].time_series, prices.tail(5))
         pdt.assert_series_equal(xxx["Peter Maffay"].reference, pd.Series({"b":3.0, "a": 2.0}))
-
-    def test_csv(self):
-        asset_a = Asset(name="Peter Maffay", data=prices, b=3.0, a=2.0)
-        asset_b = Asset(name="Falco", data=prices, b=4.0, a=2.0)
-
-        x = from_csv(file=resource("assets_ts.csv"), ref_file=resource("assets_ref.csv"))
-        self.assertTrue(x["Peter Maffay"].name == asset_a.name)
-        self.assertDictEqual(x["Peter Maffay"].reference.to_dict(), asset_a.reference.to_dict())
 
     def test_internal(self):
         peter = Asset(name="Peter Maffay", group="A", data=prices, b=3.0, a=2.0, internal="jaja")

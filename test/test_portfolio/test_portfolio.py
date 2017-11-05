@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import pandas.util.testing as pdt
 
-from pyutil.portfolio.portfolio import Portfolio, read_csv
+from pyutil.portfolio.portfolio import Portfolio
 from test.config import test_portfolio, read_frame, resource
 from unittest import TestCase
 
@@ -146,10 +146,10 @@ class TestPortfolio(TestCase):
         with self.assertRaises(AssertionError):
             Portfolio(prices=prices, weights=weights)
 
-    def test_csv_back(self):
-        p = test_portfolio()
-        #p.to_csv("hans.csv")
-        portfolio = read_csv(resource("hans.csv"))
-        pdt.assert_frame_equal(portfolio.weights, p.weights)
-        pdt.assert_frame_equal(portfolio.prices, p.prices)
+    #def test_csv_back(self):
+    #    p = test_portfolio()
+    #    #p.to_csv("hans.csv")
+    #    portfolio = read_csv(resource("hans.csv"))
+    #    pdt.assert_frame_equal(portfolio.weights, p.weights)
+    #    pdt.assert_frame_equal(portfolio.prices, p.prices)
 

@@ -12,9 +12,9 @@ def merge(portfolios, axis=0):
     weights = pd.concat([p.weights for p in portfolios], axis=axis, verify_integrity=True)
     return Portfolio(prices, weights.fillna(0.0))
 
-def read_csv(file):
-    x = pd.read_csv(file, header=[0,1], index_col=0, parse_dates=True)
-    return Portfolio(x["price"], x["weight"])
+#def read_csv(file):
+#    x = pd.read_csv(file, header=[0,1], index_col=0, parse_dates=True)
+#    return Portfolio(x["price"], x["weight"])
 
 
 class Portfolio(object):
@@ -332,8 +332,8 @@ class Portfolio(object):
     #
     #     return f
 
-    def to_csv(self, file):
-        pd.concat({"price": self.prices, "weight": self.weights}, axis=1).to_csv(file)
+    #def to_csv(self, file):
+    #    pd.concat({"price": self.prices, "weight": self.weights}, axis=1).to_csv(file)
 
 
     def __eq__(self, other):
