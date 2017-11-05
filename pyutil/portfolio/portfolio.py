@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 
 from ..performance.summary import fromReturns
-from .maths import xround, buy_or_sell
 from ..performance.periods import period_returns, periods
 from ..timeseries.timeseries import ytd, mtd
 
@@ -11,10 +10,6 @@ def merge(portfolios, axis=0):
     prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
     weights = pd.concat([p.weights for p in portfolios], axis=axis, verify_integrity=True)
     return Portfolio(prices, weights.fillna(0.0))
-
-#def read_csv(file):
-#    x = pd.read_csv(file, header=[0,1], index_col=0, parse_dates=True)
-#    return Portfolio(x["price"], x["weight"])
 
 
 class Portfolio(object):
@@ -148,10 +143,10 @@ class Portfolio(object):
     def leverage(self):
         return self.weights.sum(axis=1).dropna()
 
-    def summary(self, t0=None, t1=None, alpha=0.95, periods=None, r_f=0):
-        x = self.nav.truncate(before=t0, after=t1).summary(alpha=alpha, periods=periods, r_f=r_f)
-        y = self.leverage.truncate(before=t0, after=t1).summary()
-        return pd.concat((x,y), axis=0)
+    #def summary(self, t0=None, t1=None, alpha=0.95, periods=None, r_f=0):
+    #    x = self.nav.truncate(before=t0, after=t1).summary(alpha=alpha, periods=periods, r_f=r_f)
+    #    y = self.leverage.truncate(before=t0, after=t1).summary()
+    #    return pd.concat((x,y), axis=0)
 
     def truncate(self, before=None, after=None):
         return Portfolio(prices=self.prices.truncate(before=before, after=after),
@@ -174,16 +169,22 @@ class Portfolio(object):
         a.index.name = "weight"
         return a
 
-    def sector_weights(self, symbolmap):
+    def sector_weights(self, symbolmap, total=False):
         frame = self.weights.ffill().groupby(by=symbolmap, axis=1).sum()
-        frame["total"] = frame.sum(axis=1)
+        if total:
+            frame["total"] = frame.sum(axis=1)
         return frame
 
-    def sector_weights_final(self, symbolmap):
-        frame = self.weights.ffill().groupby(by=symbolmap, axis=1).sum()
+    def sector_weights_final(self, symbolmap, total=False):
+        frame = self.sector_weights(symbolmap=symbolmap, total=total)#self.weights.ffill().tail(1).groupby(by=symbolmap, axis=1).sum()
         return frame.loc[frame.index[-1]]
 
     def snapshot(self, n=5):
+        """
+        Give a snapshot of the portfolio, e.g. MTD, YTD and the weights at the last n trading days for each asset
+        :param n:
+        :return:
+        """
         today = self.index[-1]
         offsets = periods(today)
 
@@ -194,37 +195,33 @@ class Portfolio(object):
         b = self.weights.ffill().loc[t].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
         return pd.concat((a, b), axis=1)
 
-    def top_flop(self, n=5, day_final=pd.Timestamp("today")):
-        d = dict()
-        s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()
+    #def top_flop(self, n=5, day_final=pd.Timestamp("today")):
+    #    d = dict()
+    #    s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()
 
-        a = s.sort_values(by=["Month-to-Date"], ascending=True)[["Month-to-Date"]]
-        d["flop MTD"] = a.head(n).reset_index().rename(columns={"Month-to-Date": "Value"})
-        a = s.sort_values(by=["Month-to-Date"], ascending=False)[["Month-to-Date"]]
-        d["top MTD"] = a.head(n).reset_index().rename(columns={"Month-to-Date": "Value"})
-        a = s.sort_values(by=["Year-to-Date"], ascending=True)[["Year-to-Date"]]
-        d["flop YTD"] = a.head(n).reset_index().rename(columns={"Year-to-Date": "Value"})
-        a = s.sort_values(by=["Year-to-Date"], ascending=False)[["Year-to-Date"]]
-        d["top YTD"] = a.head(n).reset_index().rename(columns={"Year-to-Date": "Value"})
-        return pd.concat(d, axis=0, names=["category","rank"])
+    #    a = s.sort_values(by=["Month-to-Date"], ascending=True)[["Month-to-Date"]]
+    #    d["flop MTD"] = a.head(n).reset_index().rename(columns={"Month-to-Date": "Value"})
+    #    a = s.sort_values(by=["Month-to-Date"], ascending=False)[["Month-to-Date"]]
+    #    d["top MTD"] = a.head(n).reset_index().rename(columns={"Month-to-Date": "Value"})
+    #    a = s.sort_values(by=["Year-to-Date"], ascending=True)[["Year-to-Date"]]
+    #    d["flop YTD"] = a.head(n).reset_index().rename(columns={"Year-to-Date": "Value"})
+    #    a = s.sort_values(by=["Year-to-Date"], ascending=False)[["Year-to-Date"]]
+    #    d["top YTD"] = a.head(n).reset_index().rename(columns={"Year-to-Date": "Value"})
+    #    return pd.concat(d, axis=0, names=["category","rank"])
 
     def top_flop_ytd(self, n=5, day_final=pd.Timestamp("today")):
-        s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()
-        a = s.sort_values(by=["Year-to-Date"], ascending=False)[["Year-to-Date"]]
-        b = s.sort_values(by=["Year-to-Date"], ascending=True)[["Year-to-Date"]]
-        return pd.concat((a.head(n), b.head(n)), axis=0)["Year-to-Date"]
+        return self.__f(n=n, day_final=day_final, term="Year-to-Date")
+
+    def __f(self, n=5, term="Month-to-Date", day_final=pd.Timestamp("today")):
+        s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()[term]
+        return {"top": s.sort_values(ascending=False).head(n), "flop": s.sort_values(ascending=True).head(n)}
 
     def top_flop_mtd(self, n=5, day_final=pd.Timestamp("today")):
-        s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()
-        a = s.sort_values(by=["Month-to-Date"], ascending=False)[["Month-to-Date"]]
-        b = s.sort_values(by=["Month-to-Date"], ascending=True)[["Month-to-Date"]]
-        return pd.concat((a.head(n), b.head(n)), axis=0)["Month-to-Date"]
-
+        return self.__f(n=n, day_final=day_final, term="Month-to-Date")
 
     def tail(self, n=10):
         w = self.weights.tail(n)
-        p = self.prices.loc[w.index]
-        return Portfolio(p, w)
+        return Portfolio(self.prices.loc[w.index], w)
 
     @property
     def position(self):
@@ -248,35 +245,35 @@ class Portfolio(object):
         days = (__fundsize * self.position).diff().abs().sum(axis=1)
         return sorted(list(days[days > 1].index))
 
-    def transaction_report(self, capital=1e7, n=2):
-        d = dict()
-        nav = self.nav
-        prices = self.prices.ffill()
+    #def transaction_report(self, capital=1e7, n=2):
+    #    d = dict()
+    #    nav = self.nav
+    #    prices = self.prices.ffill()
 
-        old_position = pd.Series({asset: 0.0 for asset in self.assets})
-
-        for trading_day in self.trading_days:
-            nav_today = nav.loc[trading_day]
-            p = prices.loc[trading_day]
-
-            # new goal position
-            pos = self.weights.loc[trading_day] * capital * nav_today / p
-            pos = pos.apply(xround, (n,))
-
-            # compute the trade to get to position
-            trade = pos - old_position
-            trade = trade[trade.abs() > 0]
-
-            # the new position
-            old_position = pos
-
-            units = trade
-            amounts = units * p.loc[trade.index]
-            d[trading_day] = pd.DataFrame({"Amount": amounts, "Units": units})
-
-        p = pd.concat(d)
-        p["Type"] = p["Amount"].apply(buy_or_sell)
-        return p
+        # old_position = pd.Series({asset: 0.0 for asset in self.assets})
+        #
+        # for trading_day in self.trading_days:
+        #     nav_today = nav.loc[trading_day]
+        #     p = prices.loc[trading_day]
+        #
+        #     # new goal position
+        #     pos = self.weights.loc[trading_day] * capital * nav_today / p
+        #     pos = pos.apply(xround, (n,))
+        #
+        #     # compute the trade to get to position
+        #     trade = pos - old_position
+        #     trade = trade[trade.abs() > 0]
+        #
+        #     # the new position
+        #     old_position = pos
+        #
+        #     units = trade
+        #     amounts = units * p.loc[trade.index]
+        #     d[trading_day] = pd.DataFrame({"Amount": amounts, "Units": units})
+        #
+        # p = pd.concat(d)
+        # p["Type"] = p["Amount"].apply(buy_or_sell)
+        # return p
 
     def ytd(self, today=None):
         return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today))
@@ -335,26 +332,26 @@ class Portfolio(object):
     #def to_csv(self, file):
     #    pd.concat({"price": self.prices, "weight": self.weights}, axis=1).to_csv(file)
 
+    #
+    # def __eq__(self, other):
+    #     if type(other) is type(self):
+    #         return self.prices.equals(other.prices) and self.weights.equals(other.weights)
+    #     return False
+    #
+    # def __ne__(self, other):
+    #     return not self.__eq__(other)
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self.prices.equals(other.prices) and self.weights.equals(other.weights)
-        return False
+    #@property
+    #def trade_usd(self):
+    #    # the amount of USD traded per asset on trading days
+    #    return self.trade_abs * self.prices.loc[self.trading_days]
 
-    def __ne__(self, other):
-        return not self.__eq__(other)
+    #@property
+    #def trade_rel(self):
+    #    # the fraction of capital traded on trading days
+    #    return self.trade_usd.div(self.nav.loc[self.trading_days], axis=0)
 
-    @property
-    def trade_usd(self):
-        # the amount of USD traded per asset on trading days
-        return self.trade_abs * self.prices.loc[self.trading_days]
-
-    @property
-    def trade_rel(self):
-        # the fraction of capital traded on trading days
-        return self.trade_usd.div(self.nav.loc[self.trading_days], axis=0)
-
-    @property
-    def trade_abs(self):
-        # the number of shares (etc.) traded on trading days assuming a fundsize of 1
-        return (self.position.fillna(0.0).diff()).loc[self.trading_days]
+    #@property
+    #def trade_abs(self):
+    #    # the number of shares (etc.) traded on trading days assuming a fundsize of 1
+    #    return (self.position.fillna(0.0).diff()).loc[self.trading_days]

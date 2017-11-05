@@ -23,10 +23,11 @@ class TestPortfolio(TestCase):
         self.assertEqual(portfolio.truncate(before="2013-01-08").index[0], pd.Timestamp("2013-01-08"))
 
     def test_top_flop(self):
-        x = portfolio.top_flop(day_final=pd.Timestamp("2015-01-01"))
-        self.assertAlmostEqual(x["Value"].values[16], 0.00025637273414469419, places=5)
-        self.assertEqual(x.index.names[0], "category")
-        self.assertEqual(x.index.names[1], "rank")
+        x = portfolio.top_flop_ytd(day_final=pd.Timestamp("2014-12-31"))
+        self.assertAlmostEqual(x["top"].values[0], 0.024480763822820828, places=10)
+
+        y = portfolio.top_flop_mtd(day_final=pd.Timestamp("2014-12-31"))
+        self.assertAlmostEqual(y["flop"].values[0], -0.0040598440397091595, places=10)
 
     def test_tail(self):
         x = portfolio.tail(5)
@@ -34,8 +35,8 @@ class TestPortfolio(TestCase):
         self.assertEqual(x.index[0], pd.Timestamp("2015-04-16"))
 
     def test_sector_weights(self):
-        x = portfolio.sector_weights(pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
-                                                "E": "C", "F": "C", "G": "C"}))
+        x = portfolio.sector_weights(symbolmap=pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
+                                                "E": "C", "F": "C", "G": "C"}), total=True)
 
         pdt.assert_frame_equal(x.head(10), read_frame("sector_weights.csv", parse_dates=True))
 
@@ -58,11 +59,6 @@ class TestPortfolio(TestCase):
         print((2 * portfolio).weights)
         pdt.assert_frame_equal(2 * portfolio.weights, (2 * portfolio).weights, check_names=False)
 
-
-    # def test_plot(self):
-    #     x = portfolio.plot()
-    #     self.assertEqual(len(x.get_axes()), 3)
-
     def test_iron_threshold(self):
         p1 = test_portfolio().iron_threshold(threshold=0.05)
         self.assertEqual(len(p1.trading_days), 40)
@@ -72,12 +68,12 @@ class TestPortfolio(TestCase):
         self.assertEqual(len(p2.trading_days), 10)
 
 
-    def test_transaction_report(self):
-        p1 = test_portfolio().iron_threshold(threshold=0.05)
-        y = p1.transaction_report()
-        yy = read_frame("report.csv", index_col=[0, 1])
-        yy.index.names = [None, None]
-        pdt.assert_frame_equal(y, yy)
+    #def test_transaction_report(self):
+    #    p1 = test_portfolio().iron_threshold(threshold=0.05)
+    #    y = p1.transaction_report()
+    #    yy = read_frame("report.csv", index_col=[0, 1])
+    #    yy.index.names = [None, None]
+    #    pdt.assert_frame_equal(y, yy)
 
 
     def test_init_1(self):
@@ -146,10 +142,21 @@ class TestPortfolio(TestCase):
         with self.assertRaises(AssertionError):
             Portfolio(prices=prices, weights=weights)
 
-    #def test_csv_back(self):
-    #    p = test_portfolio()
-    #    #p.to_csv("hans.csv")
-    #    portfolio = read_csv(resource("hans.csv"))
-    #    pdt.assert_frame_equal(portfolio.weights, p.weights)
-    #    pdt.assert_frame_equal(portfolio.prices, p.prices)
+    def test_weight_current(self):
+        p = test_portfolio()
+        self.assertAlmostEqual(p.weight_current["D"], 0.022837914929098344, places=10)
 
+    def test_subportfolio(self):
+        p = test_portfolio()
+        sub = p.subportfolio(assets=p.assets[:2])
+        self.assertListEqual(p.assets[:2], sub.assets)
+
+    def test_snapshot(self):
+        p = test_portfolio()
+        x = p.snapshot(n=5)
+        self.assertAlmostEqual(x["Year-to-Date"]["B"], 0.01615087992272124, places=10)
+
+    def test_apply(self):
+        p = test_portfolio()
+        w = p.apply(lambda x: 2*x)
+        pdt.assert_frame_equal(w.weights, 2*p.weights)
