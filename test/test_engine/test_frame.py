@@ -22,7 +22,6 @@ class TestFrame(TestCase):
     def tearDownClass(cls):
         Frame.drop_collection()
 
-
     def test_get_frame(self):
         frame = pd.DataFrame(index=["A", "B"], columns=["X", "Y"], data=[[2, 3], [10, 20]])
         frame.index.names=["Hans"]
