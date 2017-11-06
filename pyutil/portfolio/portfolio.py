@@ -143,23 +143,12 @@ class Portfolio(object):
     def leverage(self):
         return self.weights.sum(axis=1).dropna()
 
-    #def summary(self, t0=None, t1=None, alpha=0.95, periods=None, r_f=0):
-    #    x = self.nav.truncate(before=t0, after=t1).summary(alpha=alpha, periods=periods, r_f=r_f)
-    #    y = self.leverage.truncate(before=t0, after=t1).summary()
-    #    return pd.concat((x,y), axis=0)
-
     def truncate(self, before=None, after=None):
         return Portfolio(prices=self.prices.truncate(before=before, after=after),
                     weights=self.weights.truncate(before=before, after=after))
 
-
     @property
     def empty(self):
-        """
-        Return True if the portfolio is empty, False otherwise. A portfolio is empty if any only if both prices and weights are empty
-
-        :return:
-        """
         return len(self.index) == 0
 
     @property
@@ -194,20 +183,6 @@ class Portfolio(object):
 
         b = self.weights.ffill().loc[t].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
         return pd.concat((a, b), axis=1)
-
-    #def top_flop(self, n=5, day_final=pd.Timestamp("today")):
-    #    d = dict()
-    #    s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()
-
-    #    a = s.sort_values(by=["Month-to-Date"], ascending=True)[["Month-to-Date"]]
-    #    d["flop MTD"] = a.head(n).reset_index().rename(columns={"Month-to-Date": "Value"})
-    #    a = s.sort_values(by=["Month-to-Date"], ascending=False)[["Month-to-Date"]]
-    #    d["top MTD"] = a.head(n).reset_index().rename(columns={"Month-to-Date": "Value"})
-    #    a = s.sort_values(by=["Year-to-Date"], ascending=True)[["Year-to-Date"]]
-    #    d["flop YTD"] = a.head(n).reset_index().rename(columns={"Year-to-Date": "Value"})
-    #    a = s.sort_values(by=["Year-to-Date"], ascending=False)[["Year-to-Date"]]
-    #    d["top YTD"] = a.head(n).reset_index().rename(columns={"Year-to-Date": "Value"})
-    #    return pd.concat(d, axis=0, names=["category","rank"])
 
     def top_flop_ytd(self, n=5, day_final=pd.Timestamp("today")):
         return self.__f(n=n, day_final=day_final, term="Year-to-Date")
@@ -245,36 +220,6 @@ class Portfolio(object):
         days = (__fundsize * self.position).diff().abs().sum(axis=1)
         return sorted(list(days[days > 1].index))
 
-    #def transaction_report(self, capital=1e7, n=2):
-    #    d = dict()
-    #    nav = self.nav
-    #    prices = self.prices.ffill()
-
-        # old_position = pd.Series({asset: 0.0 for asset in self.assets})
-        #
-        # for trading_day in self.trading_days:
-        #     nav_today = nav.loc[trading_day]
-        #     p = prices.loc[trading_day]
-        #
-        #     # new goal position
-        #     pos = self.weights.loc[trading_day] * capital * nav_today / p
-        #     pos = pos.apply(xround, (n,))
-        #
-        #     # compute the trade to get to position
-        #     trade = pos - old_position
-        #     trade = trade[trade.abs() > 0]
-        #
-        #     # the new position
-        #     old_position = pos
-        #
-        #     units = trade
-        #     amounts = units * p.loc[trade.index]
-        #     d[trading_day] = pd.DataFrame({"Amount": amounts, "Units": units})
-        #
-        # p = pd.concat(d)
-        # p["Type"] = p["Amount"].apply(buy_or_sell)
-        # return p
-
     def ytd(self, today=None):
         return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today))
 
@@ -299,59 +244,3 @@ class Portfolio(object):
         weights["Extrapolated"] = 100.0 * p.weights.loc[today]
         weights["Gap"] = 100.0 * (self.weights.loc[today] - p.weights.loc[today])
         return weights
-
-    # def plot(self, tradingDays=False, figsize=(16,10)):
-    #
-    #     import matplotlib.pyplot as plt
-    #
-    #     f = plt.figure(figsize=figsize)
-    #
-    #     ax1 = f.add_subplot(211)
-    #     (100 * self.nav).plot(ax=ax1, color="blue")
-    #     if tradingDays:
-    #         x1, x2, y1, y2 = plt.axis()
-    #         plt.vlines(x=self.trading_days, ymin=y1, ymax=y2, colors="red")
-    #     plt.legend(["NAV"], loc=2)
-    #
-    #     ax2 = f.add_subplot(413,sharex=ax1)
-    #     (100*self.nav.drawdown).plot.area(ax=ax2, alpha=0.2, color="red", linewidth=2)
-    #     plt.legend(["Drawdown"], loc=2)
-    #
-    #     ax3 = plt.subplot(414, sharex=ax1)
-    #     (100 * self.leverage).plot(ax=ax3, color='green')
-    #     ax3.set_ylim([-10, 110])
-    #
-    #     (100 * self.weights.max(axis=1)).plot(ax=ax3, color='blue')
-    #     plt.legend(["Leverage","Max Weight"], loc=2)
-    #
-    #     f.subplots_adjust(hspace=0.05)
-    #     plt.setp([a.get_xticklabels() for a in f.axes[:-1]], visible=False)
-    #
-    #     return f
-
-    #def to_csv(self, file):
-    #    pd.concat({"price": self.prices, "weight": self.weights}, axis=1).to_csv(file)
-
-    #
-    # def __eq__(self, other):
-    #     if type(other) is type(self):
-    #         return self.prices.equals(other.prices) and self.weights.equals(other.weights)
-    #     return False
-    #
-    # def __ne__(self, other):
-    #     return not self.__eq__(other)
-
-    #@property
-    #def trade_usd(self):
-    #    # the amount of USD traded per asset on trading days
-    #    return self.trade_abs * self.prices.loc[self.trading_days]
-
-    #@property
-    #def trade_rel(self):
-    #    # the fraction of capital traded on trading days
-    #    return self.trade_usd.div(self.nav.loc[self.trading_days], axis=0)
-
-    #@property
-    #def trade_abs(self):
-    #    # the number of shares (etc.) traded on trading days assuming a fundsize of 1
-    #    return (self.position.fillna(0.0).diff()).loc[self.trading_days]
