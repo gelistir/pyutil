@@ -30,8 +30,13 @@ def upsert(cls, get, set=None):
 
 
 def db_in_memory(db):
-    db.bind(provider='sqlite', filename=":memory:")
-    db.generate_mapping(create_tables=True)
+    # if the database object is already bound to a db (will raise a TypeError?!)
+    # if so, go on, clear all data and recreate the tables
+    try:
+        db.bind(provider='sqlite', filename=":memory:")
+        db.generate_mapping(create_tables=True)
+    except TypeError:
+        pass
 
     db.drop_all_tables(with_all_data=True)
     db.create_tables()
