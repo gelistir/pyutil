@@ -1,5 +1,7 @@
 
 from pony.orm.core import EntityMeta
+from pony import orm
+
 
 def upsert(cls, get, set=None):
     """
@@ -25,3 +27,12 @@ def upsert(cls, get, set=None):
         for key, value in set.items():
             obj.__setattr__(key, value)
         return obj
+
+
+def db_in_memory(db):
+    db.bind(provider='sqlite', filename=":memory:")
+    db.generate_mapping(create_tables=True)
+
+    db.drop_all_tables(with_all_data=True)
+    db.create_tables()
+    return orm.db_session()
