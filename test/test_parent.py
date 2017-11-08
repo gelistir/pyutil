@@ -4,11 +4,6 @@ from pyutil.parent import Parent
 
 
 class TestDecorator(TestCase):
-    # def test_f1(self):
-    #     with self.assertRaises(AssertionError):
-    #         with Parent() as parent:
-    #             print(type(parent))
-    #             raise AssertionError
 
     def test_f2(self):
         with Parent() as parent:

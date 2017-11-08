@@ -1,7 +1,6 @@
 import os
 import pandas as pd
 
-from pyutil.mongo.asset import Asset
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.performance.summary import NavSeries
 from mongoengine import connect as connect_mongo
@@ -22,8 +21,6 @@ def read_series(name, parse_dates=True, index_col=0, cname=None):
 def test_portfolio():
     return Portfolio(prices=read_frame("price.csv"), weights=read_frame("weight.csv"))
 
-def test_asset(name="TEST FP Equity"):
-    return Asset(name=name, data=read_frame("price.csv")["B"], **read_frame("symbols.csv").loc["B"].to_dict())
 
 def connect():
     # this will connect to an empty database...
