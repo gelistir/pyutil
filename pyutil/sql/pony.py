@@ -8,7 +8,7 @@ def upsert(cls, get, set=None):
     Interacting with Pony entities.
 
     :param cls: The actual entity class
-    :param get:
+    :param get: Identify the object (e.g. row) with this dictionary
     :param set:
     :return:
     """

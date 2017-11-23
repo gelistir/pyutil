@@ -1,16 +1,15 @@
 import logging
 import os
-from io import StringIO
 
 __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 __level = logging.DEBUG
 
 
-def StreamHandler(level=None, format=None):
+def StreamHandler(stream=None, level=None, format=None):
     """
     Streamhandler, provides handler.stream.getvalue()
     """
-    handler = logging.StreamHandler(StringIO())
+    handler = logging.StreamHandler(stream)
     handler.level = level or __level
     handler.formatter = logging.Formatter(format or __format)
     return handler

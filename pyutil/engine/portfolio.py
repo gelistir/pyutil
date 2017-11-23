@@ -21,9 +21,16 @@ def load_portfolio(name):
 
 
 def upsert_portfolio(name, portfolio):
+    """
+
+    :param name:
+    :param portfolio:
+    :return:
+    """
     p_old = load_portfolio(name)
     if p_old:
-        start = portfolio.index[0]
+        start = portfolio.index[0]     # first index of the new portfolio
+        # using this construction we make sure start is not contained in the old portfolios
         p_old = p_old.truncate(after=start - pd.offsets.Second(n=1))
         __store_portfolio(name, merge([p_old, portfolio], axis=0))
     else:
@@ -32,8 +39,12 @@ def upsert_portfolio(name, portfolio):
     return load_portfolio(name)
 
 
+def keys():
+    return [object.name for object in PortfolioMongo.objects]
+
+
 def portfolios():
-    return Portfolios({object.name : object.portfolio for object in PortfolioMongo.objects})
+    return Portfolios({object.name: object.portfolio for object in PortfolioMongo.objects})
 
 
 class PortfolioMongo(Document):

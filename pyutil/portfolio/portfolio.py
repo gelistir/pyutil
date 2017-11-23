@@ -36,12 +36,14 @@ class Portfolio(object):
 
         moments = [self.index[0]]
 
-        # we need timestamps from the underlying series not the end of intervals!
+        # we need timestamps from the underlying series not the end of the intervals!
         resample = self.weights.resample(rule=rule).last()
         for t in resample.index:
-            moments.append(self.weights[self.weights.index <= t].index[-1])
+            moments.append([a for a in self.index if a <= t][-1])
 
+        # run through all dates expect the last one...
         for date in self.weights.index[:-1]:
+            # if that's not a special date, forward the portfolio
             if date not in moments:
                 portfolio.forward(date)
 
@@ -51,6 +53,7 @@ class Portfolio(object):
         # We move weights to t
         yesterday = yesterday or self.__before[t]
 
+        # weights of "yesterday"
         w1 = self.__weights.loc[yesterday].dropna()
 
         # fraction of the cash in the portfolio yesterday
@@ -59,11 +62,12 @@ class Portfolio(object):
         # new value of each position
         value = w1 * (self.asset_returns.loc[t].fillna(0.0) + 1)
 
+        # compute the new weights...
         self.weights.loc[t] = value / (value.sum() + cash)
 
         return self
 
-    def __init__(self, prices, weights=None): #, **kwargs):
+    def __init__(self, prices, weights=None):
         # if you don't specify any weights, we initialize them with nan
         if weights is None:
             weights = pd.DataFrame(index=prices.index, columns=prices.keys(), data=np.nan)
@@ -76,9 +80,12 @@ class Portfolio(object):
 
             weights = w
 
+        # make sure the keys are matching
         assert set(weights.keys()) <= set(prices.keys()), "Key for weights not subset of keys for prices"
+        # enforce some indixes
         assert prices.index.equals(weights.index), "Index for prices and weights have to match"
 
+        # avoid duplicates
         assert not prices.index.has_duplicates, "Price Index has duplicates"
         assert not weights.index.has_duplicates, "Weights Index has duplicates"
 
@@ -108,57 +115,113 @@ class Portfolio(object):
 
     @property
     def cash(self):
+        """
+        cash series
+        :return:
+        """
         return 1.0 - self.leverage
 
     @property
     def assets(self):
+        """
+        list of assets
+        :return:
+        """
         return list(self.__prices.sort_index(axis=1).columns)
 
     @property
     def prices(self):
+        """
+        frame of prices
+        :return:
+        """
         return self.__prices
 
     @property
     def weights(self):
+        """
+        frame of weights
+        :return:
+        """
         return self.__weights
 
     @property
     def asset_returns(self):
+        """
+        frame of returns
+        :return:
+        """
         return self.__r
 
     @property
     def nav(self):
+        """
+        nav series
+        :return:
+        """
         return fromReturns(self.weighted_returns.sum(axis=1))
 
     @property
     def weighted_returns(self):
+        """
+        frame of returns after weights
+        :return:
+        """
         r = self.asset_returns.fillna(0.0)
         return pd.DataFrame({a: r[a]*self.weights[a].dropna().shift(1).fillna(0.0) for a in self.assets})
 
     @property
     def index(self):
+        """
+        index of the portfolio (e.g. timestamps)
+        :return:
+        """
         return self.prices.index
 
     @property
     def leverage(self):
+        """
+        leverage (sum of weights)
+        :return:
+        """
         return self.weights.sum(axis=1).dropna()
 
     def truncate(self, before=None, after=None):
+        """
+        truncate the portfolio
+        :param before:
+        :param after:
+        :return:
+        """
         return Portfolio(prices=self.prices.truncate(before=before, after=after),
                     weights=self.weights.truncate(before=before, after=after))
 
     @property
     def empty(self):
+        """
+        true only if the portfolio is empty
+        :return:
+        """
         return len(self.index) == 0
 
     @property
     def weight_current(self):
+        """
+        current weight, e.g. the last weight
+        :return:
+        """
         w = self.weights.ffill()
         a = w.loc[w.index[-1]]
         a.index.name = "weight"
         return a
 
     def sector_weights(self, symbolmap, total=False):
+        """
+        weights per sector, symbolmap is a dictionary
+        :param symbolmap:
+        :param total:
+        :return:
+        """
         frame = self.weights.ffill().groupby(by=symbolmap, axis=1).sum()
         if total:
             frame["total"] = frame.sum(axis=1)
