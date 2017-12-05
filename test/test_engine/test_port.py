@@ -22,7 +22,6 @@ class TestPort(TestCase):
         pdt.assert_frame_equal(test_portfolio().prices, p1.prices)
         pdt.assert_frame_equal(test_portfolio().weights, p1.weights)
 
-
     def test_portfolios(self):
         x = portfolios()
         self.assertTrue(type(x), Portfolios)

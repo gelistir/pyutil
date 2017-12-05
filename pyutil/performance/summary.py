@@ -130,9 +130,9 @@ class NavSeries(pd.Series):
         d["# Events"] = self.events
         d["# Events per year"] = periods
 
-        d["Annua. Return"] = 100 * self.mean_r(periods=periods)
-        d["Annua. Volatility"] = 100 * self.annualized_volatility(periods=periods)
-        d["Annua. Sharpe Ratio (r_f = {0})".format(r_f)] = self.sharpe_ratio(periods=periods, r_f=r_f)
+        d["Annua Return"] = 100 * self.mean_r(periods=periods)
+        d["Annua Volatility"] = 100 * self.annualized_volatility(periods=periods)
+        d["Annua Sharpe Ratio (r_f = {0})".format(r_f)] = self.sharpe_ratio(periods=periods, r_f=r_f)
 
         dd = self.drawdown
         d["Max Drawdown"] = 100 * dd.max()
@@ -151,8 +151,8 @@ class NavSeries(pd.Series):
         d["# Positive Events"] = self.positive_events
         d["# Negative Events"] = self.negative_events
 
-        d["Value at Risk (alpha = {alpha})".format(alpha=alpha)] = 100*self.var(alpha=alpha)
-        d["Conditional Value at Risk (alpha = {alpha})".format(alpha=alpha)] = 100*self.cvar(alpha=alpha)
+        d["Value at Risk (alpha = {alpha})".format(alpha=int(100*alpha))] = 100*self.var(alpha=alpha)
+        d["Conditional Value at Risk (alpha = {alpha})".format(alpha=int(100*alpha))] = 100*self.cvar(alpha=alpha)
         d["First_at"] = self.index[0].date()
         d["Last_at"] = self.index[-1].date()
 

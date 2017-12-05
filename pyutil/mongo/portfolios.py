@@ -34,36 +34,36 @@ class Portfolios(object):
     def __repr__(self):
         return str.join("\n", [str(self[portfolio]) for portfolio in self.__portfolios.keys()])
 
-    def sector_weights(self, symbolmap):
-        def f(x):
-            return x.loc[x.index[-1]]
+    #def sector_weights(self, symbolmap):
+    #    def f(x):
+    #        return x.loc[x.index[-1]]
+    #
+    #        return 100*pd.DataFrame({name: f(p.sector_weights(symbolmap)) for name, p in self.items()}).fillna(0.0).transpose()
 
-        return 100*pd.DataFrame({name: f(p.sector_weights(symbolmap)) for name, p in self.items()}).fillna(0.0).transpose()
+    #@staticmethod
+    #def __g(r, format):
+    #    frame = r.transpose().sort_index(axis=1, ascending=False)
+    #    frame.rename(columns=lambda x: x.strftime(format), inplace=True)
+    #    frame["total"] = (frame.fillna(0.0) + 1.0).prod(axis=1) - 1.0
+    #    return 100 * frame
 
-    @staticmethod
-    def __g(r, format):
-        frame = r.transpose().sort_index(axis=1, ascending=False)
-        frame.rename(columns=lambda x: x.strftime(format), inplace=True)
-        frame["total"] = (frame.fillna(0.0) + 1.0).prod(axis=1) - 1.0
-        return 100 * frame
+    #@property
+    #def mtd(self):
+    #    r = self.nav().pct_change().dropna(axis=1, how="all")
+    #    return self.__g(r.apply(mm, today=r.index[-1]), format="%b %d")
 
-    @property
-    def mtd(self):
-        r = self.nav().pct_change().dropna(axis=1, how="all")
-        return self.__g(r.apply(mm, today=r.index[-1]), format="%b %d")
+    #def recent(self, n=15):
+    #    r = self.nav().pct_change().tail(n)
+    #    return self.__g(r, format="%b %d")
 
-    def recent(self, n=15):
-        r = self.nav().pct_change().tail(n)
-        return self.__g(r, format="%b %d")
+    #@property
+    #def ytd(self):
+    #    r = self.nav().resample("M").last().pct_change().dropna(axis=1, how="all")
+    #    return self.__g(r.apply(yy, today=r.index[-1]), format="%b")
 
-    @property
-    def ytd(self):
-        r = self.nav().resample("M").last().pct_change().dropna(axis=1, how="all")
-        return self.__g(r.apply(yy, today=r.index[-1]), format="%b")
-
-    @property
-    def period_returns(self):
-        frame = self.nav().pct_change()
-        # compute the periods
-        offset = pp(today=frame.index[-1])
-        return 100*frame.apply(pr, offset=offset).transpose()
+    # @property
+    # def period_returns(self):
+    #     frame = self.nav().pct_change()
+    #     # compute the periods
+    #     offset = pp(today=frame.index[-1])
+    #     return 100*frame.apply(pr, offset=offset).transpose()

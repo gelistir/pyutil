@@ -1,5 +1,3 @@
-premailer
-jinja2
 mongoengine
 psycopg2
 pony
