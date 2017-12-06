@@ -4,7 +4,6 @@ from io import BytesIO
 import pandas as pd
 from mongoengine import Document, StringField, DictField, BinaryField
 
-from pyutil.mongo.portfolios import Portfolios
 from pyutil.portfolio.portfolio import Portfolio, merge
 
 
@@ -44,7 +43,7 @@ def keys():
 
 
 def portfolios():
-    return Portfolios({object.name: object.portfolio for object in PortfolioMongo.objects})
+    return {object.name: object.portfolio for object in PortfolioMongo.objects}
 
 
 class PortfolioMongo(Document):

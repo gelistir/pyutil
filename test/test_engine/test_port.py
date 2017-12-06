@@ -5,7 +5,6 @@ import pandas.util.testing as pdt
 from pyutil.engine.frame import Frame
 from pyutil.engine.portfolio import upsert_portfolio, load_portfolio, portfolios
 from pyutil.mongo.connect import connect_mongo
-from pyutil.mongo.portfolios import Portfolios
 from test.config import test_portfolio
 
 
@@ -24,7 +23,7 @@ class TestPort(TestCase):
 
     def test_portfolios(self):
         x = portfolios()
-        self.assertTrue(type(x), Portfolios)
+        self.assertTrue(type(x), dict)
         self.assertSetEqual(set(x.keys()), {"hans", "panzer"})
 
         p1 = x["panzer"]
