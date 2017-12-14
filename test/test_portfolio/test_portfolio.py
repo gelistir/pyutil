@@ -1,11 +1,12 @@
 
-import pandas as pd
+from unittest import TestCase
+
 import numpy as np
+import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.portfolio.portfolio import Portfolio
-from test.config import test_portfolio, read_frame, resource
-from unittest import TestCase
+from test.config import test_portfolio, read_frame
 
 portfolio = test_portfolio()
 
