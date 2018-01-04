@@ -1,5 +1,5 @@
-
-from pony.orm.core import EntityMeta
+import os
+from pony.orm.core import EntityMeta, sql_debug
 from pony import orm
 
 
@@ -40,4 +40,12 @@ def db_in_memory(db):
 
     db.drop_all_tables(with_all_data=True)
     db.create_tables()
+    return orm.db_session()
+
+
+def postgres_db(db, debug=False, create_tables=False, connection_str=None):
+    connection_str = connection_str or os.environ["POSTGRES"]
+    db.bind("postgres", connection_str)
+    sql_debug(debug)
+    db.generate_mapping(create_tables=create_tables)
     return orm.db_session()
