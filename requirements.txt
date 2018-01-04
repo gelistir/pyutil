@@ -1,3 +1,2 @@
-#mongoengine
 psycopg2
 pony

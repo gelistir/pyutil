@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
-
-git tag -a $(./setup.py --version) -m "new tag"
+git tag -a $(python setup.py --version) -m "new tag"
 git push --tags
+
+
