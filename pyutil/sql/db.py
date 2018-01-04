@@ -6,7 +6,7 @@ from types import ModuleType
 
 from datetime import date
 
-from pyutil.portfolio.portfolio import Portfolio
+from pyutil.portfolio.portfolio import Portfolio, merge
 from pyutil.sql.pony import upsert
 
 db = orm.Database()
