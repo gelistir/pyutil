@@ -49,7 +49,7 @@ class Symbol(db.Entity):
 
     @property
     def series(self):
-        return pd.DataFrame({x.name: x.ts for x in self.timeseries})
+        return pd.DataFrame({x.name: x.series for x in self.timeseries})
 
 class SymbolReference(db.Entity):
     _table_ = 'symbolsapp_reference_data'
@@ -64,12 +64,12 @@ class Timeseries(db.Entity):
     _table_ = 'ts_name'
     id = orm.PrimaryKey(int, auto=True)
     name = orm.Required(str)
-    asset = orm.Required(Symbol)
+    symbol = orm.Required(Symbol)
     data = orm.Set('TimeseriesData', cascade_delete=True)
-    orm.composite_key(asset, name)
+    orm.composite_key(symbol, name)
 
     @property
-    def ts(self):
+    def series(self):
         return pd.Series({pd.Timestamp(x.date): x.value for x in self.data})
 
     @property
@@ -77,13 +77,13 @@ class Timeseries(db.Entity):
         return len(self.data) == 0
 
     @property
-    def last_valid_index(self):
+    def last_valid(self):
         if self.empty:
             return None
         else:
             return max(x.date for x in self.data)
 
-    def append(self, ts):
+    def upsert(self, ts):
         for date, value in ts.items():
             upsert(TimeseriesData, get={"ts": self, "date": date}, set={"value": value})
 
@@ -111,19 +111,14 @@ class Strategy(db.Entity):
         exec(compiled, module.__dict__)
         return module
 
-    def __upsert_portfolio(self, portfolio):
-        w = portfolio.weights.to_json(orient="split", date_format="iso").encode()
-        p = portfolio.prices.to_json(orient="split", date_format="iso").encode()
-        upsert(PortfolioSQL, get={"name": self.name}, set={"weights": w, "prices": p, "strategy": self})
-
     def upsert_portfolio(self, portfolio):
         if self.portfolio:
             start = portfolio.index[0]
             # truncate the existing portfolio
             x = self.portfolio.portfolio.truncate(after=start - pd.DateOffset(seconds=1))
-            self.__upsert_portfolio(portfolio= merge([x, portfolio], axis=0))
+            upsert_portfolio(name=self.name, portfolio= merge([x, portfolio], axis=0), strategy=self)
         else:
-            self.__upsert_portfolio(portfolio=portfolio)
+            upsert_portfolio(name=self.name, portfolio=portfolio, strategy=self)
 
     def compute_portfolio(self, reader=None):
         reader = reader or asset
@@ -133,14 +128,15 @@ class Strategy(db.Entity):
     @property
     def last_valid(self):
         if self.portfolio:
-            return self.portfolio.portfolio.index[-1]
+            return self.portfolio.last_valid
         else:
             return None
 
-    def assets(self, reader=None):
+    @property
+    def assets(self): #, reader=None):
         if self.portfolio:
-            reader = reader or asset
-            return self.__module().Configuration(reader=reader).assets
+            #reader = reader or asset
+            return self.portfolio.assets
         else:
             return None
 
@@ -151,7 +147,7 @@ class PortfolioSQL(db.Entity):
     weights = orm.Required(bytes)
     prices = orm.Required(bytes)
     metadata = orm.Optional(Json)
-    strategy = orm.Required(Strategy)
+    strategy = orm.Optional(Strategy)
 
     @staticmethod
     def read(x):
@@ -160,16 +156,23 @@ class PortfolioSQL(db.Entity):
 
     @property
     def portfolio(self):
-        return Portfolio(weights=self.weights, prices=self.prices)
+        return Portfolio(weights=self.weight, prices=self.price)
 
     @property
-    def weights(self):
+    def weight(self):
         return self.read(self.weights)
 
     @property
-    def prices(self):
+    def price(self):
         return self.read(self.prices)
 
+    @property
+    def last_valid(self):
+        return self.portfolio.index[-1]
+
+    @property
+    def assets(self):
+        return self.portfolio.assets
 
 class Frame(db.Entity):
     _table_ = 'frame'
@@ -188,6 +191,15 @@ def upsert_frame(name, frame):
     return upsert(Frame, get={"name": name},
                   set={"data": frame.reset_index().to_json(orient="split", date_format="iso").encode(),
                        "index": frame.index.names})
+
+
+def upsert_portfolio(name, portfolio, strategy=None):
+    w = portfolio.weights.to_json(orient="split", date_format="iso").encode()
+    p = portfolio.prices.to_json(orient="split", date_format="iso").encode()
+    upsert(PortfolioSQL, get={"name": name}, set={"weights": w, "prices": p})
+
+    if strategy:
+        PortfolioSQL.get(name=name).strategy = strategy
 
 
 def asset(name):

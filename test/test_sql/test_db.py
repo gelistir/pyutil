@@ -1,12 +1,13 @@
 from unittest import TestCase
 
 import pandas as pd
-import pandas.util.testing as pdt
 
-from pyutil.sql.db import db, Timeseries, Symbol, TimeseriesData, SymbolGroup, Type, Field, SymbolReference
-from test.config import read_frame
+
+from pyutil.sql.db import db, Timeseries, Symbol, TimeseriesData, SymbolGroup, Type, Field, SymbolReference, upsert_frame, Frame, upsert_portfolio, PortfolioSQL, asset, Strategy
+from test.config import read_frame, test_portfolio, resource
 from pyutil.sql.pony import db_in_memory
 
+import pandas.util.testing as pdt
 
 
 class TestHistory(TestCase):
@@ -14,16 +15,16 @@ class TestHistory(TestCase):
         with db_in_memory(db):
             prices = read_frame("price.csv")
             for symbol in ["A", "B", "C", "D"]:
-                ts = Timeseries(asset=Symbol(bloomberg_symbol=symbol, group=SymbolGroup(name=symbol)), name="PX_LAST")
+                ts = Timeseries(symbol=Symbol(bloomberg_symbol=symbol, group=SymbolGroup(name=symbol)), name="PX_LAST")
                 for date, value in prices[symbol].dropna().items():
                     TimeseriesData(ts=ts, date=date, value=value)
 
             t = Symbol.get(bloomberg_symbol="A").series["PX_LAST"]
             pdt.assert_series_equal(t, read_frame("price.csv")["A"].dropna(), check_names=False)
 
-            tt = Timeseries.get(asset=Symbol.get(bloomberg_symbol="A"), name="PX_LAST")
+            tt = Timeseries.get(symbol=Symbol.get(bloomberg_symbol="A"), name="PX_LAST")
             self.assertFalse(tt.empty)
-            self.assertEqual(tt.last_valid_index, pd.Timestamp("2015-04-22").date())
+            self.assertEqual(tt.last_valid, pd.Timestamp("2015-04-22").date())
 
 
     def test_ref(self):
@@ -50,13 +51,77 @@ class TestHistory(TestCase):
             s = Symbol.get(bloomberg_symbol="XX")
             self.assertEqual(s.reference["REGION"], "Europe")
 
+    def test_frame(self):
+        with db_in_memory(db):
+            x = pd.DataFrame(data=[[1.2, 1.0], [1.0, 2.1]], index=["A","B"], columns=["X1", "X2"])
+            x.index.names = ["index"]
 
-            #assert False
+            upsert_frame(name="test", frame=x)
+
+            f = Frame.get(name="test").frame
+
+            pdt.assert_frame_equal(f, x)
 
 
-            #print(s.reference["CHG_PCT_1D"], "abc")
-            #print(s.reference["NAME"], "abc")
+    def test_portfolio(self):
+        with db_in_memory(db):
+            p = test_portfolio()
+            upsert_portfolio(name="test", portfolio=p)
 
-            #s = Symbol.get(bloomberg_symbol="YY")
-            #print(s.reference["CHG_PCT_1D"], "abc")
-            #print(s.reference["NAME"], "abc")
+            x = PortfolioSQL.get(name="test")
+
+            pdt.assert_frame_equal(x.portfolio.weights, p.weights)
+            pdt.assert_frame_equal(x.portfolio.prices, p.prices)
+
+
+    def test_asset(self):
+        with db_in_memory(db):
+            Symbol(bloomberg_symbol="XX", group=SymbolGroup(name="A"))
+            assert asset(name="XX")
+
+
+    def test_strategy(self):
+        with db_in_memory(db):
+            s = Strategy(name="test", source="No", active=True)
+            self.assertIsNone(s.last_valid)
+            self.assertIsNone(s.portfolio)
+            self.assertIsNone(s.assets)
+
+            s.upsert_portfolio(portfolio=test_portfolio())
+            self.assertIsNotNone(s.portfolio)
+
+            pdt.assert_frame_equal(s.portfolio.weight, test_portfolio().weights)
+            pdt.assert_frame_equal(s.portfolio.price, test_portfolio().prices)
+
+            self.assertEquals(s.last_valid, pd.Timestamp("2015-04-22"))
+
+            # upsert for a second time....
+            s.upsert_portfolio(portfolio=test_portfolio())
+            self.assertIsNotNone(s.portfolio)
+            pdt.assert_frame_equal(s.portfolio.weight, test_portfolio().weights)
+            pdt.assert_frame_equal(s.portfolio.price, test_portfolio().prices)
+            self.assertEquals(s.last_valid, pd.Timestamp("2015-04-22"))
+
+    def test_strategy_code(self):
+        with db_in_memory(db):
+            f = open(resource("source.py"),"r")
+
+            s = Strategy(name="test", source=f.read(), active=True)
+            s.upsert_portfolio(s.compute_portfolio(reader=asset))
+            self.assertIsNotNone(s.portfolio)
+
+            pdt.assert_frame_equal(s.portfolio.weight, test_portfolio().weights)
+            pdt.assert_frame_equal(s.portfolio.price, test_portfolio().prices)
+
+            self.assertEquals(s.last_valid, pd.Timestamp("2015-04-22"))
+            self.assertEquals(s.assets, test_portfolio().assets)
+
+    def test_timeseries(self):
+        with db_in_memory(db):
+            ts = Timeseries(name="PX_LAST", symbol=Symbol(bloomberg_symbol="A"))
+            self.assertIsNone(ts.last_valid)
+            self.assertTrue(ts.empty)
+            ts.upsert(ts=read_frame("price.csv")["A"])
+            pdt.assert_series_equal(ts.series, read_frame("price.csv")["A"], check_names=False)
+            self.assertEquals(ts.last_valid, pd.Timestamp("2015-04-22").date())
+
