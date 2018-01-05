@@ -23,7 +23,7 @@ class Field(db.Entity):
     _table_ = "symbolsapp_reference_field"
     id = orm.PrimaryKey(int, auto=True)
     name = orm.Required(str, unique=True)
-    type = orm.Required(Type)
+    type = orm.Optional(Type)
     refSymbols = orm.Set('SymbolReference', cascade_delete=True)
 
 class SymbolGroup(db.Entity):
@@ -38,7 +38,7 @@ class Symbol(db.Entity):
     id = orm.PrimaryKey(int, auto=True)
     bloomberg_symbol = orm.Required(str, unique=True)
     internal = orm.Optional(str)
-    group = orm.Required(SymbolGroup)
+    group = orm.Optional(SymbolGroup)
     ref = orm.Set('SymbolReference', cascade_delete=True)
     webpage = orm.Optional(str)
     timeseries = orm.Set('Timeseries', cascade_delete=True)
@@ -105,7 +105,6 @@ class Strategy(db.Entity):
     source = orm.Required(str)
     portfolio = orm.Optional("PortfolioSQL")
 
-    #@property
     def __module(self):
         compiled = compile(self.source, '', 'exec')
         module = ModuleType("module")
@@ -154,15 +153,22 @@ class PortfolioSQL(db.Entity):
     metadata = orm.Optional(Json)
     strategy = orm.Required(Strategy)
 
+    @staticmethod
+    def read(x):
+        json_str = BytesIO(x).read().decode()
+        return pd.read_json(json_str, orient="split")
+
     @property
     def portfolio(self):
-        def read(x):
-            json_str = BytesIO(x).read().decode()
-            return pd.read_json(json_str, orient="split")
+        return Portfolio(weights=self.weights, prices=self.prices)
 
-        w = read(self.weights)
-        p = read(self.prices)
-        return Portfolio(weights=w, prices=p)
+    @property
+    def weights(self):
+        return self.read(self.weights)
+
+    @property
+    def prices(self):
+        return self.read(self.prices)
 
 
 class Frame(db.Entity):
