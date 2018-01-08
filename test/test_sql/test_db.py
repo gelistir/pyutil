@@ -83,7 +83,17 @@ class TestHistory(TestCase):
             pdt.assert_frame_equal(x.portfolio.prices, p.prices)
             pdt.assert_series_equal(x.nav, p.nav)
             self.assertAlmostEquals(x.sector["A"]["2013-01-25"],0.1069106628 )
-            print(x.sector)
+
+            pdt.assert_series_equal(x.recent, p.recent)
+            pdt.assert_series_equal(x.mtd_series, p.nav.mtd_series)
+            pdt.assert_series_equal(x.ytd_series, p.nav.ytd_series)
+
+            pdt.assert_frame_equal(x.monthlytable, p.nav.monthlytable)
+            pdt.assert_frame_equal(x.snapshot, p.snapshot())
+            pdt.assert_series_equal(x.period_returns, p.nav.period_returns)
+
+            #assert False
+
 
 
 
@@ -98,7 +108,7 @@ class TestHistory(TestCase):
             s = Strategy(name="test", source="No", active=True)
             self.assertIsNone(s.last_valid)
             self.assertIsNone(s.portfolio)
-            self.assertIsNone(s.assets)
+            #self.assertIsNone(s.assets)
 
             s.upsert_portfolio(portfolio=test_portfolio())
             self.assertIsNotNone(s.portfolio)
@@ -127,7 +137,7 @@ class TestHistory(TestCase):
             pdt.assert_frame_equal(s.portfolio.price, test_portfolio().prices)
 
             self.assertEquals(s.last_valid, pd.Timestamp("2015-04-22"))
-            self.assertEquals(s.assets, test_portfolio().assets)
+            #self.assertEquals(s.assets, test_portfolio().assets)
 
     def test_timeseries(self):
         with db_in_memory(db):

@@ -307,3 +307,7 @@ class Portfolio(object):
         weights["Extrapolated"] = 100.0 * p.weights.loc[today]
         weights["Gap"] = 100.0 * (self.weights.loc[today] - p.weights.loc[today])
         return weights
+
+    @property
+    def recent(self):
+        return self.nav.pct_change().tail(n=15).dropna()

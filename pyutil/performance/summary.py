@@ -3,6 +3,7 @@ from collections import OrderedDict
 import pandas as pd
 import numpy as np
 
+from pyutil.timeseries.timeseries import mtd, ytd
 from .month import monthlytable
 from .drawdown import drawdown as dd, drawdown_periods as dp
 from .periods import period_returns
@@ -105,7 +106,7 @@ class NavSeries(pd.Series):
         Compute the return in the last available month, note that you need at least one point in the previous month, too. Otherwise NaN
         :return:
         """
-        return self.resample("M").last().dropna().pct_change().dropna()
+        return self.resample("M").last().dropna().pct_change().dropna().tail(1).values[0]
 
     @property
     def ytd(self):
@@ -113,7 +114,15 @@ class NavSeries(pd.Series):
         Compute the return in the last available year, note that you need at least one point in the previous year, too. Otherwise NaN
         :return:
         """
-        return self.resample("A").last().dropna().pct_change().dropna()
+        return self.resample("A").last().dropna().pct_change().dropna().tail(1).values[0]
+
+    @property
+    def mtd_series(self):
+        return mtd(self, today=self.index[-1])
+
+    @property
+    def ytd_series(self):
+        return ytd(self, today=self.index[-1]).resample("M").last()
 
     def var(self, alpha=0.95):
         return value_at_risk(self, alpha=alpha)
@@ -139,8 +148,8 @@ class NavSeries(pd.Series):
         d["Max % return"] = 100 * self.returns.max()
         d["Min % return"] = 100 * self.returns.min()
 
-        d["MTD"] = 100*self.mtd.tail(1).values[0]
-        d["YTD"] = 100*self.ytd.tail(1).values[0]
+        d["MTD"] = 100*self.mtd
+        d["YTD"] = 100*self.ytd
 
         d["Current Nav"] = self.tail(1).values[0]
         d["Max Nav"] = self.max()

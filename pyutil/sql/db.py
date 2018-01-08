@@ -132,16 +132,14 @@ class Strategy(db.Entity):
     @property
     def assets(self): #, reader=None):
         if self.portfolio:
-            #reader = reader or asset
             return self.portfolio.assets
         else:
             return None
 
-
     @property
-    def nav(self):
+    def port(self):
         if self.portfolio:
-            return self.portfolio.nav
+            return self.portfolio.portfolio
         else:
             return None
 
@@ -189,12 +187,38 @@ class PortfolioSQL(db.Entity):
         mapping = {asset: Symbol.get(bloomberg_symbol=asset).group.name for asset in self.assets}
         return self.portfolio.sector_weights(symbolmap=mapping, total=True)
 
+    @property
+    def recent(self):
+        return self.nav.pct_change().tail(n=15).dropna()
+
+    @property
+    def mtd_series(self):
+        return self.nav.mtd_series
+
+    @property
+    def ytd_series(self):
+        return self.nav.ytd_series
+
+    @property
+    def period_returns(self):
+        return self.nav.period_returns
+
+    @property
+    def snapshot(self):
+        return self.portfolio.snapshot(n=5)
+        #return {asset: f.loc[asset].to_dict() for asset in f.index}
+
+    @property
+    def monthlytable(self):
+        return self.nav.monthlytable
 
     def upsert(self, portfolio):
+
         #if self.portfolio:
         start = portfolio.index[0]
         x = self.portfolio.truncate(after=start - pd.DateOffset(seconds=1))
         upsert_portfolio(name=self.name, portfolio= merge([x, portfolio], axis=0))
+
 
 
 class Frame(db.Entity):
