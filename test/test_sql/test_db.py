@@ -66,12 +66,25 @@ class TestHistory(TestCase):
     def test_portfolio(self):
         with db_in_memory(db):
             p = test_portfolio()
+            SymbolGroup(name="A")
+            SymbolGroup(name="B")
+
+            for symbol in ["A", "B", "C", "D"]:
+                Symbol(bloomberg_symbol=symbol, group=SymbolGroup.get(name="A"))
+
+            for symbol in ["E", "F", "G"]:
+                Symbol(bloomberg_symbol=symbol, group=SymbolGroup.get(name="B"))
+
             upsert_portfolio(name="test", portfolio=p)
 
             x = PortfolioSQL.get(name="test")
 
             pdt.assert_frame_equal(x.portfolio.weights, p.weights)
             pdt.assert_frame_equal(x.portfolio.prices, p.prices)
+            pdt.assert_series_equal(x.nav, p.nav)
+            self.assertAlmostEquals(x.sector["A"]["2013-01-25"],0.1069106628 )
+            print(x.sector)
+
 
 
     def test_asset(self):

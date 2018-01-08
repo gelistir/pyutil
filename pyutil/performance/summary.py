@@ -105,7 +105,7 @@ class NavSeries(pd.Series):
         Compute the return in the last available month, note that you need at least one point in the previous month, too. Otherwise NaN
         :return:
         """
-        return self.resample("M").last().dropna().pct_change().tail(1).values[0]
+        return self.resample("M").last().dropna().pct_change().dropna()
 
     @property
     def ytd(self):
@@ -113,7 +113,7 @@ class NavSeries(pd.Series):
         Compute the return in the last available year, note that you need at least one point in the previous year, too. Otherwise NaN
         :return:
         """
-        return self.resample("A").last().dropna().pct_change().tail(1).values[0]
+        return self.resample("A").last().dropna().pct_change().dropna()
 
     def var(self, alpha=0.95):
         return value_at_risk(self, alpha=alpha)
@@ -139,8 +139,8 @@ class NavSeries(pd.Series):
         d["Max % return"] = 100 * self.returns.max()
         d["Min % return"] = 100 * self.returns.min()
 
-        d["MTD"] = 100*self.mtd
-        d["YTD"] = 100*self.ytd
+        d["MTD"] = 100*self.mtd.tail(1).values[0]
+        d["YTD"] = 100*self.ytd.tail(1).values[0]
 
         d["Current Nav"] = self.tail(1).values[0]
         d["Max Nav"] = self.max()

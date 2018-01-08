@@ -113,10 +113,7 @@ class Strategy(db.Entity):
 
     def upsert_portfolio(self, portfolio):
         if self.portfolio:
-            start = portfolio.index[0]
-            # truncate the existing portfolio
-            x = self.portfolio.portfolio.truncate(after=start - pd.DateOffset(seconds=1))
-            upsert_portfolio(name=self.name, portfolio= merge([x, portfolio], axis=0), strategy=self)
+            self.portfolio.upsert(portfolio)
         else:
             upsert_portfolio(name=self.name, portfolio=portfolio, strategy=self)
 
@@ -137,6 +134,14 @@ class Strategy(db.Entity):
         if self.portfolio:
             #reader = reader or asset
             return self.portfolio.assets
+        else:
+            return None
+
+
+    @property
+    def nav(self):
+        if self.portfolio:
+            return self.portfolio.nav
         else:
             return None
 
@@ -173,6 +178,24 @@ class PortfolioSQL(db.Entity):
     @property
     def assets(self):
         return self.portfolio.assets
+
+    @property
+    def nav(self):
+        return self.portfolio.nav
+
+    @property
+    def sector(self):
+        # compile the symbolmap
+        mapping = {asset: Symbol.get(bloomberg_symbol=asset).group.name for asset in self.assets}
+        return self.portfolio.sector_weights(symbolmap=mapping, total=True)
+
+
+    def upsert(self, portfolio):
+        #if self.portfolio:
+        start = portfolio.index[0]
+        x = self.portfolio.truncate(after=start - pd.DateOffset(seconds=1))
+        upsert_portfolio(name=self.name, portfolio= merge([x, portfolio], axis=0))
+
 
 class Frame(db.Entity):
     _table_ = 'frame'

@@ -22,10 +22,10 @@ class TestSummary(TestCase):
         self.assertAlmostEqual(s.autocorrelation, 0.070961153249184269, places=10)
 
     def test_mtd(self):
-        self.assertAlmostEqual(100*s.mtd, 1.4133604922211385, places=10)
+        self.assertAlmostEqual(100*s.mtd.tail(1).values[0], 1.4133604922211385, places=10)
 
     def test_ytd(self):
-        self.assertAlmostEqual(100*s.ytd, 2.1718996734564122, places=10)
+        self.assertAlmostEqual(100*s.ytd.tail(1).values[0], 2.1718996734564122, places=10)
 
     def test_monthly_table(self):
         self.assertAlmostEqual(100 * s.monthlytable["Nov"][2014], -0.19540358586001005, places=5)
