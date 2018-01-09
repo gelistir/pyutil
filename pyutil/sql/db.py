@@ -187,31 +187,6 @@ class PortfolioSQL(db.Entity):
         mapping = {asset: Symbol.get(bloomberg_symbol=asset).group.name for asset in self.assets}
         return self.portfolio.sector_weights(symbolmap=mapping, total=False)
 
-    #@property
-    #def recent(self):
-    #    return self.nav.pct_change().tail(n=15).dropna()
-
-    #@property
-    #def mtd_series(self):
-    #    return self.nav.mtd_series
-
-    #@property
-    #def ytd_series(self):
-    #    return self.nav.ytd_series
-
-    #@property
-    #def period_returns(self):
-    #    return self.nav.period_returns
-
-    #@property
-    #def snapshot(self):
-    #    return self.portfolio.snapshot(n=5)
-        #return {asset: f.loc[asset].to_dict() for asset in f.index}
-
-    #@property
-    #def monthlytable(self):
-    #    return self.nav.monthlytable
-
     def upsert(self, portfolio):
 
         #if self.portfolio:

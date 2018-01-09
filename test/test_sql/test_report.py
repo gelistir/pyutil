@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from pyutil.sql.db import db, Strategy, Symbol, SymbolGroup
 from pyutil.sql.pony import db_in_memory
-from pyutil.sql.report import mtd, ytd, sector, recent, period_returns
+from pyutil.sql.report import mtd, ytd, sector, recent, period_returns, performance
 from test.config import test_portfolio
 
 
@@ -30,3 +30,6 @@ class TestHistory(TestCase):
             print(sector())
             print(recent())
             print(period_returns())
+            print(performance())
+            assert False
+

@@ -40,6 +40,7 @@ def sector(names=None):
 def recent(names=None):
     frame = pd.DataFrame({name: portfolio.nav.recent() for name, portfolio in __portfolios(names).items()}).sort_index(ascending=False)
     frame.index = [a.strftime("%b %d") for a in frame.index]
+    frame = frame.tail(15)
     frame = frame.transpose()
     frame["total"] = (frame + 1).prod(axis=1) - 1
     return frame
@@ -47,6 +48,10 @@ def recent(names=None):
 
 def period_returns(names=None):
     frame = pd.DataFrame({name: portfolio.nav.period_returns for name, portfolio in __portfolios(names).items()}).sort_index(ascending=False)
+    return frame.transpose()
+
+def performance(names=None):
+    frame = pd.DataFrame({name: portfolio.nav.summary() for name, portfolio in __portfolios(names).items()}).sort_index(ascending=False)
     return frame.transpose()
 
 
