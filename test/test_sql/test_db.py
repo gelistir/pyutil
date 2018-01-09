@@ -84,18 +84,6 @@ class TestHistory(TestCase):
             pdt.assert_series_equal(x.nav, p.nav)
             self.assertAlmostEquals(x.sector["A"]["2013-01-25"],0.1069106628 )
 
-            pdt.assert_series_equal(x.recent, p.recent)
-            pdt.assert_series_equal(x.mtd_series, p.nav.mtd_series)
-            pdt.assert_series_equal(x.ytd_series, p.nav.ytd_series)
-
-            pdt.assert_frame_equal(x.monthlytable, p.nav.monthlytable)
-            pdt.assert_frame_equal(x.snapshot, p.snapshot())
-            pdt.assert_series_equal(x.period_returns, p.nav.period_returns)
-
-            #assert False
-
-
-
 
     def test_asset(self):
         with db_in_memory(db):

@@ -54,6 +54,14 @@ class NavSeries(pd.Series):
         return self.pct_change().dropna()
 
     @property
+    def returns_monthly(self):
+        return self.resample("M").last().pct_change().dropna()
+
+    @property
+    def returns_annual(self):
+        return self.resample("A").last().pct_change().dropna()
+
+    @property
     def positive_events(self):
         return (self.returns >= 0).sum()
 
@@ -118,11 +126,15 @@ class NavSeries(pd.Series):
 
     @property
     def mtd_series(self):
-        return mtd(self, today=self.index[-1])
+        return mtd(self.returns, today=self.index[-1])
 
     @property
     def ytd_series(self):
-        return ytd(self, today=self.index[-1]).resample("M").last()
+        return ytd(self.returns_monthly, today=self.index[-1])
+
+
+    def recent(self, n=15):
+        return self.pct_change().tail(n).dropna()
 
     def var(self, alpha=0.95):
         return value_at_risk(self, alpha=alpha)
