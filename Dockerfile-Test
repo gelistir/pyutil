@@ -12,6 +12,9 @@ RUN pip install httpretty pytest pytest-cov pytest-html sphinx
 ADD ./pyutil          /pyutil/pyutil
 ADD ./test            /pyutil/test
 
+RUN mkdir -p /html-coverage
+RUN mkdir -p /html-report
+
 WORKDIR pyutil
 
 CMD py.test --cov=pyutil  --cov-report html:/html-coverage --cov-report term --html=/html-report/report.html test

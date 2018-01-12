@@ -37,10 +37,10 @@ def sector(names=None):
     return frame
 
 
-def recent(names=None):
+def recent(names=None, n=15):
     frame = pd.DataFrame({name: portfolio.nav.recent() for name, portfolio in __portfolios(names).items()}).sort_index(ascending=False)
     frame.index = [a.strftime("%b %d") for a in frame.index]
-    frame = frame.tail(15)
+    frame = frame.head(n)
     frame = frame.transpose()
     frame["total"] = (frame + 1).prod(axis=1) - 1
     return frame
