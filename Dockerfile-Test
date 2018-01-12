@@ -14,4 +14,4 @@ ADD ./test            /pyutil/test
 
 WORKDIR pyutil
 
-CMD py.test --cov=pyutil  --cov-report html:/html-coverage --cov-report term --html=/html-report/report_localhost.html test
+CMD py.test --cov=pyutil  --cov-report html:/html-coverage --cov-report term --html=/html-report/report.html test
