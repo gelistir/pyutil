@@ -13,6 +13,6 @@ ret=$?
 docker run --rm -v $(pwd)/source:/pyutil/source:ro -v $(pwd)/build:/pyutil/build pyutil:test sphinx-build source build
 
 # delete the images used...
-#docker rmi -f pyutil:test
+docker rmi -f pyutil:test
 
 exit $ret
