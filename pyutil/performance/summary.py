@@ -111,25 +111,43 @@ class NavSeries(pd.Series):
     @property
     def mtd(self):
         """
-        Compute the return in the last available month, note that you need at least one point in the previous month, too. Otherwise NaN
+        Compute the return in the last available month, note that you need at least one point in the previous month, too. Otherwise Last/First - 1
         :return:
         """
-        return self.resample("M").last().dropna().pct_change().dropna().tail(1).values[0]
+        x = self.resample("M").last().dropna()
+
+        if len(x) <= 1:
+            return self.dropna().tail(1).values[0]/self.dropna().head(1).values[0] - 1.0
+        else:
+            return x.pct_change().dropna().tail(1).values[0]
 
     @property
     def ytd(self):
         """
-        Compute the return in the last available year, note that you need at least one point in the previous year, too. Otherwise NaN
+        Compute the return in the last available year, note that you need at least one point in the previous year, too. Otherwise Last/First - 1
         :return:
         """
-        return self.resample("A").last().dropna().pct_change().dropna().tail(1).values[0]
+        x = self.resample("A").last().dropna()
+
+        if len(x) <= 1:
+            return self.dropna().tail(1).values[0]/self.dropna().head(1).values[0] - 1.0
+        else:
+            return x.pct_change().dropna().tail(1).values[0]
 
     @property
     def mtd_series(self):
+        """
+        Extract the series of returns in the current month
+        :return:
+        """
         return mtd(self.returns, today=self.index[-1])
 
     @property
     def ytd_series(self):
+        """
+        Extract the series of monthly returns in the current year
+        :return:
+        """
         return ytd(self.returns_monthly, today=self.index[-1])
 
 

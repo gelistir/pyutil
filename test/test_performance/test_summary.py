@@ -23,9 +23,13 @@ class TestSummary(TestCase):
 
     def test_mtd(self):
         self.assertAlmostEqual(100*s.mtd, 1.4133604922211385, places=10)
+        x = pd.Series(index=[pd.Timestamp("2017-01-04"),pd.Timestamp("2017-01-06")], data=[1.0,1.6])
+        self.assertAlmostEqual(NavSeries(x).mtd, 0.6, places=10)
 
     def test_ytd(self):
         self.assertAlmostEqual(100*s.ytd, 2.1718996734564122, places=10)
+        x = pd.Series(index=[pd.Timestamp("2017-01-04"),pd.Timestamp("2017-03-06")], data=[1.0,1.6])
+        self.assertAlmostEqual(NavSeries(x).mtd, 0.6, places=10)
 
     def test_monthly_table(self):
         self.assertAlmostEqual(100 * s.monthlytable["Nov"][2014], -0.19540358586001005, places=5)
