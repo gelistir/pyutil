@@ -1,21 +1,21 @@
-Return,1.16455798589
+Return,1.1645579858904798
 # Events,340
 # Events per year,261.0
-Annua Return,0.888819313298
-Annua Volatility,2.736571302
-Annua Sharpe Ratio (r_f = 0),0.324793040345
-Max Drawdown,3.98857567057
-Max % return,0.507108096269
-Min % return,-0.544086856562
-MTD,1.41336049222
-YTD,2.17189967346
-Current Nav,1.32156500619
-Max Nav,1.33580342591
-Current Drawdown,1.065906813
-Calmar Ratio (3Y),0.222841281377
+Annua Return,0.8888193132980282
+Annua Volatility,2.736571301997975
+Annua Sharpe Ratio (r_f = 0),0.32479304034544976
+Max Drawdown,3.988575670566663
+Max % return,0.5071080962687491
+Min % return,-0.5440868565622425
+MTD,1.4133604922211385
+YTD,2.171899673456412
+Current Nav,1.3215650061893174
+Max Nav,1.3358034259144032
+Current Drawdown,1.065906812998263
+Calmar Ratio (3Y),0.22284128137695638
 # Positive Events,176
 # Negative Events,164
-Value at Risk (alpha = 95),0.301867921378
-Conditional Value at Risk (alpha = 95),0.401382462986
+Value at Risk (alpha = 95),0.3018679213777742
+Conditional Value at Risk (alpha = 95),0.40138246298554187
 First_at,2014-01-01
 Last_at,2015-04-22

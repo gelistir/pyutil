@@ -3,7 +3,7 @@ import pandas as pd
 
 from pyutil.performance.summary import NavSeries, performance, fromNav
 from pyutil.timeseries.timeseries import adjust
-from test.config import read_series
+from test.config import read_series, resource
 
 import pandas.util.testing as pdt
 s = NavSeries(read_series("ts.csv", parse_dates=True))

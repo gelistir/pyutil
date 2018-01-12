@@ -31,5 +31,3 @@ class TestHistory(TestCase):
             print(recent())
             print(period_returns())
             print(performance())
-            assert False
-

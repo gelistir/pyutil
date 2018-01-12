@@ -7,11 +7,11 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt && rm requirements.txt
 
 # this is used to mock http for testing
-RUN pip install httpretty nose coverage nose-timer sphinx
+RUN pip install httpretty pytest pytest-cov pytest-html sphinx
 
 ADD ./pyutil          /pyutil/pyutil
 ADD ./test            /pyutil/test
 
 WORKDIR pyutil
 
-CMD nosetests -w /pyutil/test --with-coverage --cover-html --cover-erase --cover-package=pyutil --cover-html-dir=/html-coverage --with-timer
+CMD py.test --cov=pyutil  --cov-report html:/html-coverage --cov-report term --html=/html-report/report_localhost.html test
