@@ -18,6 +18,12 @@ class TestSummary(TestCase):
     def test_summary(self):
         pdt.assert_series_equal(s.summary().apply(str), read_series("summary.csv").apply(str), check_names=False)
 
+        x = pd.Series(index=[pd.Timestamp("2017-01-04"),pd.Timestamp("2017-02-06")], data=[1.0,1.02])
+        print(NavSeries(x).summary())
+        assert False
+
+        #self.assertAlmostEqual(NavSeries(x).summary(), 0.6, places=10)
+
     def test_autocorrelation(self):
         self.assertAlmostEqual(s.autocorrelation, 0.070961153249184269, places=10)
 
