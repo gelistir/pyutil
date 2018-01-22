@@ -1,8 +1,13 @@
 import os
+from contextlib import ExitStack
+
 import pandas as pd
+from pony import orm
 
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.performance.summary import NavSeries
+from pyutil.sql.db import define_database
+
 
 def resource(name):
     base_dir = os.path.dirname(__file__)
@@ -19,6 +24,18 @@ def read_series(name, parse_dates=True, index_col=0, cname=None):
 
 def test_portfolio():
     return Portfolio(prices=read_frame("price.csv"), weights=read_frame("weight.csv"))
+
+
+class TestEnv(ExitStack):
+    def __init__(self, provider='sqlite', filename=":memory:"):
+        super().__init__()
+        self.__database = define_database(provider=provider, filename=filename)
+        self.enter_context(orm.db_session())
+
+    @property
+    def database(self):
+        return self.__database
+
 
 
 if __name__ == '__main__':

@@ -5,66 +5,64 @@ from pony import orm
 
 from pyutil.sql.db import define_database, upsert_frame
 
-from test.config import read_frame
+from test.config import read_frame, TestEnv
 
 import pandas.util.testing as pdt
 
 
 class TestHistory(TestCase):
     def test_series(self):
-        db = define_database(provider='sqlite', filename=":memory:")
+        with TestEnv() as p:
+            
+        #db = define_database(provider='sqlite', filename=":memory:")
 
-        with orm.db_session:
+        #with orm.db_session:
             prices = read_frame("price.csv")
             for symbol in ["A", "B", "C", "D"]:
-                ts = db.Timeseries(symbol=db.Symbol(bloomberg_symbol=symbol, group=db.SymbolGroup(name=symbol)), name="PX_LAST")
+                ts = p.database.Timeseries(symbol=p.database.Symbol(bloomberg_symbol=symbol, group=p.database.SymbolGroup(name=symbol)), name="PX_LAST")
                 for date, value in prices[symbol].dropna().items():
-                    db.TimeseriesData(ts=ts, date=date, value=value)
+                    p.database.TimeseriesData(ts=ts, date=date, value=value)
 
-            t = db.Symbol.get(bloomberg_symbol="A").series["PX_LAST"]
+            t = p.database.Symbol.get(bloomberg_symbol="A").series["PX_LAST"]
             pdt.assert_series_equal(t, read_frame("price.csv")["A"].dropna(), check_names=False)
 
-            tt = db.Timeseries.get(symbol=db.Symbol.get(bloomberg_symbol="A"), name="PX_LAST")
+            tt = p.database.Timeseries.get(symbol=p.database.Symbol.get(bloomberg_symbol="A"), name="PX_LAST")
             self.assertFalse(tt.empty)
             self.assertEqual(tt.last_valid, pd.Timestamp("2015-04-22").date())
 
 
     def test_ref(self):
-        db = define_database(provider='sqlite', filename=":memory:")
+        with TestEnv() as p:
+            t1 = p.database.Type(name="BB-static", comment="Static data Bloomberg")
+            t2 = p.database.Type(name="BB-dynamic", comment="Dynamic data Bloomberg")
+            t3 = p.database.Type(name="user-defined", comment="User-defined reference data")
+            p.database.Field(name="CHG_PCT_1D", type=t2)
+            p.database.Field(name="NAME", type=t1)
+            p.database.Field(name="REGION", type=t3)
 
-        with orm.db_session:
-            t1 = db.Type(name="BB-static", comment="Static data Bloomberg")
-            t2 = db.Type(name="BB-dynamic", comment="Dynamic data Bloomberg")
-            t3 = db.Type(name="user-defined", comment="User-defined reference data")
-            db.Field(name="CHG_PCT_1D", type=t2)
-            db.Field(name="NAME", type=t1)
-            db.Field(name="REGION", type=t3)
+            p.database.Symbol(bloomberg_symbol="XX", group=p.database.SymbolGroup(name="A"))
+            p.database.Symbol(bloomberg_symbol="YY", group=p.database.SymbolGroup(name="B"))
 
-            db.Symbol(bloomberg_symbol="XX", group=db.SymbolGroup(name="A"))
-            db.Symbol(bloomberg_symbol="YY", group=db.SymbolGroup(name="B"))
+            p.database.SymbolReference(field=p.database.Field.get(name="CHG_PCT_1D"), symbol=p.database.Symbol.get(bloomberg_symbol="XX"), content="0.40")
+            p.database.SymbolReference(field=p.database.Field.get(name="NAME"), symbol=p.database.Symbol.get(bloomberg_symbol="XX"), content="Hans")
+            p.database.SymbolReference(field=p.database.Field.get(name="REGION"), symbol=p.database.Symbol.get(bloomberg_symbol="XX"), content="Europe")
 
-            db.SymbolReference(field=db.Field.get(name="CHG_PCT_1D"), symbol=db.Symbol.get(bloomberg_symbol="XX"), content="0.40")
-            db.SymbolReference(field=db.Field.get(name="NAME"), symbol=db.Symbol.get(bloomberg_symbol="XX"), content="Hans")
-            db.SymbolReference(field=db.Field.get(name="REGION"), symbol=db.Symbol.get(bloomberg_symbol="XX"), content="Europe")
-
-            db.SymbolReference(field=db.Field.get(name="CHG_PCT_1D"), symbol=db.Symbol.get(bloomberg_symbol="YY"), content="0.40")
-            db.SymbolReference(field=db.Field.get(name="NAME"), symbol=db.Symbol.get(bloomberg_symbol="YY"), content="Urs")
-            db.SymbolReference(field=db.Field.get(name="REGION"), symbol=db.Symbol.get(bloomberg_symbol="YY"), content="Europe")
+            p.database.SymbolReference(field=p.database.Field.get(name="CHG_PCT_1D"), symbol=p.database.Symbol.get(bloomberg_symbol="YY"), content="0.40")
+            p.database.SymbolReference(field=p.database.Field.get(name="NAME"), symbol=p.database.Symbol.get(bloomberg_symbol="YY"), content="Urs")
+            p.database.SymbolReference(field=p.database.Field.get(name="REGION"), symbol=p.database.Symbol.get(bloomberg_symbol="YY"), content="Europe")
 
 
-            s = db.Symbol.get(bloomberg_symbol="XX")
+            s = p.database.Symbol.get(bloomberg_symbol="XX")
             self.assertEqual(s.reference["REGION"], "Europe")
 
     def test_frame(self):
-        db = define_database(provider='sqlite', filename=":memory:")
-
-        with orm.db_session:
+        with TestEnv() as p:
             x = pd.DataFrame(data=[[1.2, 1.0], [1.0, 2.1]], index=["A","B"], columns=["X1", "X2"])
             x.index.names = ["index"]
 
-            upsert_frame(db, name="test", frame=x)
+            upsert_frame(p.database, name="test", frame=x)
 
-            f = db.Frame.get(name="test").frame
+            f = p.database.Frame.get(name="test").frame
 
             pdt.assert_frame_equal(f, x)
 
@@ -116,11 +114,8 @@ class TestHistory(TestCase):
 
 
     def test_timeseries(self):
-        db = define_database(provider='sqlite', filename=":memory:")
-
-        with orm.db_session:
-
-            ts = db.Timeseries(name="PX_LAST", symbol=db.Symbol(bloomberg_symbol="A"))
+        with TestEnv() as p:
+            ts = p.database.Timeseries(name="PX_LAST", symbol=p.database.Symbol(bloomberg_symbol="A"))
             self.assertIsNone(ts.last_valid)
             self.assertTrue(ts.empty)
             ts.upsert(ts=read_frame("price.csv")["A"])

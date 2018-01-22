@@ -1,34 +1,30 @@
 from unittest import TestCase
 
-from pony import orm
-
-from pyutil.sql.db import define_database, upsert_portfolio
+from pyutil.sql.db import upsert_portfolio
 from pyutil.sql.report import mtd, ytd, sector, recent, period_returns, performance
-from test.config import test_portfolio
+from test.config import test_portfolio, TestEnv
 
 
 class TestHistory(TestCase):
 
     def test_strategy(self):
-        db = define_database(provider='sqlite', filename=":memory:")
-
-        with orm.db_session:
-            db.SymbolGroup(name="A")
-            db.SymbolGroup(name="B")
+        with TestEnv() as p:
+            p.database.SymbolGroup(name="A")
+            p.database.SymbolGroup(name="B")
 
             for symbol in ["A", "B", "C", "D"]:
-                db.Symbol(bloomberg_symbol=symbol, group=db.SymbolGroup.get(name="A"))
+                p.database.Symbol(bloomberg_symbol=symbol, group=p.database.SymbolGroup.get(name="A"))
 
             for symbol in ["E", "F", "G"]:
-                db.Symbol(bloomberg_symbol=symbol, group=db.SymbolGroup.get(name="B"))
+                p.database.Symbol(bloomberg_symbol=symbol, group=p.database.SymbolGroup.get(name="B"))
 
-            upsert_portfolio(db, portfolio=test_portfolio(), name="test")
+            upsert_portfolio(p.database, portfolio=test_portfolio(), name="test")
 
-            print(mtd(db))
-            print(mtd(db, names=["test"]))
-            print(ytd(db))
-            print(ytd(db, names=["test"]))
-            print(sector(db))
-            print(recent(db))
-            print(period_returns(db))
-            print(performance(db))
+            print(mtd(p.database))
+            print(mtd(p.database, names=["test"]))
+            print(ytd(p.database))
+            print(ytd(p.database, names=["test"]))
+            print(sector(p.database))
+            print(recent(p.database))
+            print(period_returns(p.database))
+            print(performance(p.database))
