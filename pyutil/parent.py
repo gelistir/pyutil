@@ -1,30 +1,59 @@
 import logging
+import sys
 import time
-import pandas as pd
+from contextlib import ExitStack
+from pony import orm
 
 
-class Parent(object):
-    # see http://arnavk.com/posts/python-context-managers/
-    def __init__(self, log=None, width=None):
-        self.__logger = log or logging.getLogger(__name__)
+def _logger(name="LWM", level=None, format=None):
+    __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    __level = logging.DEBUG
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level=level or __level)
+
+    formatter = logging.Formatter(fmt=format or __format)
+
+    # add handler for console output
+    handler = logging.StreamHandler(stream=sys.stdout)
+    handler.setFormatter(formatter)
+    handler.setLevel(logging.DEBUG)
+
+    logger.addHandler(handler)
+    return logger
+
+
+
+class Production(ExitStack):
+    def __init__(self, db=None):
+        super().__init__()
+        if db:
+            self.__database = db
+            self.enter_context(orm.db_session())
+        else:
+            self.__database = None
+
+        self.__logger = _logger()
         self.__time = time.time()
-        pd.options.display.width = (width or 250)
 
     @property
     def logger(self):
         return self.__logger
 
     @property
+    def database(self):
+        return self.__database
+
+    @property
     def elapsed(self):
         return time.time() - self.__time
 
-    def __enter__(self):
-        return self
-
     def __exit__(self, exc_type, exc_val, exc_tb):
+        super().__exit__(exc_type, exc_val, exc_tb)
         if exc_type is not None:
             self.logger.exception(exc_val)
             return False
 
         self.logger.info("Time elapsed: {0}".format(self.elapsed))
         return True
+

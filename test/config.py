@@ -27,6 +27,7 @@ def test_portfolio():
 
 
 class TestEnv(ExitStack):
+
     def __init__(self, provider='sqlite', filename=":memory:"):
         super().__init__()
         self.__database = define_database(provider=provider, filename=filename)

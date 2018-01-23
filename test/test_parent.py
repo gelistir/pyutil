@@ -1,22 +1,17 @@
 from unittest import TestCase
 
-from pyutil.parent import Parent
+from pyutil.parent import Production
+from pyutil.sql.db import define_database
 
 
 class TestDecorator(TestCase):
 
-    def test_f2(self):
-        with Parent() as parent:
-            parent.logger.info("Hello")
-            a = 4
-        self.assertEqual(a, 4)
+    def test_without_db(self):
+        with Production() as p:
+            self.assertIsNotNone(p.logger)
+            self.assertIsNone(p.database)
 
-    def test_context(self):
-        with Parent() as f:
-            print(f)
-            print(type(f))
-            for i in range(1000000):
-                a = i * i
-            print(f.elapsed)
-            # print(1/0)
-            print(4)
+    def test_with_db(self):
+        db = define_database(provider='sqlite', filename=":memory:")
+        with Production(db=db) as p:
+            self.assertIsNotNone(p.database)
