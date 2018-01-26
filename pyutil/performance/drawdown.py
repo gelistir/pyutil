@@ -13,7 +13,6 @@ def drawdown(price):
     assert isinstance(price, pd.Series)
     assert price.any() > 0
     assert price.index.is_monotonic_increasing
-    assert price.index.is_all_dates
 
     high_water_mark = np.empty(len(price.index))
     moving_max_value = 0
