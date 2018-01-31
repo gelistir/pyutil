@@ -11,12 +11,12 @@ def drawdown(price):
     :return: the drawdown
     """
     assert isinstance(price, pd.Series)
-    assert price.any() > 0
     assert price.index.is_monotonic_increasing
 
     high_water_mark = np.empty(len(price.index))
     moving_max_value = 0
     for i, value in enumerate(price.values):
+        assert value > 0
         moving_max_value = max(moving_max_value, value)
         high_water_mark[i] = moving_max_value
 
@@ -50,3 +50,9 @@ def drawdown_periods(price, eps=0):
     is_last = list(is_last.loc[is_last].index)
 
     return pd.Series({start: end - start for start, end in zip(is_first, is_last)})
+
+
+if __name__ == '__main__':
+    series = pd.Series({})
+    print("Drawdown of empty series")
+    print(drawdown(series))

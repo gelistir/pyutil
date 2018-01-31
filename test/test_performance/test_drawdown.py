@@ -16,3 +16,12 @@ class TestDrawdown(TestCase):
         x = drawdown_periods(ts)
         print(x)
         self.assertEqual(x[pd.Timestamp("2014-03-07")], pd.Timedelta(days=63))
+
+    def test_empty(self):
+        x = pd.Series({})
+        print(drawdown(x))
+
+    def test_negative_price(self):
+        x = pd.Series({0: 3, 1: 2, 2: -2})
+        with self.assertRaises(AssertionError):
+            drawdown(x)
