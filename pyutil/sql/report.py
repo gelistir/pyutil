@@ -1,6 +1,6 @@
 import pandas as pd
 
-from pyutil.sql.models import PortfolioSQL, Symbol, SymbolGroup
+from pyutil.sql.models import PortfolioSQL, Symbol, Timeseries
 
 
 def __portfolios(session, names=None):
@@ -23,8 +23,6 @@ def ytd(session, names=None):
     frame = frame.transpose()
     frame["total"] = (frame + 1).prod(axis=1) - 1
     return frame
-
-                                  #.reset_index().rename(columns={"index": "Name"})
 
 
 def sector(session, names=None):
@@ -52,19 +50,20 @@ def period_returns(session, names=None):
     frame = pd.DataFrame({name: portfolio.nav.period_returns for name, portfolio in __portfolios(session, names).items()}).sort_index(ascending=False)
     return frame.transpose()
 
+
 def performance(session, names=None):
     frame = pd.DataFrame({name: portfolio.nav.summary() for name, portfolio in __portfolios(session, names).items()}).sort_index(ascending=False)
     return frame.transpose()
 
 
 def reference(session):
-    x = pd.DataFrame({symbol.bloomberg_symbol: symbol.reference for symbol in db.Symbol.select()}).transpose()
+    x = pd.DataFrame({symbol.bloomberg_symbol: symbol.reference for symbol in session.query(Symbol)}).transpose()
     x.index.name = "Asset"
     return x
 
 
 def history(session, field="PX_LAST"):
-    frame = pd.DataFrame({x.symbol.bloomberg_symbol: x.series for x in db.Timeseries.select(lambda x: x.name == field)})
+    frame = pd.DataFrame({x.symbol.bloomberg_symbol: x.series for x in session.query(Timeseries).filter(Timeseries.name==field)})
     frame.index.name = "Date"
     return frame
 

@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from pyutil.sql.models import Base, SymbolGroup, Symbol, PortfolioSQL
-from pyutil.sql.report import mtd, ytd, sector, recent, period_returns, performance
+from pyutil.sql.report import mtd, ytd, sector, recent, period_returns, performance, reference, history
 from test.config import test_portfolio
 
 
@@ -35,9 +35,10 @@ class TestHistory(TestCase):
         print(ytd(session, names=["test"]))
 
         print(sector(session))
-        #print(recent(session))
-        #print(period_returns(session))
-        #print(performance(session))
-
+        print(recent(session))
+        print(period_returns(session))
+        print(performance(session))
+        print(reference(session))
+        print(history(session))
         #assert False
 

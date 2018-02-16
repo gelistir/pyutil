@@ -60,6 +60,7 @@ class Symbol(Base):
     bloomberg_symbol = Column(String(50), unique=True)
     group_id = Column(Integer, ForeignKey('symbolsapp_group.id'))
     group = relationship("SymbolGroup", back_populates="symbols")
+    internal = Column(String)
 
     timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'), back_populates="symbol")
     ref = relationship("SymbolReference", collection_class=attribute_mapped_collection('field.name'), back_populates="symbol")
