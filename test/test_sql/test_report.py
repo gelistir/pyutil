@@ -1,30 +1,48 @@
 from unittest import TestCase
 
-from pyutil.sql.db import upsert_portfolio
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from pyutil.sql.models import Base, SymbolGroup, Symbol, PortfolioSQL
 from pyutil.sql.report import mtd, ytd, sector, recent, period_returns, performance
-from test.config import test_portfolio, TestEnv
+from test.config import test_portfolio
 
 
 class TestHistory(TestCase):
 
-    def test_strategy(self):
-        with TestEnv() as p:
-            p.database.SymbolGroup(name="A")
-            p.database.SymbolGroup(name="B")
+    @staticmethod
+    def session():
+        #with TestEnv() as env:
+        engine = create_engine("sqlite://")
 
-            for symbol in ["A", "B", "C", "D"]:
-                p.database.Symbol(bloomberg_symbol=symbol, group=p.database.SymbolGroup.get(name="A"))
+        # make the tables...
+        Base.metadata.create_all(engine)
 
-            for symbol in ["E", "F", "G"]:
-                p.database.Symbol(bloomberg_symbol=symbol, group=p.database.SymbolGroup.get(name="B"))
+        return sessionmaker(bind=engine)()
 
-            upsert_portfolio(p.database, portfolio=test_portfolio(), name="test")
 
-            print(mtd(p.database))
-            print(mtd(p.database, names=["test"]))
-            print(ytd(p.database))
-            print(ytd(p.database, names=["test"]))
-            print(sector(p.database))
-            print(recent(p.database))
-            print(period_returns(p.database))
-            print(performance(p.database))
+    def test_strategy_2(self):
+        session = self.session()
+        g1 = SymbolGroup(name="A")
+        g2 = SymbolGroup(name="B")
+
+        g1.symbols = [Symbol(bloomberg_symbol=symbol) for symbol in ["A","B","C","D"]]
+        g2.symbols = [Symbol(bloomberg_symbol=symbol) for symbol in ["E","F","G"]]
+
+        session.add_all([g1, g2])
+        session.add(PortfolioSQL(portfolio=test_portfolio(), name="test"))
+
+
+        print(mtd(session))
+        print(ytd(session))
+        print(mtd(session, names=["test"]))
+        print(ytd(session, names=["test"]))
+
+
+        print(sector(session))
+        #print(recent(session))
+        #print(period_returns(session))
+        #print(performance(session))
+
+        #assert False
+

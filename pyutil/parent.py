@@ -2,7 +2,6 @@ import logging
 import sys
 import time
 from contextlib import ExitStack
-from pony import orm
 
 
 def _logger(name="LWM", level=None, format=None):
@@ -25,24 +24,14 @@ def _logger(name="LWM", level=None, format=None):
 
 
 class Production(ExitStack):
-    def __init__(self, db=None):
+    def __init__(self):
         super().__init__()
-        if db:
-            self.__database = db
-            self.enter_context(orm.db_session())
-        else:
-            self.__database = None
-
         self.__logger = _logger()
         self.__time = time.time()
 
     @property
     def logger(self):
         return self.__logger
-
-    @property
-    def database(self):
-        return self.__database
 
     @property
     def elapsed(self):
