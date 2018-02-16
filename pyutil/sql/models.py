@@ -2,6 +2,7 @@ from io import BytesIO
 
 import pandas as pd
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.portfolio.portfolio import Portfolio
 
@@ -35,7 +36,6 @@ class SymbolReference(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     field_id = Column(Integer, ForeignKey('symbolsapp_reference_field.id'))
     field = relationship("Field", back_populates="data")
-    #field = orm.Required(Field)
     symbol_id = Column(Integer, ForeignKey("symbolsapp_symbol.id"))
     symbol = relationship("Symbol", back_populates="ref")
     content = Column(String(50))
@@ -51,7 +51,6 @@ class SymbolGroup(Base):
     name = Column(String(50), unique=True)
     symbols = relationship("Symbol", back_populates="group")
 
-    #symbols = orm.Set('Symbol', cascade_delete=True)
     def __repr__(self):
         return "Group: {name}".format(name=self.name)
 
@@ -62,19 +61,21 @@ class Symbol(Base):
     group_id = Column(Integer, ForeignKey('symbolsapp_group.id'))
     group = relationship("SymbolGroup", back_populates="symbols")
 
-    timeseries = relationship("Timeseries", back_populates="symbol")
-    ref = relationship("SymbolReference", back_populates="symbol")
-
-    @property
-    def series(self):
-        return pd.DataFrame({x.name: x.series for x in self.timeseries})
+    timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'), back_populates="symbol")
+    ref = relationship("SymbolReference", collection_class=attribute_mapped_collection('field.name'), back_populates="symbol")
 
     @property
     def reference(self):
-        return pd.Series({x.field.name: x.content for x in self.ref})
+        return pd.Series({key: x.content for key,x in self.ref.items()})
 
     def __repr__(self):
         return "{name} in group {group}".format(name=self.bloomberg_symbol, group=self.group)
+
+    def update_reference(self, field, value):
+        if field.name not in self.ref.keys():
+            self.ref[field.name] = SymbolReference(field=field, symbol=self, content=value)
+        else:
+            self.ref[field.name].content = value
 
 
 class Timeseries(Base):
@@ -83,15 +84,36 @@ class Timeseries(Base):
     name =  Column(String(50))
     symbol_id = Column(Integer, ForeignKey('symbolsapp_symbol.id'))
     symbol = relationship("Symbol", back_populates="timeseries")
-    data = relationship("TimeseriesData", back_populates="ts")
+    data = relationship("TimeseriesData", collection_class=attribute_mapped_collection('date'), back_populates="ts")
     UniqueConstraint('symbol', 'name')
 
     @property
     def series(self):
-        return pd.Series({pd.Timestamp(x.date): x.value for x in self.data})
+        return pd.Series({pd.Timestamp(date): x.value for date, x in self.data.items()})
 
     def __repr__(self):
         return "{name} for {symbol}".format(name=self.name, symbol=self.symbol)
+
+    @property
+    def empty(self):
+        return len(self.data) == 0
+
+    @property
+    def last_valid(self):
+        if self.empty:
+            return None
+        else:
+            return max(x for x in self.data.keys())
+
+    def upsert(self, ts):
+        for date, value in ts.items():
+            if date in self.data.keys():
+                # thes is some data
+                self.data[date].value = value
+            else:
+                self.data[date] = TimeseriesData(date=date, value=value, ts_id=self.id)
+
+            #upsert(TimeseriesData, get={"ts": self, "date": date}, set={"value": value})
 
 class TimeseriesData(Base):
     __tablename__ = 'ts_data'
@@ -171,7 +193,6 @@ class Frame(Base):
     name = Column(String, primary_key=True)
     data = Column(LargeBinary)
     index = Column(String)
-    #meta = Column(JSON)
 
 
     def __init__(self, frame, name):

@@ -27,14 +27,24 @@ class TestHistory(TestCase):
         prices = read_frame("price.csv")
         for symbol in ["A", "B", "C", "D"]:
             g = SymbolGroup(name=symbol)
-            g.symbols = [Symbol(bloomberg_symbol=symbol, timeseries=[Timeseries(name="PX_LAST")])]
+            g.symbols = [Symbol(bloomberg_symbol=symbol, timeseries={"PX_LAST": Timeseries(name="PX_LAST")})]
+
             #g.symbols[0].timeseries = [Timeseries(name="PX_LAST")]
-            g.symbols[0].timeseries[0].data = [TimeseriesData(date=date, value=value) for date, value in prices[symbol].dropna().items()]
+            g.symbols[0].timeseries["PX_LAST"].data = {date : TimeseriesData(date=date, value=value) for date, value in prices[symbol].dropna().items()}
             # thanks to cascade all of those objects will go into our database
             session.add(g)
 
-        t = session.query(Symbol).filter(Symbol.bloomberg_symbol=="A").first().series["PX_LAST"]
-        pdt.assert_series_equal(t, read_frame("price.csv")["A"].dropna(), check_names=False)
+        t = session.query(Symbol).filter(Symbol.bloomberg_symbol == "A").first()
+        s = t.timeseries["PX_LAST"].series
+
+        pdt.assert_series_equal(s, read_frame("price.csv")["A"].dropna(), check_names=False)
+
+        self.assertFalse(t.timeseries["PX_LAST"].empty)
+        self.assertEqual(t.timeseries["PX_LAST"].last_valid.date(), pd.Timestamp("2015-04-22").date())
+
+
+        t.timeseries["PX_LAST"].upsert(pd.Series(index=[pd.Timestamp("2015-04-22"), pd.Timestamp("2015-04-23")], data=[200, 300]))
+        print(t.timeseries["PX_LAST"].series)
 
 
     def test_ref(self):
@@ -67,6 +77,10 @@ class TestHistory(TestCase):
 
         s = session.query(Symbol).filter(Symbol.bloomberg_symbol=="XX").first()
         self.assertEqual(s.reference["REGION"], "Europe")
+
+        g1.symbols[0].update_reference(t1.fields[0], "Wurst")
+        s = session.query(Symbol).filter(Symbol.bloomberg_symbol=="XX").first()
+        self.assertEqual(s.reference["Name"], "Wurst")
 
     def test_frame(self):
         session = self.session()
