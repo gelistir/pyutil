@@ -19,6 +19,8 @@ class Type(Base):
     name =  Column(String(50), unique=True)
     fields = relationship("Field", back_populates = "type")
 
+    def __repr__(self):
+        return "Type: {type}".format(type=self.name)
 
 class Field(Base):
     __tablename__ = "symbolsapp_reference_field"
@@ -29,7 +31,7 @@ class Field(Base):
     data = relationship("SymbolReference", back_populates = "field")
 
     def __repr__(self):
-        return "Field: {name}".format(name=self.name)
+        return "Field: {name}, {type}".format(name=self.name, type=self.type)
 
 class SymbolReference(Base):
     __tablename__ = 'symbolsapp_reference_data'
@@ -42,7 +44,7 @@ class SymbolReference(Base):
     UniqueConstraint('symbol_id', 'field_id')
 
     def __repr__(self):
-        return "Symbol: {symbol}\n{field}\nValue: {value}".format(symbol=self.symbol, field=self.field, value=self.content)
+        return "{symbol}, {field}, Value: {value}".format(symbol=self.symbol, field=self.field, value=self.content)
 
 
 class SymbolGroup(Base):
@@ -70,7 +72,7 @@ class Symbol(Base):
         return pd.Series({key: x.content for key,x in self.ref.items()})
 
     def __repr__(self):
-        return "{name} in group {group}".format(name=self.bloomberg_symbol, group=self.group)
+        return "Symbol: {name}, {group}".format(name=self.bloomberg_symbol, group=self.group)
 
     def update_reference(self, field, value):
         if field.name not in self.ref.keys():
@@ -139,9 +141,9 @@ class PortfolioSQL(Base):
         if strategy:
             self.strategy = strategy
         # going through setter?
-        self.weights = portfolio.weights.to_json(orient="split", date_format="iso").encode()
+        self.weight = portfolio.weights#.to_json(orient="split", date_format="iso").encode()
         # going through setter
-        self.prices = portfolio.prices.to_json(orient="split", date_format="iso").encode()
+        self.price = portfolio.prices#.to_json(orient="split", date_format="iso").encode()
 
     @staticmethod
     def read(x):
@@ -185,11 +187,21 @@ class PortfolioSQL(Base):
         #mapping = {asset: Symbol(bloomberg_symbol=asset).group.name for asset in self.assets}
         return self.portfolio.sector_weights(symbolmap=map, total=False)
 
-    def truncate(self, after=None, before=None):
-        return self.portfolio.truncate(before=before, after=after)
+    #def truncate(self, after=None, before=None):
+    #    return self.portfolio.truncate(before=before, after=after)
+
+
+    def upsert(self, portfolio):
+        start = portfolio.index[0]
+        p = self.price.truncate(after=start-pd.DateOffset(seconds=1))
+        w = self.weight.truncate(after=start-pd.DateOffset(seconds=1))
+        self.weight = pd.concat([w, portfolio.weights], axis=0)
+        self.price = pd.concat([p, portfolio.prices], axis=0)
+
 
 
 class Frame(Base):
+
     __tablename__ = 'frame'
     name = Column(String, primary_key=True)
     data = Column(LargeBinary)

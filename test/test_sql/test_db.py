@@ -2,97 +2,97 @@ from unittest import TestCase
 
 import pandas as pd
 import pandas.util.testing as pdt
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
-from pyutil.sql.models import Base, Frame, Symbol, SymbolGroup, Timeseries, TimeseriesData, Type, Field, SymbolReference
-from test.config import read_frame
+from pyutil.sql.models import Frame, Symbol, SymbolGroup, Timeseries, TimeseriesData, Type, Field, \
+    SymbolReference, PortfolioSQL
+from test.config import read_frame, test_portfolio
 
 
 class TestHistory(TestCase):
-
-    @staticmethod
-    def session():
-        # with TestEnv() as env:
-        engine = create_engine("sqlite://")
-
-        # make the tables...
-        Base.metadata.create_all(engine)
-
-        return sessionmaker(bind=engine)()
-
     def test_series(self):
-        session = self.session()
 
         prices = read_frame("price.csv")
-        for symbol in ["A", "B", "C", "D"]:
-            g = SymbolGroup(name=symbol)
-            g.symbols = [Symbol(bloomberg_symbol=symbol, timeseries={"PX_LAST": Timeseries(name="PX_LAST")})]
 
-            #g.symbols[0].timeseries = [Timeseries(name="PX_LAST")]
-            g.symbols[0].timeseries["PX_LAST"].data = {date : TimeseriesData(date=date, value=value) for date, value in prices[symbol].dropna().items()}
-            # thanks to cascade all of those objects will go into our database
-            session.add(g)
+        g = SymbolGroup(name="A", symbols=[Symbol(bloomberg_symbol="A", timeseries={"PX_LAST": Timeseries(name="PX_LAST")})])
+        g.symbols[0].timeseries["PX_LAST"].data = {date : TimeseriesData(date=date, value=value) for date, value in prices["A"].dropna().items()}
 
-        t = session.query(Symbol).filter(Symbol.bloomberg_symbol == "A").first()
-        s = t.timeseries["PX_LAST"].series
+        s = g.symbols[0].timeseries["PX_LAST"]
 
-        pdt.assert_series_equal(s, read_frame("price.csv")["A"].dropna(), check_names=False)
+        pdt.assert_series_equal(s.series, read_frame("price.csv")["A"].dropna(), check_names=False)
 
-        self.assertFalse(t.timeseries["PX_LAST"].empty)
-        self.assertEqual(t.timeseries["PX_LAST"].last_valid.date(), pd.Timestamp("2015-04-22").date())
+        self.assertFalse(s.empty)
+        self.assertEqual(s.last_valid.date(), pd.Timestamp("2015-04-22").date())
 
+        s.upsert(pd.Series(index=[pd.Timestamp("2015-04-22"), pd.Timestamp("2015-04-23")], data=[200, 300]))
 
-        t.timeseries["PX_LAST"].upsert(pd.Series(index=[pd.Timestamp("2015-04-22"), pd.Timestamp("2015-04-23")], data=[200, 300]))
-        print(t.timeseries["PX_LAST"].series)
 
 
     def test_ref(self):
-        session = self.session()
-
         t1 = Type(name="BB-static", fields= [Field(name="Name")])
         t2 = Type(name="BB-dynamic", fields=[Field(name="CHG_PCT_1D")])
         t3 = Type(name="user-defined", fields=[Field(name="REGION")])
-        session.add_all([t1,t2,t3])
+        self.assertEqual(str(t1), "Type: BB-static")
 
         g1 = SymbolGroup(name="A", symbols=[Symbol(bloomberg_symbol="XX")])
         g2 = SymbolGroup(name="B", symbols=[Symbol(bloomberg_symbol="YY")])
-        session.add_all([g1,g2])
+        self.assertEqual(str(g1), "Group: A")
 
         name = t1.fields[0]
         chg = t2.fields[0]
         region = t3.fields[0]
+        self.assertEqual(str(name), "Field: Name, Type: BB-static")
 
         xx = g1.symbols[0]
         yy = g2.symbols[0]
+        self.assertEqual(str(xx), "Symbol: XX, Group: A")
 
-        SymbolReference(field=name, symbol=xx, content="Hans")
+
+        # either
+        xx.update_reference(field=name, value="Hans")
+        # or
         SymbolReference(field=region, symbol=xx, content="Europe")
         SymbolReference(field=chg, symbol=xx, content="0.40")
-
         SymbolReference(field=name, symbol=yy, content="Urs")
         SymbolReference(field=region, symbol=yy, content="Europe")
-        SymbolReference(field=chg, symbol=yy, content="0.40")
-
-
-        s = session.query(Symbol).filter(Symbol.bloomberg_symbol=="XX").first()
-        self.assertEqual(s.reference["REGION"], "Europe")
+        ref = SymbolReference(field=chg, symbol=yy, content="0.40")
+        self.assertEqual(str(ref), "Symbol: YY, Group: B, Field: CHG_PCT_1D, Type: BB-dynamic, Value: 0.40")
+        self.assertEqual(xx.reference["REGION"], "Europe")
 
         g1.symbols[0].update_reference(t1.fields[0], "Wurst")
-        s = session.query(Symbol).filter(Symbol.bloomberg_symbol=="XX").first()
-        self.assertEqual(s.reference["Name"], "Wurst")
+        self.assertEqual(xx.reference["Name"], "Wurst")
 
     def test_frame(self):
-        session = self.session()
-
         x = pd.DataFrame(data=[[1.2, 1.0], [1.0, 2.1]], index=["A","B"], columns=["X1", "X2"])
         x.index.names = ["index"]
-
         f = Frame(frame=x, name="test")
-        session.add(f)
-        session.commit()
+        pdt.assert_frame_equal(f.frame, x)
 
-        xxx = session.query(Frame).filter(Frame.name=="test").first()
-        f = xxx.frame
+    def test_timeseries(self):
+        g1 = SymbolGroup(name="A", symbols=[Symbol(bloomberg_symbol="XX")])
 
-        pdt.assert_frame_equal(f, x)
+        xx = g1.symbols[0]
+        ts = Timeseries(name="hans", symbol=xx)
+        self.assertEqual(str(ts), "hans for Symbol: XX, Group: A")
+        self.assertIsNone(ts.last_valid)
+
+    def test_portfolio(self):
+        portfolio = test_portfolio()
+        strategy = "strat"
+
+        p = PortfolioSQL(portfolio=portfolio, name="test", strategy=strategy)
+        pdt.assert_frame_equal(p.price, test_portfolio().prices)
+        pdt.assert_frame_equal(p.weight, test_portfolio().weights)
+        self.assertEqual(p.assets, test_portfolio().assets)
+        self.assertEqual(p.last_valid, test_portfolio().index[-1])
+
+        # test the truncation
+        p1 = portfolio.truncate(after=pd.Timestamp("2015-01-01") - pd.DateOffset(seconds=1))
+        pp = PortfolioSQL(portfolio=test_portfolio().truncate(after=pd.Timestamp("2015-02-01")), name="wurst")
+
+        self.assertEqual(p1.index[-1], pd.Timestamp("2014-12-31"))
+        p2 = portfolio.truncate(before=pd.Timestamp("2015-01-01").date())
+
+        pp.upsert(portfolio=p2)
+        pdt.assert_frame_equal(pp.weight, test_portfolio().weights)
+
+
