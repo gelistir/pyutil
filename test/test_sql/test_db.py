@@ -12,18 +12,24 @@ class TestHistory(TestCase):
     def test_series(self):
 
         prices = read_frame("price.csv")
+        g = SymbolGroup(name="A")
+        s = Symbol(bloomberg_symbol="A", group=g, timeseries=["PX_LAST"])
+        t = Timeseries(name="PX_LAST", symbol=s)
+        t.upsert(read_frame("price.csv")["A"].dropna())
 
-        g = SymbolGroup(name="A", symbols=[Symbol(bloomberg_symbol="A", timeseries={"PX_LAST": Timeseries(name="PX_LAST")})])
-        g.symbols[0].timeseries["PX_LAST"].data = {date : TimeseriesData(date=date, value=value) for date, value in prices["A"].dropna().items()}
 
-        s = g.symbols[0].timeseries["PX_LAST"]
 
-        pdt.assert_series_equal(s.series, read_frame("price.csv")["A"].dropna(), check_names=False)
+        #g = SymbolGroup(name="A", symbols=[Symbol(bloomberg_symbol="A", timeseries={"PX_LAST": Timeseries(name="PX_LAST")})])
+        #g.symbols[0].timeseries["PX_LAST"].data = {date : TimeseriesData(date=date, value=value) for date, value in prices["A"].dropna().items()}
 
-        self.assertFalse(s.empty)
-        self.assertEqual(s.last_valid.date(), pd.Timestamp("2015-04-22").date())
+        #s = g.symbols[0].timeseries["PX_LAST"]
 
-        s.upsert(pd.Series(index=[pd.Timestamp("2015-04-22"), pd.Timestamp("2015-04-23")], data=[200, 300]))
+        pdt.assert_series_equal(s.timeseries["PX_LAST"].series, read_frame("price.csv")["A"].dropna(), check_names=False)
+
+        self.assertFalse(t.empty)
+        self.assertEqual(t.last_valid.date(), pd.Timestamp("2015-04-22").date())
+
+        t.upsert(pd.Series(index=[pd.Timestamp("2015-04-22"), pd.Timestamp("2015-04-23")], data=[200, 300]))
 
 
 
@@ -33,9 +39,13 @@ class TestHistory(TestCase):
         t3 = Type(name="user-defined", fields=[Field(name="REGION")])
         self.assertEqual(str(t1), "Type: BB-static")
 
-        g1 = SymbolGroup(name="A", symbols=[Symbol(bloomberg_symbol="XX")])
-        g2 = SymbolGroup(name="B", symbols=[Symbol(bloomberg_symbol="YY")])
+        g1 = SymbolGroup(name="A") #, symbols=[Symbol(bloomberg_symbol="XX")])
+        g2 = SymbolGroup(name="B") #, symbols=[Symbol(bloomberg_symbol="YY")])
         self.assertEqual(str(g1), "Group: A")
+
+        s1 = Symbol(bloomberg_symbol="XX", group=g1)
+        s2 = Symbol(bloomberg_symbol="YY", group=g2)
+
 
         name = t1.fields[0]
         chg = t2.fields[0]
@@ -68,9 +78,10 @@ class TestHistory(TestCase):
         pdt.assert_frame_equal(f.frame, x)
 
     def test_timeseries(self):
-        g1 = SymbolGroup(name="A", symbols=[Symbol(bloomberg_symbol="XX")])
+        g1 = SymbolGroup(name="A")
+        xx = Symbol(bloomberg_symbol="XX", group=g1)
 
-        xx = g1.symbols[0]
+        print(xx.id)
         ts = Timeseries(name="hans", symbol=xx)
         self.assertEqual(str(ts), "hans for Symbol: XX, Group: A")
         self.assertIsNone(ts.last_valid)

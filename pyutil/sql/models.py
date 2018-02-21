@@ -17,7 +17,7 @@ class Type(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name =  Column(String(50), unique=True)
-    fields = relationship("Field", back_populates = "type")
+    fields = relationship("Field", backref = "type")
 
     def __repr__(self):
         return "Type: {type}".format(type=self.name)
@@ -27,8 +27,8 @@ class Field(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name =  Column(String(50), unique=True)
     type_id = Column(Integer, ForeignKey('symbolsapp_reference_type.id'))
-    type = relationship("Type", back_populates="fields")
-    data = relationship("SymbolReference", back_populates = "field")
+    #type = relationship("Type", back_populates="fields")
+    data = relationship("SymbolReference", backref = "field")
 
     def __repr__(self):
         return "Field: {name}, {type}".format(name=self.name, type=self.type)
@@ -37,9 +37,9 @@ class SymbolReference(Base):
     __tablename__ = 'symbolsapp_reference_data'
     id = Column(Integer, primary_key=True, autoincrement=True)
     field_id = Column(Integer, ForeignKey('symbolsapp_reference_field.id'))
-    field = relationship("Field", back_populates="data")
+    #field = relationship("Field", back_populates="data")
     symbol_id = Column(Integer, ForeignKey("symbolsapp_symbol.id"))
-    symbol = relationship("Symbol", back_populates="ref")
+    #symbol = relationship("Symbol", back_populates="ref")
     content = Column(String(50))
     UniqueConstraint('symbol_id', 'field_id')
 
@@ -51,7 +51,7 @@ class SymbolGroup(Base):
     __tablename__ = "symbolsapp_group"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), unique=True)
-    symbols = relationship("Symbol", back_populates="group")
+    symbols = relationship("Symbol", backref="group")
 
     def __repr__(self):
         return "Group: {name}".format(name=self.name)
@@ -61,11 +61,18 @@ class Symbol(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     bloomberg_symbol = Column(String(50), unique=True)
     group_id = Column(Integer, ForeignKey('symbolsapp_group.id'))
-    group = relationship("SymbolGroup", back_populates="symbols")
     internal = Column(String)
 
     timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'), back_populates="symbol")
-    ref = relationship("SymbolReference", collection_class=attribute_mapped_collection('field.name'), back_populates="symbol")
+    ref = relationship("SymbolReference", collection_class=attribute_mapped_collection('field.name'), backref="symbol")
+
+    def __init__(self, bloomberg_symbol, group, timeseries = None):
+        timeseries = timeseries or []
+        self.bloomberg_symbol = bloomberg_symbol
+        self.group = group
+        for t in timeseries:
+            self.timeseries[t] = Timeseries(name=t, symbol=self)
+
 
     @property
     def reference(self):
@@ -87,18 +94,17 @@ class Timeseries(Base):
     name =  Column(String(50))
     symbol_id = Column(Integer, ForeignKey('symbolsapp_symbol.id'))
     symbol = relationship("Symbol", back_populates="timeseries")
-    data = relationship("TimeseriesData", collection_class=attribute_mapped_collection('date'), back_populates="ts")
+    data = relationship("TimeseriesData", collection_class=attribute_mapped_collection('date'), backref="ts")
     UniqueConstraint('symbol', 'name')
 
-    def __init__(self, name, symbol_id, ts):
+    def __init__(self, name, symbol):
         self.name = name
-        self.symbol_id = symbol_id
-        for date, value in ts.dropna().items():
-            self.data[date] = TimeseriesData(date=date, value=value, ts_id=self.id)
+        self.symbol = symbol
 
     @property
     def series(self):
         return pd.Series({pd.Timestamp(date): x.value for date, x in self.data.items()})
+
 
     def __repr__(self):
         return "{name} for {symbol}".format(name=self.name, symbol=self.symbol)
@@ -129,7 +135,7 @@ class TimeseriesData(Base):
     date = Column(Date)
     value = Column(Float)
     ts_id = Column(Integer, ForeignKey('ts_name.id'))
-    ts = relationship("Timeseries", back_populates="data")
+    #ts = relationship("Timeseries", back_populates="data")
     UniqueConstraint("date", "ts")
 
 
@@ -209,8 +215,9 @@ class Frame(Base):
 
 
     def __init__(self, frame, name):
-        self.frame = frame
         self.name = name
+        self.frame = frame
+        #self.name = name
 
     @property
     def frame(self):
@@ -221,3 +228,5 @@ class Frame(Base):
     def frame(self, value):
         self.index = ",".join(value.index.names)
         self.data = value.reset_index().to_json(orient="split", date_format="iso").encode()
+
+

@@ -10,8 +10,14 @@ class TestHistory(TestCase):
 
     def test_strategy_2(self):
         with session_scope(session=session_test(meta=Base.metadata)) as session:
-            g1 = SymbolGroup(name="A", symbols= [Symbol(bloomberg_symbol=symbol) for symbol in ["A","B","C","D"]])
-            g2 = SymbolGroup(name="B", symbols= [Symbol(bloomberg_symbol=symbol) for symbol in ["E","F","G"]])
+            g1 = SymbolGroup(name="A")
+            g2 = SymbolGroup(name="B")
+
+            for symbol in ["A","B","C","D"]:
+                Symbol(bloomberg_symbol=symbol, group=g1)
+
+            for symbol in ["E", "F", "G"]:
+                Symbol(bloomberg_symbol=symbol, group=g2)
 
             session.add_all([g1, g2])
             session.add(PortfolioSQL(portfolio=test_portfolio(), name="test"))
