@@ -44,6 +44,10 @@ def session_test(meta, file=None):
     return sessionmaker(bind=engine)()
 
 
+def session_file(file):
+    engine = create_engine("sqlite:///{file}".format(file=file))
+    return sessionmaker(bind=engine)()
+
 
 #
 # def upsert(session, cls, get, set=None):

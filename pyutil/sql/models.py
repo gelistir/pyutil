@@ -90,6 +90,12 @@ class Timeseries(Base):
     data = relationship("TimeseriesData", collection_class=attribute_mapped_collection('date'), back_populates="ts")
     UniqueConstraint('symbol', 'name')
 
+    def __init__(self, name, symbol_id, ts):
+        self.name = name
+        self.symbol_id = symbol_id
+        for date, value in ts.dropna().items():
+            self.data[date] = TimeseriesData(date=date, value=value, ts_id=self.id)
+
     @property
     def series(self):
         return pd.Series({pd.Timestamp(date): x.value for date, x in self.data.items()})
@@ -116,7 +122,6 @@ class Timeseries(Base):
             else:
                 self.data[date] = TimeseriesData(date=date, value=value, ts_id=self.id)
 
-            #upsert(TimeseriesData, get={"ts": self, "date": date}, set={"value": value})
 
 class TimeseriesData(Base):
     __tablename__ = 'ts_data'
