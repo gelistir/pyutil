@@ -31,16 +31,15 @@ def session(server=None, db=None, user=None, password=None):
     return sessionmaker(bind=engine)()
 
 
-def test_session(Base, file=None):
-    #with TestEnv() as env:
+def session_test(meta, file=None):
     if file:
         engine = create_engine("sqlite:///{file}".format(file=file))
     else:
         engine = create_engine("sqlite://")
 
     # make the tables...
-    Base.metadata.drop_all(engine)
-    Base.metadata.create_all(engine)
+    meta.drop_all(engine)
+    meta.create_all(engine)
 
     return sessionmaker(bind=engine)()
 
