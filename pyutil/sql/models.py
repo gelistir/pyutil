@@ -183,12 +183,7 @@ class PortfolioSQL(Base):
         return self.portfolio.nav
 
     def sector(self, map):
-        # compile the symbolmap
-        #mapping = {asset: Symbol(bloomberg_symbol=asset).group.name for asset in self.assets}
         return self.portfolio.sector_weights(symbolmap=map, total=False)
-
-    #def truncate(self, after=None, before=None):
-    #    return self.portfolio.truncate(before=before, after=after)
 
 
     def upsert(self, portfolio):

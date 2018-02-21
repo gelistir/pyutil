@@ -31,14 +31,20 @@ def session(server=None, db=None, user=None, password=None):
     return sessionmaker(bind=engine)()
 
 
-def test_session(Base):
+def test_session(Base, file=None):
     #with TestEnv() as env:
-    engine = create_engine("sqlite://")
+    if file:
+        engine = create_engine("sqlite:///{file}".format(file))
+    else:
+        engine = create_engine("sqlite://")
 
     # make the tables...
+    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
 
     return sessionmaker(bind=engine)()
+
+
 
 #
 # def upsert(session, cls, get, set=None):
