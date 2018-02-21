@@ -34,7 +34,7 @@ def session(server=None, db=None, user=None, password=None):
 def test_session(Base, file=None):
     #with TestEnv() as env:
     if file:
-        engine = create_engine("sqlite:///{file}".format(file))
+        engine = create_engine("sqlite:///{file}".format(file=file))
     else:
         engine = create_engine("sqlite://")
 
