@@ -4,9 +4,9 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.models import Frame, Symbol, SymbolGroup, Type, Field, \
-    SymbolReference, PortfolioSQL, Base
+    SymbolReference, PortfolioSQL, Base, Strategy
 from pyutil.sql.session import session_test
-from test.config import read_frame, test_portfolio
+from test.config import read_frame, test_portfolio, resource
 
 
 class TestHistory(TestCase):
@@ -67,9 +67,8 @@ class TestHistory(TestCase):
 
     def test_portfolio(self):
         portfolio = test_portfolio()
-        strategy = "strat"
 
-        p = PortfolioSQL(portfolio=portfolio, name="test", strategy=strategy)
+        p = PortfolioSQL(portfolio=portfolio, name="test")
         pdt.assert_frame_equal(p.price, test_portfolio().prices)
         pdt.assert_frame_equal(p.weight, test_portfolio().weights)
         self.assertEqual(p.assets, test_portfolio().assets)
@@ -102,3 +101,18 @@ class TestHistory(TestCase):
         session.add_all([t1,t2,t3])
 
         self.assertEqual(session.query(Field).join(Type).filter(Type.name.in_(["BB-static","BB-dynamic"])).count(), 2)
+
+    def test_strategy(self):
+        with open(resource("source.py"),"r") as f:
+            s=Strategy(name="peter", source=f.read(), active=True)
+            self.assertIsNone(s.assets)
+            self.assertIsNone(s.portfolio)
+
+            s.upsert(portfolio=s.compute_portfolio(reader=None))
+            self.assertIsNotNone(s.portfolio)
+
+            pdt.assert_frame_equal(s.portfolio.weight, test_portfolio().weights)
+            pdt.assert_frame_equal(s.portfolio.price, test_portfolio().prices)
+
+            self.assertEqual(s.portfolio.last_valid, pd.Timestamp("2015-04-22"))
+            self.assertListEqual(s.assets, ['A', 'B', 'C', 'D', 'E', 'F', 'G'])

@@ -50,9 +50,3 @@ def drawdown_periods(price, eps=0):
     is_last = list(is_last.loc[is_last].index)
 
     return pd.Series({start: end - start for start, end in zip(is_first, is_last)})
-
-
-if __name__ == '__main__':
-    series = pd.Series({})
-    print("Drawdown of empty series")
-    print(drawdown(series))

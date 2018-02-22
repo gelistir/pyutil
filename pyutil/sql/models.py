@@ -1,4 +1,5 @@
 from io import BytesIO
+from types import ModuleType
 
 import pandas as pd
 from sqlalchemy.ext.declarative import declarative_base
@@ -8,7 +9,7 @@ from pyutil.portfolio.portfolio import Portfolio
 
 Base = declarative_base()
 
-from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, Date, Float, LargeBinary
+from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, Date, Float, LargeBinary, Boolean
 from sqlalchemy.orm import relationship
 
 
@@ -150,6 +151,8 @@ class PortfolioSQL(Base):
     name = Column(String, primary_key=True)
     weights = Column(LargeBinary)
     prices = Column(LargeBinary)
+    strategy_id = Column(Integer, ForeignKey("strategiesapp_strategy.id"), nullable=True)
+    strategy = relationship("Strategy", back_populates="portfolio")
 
     def __init__(self, portfolio, name, strategy=None):
         self.name = name
@@ -209,6 +212,46 @@ class PortfolioSQL(Base):
         self.price = pd.concat([p, portfolio.prices], axis=0)
 
 
+class Strategy(Base):
+    __tablename__ = "strategiesapp_strategy"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(50), unique=True)
+    active = Column(Boolean)
+    source = Column(String)
+    portfolio = relationship("PortfolioSQL", uselist=False)
+
+    def __module(self):
+        compiled = compile(self.source, '', 'exec')
+        module = ModuleType("module")
+        exec(compiled, module.__dict__)
+        return module
+
+    def compute_portfolio(self, reader):
+        config = self.__module().Configuration(reader=reader)
+        return config.portfolio
+
+    @property
+    def assets(self):
+        if self.portfolio:
+            return self.portfolio.assets
+        else:
+            return None
+
+    def __set_portfolio(self, portfolio):
+        self.portfolio = PortfolioSQL(portfolio=portfolio, strategy=self, name=self.name)
+
+    def upsert(self, portfolio, days=5):
+        if self.portfolio:
+            last_valid = self.portfolio.last_valid
+
+            # update the existing portfolio object, think about renaming upsert into update...
+            self.portfolio.upsert(portfolio=portfolio.truncate(before=last_valid - pd.DateOffset(days=days)))
+        else:
+            # create a portfolio object for the strategy from scratch
+            self.__set_portfolio(portfolio=portfolio)
+
+
 
 class Frame(Base):
 
@@ -220,6 +263,7 @@ class Frame(Base):
 
     def __init__(self, frame, name):
         self.name = name
+        print(frame.index.names)
         self.frame = frame
         #self.name = name
 
