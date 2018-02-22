@@ -17,7 +17,7 @@ class Type(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name =  Column(String(50), unique=True)
-    fields = relationship("Field", backref = "type")
+    fields = relationship("Field", back_populates = "type")
 
     def __repr__(self):
         return "Type: {type}".format(type=self.name)
@@ -27,7 +27,7 @@ class Field(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name =  Column(String(50), unique=True)
     type_id = Column(Integer, ForeignKey('symbolsapp_reference_type.id'))
-    #type = relationship("Type", back_populates="fields")
+    type = relationship("Type", back_populates="fields")
     data = relationship("SymbolReference", backref = "field")
 
     def __repr__(self):

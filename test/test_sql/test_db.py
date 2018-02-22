@@ -3,28 +3,19 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.sql.models import Frame, Symbol, SymbolGroup, Timeseries, TimeseriesData, Type, Field, \
-    SymbolReference, PortfolioSQL
+from pyutil.sql.models import Frame, Symbol, SymbolGroup, Type, Field, \
+    SymbolReference, PortfolioSQL, Base
+from pyutil.sql.session import session_test
 from test.config import read_frame, test_portfolio
 
 
 class TestHistory(TestCase):
     def test_series(self):
+        s = Symbol(bloomberg_symbol="A", timeseries=["PX_LAST"])
+        s.timeseries["PX_LAST"].upsert(read_frame("price.csv")["A"].dropna())
 
-        prices = read_frame("price.csv")
-        g = SymbolGroup(name="A")
-        s = Symbol(bloomberg_symbol="A", group=g, timeseries=["PX_LAST"])
-        t = Timeseries(name="PX_LAST", symbol=s)
-        t.upsert(read_frame("price.csv")["A"].dropna())
-
-
-
-        #g = SymbolGroup(name="A", symbols=[Symbol(bloomberg_symbol="A", timeseries={"PX_LAST": Timeseries(name="PX_LAST")})])
-        #g.symbols[0].timeseries["PX_LAST"].data = {date : TimeseriesData(date=date, value=value) for date, value in prices["A"].dropna().items()}
-
-        #s = g.symbols[0].timeseries["PX_LAST"]
-
-        pdt.assert_series_equal(s.timeseries["PX_LAST"].series, read_frame("price.csv")["A"].dropna(), check_names=False)
+        t = s.timeseries["PX_LAST"]
+        pdt.assert_series_equal(t.series, read_frame("price.csv")["A"].dropna(), check_names=False)
 
         self.assertFalse(t.empty)
         self.assertEqual(t.last_valid.date(), pd.Timestamp("2015-04-22").date())
@@ -34,27 +25,15 @@ class TestHistory(TestCase):
 
 
     def test_ref(self):
-        t1 = Type(name="BB-static", fields= [Field(name="Name")])
-        t2 = Type(name="BB-dynamic", fields=[Field(name="CHG_PCT_1D")])
-        t3 = Type(name="user-defined", fields=[Field(name="REGION")])
-        self.assertEqual(str(t1), "Type: BB-static")
+        name = Field(name="Name")
+        chg = Field(name="CHG_PCT_1D")
+        region = Field(name="REGION")
 
-        g1 = SymbolGroup(name="A") #, symbols=[Symbol(bloomberg_symbol="XX")])
-        g2 = SymbolGroup(name="B") #, symbols=[Symbol(bloomberg_symbol="YY")])
-        self.assertEqual(str(g1), "Group: A")
+        xx = Symbol(bloomberg_symbol="XX")
+        yy = Symbol(bloomberg_symbol="YY")
 
-        s1 = Symbol(bloomberg_symbol="XX", group=g1)
-        s2 = Symbol(bloomberg_symbol="YY", group=g2)
-
-
-        name = t1.fields[0]
-        chg = t2.fields[0]
-        region = t3.fields[0]
-        self.assertEqual(str(name), "Field: Name, Type: BB-static")
-
-        xx = g1.symbols[0]
-        yy = g2.symbols[0]
-        self.assertEqual(str(xx), "Symbol: XX, Group: A")
+        self.assertEqual(str(name), "Field: Name, None")
+        self.assertEqual(str(xx), "Symbol: XX, None")
 
 
         # either
@@ -65,10 +44,11 @@ class TestHistory(TestCase):
         SymbolReference(field=name, symbol=yy, content="Urs")
         SymbolReference(field=region, symbol=yy, content="Europe")
         ref = SymbolReference(field=chg, symbol=yy, content="0.40")
-        self.assertEqual(str(ref), "Symbol: YY, Group: B, Field: CHG_PCT_1D, Type: BB-dynamic, Value: 0.40")
+
+        self.assertEqual(str(ref), "Symbol: YY, None, Field: CHG_PCT_1D, None, Value: 0.40")
         self.assertEqual(xx.reference["REGION"], "Europe")
 
-        g1.symbols[0].update_reference(t1.fields[0], "Wurst")
+        xx.update_reference(name, "Wurst")
         self.assertEqual(xx.reference["Name"], "Wurst")
 
     def test_frame(self):
@@ -108,7 +88,17 @@ class TestHistory(TestCase):
 
     def test_group(self):
         g1 = SymbolGroup(name="Group A", symbols=[Symbol(bloomberg_symbol="A"), Symbol(bloomberg_symbol="B")])
-        print(g1.symbols[0])
-        print(g1.symbols[1])
+        self.assertEqual(g1.symbols[0].bloomberg_symbol, "A")
+        self.assertEqual(g1.symbols[1].bloomberg_symbol, "B")
 
-        assert False
+
+    def test_field(self):
+        session = session_test(meta=Base.metadata)
+
+        t1 = Type(name="BB-static", fields= [Field(name="Name")])
+        t2 = Type(name="BB-dynamic", fields=[Field(name="CHG_PCT_1D")])
+        t3 = Type(name="user-defined", fields=[Field(name="REGION")])
+
+        session.add_all([t1,t2,t3])
+
+        self.assertEqual(session.query(Field).join(Type).filter(Type.name.in_(["BB-static","BB-dynamic"])).count(), 2)
