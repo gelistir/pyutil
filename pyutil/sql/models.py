@@ -51,25 +51,30 @@ class SymbolGroup(Base):
     __tablename__ = "symbolsapp_group"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), unique=True)
-    symbols = relationship("Symbol", backref="group")
+    symbols = relationship("Symbol", back_populates="group")
 
     def __repr__(self):
         return "Group: {name}".format(name=self.name)
+
 
 class Symbol(Base):
     __tablename__ = "symbolsapp_symbol"
     id = Column(Integer, primary_key=True, autoincrement=True)
     bloomberg_symbol = Column(String(50), unique=True)
     group_id = Column(Integer, ForeignKey('symbolsapp_group.id'))
-    internal = Column(String)
+    group = relationship("SymbolGroup", back_populates="symbols")
+    internal = Column(String, nullable=True)
 
     timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'), back_populates="symbol")
     ref = relationship("SymbolReference", collection_class=attribute_mapped_collection('field.name'), backref="symbol")
 
-    def __init__(self, bloomberg_symbol, group, timeseries = None):
+    def __init__(self, bloomberg_symbol, group=None, timeseries=None):
         timeseries = timeseries or []
         self.bloomberg_symbol = bloomberg_symbol
-        self.group = group
+
+        if group:
+            self.group = group
+
         for t in timeseries:
             self.timeseries[t] = Timeseries(name=t, symbol=self)
 
@@ -94,7 +99,7 @@ class Timeseries(Base):
     name =  Column(String(50))
     symbol_id = Column(Integer, ForeignKey('symbolsapp_symbol.id'))
     symbol = relationship("Symbol", back_populates="timeseries")
-    data = relationship("TimeseriesData", collection_class=attribute_mapped_collection('date'), backref="ts")
+    data = relationship("TimeseriesData", collection_class=attribute_mapped_collection('date'), back_populates="ts")
     UniqueConstraint('symbol', 'name')
 
     def __init__(self, name, symbol):
@@ -135,7 +140,7 @@ class TimeseriesData(Base):
     date = Column(Date)
     value = Column(Float)
     ts_id = Column(Integer, ForeignKey('ts_name.id'))
-    #ts = relationship("Timeseries", back_populates="data")
+    ts = relationship("Timeseries", back_populates="data")
     UniqueConstraint("date", "ts")
 
 
@@ -145,16 +150,15 @@ class PortfolioSQL(Base):
     name = Column(String, primary_key=True)
     weights = Column(LargeBinary)
     prices = Column(LargeBinary)
-    #strategy = Column(Integer, ForeignKey("strategiesapp_strategy.id"), nullable=True)
 
     def __init__(self, portfolio, name, strategy=None):
         self.name = name
         if strategy:
             self.strategy = strategy
         # going through setter?
-        self.weight = portfolio.weights#.to_json(orient="split", date_format="iso").encode()
+        self.weight = portfolio.weights
         # going through setter
-        self.price = portfolio.prices#.to_json(orient="split", date_format="iso").encode()
+        self.price = portfolio.prices
 
     @staticmethod
     def read(x):

@@ -79,10 +79,9 @@ class TestHistory(TestCase):
 
     def test_timeseries(self):
         g1 = SymbolGroup(name="A")
-        xx = Symbol(bloomberg_symbol="XX", group=g1)
+        xx = Symbol(bloomberg_symbol="XX", group=g1, timeseries=["hans", "wurst", "dampf"])
 
-        print(xx.id)
-        ts = Timeseries(name="hans", symbol=xx)
+        ts = xx.timeseries["hans"]
         self.assertEqual(str(ts), "hans for Symbol: XX, Group: A")
         self.assertIsNone(ts.last_valid)
 
@@ -107,3 +106,9 @@ class TestHistory(TestCase):
         pdt.assert_frame_equal(pp.weight, test_portfolio().weights)
 
 
+    def test_group(self):
+        g1 = SymbolGroup(name="Group A", symbols=[Symbol(bloomberg_symbol="A"), Symbol(bloomberg_symbol="B")])
+        print(g1.symbols[0])
+        print(g1.symbols[1])
+
+        assert False
