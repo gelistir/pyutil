@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from pyutil.sql.models import Base, SymbolGroup, Symbol, PortfolioSQL
-from pyutil.sql.report import mtd, ytd, sector, recent, period_returns, performance, reference, history
+from pyutil.sql.report import mtd, ytd, sector, recent, period_returns, performance
 from pyutil.sql.session import session_test, session_scope
 from test.config import test_portfolio
 
@@ -31,7 +31,3 @@ class TestHistory(TestCase):
             print(recent(session))
             print(period_returns(session))
             print(performance(session))
-            print(reference(session))
-            print(history(session))
-
-

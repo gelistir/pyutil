@@ -18,7 +18,7 @@ class Type(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name =  Column(String(50), unique=True)
-    fields = relationship("Field", back_populates = "type")
+    fields = relationship("Field", backref = "type")
 
     def __repr__(self):
         return "Type: {type}".format(type=self.name)
@@ -27,20 +27,17 @@ class Field(Base):
     __tablename__ = "symbolsapp_reference_field"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name =  Column(String(50), unique=True)
-    type_id = Column(Integer, ForeignKey('symbolsapp_reference_type.id'))
-    type = relationship("Type", back_populates="fields")
-    data = relationship("SymbolReference", backref = "field")
+    type_id = Column(Integer, ForeignKey('symbolsapp_reference_type.id'), nullable=True)
+    data = relationship("_SymbolReference", backref = "field")
 
     def __repr__(self):
         return "Field: {name}, {type}".format(name=self.name, type=self.type)
 
-class SymbolReference(Base):
+class _SymbolReference(Base):
     __tablename__ = 'symbolsapp_reference_data'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    field_id = Column(Integer, ForeignKey('symbolsapp_reference_field.id'))
-    #field = relationship("Field", back_populates="data")
-    symbol_id = Column(Integer, ForeignKey("symbolsapp_symbol.id"))
-    #symbol = relationship("Symbol", back_populates="ref")
+    field_id = Column(Integer, ForeignKey('symbolsapp_reference_field.id'), nullable=False)
+    symbol_id = Column(Integer, ForeignKey("symbolsapp_symbol.id"), nullable=False)
     content = Column(String(50))
     UniqueConstraint('symbol_id', 'field_id')
 
@@ -52,7 +49,7 @@ class SymbolGroup(Base):
     __tablename__ = "symbolsapp_group"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), unique=True)
-    symbols = relationship("Symbol", back_populates="group")
+    symbols = relationship("Symbol", backref="group")
 
     def __repr__(self):
         return "Group: {name}".format(name=self.name)
@@ -62,12 +59,11 @@ class Symbol(Base):
     __tablename__ = "symbolsapp_symbol"
     id = Column(Integer, primary_key=True, autoincrement=True)
     bloomberg_symbol = Column(String(50), unique=True)
-    group_id = Column(Integer, ForeignKey('symbolsapp_group.id'))
-    group = relationship("SymbolGroup", back_populates="symbols")
+    group_id = Column(Integer, ForeignKey('symbolsapp_group.id'), nullable=True)
     internal = Column(String, nullable=True)
 
-    timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'), back_populates="symbol")
-    ref = relationship("SymbolReference", collection_class=attribute_mapped_collection('field.name'), backref="symbol")
+    timeseries = relationship("_Timeseries", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan")
+    ref = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'), cascade="all, delete-orphan")
 
     def __init__(self, bloomberg_symbol, group=None, timeseries=None):
         timeseries = timeseries or []
@@ -77,7 +73,7 @@ class Symbol(Base):
             self.group = group
 
         for t in timeseries:
-            self.timeseries[t] = Timeseries(name=t, symbol=self)
+            self.timeseries[t] = _Timeseries(name=t, symbol=self)
 
 
     @property
@@ -89,18 +85,24 @@ class Symbol(Base):
 
     def update_reference(self, field, value):
         if field.name not in self.ref.keys():
-            self.ref[field.name] = SymbolReference(field=field, symbol=self, content=value)
+            self.ref[field.name] = _SymbolReference(field_id=field.id, symbol_id=self.id, content=value)
         else:
             self.ref[field.name].content = value
 
 
-class Timeseries(Base):
+    def upsert_ts(self, name, ts):
+        if name not in self.timeseries.keys():
+            self.timeseries[name] = Timeseries(name=name, symbol_id=self.id)
+
+        self.timeseries[name].upsert(ts)
+
+class _Timeseries(Base):
     __tablename__ = 'ts_name'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name =  Column(String(50))
     symbol_id = Column(Integer, ForeignKey('symbolsapp_symbol.id'))
-    symbol = relationship("Symbol", back_populates="timeseries")
-    data = relationship("TimeseriesData", collection_class=attribute_mapped_collection('date'), back_populates="ts")
+    #symbol = relationship("Symbol", back_populates="timeseries")
+    data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'), back_populates="ts", cascade="all, delete-orphan")
     UniqueConstraint('symbol', 'name')
 
     def __init__(self, name, symbol):
@@ -132,16 +134,16 @@ class Timeseries(Base):
                 # thes is some data
                 self.data[date].value = value
             else:
-                self.data[date] = TimeseriesData(date=date, value=value, ts_id=self.id)
+                self.data[date] = _TimeseriesData(date=date, value=value, ts_id=self.id)
 
 
-class TimeseriesData(Base):
+class _TimeseriesData(Base):
     __tablename__ = 'ts_data'
     id = Column(Integer, primary_key=True, autoincrement=True)
     date = Column(Date)
     value = Column(Float)
     ts_id = Column(Integer, ForeignKey('ts_name.id'))
-    ts = relationship("Timeseries", back_populates="data")
+    ts = relationship("_Timeseries", back_populates="data")
     UniqueConstraint("date", "ts")
 
 
@@ -219,7 +221,7 @@ class Strategy(Base):
     name = Column(String(50), unique=True)
     active = Column(Boolean)
     source = Column(String)
-    portfolio = relationship("PortfolioSQL", uselist=False)
+    portfolio = relationship("PortfolioSQL", uselist=False, back_populates="strategy")
 
     def __module(self):
         compiled = compile(self.source, '', 'exec')

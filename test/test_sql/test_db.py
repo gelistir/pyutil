@@ -3,8 +3,7 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.sql.models import Frame, Symbol, SymbolGroup, Type, Field, \
-    SymbolReference, PortfolioSQL, Base, Strategy
+from pyutil.sql.models import Frame, Symbol, SymbolGroup, Type, Field, PortfolioSQL, Base, Strategy
 from pyutil.sql.session import session_test
 from test.config import read_frame, test_portfolio, resource
 
@@ -35,17 +34,10 @@ class TestHistory(TestCase):
         self.assertEqual(str(name), "Field: Name, None")
         self.assertEqual(str(xx), "Symbol: XX, None")
 
-
-        # either
         xx.update_reference(field=name, value="Hans")
-        # or
-        SymbolReference(field=region, symbol=xx, content="Europe")
-        SymbolReference(field=chg, symbol=xx, content="0.40")
-        SymbolReference(field=name, symbol=yy, content="Urs")
-        SymbolReference(field=region, symbol=yy, content="Europe")
-        ref = SymbolReference(field=chg, symbol=yy, content="0.40")
+        xx.update_reference(field=chg, value="0.40")
+        xx.update_reference(field=region, value="Europe")
 
-        self.assertEqual(str(ref), "Symbol: YY, None, Field: CHG_PCT_1D, None, Value: 0.40")
         self.assertEqual(xx.reference["REGION"], "Europe")
 
         xx.update_reference(name, "Wurst")
