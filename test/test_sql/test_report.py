@@ -20,7 +20,11 @@ class TestHistory(TestCase):
                 Symbol(bloomberg_symbol=symbol, group=g2)
 
             session.add_all([g1, g2])
-            session.add(PortfolioSQL(portfolio=test_portfolio(), name="test"))
+            p = PortfolioSQL(name="test")
+            p.upsert(portfolio=test_portfolio())
+
+
+            session.add(p)
 
             print(mtd(session))
             print(ytd(session))

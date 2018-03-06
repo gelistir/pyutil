@@ -28,12 +28,12 @@ class Field(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name =  Column(String(50), unique=True)
     type_id = Column(Integer, ForeignKey('symbolsapp_reference_type.id'), nullable=True)
-    data = relationship("_SymbolReference", backref = "field")
+    data = relationship("SymbolReference", backref = "field")
 
     def __repr__(self):
         return "Field: {name}, {type}".format(name=self.name, type=self.type)
 
-class _SymbolReference(Base):
+class SymbolReference(Base):
     __tablename__ = 'symbolsapp_reference_data'
     id = Column(Integer, primary_key=True, autoincrement=True)
     field_id = Column(Integer, ForeignKey('symbolsapp_reference_field.id'), nullable=False)
@@ -62,8 +62,8 @@ class Symbol(Base):
     group_id = Column(Integer, ForeignKey('symbolsapp_group.id'), nullable=True)
     internal = Column(String, nullable=True)
 
-    timeseries = relationship("_Timeseries", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan")
-    ref = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'), cascade="all, delete-orphan")
+    timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan")
+    ref = relationship("SymbolReference", collection_class=attribute_mapped_collection('field.name'), cascade="all, delete-orphan")
 
     def __init__(self, bloomberg_symbol, group=None, timeseries=None):
         timeseries = timeseries or []
@@ -73,7 +73,7 @@ class Symbol(Base):
             self.group = group
 
         for t in timeseries:
-            self.timeseries[t] = _Timeseries(name=t, symbol=self)
+            self.timeseries[t] = Timeseries(name=t, symbol=self)
 
 
     @property
@@ -85,18 +85,12 @@ class Symbol(Base):
 
     def update_reference(self, field, value):
         if field.name not in self.ref.keys():
-            self.ref[field.name] = _SymbolReference(field_id=field.id, symbol_id=self.id, content=value)
+            self.ref[field.name] = SymbolReference(field_id=field.id, symbol_id=self.id, content=value)
         else:
             self.ref[field.name].content = value
 
 
-    def upsert_ts(self, name, ts):
-        if name not in self.timeseries.keys():
-            self.timeseries[name] = Timeseries(name=name, symbol_id=self.id)
-
-        self.timeseries[name].upsert(ts)
-
-class _Timeseries(Base):
+class Timeseries(Base):
     __tablename__ = 'ts_name'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name =  Column(String(50))
@@ -143,7 +137,7 @@ class _TimeseriesData(Base):
     date = Column(Date)
     value = Column(Float)
     ts_id = Column(Integer, ForeignKey('ts_name.id'))
-    ts = relationship("_Timeseries", back_populates="data")
+    ts = relationship("Timeseries", back_populates="data")
     UniqueConstraint("date", "ts")
 
 
@@ -156,14 +150,9 @@ class PortfolioSQL(Base):
     strategy_id = Column(Integer, ForeignKey("strategiesapp_strategy.id"), nullable=True)
     strategy = relationship("Strategy", back_populates="portfolio")
 
-    def __init__(self, portfolio, name, strategy=None):
-        self.name = name
-        if strategy:
-            self.strategy = strategy
-        # going through setter?
-        self.weight = portfolio.weights
-        # going through setter
-        self.price = portfolio.prices
+    @property
+    def empty(self):
+        return self.weight.empty and self.price.empty
 
     @staticmethod
     def read(x):
@@ -176,11 +165,17 @@ class PortfolioSQL(Base):
 
     @property
     def weight(self):
-        return self.read(self.weights)
+        try:
+            return self.read(self.weights)
+        except ValueError:
+            return pd.DataFrame({})
 
     @property
     def price(self):
-        return self.read(self.prices)
+        try:
+            return self.read(self.prices)
+        except ValueError:
+            return pd.DataFrame({})
 
     @price.setter
     def price(self, value):
@@ -240,19 +235,17 @@ class Strategy(Base):
         else:
             return None
 
-    def __set_portfolio(self, portfolio):
-        self.portfolio = PortfolioSQL(portfolio=portfolio, strategy=self, name=self.name)
-
     def upsert(self, portfolio, days=5):
         if self.portfolio:
             last_valid = self.portfolio.last_valid
 
             # update the existing portfolio object, think about renaming upsert into update...
             self.portfolio.upsert(portfolio=portfolio.truncate(before=last_valid - pd.DateOffset(days=days)))
+
         else:
             # create a portfolio object for the strategy from scratch
-            self.__set_portfolio(portfolio=portfolio)
-
+            self.portfolio = PortfolioSQL(name=self.name, strategy=self)
+            self.portfolio.upsert(portfolio=portfolio)
 
 
 class Frame(Base):
@@ -262,12 +255,9 @@ class Frame(Base):
     data = Column(LargeBinary)
     index = Column(String)
 
-
     def __init__(self, frame, name):
         self.name = name
-        print(frame.index.names)
         self.frame = frame
-        #self.name = name
 
     @property
     def frame(self):

@@ -60,7 +60,8 @@ class TestHistory(TestCase):
     def test_portfolio(self):
         portfolio = test_portfolio()
 
-        p = PortfolioSQL(portfolio=portfolio, name="test")
+        p = PortfolioSQL(name="test")
+        p.upsert(portfolio=portfolio)
         pdt.assert_frame_equal(p.price, test_portfolio().prices)
         pdt.assert_frame_equal(p.weight, test_portfolio().weights)
         self.assertEqual(p.assets, test_portfolio().assets)
@@ -68,8 +69,9 @@ class TestHistory(TestCase):
 
         # test the truncation
         p1 = portfolio.truncate(after=pd.Timestamp("2015-01-01") - pd.DateOffset(seconds=1))
-        pp = PortfolioSQL(portfolio=test_portfolio().truncate(after=pd.Timestamp("2015-02-01")), name="wurst")
+        pp = PortfolioSQL(name="wurst")
 
+        pp.upsert(portfolio = test_portfolio().truncate(after=pd.Timestamp("2015-02-01")))
         self.assertEqual(p1.index[-1], pd.Timestamp("2014-12-31"))
         p2 = portfolio.truncate(before=pd.Timestamp("2015-01-01").date())
 

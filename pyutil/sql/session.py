@@ -2,7 +2,7 @@ from contextlib import contextmanager
 
 import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker
 
 
 @contextmanager
@@ -18,8 +18,6 @@ def session_scope(session):
     finally:
         session.close()
 
-def get(session, cls, filter):
-    return session.query(cls).filter(*filter).first()
 
 def session(server=None, db=None, user=None, password=None):
     user = user or os.environ["user"]
@@ -61,18 +59,24 @@ class SessionDB(object):
     def dictionary(self, cls, key="name"):
         return {obj.__getattribute__(key): obj for obj in self.__session.query(cls)}
 
-    def upsert_one(self, cls, data):
+    def upsert_one(self, cls, get, set=None):
 
         s = self.__session.query(cls)
         # apply all filters
-        for key, value in data.items():
+        for key, value in get.items():
             s = s.filter(cls.__dict__[key] == value)
 
-        if not s.first():
-            x = cls(**data)
-            self.__session.add(x)
+        set = set or {}
 
-        return self.get(cls, data)
+        if not s.first():
+            x = cls(**{**get, **set})
+            self.__session.add(x)
+        else:
+            for key, value in set.items():
+                s.__setattr__(key, value)
+
+        return self.get(cls, get)
+
 
     def get(self, cls, data):
         s = self.__session.query(cls)
