@@ -187,7 +187,10 @@ class PortfolioSQL(Base):
 
     @property
     def last_valid(self):
-        return self.portfolio.index[-1]
+        try:
+            return self.portfolio.index[-1]
+        except:
+            return None
 
     @property
     def assets(self):
@@ -218,6 +221,12 @@ class Strategy(Base):
     source = Column(String)
     portfolio = relationship("PortfolioSQL", uselist=False, back_populates="strategy")
 
+    def __init__(self, name, active=True, source=""):
+        self.name = name
+        self.portfolio = PortfolioSQL(name=self.name, strategy=self)
+        self.active = active
+        self.source = source
+
     def __module(self):
         compiled = compile(self.source, '', 'exec')
         module = ModuleType("module")
@@ -230,21 +239,17 @@ class Strategy(Base):
 
     @property
     def assets(self):
-        if self.portfolio:
-            return self.portfolio.assets
-        else:
-            return None
+        return self.portfolio.assets
+
 
     def upsert(self, portfolio, days=5):
-        if self.portfolio:
+        if self.portfolio.last_valid:
+            # this is tricky. as the portfolio object may not contain an index yet...
             last_valid = self.portfolio.last_valid
-
             # update the existing portfolio object, think about renaming upsert into update...
             self.portfolio.upsert(portfolio=portfolio.truncate(before=last_valid - pd.DateOffset(days=days)))
 
         else:
-            # create a portfolio object for the strategy from scratch
-            self.portfolio = PortfolioSQL(name=self.name, strategy=self)
             self.portfolio.upsert(portfolio=portfolio)
 
 

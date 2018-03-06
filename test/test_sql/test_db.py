@@ -99,8 +99,8 @@ class TestHistory(TestCase):
     def test_strategy(self):
         with open(resource("source.py"),"r") as f:
             s=Strategy(name="peter", source=f.read(), active=True)
-            self.assertIsNone(s.assets)
-            self.assertIsNone(s.portfolio)
+            self.assertListEqual(s.assets, [])
+            print(s.source)
 
             s.upsert(portfolio=s.compute_portfolio(reader=None))
             self.assertIsNotNone(s.portfolio)
