@@ -2,7 +2,7 @@ from contextlib import contextmanager
 
 import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 
 
 @contextmanager
@@ -49,37 +49,35 @@ def session_file(file):
     return sessionmaker(bind=engine)()
 
 
-#
-# def upsert(session, cls, get, set=None):
-#     """
-#     Interacting with Pony entities.
-#
-#     :param cls: The actual entity class
-#     :param get: Identify the object (e.g. row) with this dictionary
-#     :param set:
-#     :return:
-#     """
-#     # does the object exist
-#     #assert isinstance(cls, EntityMeta), "{cls} is not a database entity".format(cls=cls)
-#
-#     # if no set dictionary has been specified
-#     set = set or {}
-#
-#     if not session.query(cls).filter(*get).first():
-#         cls(*get, *set)
-#     if not cls.exists(**get):
-#         # make new object
-#         return cls(**set, **get)
-#     else:
-#         # get the existing object
-#         obj = cls.get(**get)
-#         for key, value in set.items():
-#             obj.__setattr__(key, value)
-#         return obj
-#
-# if __name__ == '__main__':
-#
-#     ll = ["A","B"]
-#     print(ll)
-#     print(*ll)
+class SessionDB(object):
+    def __init__(self, session):
+        super().__init__()
+        self.__session = session
+
+    @property
+    def session(self):
+        return self.__session
+
+    def dictionary(self, cls, key="name"):
+        return {obj.__getattribute__(key): obj for obj in self.__session.query(cls)}
+
+    def upsert_one(self, cls, data):
+
+        s = self.__session.query(cls)
+        # apply all filters
+        for key, value in data.items():
+            s = s.filter(cls.__dict__[key] == value)
+
+        if not s.first():
+            x = cls(**data)
+            self.__session.add(x)
+
+        return self.get(cls, data)
+
+    def get(self, cls, data):
+        s = self.__session.query(cls)
+        for key, value in data.items():
+            s = s.filter(cls.__dict__[key] == value)
+
+        return s.first()
 
