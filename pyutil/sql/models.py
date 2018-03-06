@@ -243,6 +243,11 @@ class Strategy(Base):
 
 
     def upsert(self, portfolio, days=5):
+        if not self.portfolio:
+            self.portfolio = PortfolioSQL(name=self.name, strategy=self)
+
+
+
         if self.portfolio.last_valid:
             # this is tricky. as the portfolio object may not contain an index yet...
             last_valid = self.portfolio.last_valid
