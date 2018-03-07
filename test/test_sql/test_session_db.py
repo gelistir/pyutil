@@ -12,6 +12,7 @@ class TestHistory(TestCase):
 
             x = db.upsert_one(SymbolGroup, get={"name": "A"})
             y = db.upsert_one(SymbolGroup, get={"name": "A"})
+            z = db.upsert_one(SymbolGroup, get={"name": "B"})
 
             self.assertEqual(x, y)
 
@@ -23,3 +24,6 @@ class TestHistory(TestCase):
 
             p = db.upsert_one(PortfolioSQL, get={"name": "Peter Maffay"})
             self.assertTrue(p.empty)
+
+            f = db.upsert_one(Symbol, get={"bloomberg_symbol": "A"}, set={"group": z})
+            self.assertEqual(f.group.name, "B")

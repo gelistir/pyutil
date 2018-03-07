@@ -71,11 +71,13 @@ class SessionDB(object):
         if not s.first():
             x = cls(**{**get, **set})
             self.__session.add(x)
-        else:
-            for key, value in set.items():
-                s.__setattr__(key, value)
 
-        return self.get(cls, get)
+        else:
+            x = s.first()
+            for key, value in set.items():
+                x.__setattr__(key, value)
+
+        return x
 
 
     def get(self, cls, data):
