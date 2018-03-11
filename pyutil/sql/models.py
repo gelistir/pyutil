@@ -17,27 +17,37 @@ class Type(Base):
     __tablename__ = "symbolsapp_reference_type"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name =  Column(String(50), unique=True)
-    fields = relationship("Field", backref = "type")
+    name = Column(String(50), unique=True)
+    fields = relationship("Field", back_populates="type")
 
     def __repr__(self):
         return "Type: {type}".format(type=self.name)
 
+
 class Field(Base):
     __tablename__ = "symbolsapp_reference_field"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name =  Column(String(50), unique=True)
-    type_id = Column(Integer, ForeignKey('symbolsapp_reference_type.id'), nullable=True)
-    data = relationship("SymbolReference", backref = "field")
+    name = Column(String(50), unique=True)
+
+    _type_id = Column("type_id", Integer, ForeignKey('symbolsapp_reference_type.id'), nullable=True)
+    type = relationship(Type, back_populates="fields")
+
+    data = relationship("_SymbolReference", back_populates="field")
 
     def __repr__(self):
         return "Field: {name}, {type}".format(name=self.name, type=self.type)
 
-class SymbolReference(Base):
+
+class _SymbolReference(Base):
     __tablename__ = 'symbolsapp_reference_data'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    field_id = Column(Integer, ForeignKey('symbolsapp_reference_field.id'), nullable=False)
-    symbol_id = Column(Integer, ForeignKey("symbolsapp_symbol.id"), nullable=False)
+
+    _field_id = Column("field_id", Integer, ForeignKey('symbolsapp_reference_field.id'), nullable=False)
+    field = relationship(Field, back_populates="data")
+
+    _symbol_id = Column("symbol_id", Integer, ForeignKey("symbolsapp_symbol.id"), nullable=False)
+    symbol = relationship("Symbol", back_populates="_ref")
+
     content = Column(String(50))
     UniqueConstraint('symbol_id', 'field_id')
 
@@ -49,7 +59,7 @@ class SymbolGroup(Base):
     __tablename__ = "symbolsapp_group"
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), unique=True)
-    symbols = relationship("Symbol", backref="group")
+    symbols = relationship("Symbol", back_populates="group")
 
     def __repr__(self):
         return "Group: {name}".format(name=self.name)
@@ -59,11 +69,16 @@ class Symbol(Base):
     __tablename__ = "symbolsapp_symbol"
     id = Column(Integer, primary_key=True, autoincrement=True)
     bloomberg_symbol = Column(String(50), unique=True)
-    group_id = Column(Integer, ForeignKey('symbolsapp_group.id'), nullable=True)
+
+    _group_id = Column("group_id", Integer, ForeignKey('symbolsapp_group.id'), nullable=True)
+    group = relationship(SymbolGroup, back_populates="symbols")
+
     internal = Column(String, nullable=True)
 
-    timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan")
-    ref = relationship("SymbolReference", collection_class=attribute_mapped_collection('field.name'), cascade="all, delete-orphan")
+    timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'),
+                              cascade="all, delete-orphan")
+    _ref = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'),
+                       cascade="all, delete-orphan")
 
     def __init__(self, bloomberg_symbol, group=None, timeseries=None):
         timeseries = timeseries or []
@@ -75,28 +90,29 @@ class Symbol(Base):
         for t in timeseries:
             self.timeseries[t] = Timeseries(name=t, symbol=self)
 
-
     @property
     def reference(self):
-        return pd.Series({key: x.content for key,x in self.ref.items()})
+        return pd.Series({key: x.content for key, x in self._ref.items()})
 
     def __repr__(self):
         return "Symbol: {name}, {group}".format(name=self.bloomberg_symbol, group=self.group)
 
     def update_reference(self, field, value):
-        if field.name not in self.ref.keys():
-            self.ref[field.name] = SymbolReference(field_id=field.id, symbol_id=self.id, content=value)
+        if field.name not in self._ref.keys():
+            self._ref[field.name] = _SymbolReference(_field_id=field.id, _symbol_id=self.id, content=value)
         else:
-            self.ref[field.name].content = value
+            self._ref[field.name].content = value
 
 
 class Timeseries(Base):
     __tablename__ = 'ts_name'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name =  Column(String(50))
-    symbol_id = Column(Integer, ForeignKey('symbolsapp_symbol.id'))
-    #symbol = relationship("Symbol", back_populates="timeseries")
-    data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'), back_populates="ts", cascade="all, delete-orphan")
+    name = Column(String(50))
+    _symbol_id = Column("symbol_id", Integer, ForeignKey('symbolsapp_symbol.id'))
+    symbol = relationship("Symbol", back_populates="timeseries")
+
+    data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'), back_populates="ts",
+                        cascade="all, delete-orphan")
     UniqueConstraint('symbol', 'name')
 
     def __init__(self, name, symbol):
@@ -106,7 +122,6 @@ class Timeseries(Base):
     @property
     def series(self):
         return pd.Series({pd.Timestamp(date): x.value for date, x in self.data.items()})
-
 
     def __repr__(self):
         return "{name} for {symbol}".format(name=self.name, symbol=self.symbol)
@@ -128,7 +143,7 @@ class Timeseries(Base):
                 # thes is some data
                 self.data[date].value = value
             else:
-                self.data[date] = _TimeseriesData(date=date, value=value, ts_id=self.id)
+                self.data[date] = _TimeseriesData(date=date, value=value, _ts_id=self.id)
 
 
 class _TimeseriesData(Base):
@@ -136,18 +151,17 @@ class _TimeseriesData(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     date = Column(Date)
     value = Column(Float)
-    ts_id = Column(Integer, ForeignKey('ts_name.id'))
+    _ts_id = Column("ts_id", Integer, ForeignKey('ts_name.id'))
     ts = relationship("Timeseries", back_populates="data")
     UniqueConstraint("date", "ts")
 
 
 class PortfolioSQL(Base):
-
     __tablename__ = 'portfolio'
     name = Column(String, primary_key=True)
     weights = Column(LargeBinary)
     prices = Column(LargeBinary)
-    strategy_id = Column(Integer, ForeignKey("strategiesapp_strategy.id"), nullable=True)
+    _strategy_id = Column("strategy_id", Integer, ForeignKey("strategiesapp_strategy.id"), nullable=True)
     strategy = relationship("Strategy", back_populates="portfolio")
 
     @property
@@ -179,11 +193,11 @@ class PortfolioSQL(Base):
 
     @price.setter
     def price(self, value):
-        self.prices =  value.to_json(orient="split", date_format="iso").encode()
+        self.prices = value.to_json(orient="split", date_format="iso").encode()
 
     @weight.setter
     def weight(self, value):
-        self.weights =  value.to_json(orient="split", date_format="iso").encode()
+        self.weights = value.to_json(orient="split", date_format="iso").encode()
 
     @property
     def last_valid(self):
@@ -203,11 +217,10 @@ class PortfolioSQL(Base):
     def sector(self, map):
         return self.portfolio.sector_weights(symbolmap=map, total=False)
 
-
     def upsert(self, portfolio):
         start = portfolio.index[0]
-        p = self.price.truncate(after=start-pd.DateOffset(seconds=1))
-        w = self.weight.truncate(after=start-pd.DateOffset(seconds=1))
+        p = self.price.truncate(after=start - pd.DateOffset(seconds=1))
+        w = self.weight.truncate(after=start - pd.DateOffset(seconds=1))
         self.weight = pd.concat([w, portfolio.weights], axis=0)
         self.price = pd.concat([p, portfolio.prices], axis=0)
 
@@ -241,12 +254,9 @@ class Strategy(Base):
     def assets(self):
         return self.portfolio.assets
 
-
     def upsert(self, portfolio, days=5):
         if not self.portfolio:
             self.portfolio = PortfolioSQL(name=self.name, strategy=self)
-
-
 
         if self.portfolio.last_valid:
             # this is tricky. as the portfolio object may not contain an index yet...
@@ -259,11 +269,10 @@ class Strategy(Base):
 
 
 class Frame(Base):
-
     __tablename__ = 'frame'
     name = Column(String, primary_key=True)
-    data = Column(LargeBinary)
-    index = Column(String)
+    _data = Column("data", LargeBinary)
+    _index = Column("index", String)
 
     def __init__(self, frame, name):
         self.name = name
@@ -271,12 +280,10 @@ class Frame(Base):
 
     @property
     def frame(self):
-        json_str = BytesIO(self.data).read().decode()
-        return pd.read_json(json_str, orient="split").set_index(keys=self.index.split(","))
+        json_str = BytesIO(self._data).read().decode()
+        return pd.read_json(json_str, orient="split").set_index(keys=self._index.split(","))
 
     @frame.setter
     def frame(self, value):
-        self.index = ",".join(value.index.names)
-        self.data = value.reset_index().to_json(orient="split", date_format="iso").encode()
-
-
+        self._index = ",".join(value.index.names)
+        self._data = value.reset_index().to_json(orient="split", date_format="iso").encode()
