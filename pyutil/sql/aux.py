@@ -1,6 +1,6 @@
 import pandas as pd
 
-from pyutil.sql.models import Symbol, Timeseries, _TimeseriesData
+from pyutil.sql.models import Symbol, _Timeseries, _TimeseriesData
 
 
 # aux. function to access Symbols by name....
@@ -9,8 +9,8 @@ def asset(session, name):
 
 
 def history(session, field="PX_LAST"):
-    x = session.query(_TimeseriesData.date, Symbol.bloomberg_symbol, _TimeseriesData.value).join(Timeseries).join(
-        Symbol).filter(Timeseries.name == field)
+    x = session.query(_TimeseriesData.date, Symbol.bloomberg_symbol, _TimeseriesData.value).join(_Timeseries).join(
+        Symbol).filter(_Timeseries.name == field)
     a = pd.DataFrame.from_records(data=[(date, asset, price) for (date, asset, price) in x], index=["Date", "Asset"],
                                   columns=["Date", "Asset", "Price"])
     return a["Price"].unstack()

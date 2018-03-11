@@ -11,63 +11,52 @@ Base = declarative_base()
 
 from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, Date, Float, LargeBinary, Boolean
 from sqlalchemy.orm import relationship
+from sqlalchemy.types import Enum
 
 
-class Type(Base):
-    __tablename__ = "symbolsapp_reference_type"
+class MyType(Enum):
+    dynamic = 1
+    static = 2
+    other = 3
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), unique=True)
-    fields = relationship("Field", back_populates="type")
 
-    def __repr__(self):
-        return "Type: {type}".format(type=self.name)
+# make Symbolgroup an enum
 
 
 class Field(Base):
     __tablename__ = "symbolsapp_reference_field"
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    _id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), unique=True)
+    type = Column(MyType)
 
-    _type_id = Column("type_id", Integer, ForeignKey('symbolsapp_reference_type.id'), nullable=True)
-    type = relationship(Type, back_populates="fields")
-
-    data = relationship("_SymbolReference", back_populates="field")
+    #data = relationship("_SymbolReference", collection_class=attribute_mapped_collection('symbol.bloomberg_symbol'), back_populates="field")
 
     def __repr__(self):
-        return "Field: {name}, {type}".format(name=self.name, type=self.type)
+        return "{name}".format(name=self.name)
 
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.name == other.name and self.type == other.type
 
-class _SymbolReference(Base):
-    __tablename__ = 'symbolsapp_reference_data'
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    symbols = relationship("_SymbolReference", collection_class=attribute_mapped_collection('symbol.bloomberg_symbol'), back_populates="field")
 
-    _field_id = Column("field_id", Integer, ForeignKey('symbolsapp_reference_field.id'), nullable=False)
-    field = relationship(Field, back_populates="data")
-
-    _symbol_id = Column("symbol_id", Integer, ForeignKey("symbolsapp_symbol.id"), nullable=False)
-    symbol = relationship("Symbol", back_populates="_ref")
-
-    content = Column(String(50))
-    UniqueConstraint('symbol_id', 'field_id')
-
-    def __repr__(self):
-        return "{symbol}, {field}, Value: {value}".format(symbol=self.symbol, field=self.field, value=self.content)
+    @property
+    def data(self):
+        return pd.Series({name: value for name, value in self.symbols.items()})
 
 
 class SymbolGroup(Base):
     __tablename__ = "symbolsapp_group"
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    _id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), unique=True)
     symbols = relationship("Symbol", back_populates="group")
 
     def __repr__(self):
-        return "Group: {name}".format(name=self.name)
+        return "{name}".format(name=self.name)
 
 
 class Symbol(Base):
     __tablename__ = "symbolsapp_symbol"
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    _id = Column("id", Integer, primary_key=True, autoincrement=True)
     bloomberg_symbol = Column(String(50), unique=True)
 
     _group_id = Column("group_id", Integer, ForeignKey('symbolsapp_group.id'), nullable=True)
@@ -75,43 +64,78 @@ class Symbol(Base):
 
     internal = Column(String, nullable=True)
 
-    timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'),
-                              cascade="all, delete-orphan")
-    _ref = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'),
-                       cascade="all, delete-orphan")
+    _timeseries = relationship("_Timeseries", collection_class=attribute_mapped_collection('name'),
+                               cascade="all, delete-orphan")
 
-    def __init__(self, bloomberg_symbol, group=None, timeseries=None):
-        timeseries = timeseries or []
-        self.bloomberg_symbol = bloomberg_symbol
+    #_ref = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'),
+    #                   cascade="all, delete-orphan", back_populates="field")
 
-        if group:
-            self.group = group
-
-        for t in timeseries:
-            self.timeseries[t] = Timeseries(name=t, symbol=self)
+    fields = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'), back_populates="symbol")
 
     @property
     def reference(self):
-        return pd.Series({key: x.content for key, x in self._ref.items()})
+        return pd.Series({key: x.content for key, x in self.fields.items()})
 
     def __repr__(self):
-        return "Symbol: {name}, {group}".format(name=self.bloomberg_symbol, group=self.group)
+        return "{name}, {group}".format(name=self.bloomberg_symbol, group=self.group)
 
     def update_reference(self, field, value):
-        if field.name not in self._ref.keys():
-            self._ref[field.name] = _SymbolReference(_field_id=field.id, _symbol_id=self.id, content=value)
+        if field.name not in self.fields.keys():
+            a = _SymbolReference(content=value)
+            self.fields[field.name] = a
+            field.symbols[self.bloomberg_symbol] = a
+
         else:
-            self._ref[field.name].content = value
+            self.fields[field.name].content = value
+
+        return self.fields[field.name]
 
 
-class Timeseries(Base):
+
+    # use enum instead of name
+    def upsert_timeseries(self, name, ts):
+        if name not in self._timeseries.keys():
+            self._timeseries[name] = _Timeseries(name=name, symbol=self)
+
+        self._timeseries[name].upsert(ts=ts)
+
+    @property
+    def get_timeseries(self):
+        return pd.DataFrame({x.name: x.series for x in self._timeseries.values()})
+
+    def get_timseries_by_name(self, name="PX_LAST"):
+        if name in self._timeseries.keys():
+            return self._timeseries[name].series
+        else:
+            return pd.Series({})
+
+
+class _SymbolReference(Base):
+    #http://docs.sqlalchemy.org/en/latest/orm/basic_relationships.html#many-to-many
+
+    __tablename__ = 'symbolsapp_reference_data'
+
+    _field_id = Column("field_id", Integer, ForeignKey(Field._id), primary_key=True)
+    field = relationship(Field, back_populates="symbols")
+
+    _symbol_id = Column("symbol_id", Integer, ForeignKey(Symbol._id), primary_key=True)
+    symbol = relationship(Symbol, back_populates="fields")
+
+    content = Column(String(50))
+
+    def __repr__(self):
+        return "{symbol}, {field}, {value}".format(symbol=self.symbol, field=self.field, value=self.content)
+
+
+class _Timeseries(Base):
     __tablename__ = 'ts_name'
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    _id = Column("id", Integer, primary_key=True, autoincrement=True)
+    # todo: make this enum
     name = Column(String(50))
     _symbol_id = Column("symbol_id", Integer, ForeignKey('symbolsapp_symbol.id'))
-    symbol = relationship("Symbol", back_populates="timeseries")
+    symbol = relationship("Symbol", back_populates="_timeseries")
 
-    data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'), back_populates="ts",
+    _data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'), back_populates="ts",
                         cascade="all, delete-orphan")
     UniqueConstraint('symbol', 'name')
 
@@ -121,46 +145,53 @@ class Timeseries(Base):
 
     @property
     def series(self):
-        return pd.Series({pd.Timestamp(date): x.value for date, x in self.data.items()})
+        return pd.Series({pd.Timestamp(date): x.value for date, x in self._data.items()})
 
     def __repr__(self):
         return "{name} for {symbol}".format(name=self.name, symbol=self.symbol)
 
     @property
     def empty(self):
-        return len(self.data) == 0
+        return len(self._data) == 0
 
     @property
     def last_valid(self):
         if self.empty:
             return None
         else:
-            return max(x for x in self.data.keys())
+            return max(x for x in self._data.keys())
 
     def upsert(self, ts):
         for date, value in ts.items():
-            if date in self.data.keys():
+            if date in self._data.keys():
                 # thes is some data
-                self.data[date].value = value
+                self._data[date].value = value
             else:
-                self.data[date] = _TimeseriesData(date=date, value=value, _ts_id=self.id)
+                self._data[date] = _TimeseriesData(date=date, value=value, _ts_id=self._id)
 
 
 class _TimeseriesData(Base):
     __tablename__ = 'ts_data'
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    _id = Column("id", Integer, primary_key=True, autoincrement=True)
     date = Column(Date)
     value = Column(Float)
     _ts_id = Column("ts_id", Integer, ForeignKey('ts_name.id'))
-    ts = relationship("Timeseries", back_populates="data")
+    ts = relationship("_Timeseries", back_populates="_data")
     UniqueConstraint("date", "ts")
 
+
+#class _TimeseriesData2(Base):
+#    __tablename__ = 'ts_data2'
+    # enum for type PX LAST
+    # Symbol_id
+    # date
+    # value
 
 class PortfolioSQL(Base):
     __tablename__ = 'portfolio'
     name = Column(String, primary_key=True)
-    weights = Column(LargeBinary)
-    prices = Column(LargeBinary)
+    _weights = Column("weights", LargeBinary)
+    _prices = Column("prices", LargeBinary)
     _strategy_id = Column("strategy_id", Integer, ForeignKey("strategiesapp_strategy.id"), nullable=True)
     strategy = relationship("Strategy", back_populates="portfolio")
 
@@ -180,24 +211,24 @@ class PortfolioSQL(Base):
     @property
     def weight(self):
         try:
-            return self.read(self.weights)
+            return self.read(self._weights)
         except ValueError:
             return pd.DataFrame({})
 
     @property
     def price(self):
         try:
-            return self.read(self.prices)
+            return self.read(self._prices)
         except ValueError:
             return pd.DataFrame({})
 
     @price.setter
     def price(self, value):
-        self.prices = value.to_json(orient="split", date_format="iso").encode()
+        self._prices = value.to_json(orient="split", date_format="iso").encode()
 
     @weight.setter
     def weight(self, value):
-        self.weights = value.to_json(orient="split", date_format="iso").encode()
+        self._weights = value.to_json(orient="split", date_format="iso").encode()
 
     @property
     def last_valid(self):
@@ -228,7 +259,7 @@ class PortfolioSQL(Base):
 class Strategy(Base):
     __tablename__ = "strategiesapp_strategy"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
+    _id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), unique=True)
     active = Column(Boolean)
     source = Column(String)
