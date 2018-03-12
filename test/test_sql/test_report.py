@@ -10,9 +10,6 @@ class TestHistory(TestCase):
 
     def test_strategy_2(self):
         with session_scope(session=session_test(meta=Base.metadata)) as session:
-            #g1 = SymbolGroup(name="A")
-            #g2 = SymbolGroup(name="B")
-
             for symbol in ["A","B","C","D"]:
                 s = Symbol(bloomberg_symbol=symbol, group=SymbolType.equities)
                 session.add(s)

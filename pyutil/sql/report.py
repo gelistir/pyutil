@@ -1,6 +1,6 @@
 import pandas as pd
 
-from pyutil.sql.models import PortfolioSQL, _Timeseries, Symbol  # , Timeseries
+from pyutil.sql.models import PortfolioSQL, Timeseries, Symbol
 
 
 def __portfolios(session, names=None):
@@ -63,6 +63,6 @@ def reference(session):
 
 
 def history(session, field="PX_LAST"):
-    frame = pd.DataFrame({x.symbol.bloomberg_symbol: x.series for x in session.query(_Timeseries).filter(_Timeseries.name==field)})
+    frame = pd.DataFrame({x.symbol.bloomberg_symbol: x.series for x in session.query(Timeseries).filter(Timeseries.name==field)})
     frame.index.name = "Date"
     return frame
