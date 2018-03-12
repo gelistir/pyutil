@@ -13,11 +13,13 @@ from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, Da
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Enum
 
+import enum
 
-class fieldtype(Enum):
-    dynamic = 1
-    static = 2
-    other = 3
+
+class FieldType(enum.Enum):
+    dynamic = 0
+    static = 1
+    other = 2
 
 
 # make Symbolgroup an enum
@@ -27,7 +29,7 @@ class Field(Base):
     __tablename__ = "reference_field"
     _id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), unique=True)
-    type = Column(fieldtype)
+    type = Column(Enum(FieldType))
 
     def __repr__(self):
         return "{name}".format(name=self.name)
@@ -35,7 +37,8 @@ class Field(Base):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.name == other.name and self.type == other.type
 
-    _symbols = relationship("_SymbolReference", collection_class=attribute_mapped_collection('symbol.bloomberg_symbol'), back_populates="field")
+    _symbols = relationship("_SymbolReference", collection_class=attribute_mapped_collection('symbol.bloomberg_symbol'),
+                            back_populates="field")
 
     @property
     def data(self):
@@ -65,10 +68,11 @@ class Symbol(Base):
     _timeseries = relationship("_Timeseries", collection_class=attribute_mapped_collection('name'),
                                cascade="all, delete-orphan")
 
-    #_ref = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'),
+    # _ref = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'),
     #                   cascade="all, delete-orphan", back_populates="field")
 
-    fields = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'), back_populates="symbol")
+    fields = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'),
+                          back_populates="symbol")
 
     @property
     def reference(self):
@@ -87,8 +91,6 @@ class Symbol(Base):
             self.fields[field.name].content = value
 
         return self.fields[field.name]
-
-
 
     # use enum instead of name
     def upsert_timeseries(self, name, ts):
@@ -109,7 +111,7 @@ class Symbol(Base):
 
 
 class _SymbolReference(Base):
-    #http://docs.sqlalchemy.org/en/latest/orm/basic_relationships.html#many-to-many
+    # http://docs.sqlalchemy.org/en/latest/orm/basic_relationships.html#many-to-many
 
     __tablename__ = 'symbolsapp_reference_data'
 
@@ -134,7 +136,7 @@ class _Timeseries(Base):
     symbol = relationship("Symbol", back_populates="_timeseries")
 
     _data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'), back_populates="ts",
-                        cascade="all, delete-orphan")
+                         cascade="all, delete-orphan")
     UniqueConstraint('symbol', 'name')
 
     def __init__(self, name, symbol):
@@ -178,12 +180,12 @@ class _TimeseriesData(Base):
     UniqueConstraint("date", "ts")
 
 
-#class _TimeseriesData2(Base):
+# class _TimeseriesData2(Base):
 #    __tablename__ = 'ts_data2'
-    # enum for type PX LAST
-    # Symbol_id
-    # date
-    # value
+# enum for type PX LAST
+# Symbol_id
+# date
+# value
 
 class PortfolioSQL(Base):
     __tablename__ = 'portfolio'
@@ -316,5 +318,3 @@ class Frame(Base):
     def frame(self, value):
         self._index = ",".join(value.index.names)
         self._data = value.reset_index().to_json(orient="split", date_format="iso").encode()
-
-
