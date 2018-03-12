@@ -24,7 +24,7 @@ class FieldType(enum.Enum):
 
 class SymbolType(enum.Enum):
     alternatives = "Alternatives"
-    fixedincome = "Fixed Income"
+    fixed_income = "Fixed Income"
     currency = "Currency"
     equities = "Equities"
 
@@ -56,7 +56,7 @@ class Symbol(Base):
     _id = Column("id", Integer, primary_key=True, autoincrement=True)
     bloomberg_symbol = Column(String(50), unique=True)
 
-    group = Column("ggg", Enum(SymbolType))
+    group = Column("gg", Enum(SymbolType))
     internal = Column(String, nullable=True)
 
     _timeseries = relationship("_Timeseries", collection_class=attribute_mapped_collection('name'),
