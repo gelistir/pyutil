@@ -14,7 +14,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.types import Enum
 
 
-class MyType(Enum):
+class fieldtype(Enum):
     dynamic = 1
     static = 2
     other = 3
@@ -24,12 +24,10 @@ class MyType(Enum):
 
 
 class Field(Base):
-    __tablename__ = "symbolsapp_reference_field"
+    __tablename__ = "reference_field"
     _id = Column("id", Integer, primary_key=True, autoincrement=True)
     name = Column(String(50), unique=True)
-    type = Column(MyType)
-
-    #data = relationship("_SymbolReference", collection_class=attribute_mapped_collection('symbol.bloomberg_symbol'), back_populates="field")
+    type = Column(fieldtype)
 
     def __repr__(self):
         return "{name}".format(name=self.name)
@@ -37,11 +35,11 @@ class Field(Base):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.name == other.name and self.type == other.type
 
-    symbols = relationship("_SymbolReference", collection_class=attribute_mapped_collection('symbol.bloomberg_symbol'), back_populates="field")
+    _symbols = relationship("_SymbolReference", collection_class=attribute_mapped_collection('symbol.bloomberg_symbol'), back_populates="field")
 
     @property
     def data(self):
-        return pd.Series({name: value for name, value in self.symbols.items()})
+        return pd.Series({name: c.content for name, c in self._symbols.items()})
 
 
 class SymbolGroup(Base):
@@ -83,7 +81,7 @@ class Symbol(Base):
         if field.name not in self.fields.keys():
             a = _SymbolReference(content=value)
             self.fields[field.name] = a
-            field.symbols[self.bloomberg_symbol] = a
+            field._symbols[self.bloomberg_symbol] = a
 
         else:
             self.fields[field.name].content = value
@@ -116,7 +114,7 @@ class _SymbolReference(Base):
     __tablename__ = 'symbolsapp_reference_data'
 
     _field_id = Column("field_id", Integer, ForeignKey(Field._id), primary_key=True)
-    field = relationship(Field, back_populates="symbols")
+    field = relationship(Field, back_populates="_symbols")
 
     _symbol_id = Column("symbol_id", Integer, ForeignKey(Symbol._id), primary_key=True)
     symbol = relationship(Symbol, back_populates="fields")
@@ -318,3 +316,5 @@ class Frame(Base):
     def frame(self, value):
         self._index = ",".join(value.index.names)
         self._data = value.reset_index().to_json(orient="split", date_format="iso").encode()
+
+
