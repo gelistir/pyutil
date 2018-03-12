@@ -22,6 +22,12 @@ class FieldType(enum.Enum):
     other = "other"
 
 
+class SymbolType(enum.Enum):
+    alternatives = "Alternatives"
+    fixedincome = "Fixed Income"
+    currency = "Currency"
+    equities = "Equities"
+
 # make Symbolgroup an enum
 
 
@@ -37,22 +43,12 @@ class Field(Base):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.name == other.name and self.type == other.type
 
-    _symbols = relationship("_SymbolReference", collection_class=attribute_mapped_collection('symbol.bloomberg_symbol'),
+    symbols = relationship("_SymbolReference", collection_class=attribute_mapped_collection('symbol.bloomberg_symbol'),
                             back_populates="field")
 
-    @property
-    def data(self):
-        return pd.Series({name: c.content for name, c in self._symbols.items()})
-
-
-class SymbolGroup(Base):
-    __tablename__ = "symbolsapp_group"
-    _id = Column("id", Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), unique=True)
-    symbols = relationship("Symbol", back_populates="group")
-
-    def __repr__(self):
-        return "{name}".format(name=self.name)
+    #@property
+    #def data(self):
+    #    return pd.Series({name: c.content for name, c in self.symbols.items()})
 
 
 class Symbol(Base):
@@ -60,16 +56,11 @@ class Symbol(Base):
     _id = Column("id", Integer, primary_key=True, autoincrement=True)
     bloomberg_symbol = Column(String(50), unique=True)
 
-    _group_id = Column("group_id", Integer, ForeignKey('symbolsapp_group.id'), nullable=True)
-    group = relationship(SymbolGroup, back_populates="symbols")
-
+    group = Column("ggg", Enum(SymbolType))
     internal = Column(String, nullable=True)
 
     _timeseries = relationship("_Timeseries", collection_class=attribute_mapped_collection('name'),
                                cascade="all, delete-orphan")
-
-    # _ref = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'),
-    #                   cascade="all, delete-orphan", back_populates="field")
 
     fields = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'),
                           back_populates="symbol")
@@ -83,10 +74,9 @@ class Symbol(Base):
 
     def update_reference(self, field, value):
         if field.name not in self.fields.keys():
-            a = _SymbolReference(content=value, _field_id=field._id, _symbol_id=self._id)
-            #return a
+            a = _SymbolReference(content=value)
             self.fields[field.name] = a
-            field._symbols[self.bloomberg_symbol] = a
+            field.symbols[self.bloomberg_symbol] = a
             return a
         else:
             self.fields[field.name].content = value
@@ -113,10 +103,10 @@ class Symbol(Base):
 class _SymbolReference(Base):
     # http://docs.sqlalchemy.org/en/latest/orm/basic_relationships.html#many-to-many
 
-    __tablename__ = 'symbolsapp_reference_data'
+    __tablename__ = 'reference_data'
 
     _field_id = Column("field_id", Integer, ForeignKey(Field._id), primary_key=True)
-    field = relationship(Field, back_populates="_symbols")
+    field = relationship(Field, back_populates="symbols")
 
     _symbol_id = Column("symbol_id", Integer, ForeignKey(Symbol._id), primary_key=True)
     symbol = relationship(Symbol, back_populates="fields")

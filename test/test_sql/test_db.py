@@ -3,7 +3,7 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.sql.models import Frame, Symbol, SymbolGroup, Field, PortfolioSQL, Base, Strategy, FieldType
+from pyutil.sql.models import Frame, Symbol, Field, PortfolioSQL, Base, Strategy, FieldType
 from pyutil.sql.session import session_test
 from test.config import read_frame, test_portfolio, resource
 
@@ -27,14 +27,6 @@ class TestHistory(TestCase):
         f = Frame(frame=x, name="test")
         pdt.assert_frame_equal(f.frame, x)
 
-    # def test_timeseries(self):
-    # g1 = SymbolGroup(name="A")
-    # xx = Symbol(bloomberg_symbol="XX", group=g1)
-
-    # ts = xx.timeseries["hans"]
-    # self.assertEqual(str(ts), "hans for Symbol: XX, Group: A")
-    # self.assertIsNone(ts.last_valid)
-
     def test_portfolio(self):
         portfolio = test_portfolio()
 
@@ -55,22 +47,6 @@ class TestHistory(TestCase):
 
         pp.upsert(portfolio=p2)
         pdt.assert_frame_equal(pp.weight, test_portfolio().weights)
-
-    def test_group(self):
-        g1 = SymbolGroup(name="Group A", symbols=[Symbol(bloomberg_symbol="A"), Symbol(bloomberg_symbol="B")])
-        self.assertEqual(g1.symbols[0].bloomberg_symbol, "A")
-        self.assertEqual(g1.symbols[1].bloomberg_symbol, "B")
-
-    #def test_field(self):
-    #    session = session_test(meta=Base.metadata)
-
-    #    t1 = Field(name="Name", type=MyType.static)
-    #    t2 = Field(name="CHG_PCT_1D", type=MyType.dynamic)
-    #    t3 = Type(name="user-defined", fields=[Field(name="REGION")])
-
-    #    session.add_all([t1, t2, t3])
-
-    #    self.assertEqual(session.query(Field).join(Type).filter(Type.name.in_(["BB-static", "BB-dynamic"])).count(), 2)
 
     def test_strategy(self):
         with open(resource("source.py"), "r") as f:

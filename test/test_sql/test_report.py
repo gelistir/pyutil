@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from pyutil.sql.models import Base, SymbolGroup, Symbol, PortfolioSQL
+from pyutil.sql.models import Base, Symbol, PortfolioSQL, SymbolType
 from pyutil.sql.report import mtd, ytd, sector, recent, period_returns, performance
 from pyutil.sql.session import session_test, session_scope
 from test.config import test_portfolio
@@ -10,19 +10,20 @@ class TestHistory(TestCase):
 
     def test_strategy_2(self):
         with session_scope(session=session_test(meta=Base.metadata)) as session:
-            g1 = SymbolGroup(name="A")
-            g2 = SymbolGroup(name="B")
+            #g1 = SymbolGroup(name="A")
+            #g2 = SymbolGroup(name="B")
 
             for symbol in ["A","B","C","D"]:
-                Symbol(bloomberg_symbol=symbol, group=g1)
+                s = Symbol(bloomberg_symbol=symbol, group=SymbolType.equities)
+                session.add(s)
 
             for symbol in ["E", "F", "G"]:
-                Symbol(bloomberg_symbol=symbol, group=g2)
+                s = Symbol(bloomberg_symbol=symbol, group=SymbolType.equities)
+                session.add(s)
 
-            session.add_all([g1, g2])
+            #session.add_all([g1, g2])
             p = PortfolioSQL(name="test")
             p.upsert(portfolio=test_portfolio())
-
 
             session.add(p)
 
