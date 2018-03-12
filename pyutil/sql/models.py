@@ -115,10 +115,10 @@ class _SymbolReference(Base):
 
     __tablename__ = 'symbolsapp_reference_data'
 
-    _field_id = Column("field_id", Integer, ForeignKey(Field._id), primary_key=True)
+    _field_id = Column("field_id", Integer, ForeignKey(Field._id), primary_key=True, nullable=False)
     field = relationship(Field, back_populates="_symbols")
 
-    _symbol_id = Column("symbol_id", Integer, ForeignKey(Symbol._id), primary_key=True)
+    _symbol_id = Column("symbol_id", Integer, ForeignKey(Symbol._id), primary_key=True, nullable=False)
     symbol = relationship(Symbol, back_populates="fields")
 
     content = Column(String(50))
