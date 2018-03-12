@@ -83,14 +83,14 @@ class Symbol(Base):
 
     def update_reference(self, field, value):
         if field.name not in self.fields.keys():
-            a = _SymbolReference(content=value)
+            a = _SymbolReference(content=value, _field_id=field._id, _symbol_id=self._id)
+            #return a
             self.fields[field.name] = a
             field._symbols[self.bloomberg_symbol] = a
-
+            return a
         else:
             self.fields[field.name].content = value
-
-        return self.fields[field.name]
+            return self.fields[field.name]
 
     # use enum instead of name
     def upsert_timeseries(self, name, ts):
@@ -115,10 +115,10 @@ class _SymbolReference(Base):
 
     __tablename__ = 'symbolsapp_reference_data'
 
-    _field_id = Column("field_id", Integer, ForeignKey(Field._id), primary_key=True, nullable=False)
+    _field_id = Column("field_id", Integer, ForeignKey(Field._id), primary_key=True)
     field = relationship(Field, back_populates="_symbols")
 
-    _symbol_id = Column("symbol_id", Integer, ForeignKey(Symbol._id), primary_key=True, nullable=False)
+    _symbol_id = Column("symbol_id", Integer, ForeignKey(Symbol._id), primary_key=True)
     symbol = relationship(Symbol, back_populates="fields")
 
     content = Column(String(50))
