@@ -17,9 +17,9 @@ import enum
 
 
 class FieldType(enum.Enum):
-    dynamic = 0
-    static = 1
-    other = 2
+    dynamic = "dynamic"
+    static = "static"
+    other = "other"
 
 
 # make Symbolgroup an enum
