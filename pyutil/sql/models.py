@@ -85,6 +85,9 @@ class Symbol(Base):
 
         return self.fields[field.name]
 
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.bloomberg_symbol == other.bloomberg_symbol
+
 
 class _SymbolReference(Base):
     # http://docs.sqlalchemy.org/en/latest/orm/basic_relationships.html#many-to-many

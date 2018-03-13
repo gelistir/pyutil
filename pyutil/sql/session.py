@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 
 
 @contextmanager
@@ -47,47 +48,20 @@ def session_file(file):
     return sessionmaker(bind=engine)()
 
 
-class SessionDB(object):
-    def __init__(self, session):
-        super().__init__()
-        self.__session = session
+def get_one_or_create(session, model, **kwargs):
+    #  see http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/
 
-    @property
-    def session(self):
-        return self.__session
+    try:
+        return session.query(model).filter_by(**kwargs).one()
+    except NoResultFound:
+        return model(**kwargs)
 
-    def dictionary(self, cls, key="name"):
-        return {obj.__getattribute__(key): obj for obj in self.__session.query(cls)}
 
-    def upsert_one(self, cls, get, set=None):
-        # this upserts exactly one element!
+def get_one_or_none(session, model, **kwargs):
+    try:
+        return session.query(model).filter_by(**kwargs).one()
+    except NoResultFound:
+        return None
 
-        s = self.__session.query(cls)
-        # apply all filters
-        for key, value in get.items():
-            if s:
-                s = s.filter(cls.__dict__[key] == value)
 
-        set = set or {}
 
-        if not s.first():
-            x = cls(**{**get, **set})
-            self.__session.add(x)
-
-        else:
-            x = s.first()
-            for key, value in set.items():
-                x.__setattr__(key, value)
-
-        return x
-
-    def get(self, cls, data):
-        """ This function has been created to simple the session.query(cls).filter(...) command"""
-        s = self.__session.query(cls)
-        for key, value in data.items():
-            s = s.filter(cls.__dict__[key] == value)
-
-        if s:
-            return s.first()
-        else:
-            return None

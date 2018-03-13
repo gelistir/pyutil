@@ -1,26 +1,19 @@
 from unittest import TestCase
 
 from pyutil.sql.models import Base, Symbol
-from pyutil.sql.session import session_test, SessionDB
+from pyutil.sql.session import session_test, get_one_or_create, get_one_or_none
 
 
 class TestSession(TestCase):
-    def test_reference(self):
+    def test_get_one_or_create(self):
         session = session_test(meta=Base.metadata)
-        db = SessionDB(session)
-        self.assertEqual(db.session, session)
 
-        s = db.upsert_one(Symbol, get={"bloomberg_symbol": "A"}, set={"internal": "Peter"})
-        self.assertEqual(s.internal, "Peter")
+        x = get_one_or_create(session, Symbol, bloomberg_symbol="B")
+        y = get_one_or_create(session, Symbol, bloomberg_symbol="B")
 
-        s = db.upsert_one(Symbol, get={"bloomberg_symbol": "A"}, set={"internal": "Maffay"})
-        self.assertEqual(s.internal, "Maffay")
+        self.assertEqual(x,y)
 
-        x = db.dictionary(Symbol, key="bloomberg_symbol")
-        self.assertDictEqual(x, {"A": s})
-
-        self.assertIsNone(db.get(Symbol, data={"internal": "wurst"}))
-
-        self.assertTrue(db.get(Symbol, data={"internal": "Maffay"}), s)
-
+    def test_get_one_or_none(self):
+        session = session_test(meta=Base.metadata)
+        self.assertIsNone(get_one_or_none(session, Symbol, bloomberg_symbol="C"))
 
