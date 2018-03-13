@@ -138,19 +138,18 @@ class Timeseries(Base):
                 # thes is some data
                 self._data[date].value = value
             else:
-                self._data[date] = _TimeseriesData(date=date, value=value, _ts_id=self._id)
+                self._data[date] = _TimeseriesData(date=date, value=value) #, _ts_id=self._id)
 
         return self
 
 
 class _TimeseriesData(Base):
     __tablename__ = 'ts_data'
-    _id = Column("id", Integer, primary_key=True, autoincrement=True)
-    date = Column(Date)
+    date = Column(Date, primary_key=True)
     value = Column(Float)
-    _ts_id = Column("ts_id", Integer, ForeignKey('ts_name.id'))
+    _ts_id = Column("ts_id", Integer, ForeignKey('ts_name.id'), primary_key=True)
     ts = relationship("Timeseries", back_populates="_data")
-    UniqueConstraint("date", "ts")
+
 
 
 class PortfolioSQL(Base):
@@ -166,7 +165,7 @@ class PortfolioSQL(Base):
         return self.weight.empty and self.price.empty
 
     @staticmethod
-    def read(x):
+    def _read(x):
         json_str = BytesIO(x).read().decode()
         return pd.read_json(json_str, orient="split")
 
@@ -177,14 +176,14 @@ class PortfolioSQL(Base):
     @property
     def weight(self):
         try:
-            return self.read(self._weights)
+            return self._read(self._weights)
         except ValueError:
             return pd.DataFrame({})
 
     @property
     def price(self):
         try:
-            return self.read(self._prices)
+            return self._read(self._prices)
         except ValueError:
             return pd.DataFrame({})
 
