@@ -1,15 +1,14 @@
 from unittest import TestCase
 
 import pandas as pd
-
-from pyutil.sql.aux import asset, reference, history
-from pyutil.sql.models import Base, Symbol, PortfolioSQL, SymbolType, Field, Timeseries
-from pyutil.sql.session import session_test, session_scope, SessionDB
-
 import pandas.util.testing as pdt
 
+from pyutil.sql.aux import asset, reference, history
+from pyutil.sql.models import Base, Symbol, Field, Timeseries
+from pyutil.sql.session import session_test
 
-class TestHistory(TestCase):
+
+class TestAux(TestCase):
     def test_reference(self):
         session = session_test(meta=Base.metadata)
         s1 = Symbol(bloomberg_symbol="A")
@@ -57,17 +56,4 @@ class TestHistory(TestCase):
 
 
 
-
-    def test_portfolio(self):
-        session = session_test(meta=Base.metadata)
-
-        p = self.db.upsert_one(PortfolioSQL, get={"name": "Peter Maffay"})
-        self.assertTrue(p.empty)
-
-        f = self.db.upsert_one(Symbol, get={"bloomberg_symbol": "A"}, set={"group": SymbolType.equities})
-        self.assertEqual(f.group.name, "equities")
-
-        a = asset(session=self.session, name="A")
-
-        self.assertEqual(s1, a)
 

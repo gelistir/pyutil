@@ -6,7 +6,7 @@ from pyutil.sql.session import session_test, session_scope
 from test.config import test_portfolio
 
 
-class TestHistory(TestCase):
+class TestReport(TestCase):
 
     def test_strategy_2(self):
         with session_scope(session=session_test(meta=Base.metadata)) as session:

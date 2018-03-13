@@ -60,11 +60,13 @@ class SessionDB(object):
         return {obj.__getattribute__(key): obj for obj in self.__session.query(cls)}
 
     def upsert_one(self, cls, get, set=None):
+        # this upserts exactly one element!
 
         s = self.__session.query(cls)
         # apply all filters
         for key, value in get.items():
-            s = s.filter(cls.__dict__[key] == value)
+            if s:
+                s = s.filter(cls.__dict__[key] == value)
 
         set = set or {}
 
@@ -79,11 +81,13 @@ class SessionDB(object):
 
         return x
 
-
     def get(self, cls, data):
+        """ This function has been created to simple the session.query(cls).filter(...) command"""
         s = self.__session.query(cls)
         for key, value in data.items():
             s = s.filter(cls.__dict__[key] == value)
 
-        return s.first()
-
+        if s:
+            return s.first()
+        else:
+            return None
