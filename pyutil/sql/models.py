@@ -74,14 +74,14 @@ class Symbol(Base):
         return "{name}".format(name=self.bloomberg_symbol)
 
     def update_reference(self, field, value):
-        if field.name not in self.fields.keys():
-            # do not flush here!
-            a = _SymbolReference(content=value)  # , _field_id=field._id, _symbol_id=self._id)
+        #if field.name not in self.fields.keys():
+        # do not flush here!
+        a = _SymbolReference(content=value)  # , _field_id=field._id, _symbol_id=self._id)
 
-            self.fields[field.name] = a
-            field.symbols[self.bloomberg_symbol] = a
-        else:
-            self.fields[field.name].content = value
+        self.fields[field.name] = a
+        field.symbols[self.bloomberg_symbol] = a
+        #else:
+        #    self.fields[field.name].content = value
 
         return self.fields[field.name]
 
@@ -137,11 +137,11 @@ class Timeseries(Base):
 
     def upsert(self, ts):
         for date, value in ts.items():
-            if date in self._data.keys():
-                # thes is some data
-                self._data[date].value = value
-            else:
-                self._data[date] = _TimeseriesData(date=date, value=value) #, _ts_id=self._id)
+            #if date in self._data.keys():
+            #    # thes is some data
+            #    self._data[date].value = value
+            #else:
+            self._data[date] = _TimeseriesData(date=date, value=value) #, _ts_id=self._id)
 
         return self
 

@@ -5,7 +5,7 @@ from pyutil.sql.models import Symbol, Timeseries, _TimeseriesData
 
 # aux. function to access Symbols by name....
 def asset(session, name):
-    return session.query(Symbol).filter(Symbol.bloomberg_symbol == name).first()
+    return session.query(Symbol).filter(Symbol.bloomberg_symbol == name).one()
 
 
 def history(session, field="PX_LAST"):
