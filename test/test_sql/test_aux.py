@@ -4,13 +4,13 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.aux import asset, reference, history
-from pyutil.sql.models import Base, Symbol, Field, Timeseries
+from pyutil.sql.models import _Base, Symbol, Field, Timeseries
 from pyutil.sql.session import session_test
 
 
 class TestAux(TestCase):
     def test_reference(self):
-        session = session_test(meta=Base.metadata)
+        session = session_test(meta=_Base.metadata)
         s1 = Symbol(bloomberg_symbol="A")
         session.add(s1)
 
@@ -28,13 +28,13 @@ class TestAux(TestCase):
         pdt.assert_frame_equal(f, reference(session))
 
     def test_asset(self):
-        session = session_test(meta=Base.metadata)
+        session = session_test(meta=_Base.metadata)
         s1 = Symbol(bloomberg_symbol="A")
         session.add(s1)
         self.assertEqual(s1, asset(session, name="A"))
 
     def test_history(self):
-        session = session_test(meta=Base.metadata)
+        session = session_test(meta=_Base.metadata)
 
         s1 = Symbol(bloomberg_symbol="C")
         session.add(s1)

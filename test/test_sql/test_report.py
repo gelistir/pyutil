@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from pyutil.sql.models import Base, Symbol, PortfolioSQL, SymbolType
+from pyutil.sql.models import _Base, Symbol, PortfolioSQL, SymbolType
 from pyutil.sql.report import mtd, ytd, sector, recent, period_returns, performance
 from pyutil.sql.session import session_test, session_scope
 from test.config import test_portfolio
@@ -9,7 +9,7 @@ from test.config import test_portfolio
 class TestReport(TestCase):
 
     def test_strategy_2(self):
-        with session_scope(session=session_test(meta=Base.metadata)) as session:
+        with session_scope(session=session_test(meta=_Base.metadata)) as session:
             for symbol in ["A","B","C","D"]:
                 s = Symbol(bloomberg_symbol=symbol, group=SymbolType.equities)
                 session.add(s)

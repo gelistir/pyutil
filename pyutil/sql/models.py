@@ -1,46 +1,46 @@
-from io import BytesIO
-from types import ModuleType
+from io import BytesIO as _BytesIO
 
-import pandas as pd
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm.collections import attribute_mapped_collection
+import pandas as _pd
+from sqlalchemy.ext.declarative import declarative_base as _declarative_base
+from sqlalchemy.orm.collections import attribute_mapped_collection as _attribute_mapped_collection
 
-from pyutil.portfolio.portfolio import Portfolio
+from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 
-Base = declarative_base()
+_Base = _declarative_base()
 
-from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, Date, Float, LargeBinary, Boolean
-from sqlalchemy.orm import relationship
-from sqlalchemy.types import Enum
+import sqlalchemy as sq
+#from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, Date, Float, LargeBinary, Boolean
+from sqlalchemy.orm import relationship as _relationship
+from sqlalchemy.types import Enum as _Enum
 
-import enum
+import enum as _enum
 
 
-class FieldType(enum.Enum):
+class FieldType(_enum.Enum):
     dynamic = "dynamic"
     static = "static"
     other = "other"
 
 
-class SymbolType(enum.Enum):
+class SymbolType(_enum.Enum):
     alternatives = "Alternatives"
     fixed_income = "Fixed Income"
     currency = "Currency"
     equities = "Equities"
 
 
-class StrategyType(enum.Enum):
+class StrategyType(_enum.Enum):
     mdt = 'mdt'
     conservative = 'conservative'
     balanced = 'balanced'
     dynamic = 'dynamic'
 
 
-class Field(Base):
+class Field(_Base):
     __tablename__ = "reference_field"
-    _id = Column("id", Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), unique=True)
-    type = Column(Enum(FieldType))
+    _id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
+    name = sq.Column(sq.String(50), unique=True)
+    type = sq.Column(_Enum(FieldType))
 
     def __repr__(self):
         return "{name}".format(name=self.name)
@@ -48,78 +48,73 @@ class Field(Base):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.name == other.name and self.type == other.type
 
-    symbols = relationship("_SymbolReference", collection_class=attribute_mapped_collection('symbol.bloomberg_symbol'),
+    symbols = _relationship("_SymbolReference", collection_class=_attribute_mapped_collection('symbol.bloomberg_symbol'),
                            back_populates="field")
 
 
-class Symbol(Base):
+class Symbol(_Base):
     __tablename__ = "symbolsapp_symbol"
-    _id = Column("id", Integer, primary_key=True, autoincrement=True)
+    _id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
 
-    bloomberg_symbol = Column(String(50), unique=True)
-    group = Column("gg", Enum(SymbolType))
-    internal = Column(String, nullable=True)
+    bloomberg_symbol = sq.Column(sq.String(50), unique=True)
+    group = sq.Column("gg", _Enum(SymbolType))
+    internal = sq.Column(sq.String, nullable=True)
 
-    timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'),
+    timeseries = _relationship("Timeseries", collection_class=_attribute_mapped_collection('name'),
                                cascade="all, delete-orphan")
 
-    fields = relationship("_SymbolReference", collection_class=attribute_mapped_collection('field.name'),
+    fields = _relationship("_SymbolReference", collection_class=_attribute_mapped_collection('field.name'),
                           back_populates="symbol")
 
     @property
     def reference(self):
-        return pd.Series({key: x.content for key, x in self.fields.items()})
+        return _pd.Series({key: x.content for key, x in self.fields.items()})
 
     def __repr__(self):
         return "{name}".format(name=self.bloomberg_symbol)
 
     def update_reference(self, field, value):
-        #if field.name not in self.fields.keys():
         # do not flush here!
-        a = _SymbolReference(content=value)  # , _field_id=field._id, _symbol_id=self._id)
-
+        a = _SymbolReference(content=value)
         self.fields[field.name] = a
         field.symbols[self.bloomberg_symbol] = a
-        #else:
-        #    self.fields[field.name].content = value
-
         return self.fields[field.name]
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.bloomberg_symbol == other.bloomberg_symbol
 
 
-class _SymbolReference(Base):
+class _SymbolReference(_Base):
     # http://docs.sqlalchemy.org/en/latest/orm/basic_relationships.html#many-to-many
 
     __tablename__ = 'reference_data'
 
-    _field_id = Column("field_id", Integer, ForeignKey(Field._id), primary_key=True)
-    field = relationship(Field, back_populates="symbols")
+    _field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey(Field._id), primary_key=True)
+    field = _relationship(Field, back_populates="symbols")
 
-    _symbol_id = Column("symbol_id", Integer, ForeignKey(Symbol._id), primary_key=True)
-    symbol = relationship(Symbol, back_populates="fields")
+    _symbol_id = sq.Column("symbol_id", sq.Integer, sq.ForeignKey(Symbol._id), primary_key=True)
+    symbol = _relationship(Symbol, back_populates="fields")
 
-    content = Column(String(50))
+    content = sq.Column(sq.String(50))
 
 
-class Timeseries(Base):
+class Timeseries(_Base):
     __tablename__ = 'ts_name'
-    _id = Column("id", Integer, primary_key=True, autoincrement=True)
+    _id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
     # todo: make this enum
-    name = Column(String(50))
+    name = sq.Column(sq.String(50))
 
-    _symbol_id = Column("symbol_id", Integer, ForeignKey('symbolsapp_symbol.id'))
-    symbol = relationship("Symbol", back_populates="timeseries")
+    _symbol_id = sq.Column("symbol_id", sq.Integer, sq.ForeignKey('symbolsapp_symbol.id'))
+    symbol = _relationship("Symbol", back_populates="timeseries")
 
-    _data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'), back_populates="ts",
+    _data = _relationship("_TimeseriesData", collection_class=_attribute_mapped_collection('date'), back_populates="ts",
                          cascade="all, delete-orphan")
 
-    UniqueConstraint('symbol', 'name')
+    sq.UniqueConstraint('symbol', 'name')
 
     @property
     def series(self):
-        return pd.Series({date: x.value for date, x in self._data.items()})
+        return _pd.Series({date: x.value for date, x in self._data.items()})
 
     def __repr__(self):
         return "{name} for {symbol}".format(name=self.name, symbol=self.symbol)
@@ -146,22 +141,22 @@ class Timeseries(Base):
         return self
 
 
-class _TimeseriesData(Base):
+class _TimeseriesData(_Base):
     __tablename__ = 'ts_data'
-    date = Column(Date, primary_key=True)
-    value = Column(Float)
-    _ts_id = Column("ts_id", Integer, ForeignKey('ts_name.id'), primary_key=True)
-    ts = relationship("Timeseries", back_populates="_data")
+    date = sq.Column(sq.Date, primary_key=True)
+    value = sq.Column(sq.Float)
+    _ts_id = sq.Column("ts_id", sq.Integer, sq.ForeignKey('ts_name.id'), primary_key=True)
+    ts = _relationship("Timeseries", back_populates="_data")
 
 
 
-class PortfolioSQL(Base):
+class PortfolioSQL(_Base):
     __tablename__ = 'portfolio'
-    name = Column(String, primary_key=True)
-    _weights = Column("weights", LargeBinary)
-    _prices = Column("prices", LargeBinary)
-    _strategy_id = Column("strategy_id", Integer, ForeignKey("strategiesapp_strategy.id"), nullable=True)
-    strategy = relationship("Strategy", back_populates="portfolio")
+    name = sq.Column(sq.String, primary_key=True)
+    _weights = sq.Column("weights", sq.LargeBinary)
+    _prices = sq.Column("prices", sq.LargeBinary)
+    _strategy_id = sq.Column("strategy_id", sq.Integer, sq.ForeignKey("strategiesapp_strategy.id"), nullable=True)
+    strategy = _relationship("Strategy", back_populates="portfolio")
 
     @property
     def empty(self):
@@ -169,26 +164,26 @@ class PortfolioSQL(Base):
 
     @staticmethod
     def _read(x):
-        json_str = BytesIO(x).read().decode()
-        return pd.read_json(json_str, orient="split")
+        json_str = _BytesIO(x).read().decode()
+        return _pd.read_json(json_str, orient="split")
 
     @property
     def portfolio(self):
-        return Portfolio(weights=self.weight, prices=self.price)
+        return _Portfolio(weights=self.weight, prices=self.price)
 
     @property
     def weight(self):
         try:
             return self._read(self._weights)
         except ValueError:
-            return pd.DataFrame({})
+            return _pd.DataFrame({})
 
     @property
     def price(self):
         try:
             return self._read(self._prices)
         except ValueError:
-            return pd.DataFrame({})
+            return _pd.DataFrame({})
 
     @price.setter
     def price(self, value):
@@ -218,21 +213,21 @@ class PortfolioSQL(Base):
 
     def upsert(self, portfolio):
         start = portfolio.index[0]
-        p = self.price.truncate(after=start - pd.DateOffset(seconds=1))
-        w = self.weight.truncate(after=start - pd.DateOffset(seconds=1))
-        self.weight = pd.concat([w, portfolio.weights], axis=0)
-        self.price = pd.concat([p, portfolio.prices], axis=0)
+        p = self.price.truncate(after=start - _pd.DateOffset(seconds=1))
+        w = self.weight.truncate(after=start - _pd.DateOffset(seconds=1))
+        self.weight = _pd.concat([w, portfolio.weights], axis=0)
+        self.price = _pd.concat([p, portfolio.prices], axis=0)
 
 
-class Strategy(Base):
+class Strategy(_Base):
     __tablename__ = "strategiesapp_strategy"
 
-    _id = Column("id", Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), unique=True)
-    active = Column(Boolean)
-    source = Column(String)
-    portfolio = relationship("PortfolioSQL", uselist=False, back_populates="strategy")
-    type = Column(Enum(StrategyType))
+    _id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
+    name = sq.Column(sq.String(50), unique=True)
+    active = sq.Column(sq.Boolean)
+    source = sq.Column(sq.String)
+    portfolio = _relationship("PortfolioSQL", uselist=False, back_populates="strategy")
+    type = sq.Column(_Enum(StrategyType))
 
     def __init__(self, name, active=True, source=""):
         self.name = name
@@ -241,6 +236,8 @@ class Strategy(Base):
         self.source = source
 
     def __module(self):
+        from types import ModuleType
+
         compiled = compile(self.source, '', 'exec')
         module = ModuleType("module")
         exec(compiled, module.__dict__)
@@ -262,7 +259,7 @@ class Strategy(Base):
             # this is tricky. as the portfolio object may not contain an index yet...
             last_valid = self.portfolio.last_valid
             # update the existing portfolio object, think about renaming upsert into update...
-            self.portfolio.upsert(portfolio=portfolio.truncate(before=last_valid - pd.DateOffset(days=days)))
+            self.portfolio.upsert(portfolio=portfolio.truncate(before=last_valid - _pd.DateOffset(days=days)))
 
         else:
             self.portfolio.upsert(portfolio=portfolio)
@@ -270,11 +267,11 @@ class Strategy(Base):
         return self.portfolio.portfolio
 
 
-class Frame(Base):
+class Frame(_Base):
     __tablename__ = 'frame'
-    name = Column(String, primary_key=True)
-    _data = Column("data", LargeBinary)
-    _index = Column("index", String)
+    name = sq.Column(sq.String, primary_key=True)
+    _data = sq.Column("data", sq.LargeBinary)
+    _index = sq.Column("index", sq.String)
 
     def __init__(self, frame, name):
         self.name = name
@@ -282,8 +279,8 @@ class Frame(Base):
 
     @property
     def frame(self):
-        json_str = BytesIO(self._data).read().decode()
-        return pd.read_json(json_str, orient="split").set_index(keys=self._index.split(","))
+        json_str = _BytesIO(self._data).read().decode()
+        return _pd.read_json(json_str, orient="split").set_index(keys=self._index.split(","))
 
     @frame.setter
     def frame(self, value):
