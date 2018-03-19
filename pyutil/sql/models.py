@@ -9,7 +9,6 @@ from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 _Base = _declarative_base()
 
 import sqlalchemy as sq
-#from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, Date, Float, LargeBinary, Boolean
 from sqlalchemy.orm import relationship as _relationship
 from sqlalchemy.types import Enum as _Enum
 
