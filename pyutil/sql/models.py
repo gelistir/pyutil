@@ -73,11 +73,15 @@ class Symbol(_Base):
         return "{name}".format(name=self.bloomberg_symbol)
 
     def update_reference(self, field, value):
+        assert field
+        assert value
+        assert self.bloomberg_symbol
+
         # do not flush here!
         a = _SymbolReference(content=value)
         self.fields[field.name] = a
         field.symbols[self.bloomberg_symbol] = a
-        return self.fields[field.name]
+        return a
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.bloomberg_symbol == other.bloomberg_symbol

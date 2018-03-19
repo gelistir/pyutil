@@ -3,7 +3,6 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-#from pyutil.sql.aux import asset, reference, history
 from pyutil.sql.database import Database
 from pyutil.sql.models import _Base, Symbol, Field, Timeseries
 from pyutil.sql.session import session_test
