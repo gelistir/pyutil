@@ -7,17 +7,17 @@ from sqlalchemy.orm.exc import NoResultFound
 
 
 @contextmanager
-def session_scope(session):
+def session_scope(ses=None):
     """Provide a transactional scope around a series of operations."""
-    session = session
+    ses = ses or session()
     try:
-        yield session
-        session.commit()
+        yield ses
+        ses.commit()
     except:
-        session.rollback()
+        ses.rollback()
         raise
     finally:
-        session.close()
+        ses.close()
 
 
 def session(server=None, db=None, user=None, password=None):
