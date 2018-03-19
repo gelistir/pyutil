@@ -89,3 +89,6 @@ class Database(object):
 
     def frame(self, name):
         return self.__session.query(Frame).filter_by(name=name).one().frame
+
+    def symbols(self):
+        return self.__session.query(_Symbol)

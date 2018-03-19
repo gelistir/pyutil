@@ -272,10 +272,6 @@ class Frame(_Base):
     _data = sq.Column("data", sq.LargeBinary)
     _index = sq.Column("index", sq.String)
 
-    def __init__(self, frame, name):
-        self.name = name
-        self.frame = frame
-
     @property
     def frame(self):
         json_str = _BytesIO(self._data).read().decode()
