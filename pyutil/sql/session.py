@@ -7,9 +7,9 @@ from sqlalchemy.orm.exc import NoResultFound
 
 
 @contextmanager
-def session_scope(ses=None):
+def session_scope(server=None, db=None, user=None, password=None):
     """Provide a transactional scope around a series of operations."""
-    ses = ses or session()
+    ses = session(server=server, db=db, user=user, password=password)
     try:
         yield ses
         ses.commit()

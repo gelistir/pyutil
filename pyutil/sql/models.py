@@ -73,10 +73,6 @@ class Symbol(_Base):
         return "{name}".format(name=self.bloomberg_symbol)
 
     def update_reference(self, field, value):
-        assert field
-        assert value
-        assert self.bloomberg_symbol
-
         # do not flush here!
         a = _SymbolReference(content=value)
         self.fields[field.name] = a
