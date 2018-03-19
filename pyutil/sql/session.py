@@ -54,8 +54,11 @@ def get_one_or_create(session, model, **kwargs):
     try:
         return session.query(model).filter_by(**kwargs).one()
     except NoResultFound:
-        return model(**kwargs)
-
+        # create the model object
+        a = model(**kwargs)
+        # add it to session
+        session.add(a)
+        return a
 
 def get_one_or_none(session, model, **kwargs):
     try:
