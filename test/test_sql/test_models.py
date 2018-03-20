@@ -21,13 +21,13 @@ class TestModels(TestCase):
 
     def test_symbol(self):
         s = Symbol(bloomberg_symbol="Symbol 1", group=SymbolType.equities, internal="Symbol 1 internal")
-        print(dir(s))
-        self.assertEqual(s.fields, {})
+        self.assertTrue(s.reference.empty)
+
         #self.assertEqual(s.fff, {})
         self.assertEqual(s.bloomberg_symbol, "Symbol 1")
         self.assertEqual(str(s), "Symbol 1")
         self.assertDictEqual(s.timeseries, {})
-        self.assertDictEqual(s.fields, {})
+        self.assertTrue(s.reference.empty)
 
         f = Field(name="Field 1", type=FieldType.dynamic)
 
@@ -37,9 +37,9 @@ class TestModels(TestCase):
         self.assertEqual(a.symbol, s)
         self.assertEqual(a.content, "100")
 
-        self.assertDictEqual(s.fields, {"Field 1": a})
-        #self.assertDictEqual(f.symbols, {"Symbol 1": a})
+        self.assertDictEqual(s._fields, {"Field 1": a})
 
+        pdt.assert_series_equal(f.reference, pd.Series({"Symbol 1": "100"}))
         pdt.assert_series_equal(s.reference, pd.Series({"Field 1": "100"}))
 
         # update the already existing field
@@ -49,13 +49,11 @@ class TestModels(TestCase):
         self.assertEqual(a.symbol, s)
         self.assertEqual(a.content, "200")
 
-        #print(s.fff)
-        print(s.fields)
-        self.assertDictEqual(s.fields, {"Field 1": a})
-        #self.assertDictEqual(f.symbols, {"Symbol 1": a})
+        self.assertDictEqual(s._fields, {"Field 1": a})
+        self.assertDictEqual(f._symbols, {"Symbol 1": a})
 
         pdt.assert_series_equal(s.reference, pd.Series({"Field 1": "200"}))
-        #assert False
+        pdt.assert_series_equal(f.reference, pd.Series({"Symbol 1": "200"}))
 
     def test_timeseries(self):
         s = Symbol(bloomberg_symbol="Symbol 1", group=SymbolType.equities, internal="Symbol 1 internal")

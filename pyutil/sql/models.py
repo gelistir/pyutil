@@ -47,8 +47,12 @@ class Field(_Base):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.name == other.name and self.type == other.type
 
-    symbols = _relationship("_SymbolReference", collection_class=_attribute_mapped_collection('symbol.bloomberg_symbol'),
+    _symbols = _relationship("_SymbolReference", collection_class=_attribute_mapped_collection('symbol.bloomberg_symbol'),
                            back_populates="field")
+
+    @property
+    def reference(self):
+        return _pd.Series({key: x.content for key, x in self._symbols.items()})
 
 
 class Symbol(_Base):
@@ -62,12 +66,12 @@ class Symbol(_Base):
     timeseries = _relationship("Timeseries", collection_class=_attribute_mapped_collection('name'),
                                cascade="all, delete-orphan")
 
-    fields = _relationship("_SymbolReference", collection_class=_attribute_mapped_collection('field.name'),
+    _fields = _relationship("_SymbolReference", collection_class=_attribute_mapped_collection('field.name'),
                           back_populates="symbol")
 
     @property
     def reference(self):
-        return _pd.Series({key: x.content for key, x in self.fields.items()})
+        return _pd.Series({key: x.content for key, x in self._fields.items()})
 
     def __repr__(self):
         return "{name}".format(name=self.bloomberg_symbol)
@@ -75,8 +79,8 @@ class Symbol(_Base):
     def update_reference(self, field, value):
         # do not flush here!
         a = _SymbolReference(content=value)
-        self.fields[field.name] = a
-        field.symbols[self.bloomberg_symbol] = a
+        self._fields[field.name] = a
+        field._symbols[self.bloomberg_symbol] = a
         return a
 
     def __eq__(self, other):
@@ -89,10 +93,10 @@ class _SymbolReference(_Base):
     __tablename__ = 'reference_data'
 
     _field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey(Field._id), primary_key=True)
-    field = _relationship(Field, back_populates="symbols")
+    field = _relationship(Field, back_populates="_symbols")
 
     _symbol_id = sq.Column("symbol_id", sq.Integer, sq.ForeignKey(Symbol._id), primary_key=True)
-    symbol = _relationship(Symbol, back_populates="fields")
+    symbol = _relationship(Symbol, back_populates="_fields")
 
     content = sq.Column(sq.String(50))
 
