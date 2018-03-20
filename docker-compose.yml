@@ -9,22 +9,7 @@ services:
         - ./results:/pyutil/results
         - ./pyutil:/pyutil/pyutil
      extra_hosts:
+        # obviously you can not access
         - quantsrv:192.168.100.15
 
-  # used to create test resources
-  testdata:
-     build:
-       context: .
-       dockerfile: Dockerfile-Test
-
-     volumes:
-       - ./pyutil:/pyutil/pyutil
-       - ./test:/pyutil/test
-     #command: python /pyutil/config.py
-
-     links:
-       - testmongo
-
-  testmongo:
-     image: mongo
 
