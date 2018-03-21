@@ -1,5 +1,5 @@
 import pandas as _pd
-from pyutil.sql.models import Symbol as _Symbol, _TimeseriesData, Timeseries as _Timeseries, \
+from pyutil.sql.models import Symbol as _Symbol, _TimeseriesData, _Timeseries, \
     PortfolioSQL as _PortfolioSQL, Strategy as _Strategy, Frame
 
 
@@ -84,11 +84,8 @@ class Database(object):
         frame = _pd.DataFrame({name: portfolio.nav.summary() for name, portfolio in self.portfolios(names).items()}).sort_index(ascending=False)
         return frame.transpose()
 
-    def strategies(self):
-        return self.__session.query(_Strategy)
+    #def strategies(self):
+    #    return self.__session.query(_Strategy)
 
     def frame(self, name):
         return self.__session.query(Frame).filter_by(name=name).one().frame
-
-    def symbols(self):
-        return self.__session.query(_Symbol)
