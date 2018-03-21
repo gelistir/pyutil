@@ -20,8 +20,8 @@ class TestDatabase(TestCase):
         session.add_all([f1, f2])
 
         with session.no_autoflush:
-             s1.update_reference(f1, "100")
-             s1.update_reference(f2, "200")
+             s1.refdata[f1] = "100"
+             s1.refdata[f2] = "200"
 
         x = pd.Series({pd.Timestamp("2010-01-01").date(): 100.0, pd.Timestamp("2011-01-01").date(): 200.0})
         s1.timeseries["PX_LAST"] = Timeseries(name="PX_LAST").upsert(ts=x)

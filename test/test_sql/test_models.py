@@ -4,56 +4,40 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.models import Frame, Symbol, Field, Strategy, FieldType, \
-    SymbolType, Timeseries, PortfolioSQL, _SymbolReference
+    SymbolType, Timeseries, PortfolioSQL
 from test.config import test_portfolio, resource
 
 
 class TestModels(TestCase):
 
+
+
+
     def test_field(self):
         f = Field(name="Field 1", type=FieldType.dynamic)
         self.assertEqual(str(f), "Field 1")
-
-        #print(dir(f))
-        #self.assertDictEqual(f.f, {})
         self.assertEqual(f.type, FieldType.dynamic)
         self.assertEqual(f, Field(name="Field 1", type=FieldType.dynamic))
 
     def test_symbol(self):
         s = Symbol(bloomberg_symbol="Symbol 1", group=SymbolType.equities, internal="Symbol 1 internal")
-        self.assertTrue(s.reference.empty)
 
-        #self.assertEqual(s.fff, {})
         self.assertEqual(s.bloomberg_symbol, "Symbol 1")
         self.assertEqual(str(s), "Symbol 1")
         self.assertDictEqual(s.timeseries, {})
-        self.assertTrue(s.reference.empty)
 
         f = Field(name="Field 1", type=FieldType.dynamic)
+        s.refdata[f] = "100"
 
-        a = s.update_reference(f, "100")
-        # this will only work after commit?
-        self.assertEqual(a.field, f)
-        self.assertEqual(a.symbol, s)
-        self.assertEqual(a.content, "100")
+        self.assertEqual(s.refdata[f], "100")
+        self.assertSetEqual(set(s.refdata.keys()), {f})
 
-        self.assertDictEqual(s._fields, {"Field 1": a})
-
-        pdt.assert_series_equal(f.reference, pd.Series({"Symbol 1": "100"}))
         pdt.assert_series_equal(s.reference, pd.Series({"Field 1": "100"}))
 
         # update the already existing field
-        a = s.update_reference(f, "200")
-
-        self.assertEqual(a.field, f)
-        self.assertEqual(a.symbol, s)
-        self.assertEqual(a.content, "200")
-
-        self.assertDictEqual(s._fields, {"Field 1": a})
-        self.assertDictEqual(f._symbols, {"Symbol 1": a})
-
+        s.refdata[f] = "200"
         pdt.assert_series_equal(s.reference, pd.Series({"Field 1": "200"}))
-        pdt.assert_series_equal(f.reference, pd.Series({"Symbol 1": "200"}))
+
 
     def test_timeseries(self):
         s = Symbol(bloomberg_symbol="Symbol 1", group=SymbolType.equities, internal="Symbol 1 internal")

@@ -1,6 +1,7 @@
 from io import BytesIO as _BytesIO
 
 import pandas as _pd
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base as _declarative_base
 from sqlalchemy.orm.collections import attribute_mapped_collection as _attribute_mapped_collection
 
@@ -47,12 +48,12 @@ class Field(_Base):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.name == other.name and self.type == other.type
 
-    _symbols = _relationship("_SymbolReference", collection_class=_attribute_mapped_collection('symbol.bloomberg_symbol'),
-                           back_populates="field")
-
     @property
     def reference(self):
-        return _pd.Series({key: x.content for key, x in self._symbols.items()})
+        return _pd.Series({key.bloomberg_symbol: x for key, x in self.refdata.items()})
+
+    def __hash__(self):
+        return hash(str(self.name))
 
 
 class Symbol(_Base):
@@ -64,27 +65,27 @@ class Symbol(_Base):
     internal = sq.Column(sq.String, nullable=True)
 
     timeseries = _relationship("Timeseries", collection_class=_attribute_mapped_collection('name'),
-                               cascade="all, delete-orphan")
-
-    _fields = _relationship("_SymbolReference", collection_class=_attribute_mapped_collection('field.name'),
-                          back_populates="symbol")
+                               cascade="all, delete-orphan", backref="symbol")
 
     @property
     def reference(self):
-        return _pd.Series({key: x.content for key, x in self._fields.items()})
+        return _pd.Series({field.name: x for field, x in self.refdata.items()})
 
     def __repr__(self):
         return "{name}".format(name=self.bloomberg_symbol)
 
-    def update_reference(self, field, value):
-        # do not flush here!
-        a = _SymbolReference(content=value)
-        self._fields[field.name] = a
-        field._symbols[self.bloomberg_symbol] = a
-        return a
+    #def update_reference(self, field, value):
+    #    # do not flush here!
+    #    a = _SymbolReference(content=value)
+    #    self._fields[field.name] = a
+    #    field._symbols[self.bloomberg_symbol] = a
+    #    return a
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.bloomberg_symbol == other.bloomberg_symbol
+
+    def __hash__(self):
+        return hash(str(self.bloomberg_symbol))
 
 
 class _SymbolReference(_Base):
@@ -93,25 +94,32 @@ class _SymbolReference(_Base):
     __tablename__ = 'reference_data'
 
     _field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey(Field._id), primary_key=True)
-    field = _relationship(Field, back_populates="_symbols")
-
     _symbol_id = sq.Column("symbol_id", sq.Integer, sq.ForeignKey(Symbol._id), primary_key=True)
-    symbol = _relationship(Symbol, back_populates="_fields")
-
     content = sq.Column(sq.String(50))
+
+    def __init__(self, field=None, symbol=None, content=None):
+        self.content = content
+        self.field = field
+        self.symbol = symbol
+
+    def __repr__(self):
+        return "{symbol}{field},{value}".format(symbol=self.symbol, field=self.field, value=self.content)
+
+Symbol._refdata_by_field = _relationship(_SymbolReference, backref="symbol", collection_class=_attribute_mapped_collection("field"))
+Field._refdata_by_symbol = _relationship(_SymbolReference, backref="field", collection_class=_attribute_mapped_collection("symbol"))
+
+Symbol.refdata = association_proxy("_refdata_by_field", "content", creator=lambda key, value: _SymbolReference(field=key, content=value))
+Field.refdata = association_proxy("_refdata_by_symbol", "content", creator=lambda key, value: _SymbolReference(symbol=key, content=value))
 
 
 class Timeseries(_Base):
     __tablename__ = 'ts_name'
     _id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
-    # todo: make this enum
+    #todo: test without Symbol... check for uniqueness...
     name = sq.Column(sq.String(50))
 
-    _symbol_id = sq.Column("symbol_id", sq.Integer, sq.ForeignKey('symbolsapp_symbol.id'))
-    symbol = _relationship("Symbol", back_populates="timeseries")
-
-    _data = _relationship("_TimeseriesData", collection_class=_attribute_mapped_collection('date'), back_populates="ts",
-                         cascade="all, delete-orphan")
+    _symbol_id = sq.Column("symbol_id", sq.Integer, sq.ForeignKey(Symbol._id), nullable=True)
+    _data = _relationship("_TimeseriesData", collection_class=_attribute_mapped_collection('date'), cascade="all, delete-orphan", backref="ts")
 
     sq.UniqueConstraint('symbol', 'name')
 
@@ -135,22 +143,22 @@ class Timeseries(_Base):
 
     def upsert(self, ts):
         for date, value in ts.items():
-            #if date in self._data.keys():
-            #    # thes is some data
-            #    self._data[date].value = value
-            #else:
-            self._data[date] = _TimeseriesData(date=date, value=value) #, _ts_id=self._id)
+            self.data[date] = value
 
         return self
+
+    data = association_proxy("_data", "value", creator=lambda key, value: _TimeseriesData(date=key, value=value))
 
 
 class _TimeseriesData(_Base):
     __tablename__ = 'ts_data'
     date = sq.Column(sq.Date, primary_key=True)
     value = sq.Column(sq.Float)
-    _ts_id = sq.Column("ts_id", sq.Integer, sq.ForeignKey('ts_name.id'), primary_key=True)
-    ts = _relationship("Timeseries", back_populates="_data")
+    _ts_id = sq.Column("ts_id", sq.Integer, sq.ForeignKey(Timeseries._id), primary_key=True)
 
+    def __init__(self, date, value):
+        self.date = date
+        self.value = value
 
 
 class PortfolioSQL(_Base):
