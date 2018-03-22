@@ -50,3 +50,23 @@ class TestSession(TestCase):
 
         print(t.series)
         #assert False
+
+    def test_timeseries_3(self):
+        session = session_test(meta=_Base.metadata)
+        s = Symbol(bloomberg_symbol="A")
+        session.add(s)
+
+        # this shouldn't result in a KeyError but should rather return an empty Series!
+        try:
+            ts = s.timeseries["PX_LAST"]
+        except KeyError:
+            s.timeseries["PX_LAST"] = pd.Series({})
+            ts = s.timeseries["PX_LAST"]
+
+        # ts is now a pandas object
+        print(ts.empty)
+        print(ts.last_valid_index())
+
+        self.assertTrue(ts.empty)
+        self.assertIsInstance(ts, pd.Series)
+

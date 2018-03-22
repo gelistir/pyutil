@@ -118,23 +118,9 @@ class _Timeseries(_Base):
     def series(self):
         return _pd.Series({date: x.value for date, x in self._data.items()})
 
-    @property
-    def empty(self):
-        return len(self._data) == 0
-
-    @property
-    def last_valid(self):
-        if self.empty:
-            return None
-        else:
-            return max(x for x in self._data.keys())
-
     def upsert(self, ts):
         for date, value in ts.items():
-            #try:
-            self._data[date] = _TimeseriesData(date=date, value=value)
-            #except:
-            #    self.data[date].value = value
+            self.data[date] = value
 
         return self
 
@@ -155,7 +141,7 @@ Symbol._timeseries = _relationship(_Timeseries, collection_class=_attribute_mapp
 Symbol.timeseries = association_proxy("_timeseries", "series", creator=lambda key, value: _Timeseries(name=key, data=value))
 
 _Timeseries._data = _relationship("_TimeseriesData", collection_class=_attribute_mapped_collection('date'), cascade="all, delete-orphan", backref="ts")
-#_Timeseries.data = association_proxy("_data", "value", creator=lambda key, value: _TimeseriesData(date=key, value=value))
+_Timeseries.data = association_proxy("_data", "value", creator=lambda key, value: _TimeseriesData(date=key, value=value))
 
 
 class PortfolioSQL(_Base):

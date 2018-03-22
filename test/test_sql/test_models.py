@@ -40,12 +40,8 @@ class TestModels(TestCase):
 
     def test_timeseries(self):
         x = _Timeseries(name="Peter")
-        self.assertTrue(x.empty)
-        self.assertIsNone(x.last_valid)
         self.assertTrue(x.series.empty)
         x.upsert(ts=pd.Series({1: 2.0, 5: 3.0}))
-        self.assertFalse(x.empty)
-        self.assertEqual(x.last_valid, 5)
         pdt.assert_series_equal(x.series, pd.Series({1: 2.0, 5: 3.0}))
 
     def test_timeseries_of_symbol(self):
