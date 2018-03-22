@@ -102,7 +102,7 @@ Field.refdata = association_proxy("_refdata_by_symbol", "content", creator=lambd
 class _Timeseries(_Base):
     __tablename__ = 'ts_name'
     _id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
-    # todo: test without Symbol... check for uniqueness...
+
     name = sq.Column(sq.String(50))
     _symbol_id = sq.Column("symbol_id", sq.Integer, sq.ForeignKey(Symbol._id), nullable=True)
 
@@ -131,7 +131,10 @@ class _Timeseries(_Base):
 
     def upsert(self, ts):
         for date, value in ts.items():
-            self.data[date] = value
+            #try:
+            self._data[date] = _TimeseriesData(date=date, value=value)
+            #except:
+            #    self.data[date].value = value
 
         return self
 
@@ -152,7 +155,7 @@ Symbol._timeseries = _relationship(_Timeseries, collection_class=_attribute_mapp
 Symbol.timeseries = association_proxy("_timeseries", "series", creator=lambda key, value: _Timeseries(name=key, data=value))
 
 _Timeseries._data = _relationship("_TimeseriesData", collection_class=_attribute_mapped_collection('date'), cascade="all, delete-orphan", backref="ts")
-_Timeseries.data = association_proxy("_data", "value", creator=lambda key, value: _TimeseriesData(date=key, value=value))
+#_Timeseries.data = association_proxy("_data", "value", creator=lambda key, value: _TimeseriesData(date=key, value=value))
 
 
 class PortfolioSQL(_Base):
