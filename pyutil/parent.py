@@ -3,8 +3,10 @@ import sys
 import time
 from contextlib import ExitStack
 
+import io
 
-def get_stream_handler(level=None, format=None, stream=sys.stdout):
+
+def _get_stream_handler(level=None, format=None, stream=sys.stdout):
     __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     __level = logging.DEBUG
 
@@ -28,10 +30,12 @@ def _get_logger(name="LWM", level=None):
 
 
 class Production(ExitStack):
-    def __init__(self, name="LWM", level=None):
+    def __init__(self, name="LWM", level=None, format=None):
         super().__init__()
+        self.__stream = io.StringIO()
         self.__logger = _get_logger(name=name, level=level)
-        self.__logger.addHandler(get_stream_handler(level=level))
+        self.__logger.addHandler(_get_stream_handler(level=level, format=format))
+        self.__logger.addHandler(_get_stream_handler(level=level, stream=self.__stream, format=format))
         self.__time = time.time()
 
     @property
@@ -50,3 +54,8 @@ class Production(ExitStack):
 
         self.logger.info("Time elapsed: {0}".format(self.elapsed))
         return True
+
+    @property
+    def log_stream(self):
+        self.__stream.flush()
+        return self.__stream.getvalue()
