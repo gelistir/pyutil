@@ -4,7 +4,7 @@ import time
 from contextlib import ExitStack
 
 
-def _logger(name="LWM", level=None, format=None):
+def StreamHandler(name="LWM", level=None, format=None, stream=sys.stdout):
     __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     __level = logging.DEBUG
 
@@ -14,7 +14,7 @@ def _logger(name="LWM", level=None, format=None):
     formatter = logging.Formatter(fmt=format or __format)
 
     # add handler for console output
-    handler = logging.StreamHandler(stream=sys.stdout)
+    handler = logging.StreamHandler(stream=stream)
     handler.setFormatter(formatter)
     handler.setLevel(logging.DEBUG)
 
@@ -22,11 +22,10 @@ def _logger(name="LWM", level=None, format=None):
     return logger
 
 
-
 class Production(ExitStack):
     def __init__(self):
         super().__init__()
-        self.__logger = _logger()
+        self.__logger = StreamHandler()
         self.__time = time.time()
 
     @property
