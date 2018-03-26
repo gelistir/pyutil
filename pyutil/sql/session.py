@@ -52,13 +52,14 @@ def get_one_or_create(session, model, **kwargs):
     #  see http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/
 
     try:
-        return session.query(model).filter_by(**kwargs).one()
+        return session.query(model).filter_by(**kwargs).one(), True
     except NoResultFound:
         # create the model object
         a = model(**kwargs)
         # add it to session
         session.add(a)
-        return a
+        return a, False
+
 
 def get_one_or_none(session, model, **kwargs):
     try:

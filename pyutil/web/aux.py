@@ -5,7 +5,10 @@ from pyutil.performance.month import monthlytable as mon
 
 def series2array(x, tz="CET"):
     """ convert a pandas series into an array suitable for HighCharts """
-    return [[int(a),b] for a,b in __toStamps(x, tz=tz).apply(float).dropna().items()]
+    def f(x):
+        return int(pd.Timestamp(x, tz=tz).value*1e-6)
+
+    return [[f(key), value] for key, value in x.items()]
 
 
 def monthlytable(nav):
@@ -19,7 +22,6 @@ def monthlytable(nav):
 def performance(nav):
     x = perf(nav)
 
-
     for key in x.index:
         if key in {"First_at", "Last_at"}:
             x[key] = x[key].strftime("%Y-%m-%d")
@@ -30,10 +32,6 @@ def performance(nav):
 
     return x
 
+
 def name_value(x):
     return [{"name": key, "value": value} for key, value in x.items()]
-
-
-def __toStamps(x, tz="CET"):
-    x.index = [pd.Timestamp(key, tz=tz).value * 1e-6 for key in x.index]
-    return x

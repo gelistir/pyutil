@@ -72,6 +72,7 @@ class Database(object):
         frame = _pd.DataFrame({name: portfolio.nav.recent() for name, portfolio in self.portfolios(names).items()}).sort_index(ascending=False)
         frame.index = [a.strftime("%b %d") for a in frame.index]
         frame = frame.head(n)
+        # ah, here comes the transpose. Date is now a column index but has been converted in a harmless string...
         frame = frame.transpose()
         frame["total"] = (frame + 1).prod(axis=1) - 1
         return frame
