@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 from pyutil.performance.summary import performance as perf
 from pyutil.performance.month import monthlytable as mon
@@ -13,6 +14,10 @@ def series2array(x, tz="CET"):
         return pd.Timestamp(x, tz=tz).value*1e-6
 
     return [[f(key), value] for key, value in x.items()]
+
+
+def rest2data(request):
+    return json.loads(request.data.decode("utf-8"))
 
 
 def __arrays2series(data, tz="CET"):
