@@ -3,23 +3,28 @@ from pyutil.performance.summary import performance as perf
 from pyutil.performance.month import monthlytable as mon
 
 
+def frame2dict(frame):
+    return {'columns': list(frame.keys()), 'data': [frame.loc[key].dropna().to_dict() for key in frame.index]}
+
+
 def series2array(x, tz="CET"):
     """ convert a pandas series into an array suitable for HighCharts """
     def f(x):
-        return int(pd.Timestamp(x, tz=tz).value*1e-6)
+        return pd.Timestamp(x, tz=tz).value*1e-6
 
     return [[f(key), value] for key, value in x.items()]
 
 
-def monthlytable(nav):
-    frame = 100 * mon(nav)
-    frame = frame.applymap("{0:.2f}%".format).replace("nan%", "")
-    frame.index = ['{:d}'.format(year) for year in frame.index]
-    frame = frame.reset_index().rename(columns={"index": "Year"})
-    return {"columns": list(frame.keys()), "data": [row.dropna().to_dict() for i, row in frame.iterrows()]}
+def __arrays2series(data):
+    f = pd.Series(index=data["time"], data=data["data"])
+    before = data.get("min", None)
+    after = data.get("max", None)
+    f = f.truncate(before=before, after=after)
+    f.index = [pd.Timestamp(1e6 * a, tz="GMT") for a in f.index]
+    return f
 
 
-def performance(nav):
+def __performance(nav):
     x = perf(nav)
 
     for key in x.index:
@@ -33,5 +38,22 @@ def performance(nav):
     return x
 
 
-def name_value(x):
+def __name_value(x):
     return [{"name": key, "value": value} for key, value in x.items()]
+
+
+def post_perf(data):
+    f = __arrays2series(data)
+    return __name_value(__performance(f))
+
+
+def post_month(data):
+    # construct the pandas series again from "time" and "data" arrays
+    f = __arrays2series(data)
+
+    frame = 100 * mon(f)
+    frame = frame.applymap("{0:.2f}%".format).replace("nan%", "")
+    frame.index = ['{:d}'.format(year) for year in frame.index]
+    frame = frame.reset_index().rename(columns={"index": "Year"})
+
+    return frame2dict(frame)
