@@ -1,11 +1,13 @@
 import json
+from collections import OrderedDict
+
 import pandas as pd
 from pyutil.performance.summary import performance as perf
 from pyutil.performance.month import monthlytable as mon
 
 
 def frame2dict(frame):
-    return {'columns': list(frame.keys()), 'data': [frame.loc[key].dropna().to_dict() for key in frame.index]}
+    return {'columns': list(frame.keys()), 'data': [frame.loc[key].dropna().to_dict(into=OrderedDict) for key in frame.index]}
 
 
 def series2array(x, tz="CET"):
@@ -13,7 +15,7 @@ def series2array(x, tz="CET"):
     def f(x):
         return pd.Timestamp(x, tz=tz).value*1e-6
 
-    return [[f(key), value] for key, value in x.items()]
+    return [[f(key), value] for key, value in x.dropna().items()]
 
 
 def rest2data(request):
