@@ -15,12 +15,12 @@ def series2array(x, tz="CET"):
     return [[f(key), value] for key, value in x.items()]
 
 
-def __arrays2series(data):
+def __arrays2series(data, tz="CET"):
     f = pd.Series(index=data["time"], data=data["data"])
     before = data.get("min", None)
     after = data.get("max", None)
     f = f.truncate(before=before, after=after)
-    f.index = [pd.Timestamp(1e6 * a, tz="GMT") for a in f.index]
+    f.index = [pd.Timestamp(1e6 * a, tz=tz) for a in f.index]
     return f
 
 
