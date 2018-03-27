@@ -4,16 +4,19 @@ from collections import OrderedDict
 import pandas as pd
 from pyutil.performance.summary import performance as perf
 from pyutil.performance.month import monthlytable as mon
+from pyutil.performance.drawdown import drawdown as dd
 
 
 def frame2dict(frame):
-    return {'columns': list(frame.keys()), 'data': [frame.loc[key].dropna().to_dict(into=OrderedDict) for key in frame.index]}
+    return {'columns': list(frame.keys()),
+            'data': [frame.loc[key].dropna().to_dict(into=OrderedDict) for key in frame.index]}
 
 
 def series2array(x, tz="CET"):
     """ convert a pandas series into an array suitable for HighCharts """
+
     def f(x):
-        return pd.Timestamp(x, tz=tz).value*1e-6
+        return pd.Timestamp(x, tz=tz).value * 1e-6
 
     return [[f(key), value] for key, value in x.dropna().items()]
 
@@ -51,7 +54,7 @@ def __name_value(x):
 
 def post_perf(data):
     f = __arrays2series(data)
-    return __name_value(__performance(f))
+    return {"data": __name_value(__performance(f))}
 
 
 def post_month(data):
@@ -64,3 +67,21 @@ def post_month(data):
     frame = frame.reset_index().rename(columns={"index": "Year"})
 
     return frame2dict(frame)
+
+
+def post_drawdown(data):
+    f = __arrays2series(data)
+    # f is now a pandas series
+    return {"data": series2array(x=dd(price=f))}
+
+
+def post_volatility(data):
+    f = __arrays2series(data)
+    return {"data": series2array(16*f.pct_change().dropna().ewm(32).std())}
+
+def post_nav(nav, name=""):
+    d = - 100*dd(nav)
+    v = ...
+    w = {"nav", "drawdown": ...}
+    return w
+
