@@ -3,7 +3,7 @@ import pandas as pd
 from test.config import read_series
 import numpy as np
 
-nav = read_series("nav.csv", parse_dates=True)
+nav = read_series("nav.csv")
 
 from pyutil.web.aux import series2array, frame2dict, int2time, double2percent
 

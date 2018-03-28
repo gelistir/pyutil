@@ -6,18 +6,9 @@ from pyutil.performance.drawdown import drawdown
 from pyutil.performance.summary import fromNav
 from pyutil.web.aux import reset_index
 from pyutil.web.post import post_month, post_perf, post_drawdown, post_volatility
-from test.config import read_series
+from test.config import read_series, series2arrays
 
 import pandas.util.testing as pdt
-
-def _series2arrays(x, tz="CET"):
-    # this function converts a pandas series into a dictionary of two arrays
-    # to mock the behaviour of highcharts...
-    def __f(x):
-        return pd.Timestamp(x, tz=tz).value * 1e-6
-
-    return {"time": [__f(key) for key in x.index], "data": x.values}
-
 
 class TestPost(TestCase):
     @classmethod
@@ -25,7 +16,7 @@ class TestPost(TestCase):
         cls.nav = read_series("nav.csv", parse_dates=True)
         cls.nav.index = [a.date() for a in cls.nav.index]
 
-        cls.data = _series2arrays(cls.nav)
+        cls.data = series2arrays(cls.nav)
 
     def test_post_month(self):
         x = post_month(data=self.data)

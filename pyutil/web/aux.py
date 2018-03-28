@@ -7,7 +7,7 @@ import pandas as pd
 def frame2dict(frame):
     """ Pandas Dataframe to dict with "columns" and "data" """
     return {'columns': list(frame.keys()),
-            'data': frame.to_dict('records')}
+            'data': [frame.loc[key].dropna().to_dict(into=OrderedDict) for key in frame.index]}
 
 
 def series2array(x, tz="CET"):
