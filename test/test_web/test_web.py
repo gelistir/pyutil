@@ -1,19 +1,11 @@
 from unittest import TestCase
 import pandas as pd
 from test.config import read_series
+import numpy as np
 
 nav = read_series("nav.csv", parse_dates=True)
 
-from pyutil.web.aux import series2array, post_month, post_perf, frame2dict
-
-
-def _series2arrays(x, tz="CET"):
-    # this function converts a pandas series into a dictionary of two arrays
-    # to mock the behaviour of highcharts...
-    def f(x):
-        return pd.Timestamp(x, tz=tz).value * 1e-6
-
-    return {"time": [f(key) for key in x.index], "data": x.values}
+from pyutil.web.aux import series2array, frame2dict, int2time, double2percent
 
 
 class TestWeb(TestCase):
@@ -32,33 +24,6 @@ class TestWeb(TestCase):
         for n, a in enumerate(y["data"]):
             self.assertAlmostEqual(a["nav"], x.values[n], places=10)
 
-    def test_post_month(self):
-        x = post_month(data=_series2arrays(nav))
-        self.assertDictEqual(x, {'columns': ['Year', 'Jan', 'Feb', 'Dec', 'STDev', 'YTD'],
-                                 'data': [{'Year': '2015', 'Jan': '0.93%', 'Feb': '0.59%', 'Dec': '', 'STDev': '0.83%',
-                                           'YTD': '1.53%'},
-                                          {'Year': '2014', 'Jan': '', 'Feb': '', 'Dec': '-0.04%', 'STDev': '',
-                                           'YTD': '-0.04%'}]})
-
-    def test_post_perf(self):
-        x = post_perf(data=_series2arrays(nav))
-        self.assertListEqual(x, [{'name': 'Return', 'value': '1.49'}, {'name': '# Events', 'value': '40'},
-                                 {'name': '# Events per year', 'value': '261'},
-                                 {'name': 'Annua Return', 'value': '9.64'},
-                                 {'name': 'Annua Volatility', 'value': '3.02'},
-                                 {'name': 'Annua Sharpe Ratio (r_f = 0)', 'value': '3.19'},
-                                 {'name': 'Max Drawdown', 'value': '0.89'}, {'name': 'Max % return', 'value': '0.39'},
-                                 {'name': 'Min % return', 'value': '-0.53'}, {'name': 'MTD', 'value': '0.59'},
-                                 {'name': 'YTD', 'value': '1.53'}, {'name': 'Current Nav', 'value': '1.31'},
-                                 {'name': 'Max Nav', 'value': '1.31'}, {'name': 'Current Drawdown', 'value': '0.00'},
-                                 {'name': 'Calmar Ratio (3Y)', 'value': '10.84'},
-                                 {'name': '# Positive Events', 'value': '22'},
-                                 {'name': '# Negative Events', 'value': '18'},
-                                 {'name': 'Value at Risk (alpha = 95)', 'value': '0.33'},
-                                 {'name': 'Conditional Value at Risk (alpha = 95)', 'value': '0.43'},
-                                 {'name': 'First_at', 'value': '2014-12-11'},
-                                 {'name': 'Last_at', 'value': '2015-02-05'}])
-
     def test_date(self):
         x = pd.Series(index=[pd.Timestamp("2020-01-01").date(), pd.Timestamp("2020-01-02").date()], data=[5.0, 6.0])
         y = pd.Series(index=[pd.Timestamp("2020-01-01"), pd.Timestamp("2020-01-02")], data=[5.0, 6.0])
@@ -71,3 +36,11 @@ class TestWeb(TestCase):
         x = pd.DataFrame(index=["Asset A"], columns=[pd.Timestamp("2015-04-11").date()], data=[[2.0]])
         y = pd.DataFrame(index=["Asset A"], columns=[pd.Timestamp("2015-04-11")], data=[[2.0]])
         self.assertEqual(x.to_json(), y.to_json())
+
+    def test_int2time(self):
+        self.assertEqual(int2time(x=1418252400000), "2014-12-10")
+        self.assertEqual(int2time(x=""), "")
+
+    def test_double2percent(self):
+        self.assertEqual(double2percent(x=0.20), "20.00%")
+        self.assertEqual(double2percent(x=np.nan), "")
