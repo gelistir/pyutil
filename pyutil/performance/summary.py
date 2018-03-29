@@ -266,6 +266,9 @@ class NavSeries(pd.Series):
         a.index = a.index[:-1].append(pd.DatetimeIndex([self.index[-1]]))
         return a
 
-    def to_dictionary(self, name):
-        return {"nav": self._ser2arr(self), "drawdown": self._ser2arr(self.drawdown),
-                "volatility": self._ser2arr(self.ewm_volatility()), "name": name}
+    def to_dictionary(self, name, **kwargs):
+        return {**{"nav": self._ser2arr(self), "drawdown": self._ser2arr(self.drawdown),
+                "volatility": self._ser2arr(self.ewm_volatility()), "name": name}, **kwargs}
+
+
+
