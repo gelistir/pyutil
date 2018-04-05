@@ -1,19 +1,17 @@
 # Set the base image to Ubuntu
 FROM continuumio/miniconda3
 
-RUN conda install -y python=3.6 pandas=0.21 requests
-
 COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt && rm requirements.txt
 
-# this is used to mock http for testing
-RUN pip install httpretty pytest pytest-cov pytest-html sphinx
+RUN pip install --upgrade pip && \
+    conda update -y conda && \
+    conda install -y pandas=0.21.0 requests && \
+    pip install --no-cache-dir  -r requirements.txt && rm requirements.txt && \
+    conda clean -y --all && \
+    pip install --no-cache-dir httpretty pytest pytest-cov pytest-html sphinx
 
-ADD ./pyutil          /pyutil/pyutil
-ADD ./test            /pyutil/test
-
-RUN mkdir -p /html-coverage
-RUN mkdir -p /html-report
+COPY ./pyutil          /pyutil/pyutil
+COPY ./test            /pyutil/test
 
 WORKDIR pyutil
 
