@@ -32,9 +32,10 @@ class TestModels(TestCase):
 
         self.assertEqual(f, Field(name="Field 1", type=FieldType.dynamic))
         s = Symbol(bloomberg_symbol="A")
-        f.refdata[s] = "12-11-1978"
-        self.assertEqual(f.refdata[s], pd.Timestamp("12-11-1978").date())
-        pdt.assert_series_equal(f.reference, pd.Series({"A": pd.Timestamp("12-11-1978").date()}))
+        f.refdata[s] = "1522886400000"
+        self.assertEqual(f.refdata[s], pd.Timestamp("2018-04-05").date())
+        pdt.assert_series_equal(f.reference, pd.Series({"A": pd.Timestamp("2018-04-05").date()}))
+
 
     def test_symbol(self):
         s = Symbol(bloomberg_symbol="Symbol 1", group=SymbolType.equities, internal="Symbol 1 internal")

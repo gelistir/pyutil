@@ -104,7 +104,11 @@ class _SymbolReference(_Base):
     @property
     def parse(self):
         if self.field.resulttype == DataType.date:
-            return _pd.Timestamp(self._content).date()
+            return _pd.to_datetime(int(self._content)*1e6).date()
+            #except:
+            #    return 0
+
+            #return _pd.Timestamp(self._content).date()
 
         if self.field.resulttype == DataType.integer:
             return int(self._content)
