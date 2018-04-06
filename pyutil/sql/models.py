@@ -94,7 +94,7 @@ class _SymbolReference(_Base):
 
     _field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey(Field._id), primary_key=True)
     _symbol_id = sq.Column("symbol_id", sq.Integer, sq.ForeignKey(Symbol._id), primary_key=True)
-    _content = sq.Column(sq.String(50))
+    _content = sq.Column("content", sq.String(50))
 
     def __init__(self, field=None, symbol=None, content=None):
         self._content = content
