@@ -89,3 +89,11 @@ class TestSummary(TestCase):
         x = s.to_dictionary(name="Peter Maffay", falco="the greatest")
         self.assertSetEqual(set(x.keys()), {"nav", "drawdown", "volatility", "name", "falco"})
 
+        # don't crash here!
+        n = NavSeries({})
+        a = n.to_dictionary(name="Hans")
+
+        self.assertListEqual(a["nav"], [])
+        self.assertListEqual(a["drawdown"], [])
+        self.assertListEqual(a["volatility"], [])
+

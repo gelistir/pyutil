@@ -39,8 +39,11 @@ class NavSeries(pd.Series):
 
     @property
     def __periods_per_year(self):
-        x = pd.Series(data=self.index)
-        return np.round(365 * 24 * 60 * 60 / x.diff().mean().total_seconds(), decimals=0)
+        if len(self.index) >= 2:
+            x = pd.Series(data=self.index)
+            return np.round(365 * 24 * 60 * 60 / x.diff().mean().total_seconds(), decimals=0)
+        else:
+            return 256
 
     def annualized_volatility(self, periods=None):
         t = periods or self.__periods_per_year
