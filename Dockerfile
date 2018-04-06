@@ -1,4 +1,4 @@
-# Set the base image to Ubuntu
+# Set the base image to Ubuntu, use a public image
 FROM continuumio/miniconda3
 
 COPY requirements.txt requirements.txt
