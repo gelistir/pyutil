@@ -36,11 +36,20 @@ class StrategyType(_enum.Enum):
     dynamic = 'dynamic'
 
 
+class DataType(_enum.Enum):
+    date = 'date'
+    percentage = 'percentage'
+    float = 'float'
+    integer = 'integer'
+    string = 'string'
+
+
 class Field(_Base):
     __tablename__ = "reference_field"
     _id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
     name = sq.Column(sq.String(50), unique=True)
     type = sq.Column(_Enum(FieldType))
+    resulttype = sq.Column(_Enum(DataType), nullable=False)
 
     @property
     def reference(self):
@@ -85,18 +94,44 @@ class _SymbolReference(_Base):
 
     _field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey(Field._id), primary_key=True)
     _symbol_id = sq.Column("symbol_id", sq.Integer, sq.ForeignKey(Symbol._id), primary_key=True)
-    content = sq.Column(sq.String(50))
+    _content = sq.Column(sq.String(50))
 
     def __init__(self, field=None, symbol=None, content=None):
-        self.content = content
+        self._content = content
         self.field = field
         self.symbol = symbol
 
-Symbol._refdata_by_field = _relationship(_SymbolReference, backref="symbol", collection_class=_attribute_mapped_collection("field"))
-Field._refdata_by_symbol = _relationship(_SymbolReference, backref="field", collection_class=_attribute_mapped_collection("symbol"))
+    @property
+    def parse(self):
+        if self.field.resulttype == DataType.date:
+            return _pd.Timestamp(self._content).date()
 
-Symbol.refdata = association_proxy("_refdata_by_field", "content", creator=lambda key, value: _SymbolReference(field=key, content=value))
-Field.refdata = association_proxy("_refdata_by_symbol", "content", creator=lambda key, value: _SymbolReference(symbol=key, content=value))
+        if self.field.resulttype == DataType.integer:
+            return int(self._content)
+
+        if self.field.resulttype == DataType.percentage:
+            return float(self._content)
+
+        if self.field.resulttype == DataType.float:
+            return float(self._content)
+
+        return self._content
+
+    @parse.setter
+    def parse(self, value):
+        self._content = str(value)
+
+
+Symbol._refdata_by_field = _relationship(_SymbolReference, backref="symbol",
+                                         collection_class=_attribute_mapped_collection("field"))
+Field._refdata_by_symbol = _relationship(_SymbolReference, backref="field",
+                                         collection_class=_attribute_mapped_collection("symbol"))
+
+Symbol.refdata = association_proxy("_refdata_by_field", "parse",
+                                   creator=lambda key, value: _SymbolReference(field=key, content=value))
+
+Field.refdata = association_proxy("_refdata_by_symbol", "parse",
+                                  creator=lambda key, value: _SymbolReference(symbol=key, content=value))
 
 
 class _Timeseries(_Base):
@@ -136,12 +171,15 @@ class _TimeseriesData(_Base):
         self.value = value
 
 
+Symbol._timeseries = _relationship(_Timeseries, collection_class=_attribute_mapped_collection('name'),
+                                   cascade="all, delete-orphan", backref="symbol")
+Symbol.timeseries = association_proxy("_timeseries", "series",
+                                      creator=lambda key, value: _Timeseries(name=key, data=value))
 
-Symbol._timeseries = _relationship(_Timeseries, collection_class=_attribute_mapped_collection('name'), cascade="all, delete-orphan", backref="symbol")
-Symbol.timeseries = association_proxy("_timeseries", "series", creator=lambda key, value: _Timeseries(name=key, data=value))
-
-_Timeseries._data = _relationship("_TimeseriesData", collection_class=_attribute_mapped_collection('date'), cascade="all, delete-orphan", backref="ts")
-_Timeseries.data = association_proxy("_data", "value", creator=lambda key, value: _TimeseriesData(date=key, value=value))
+_Timeseries._data = _relationship("_TimeseriesData", collection_class=_attribute_mapped_collection('date'),
+                                  cascade="all, delete-orphan", backref="ts")
+_Timeseries.data = association_proxy("_data", "value",
+                                     creator=lambda key, value: _TimeseriesData(date=key, value=value))
 
 
 class PortfolioSQL(_Base):
@@ -212,6 +250,7 @@ class PortfolioSQL(_Base):
         self.weight = _pd.concat([w, portfolio.weights], axis=0)
         self.price = _pd.concat([p, portfolio.prices], axis=0)
         return self
+
 
 class Strategy(_Base):
     __tablename__ = "strategiesapp_strategy"

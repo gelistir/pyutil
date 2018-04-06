@@ -4,7 +4,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.database import Database
-from pyutil.sql.models import _Base, Symbol, Field, SymbolType, PortfolioSQL, Frame
+from pyutil.sql.models import _Base, Symbol, Field, SymbolType, PortfolioSQL, Frame, DataType
 from pyutil.sql.session import session_test
 from test.config import test_portfolio, read_frame
 
@@ -25,16 +25,16 @@ class TestDatabase(TestCase):
         p = PortfolioSQL(name="Peter").upsert(portfolio=portfolio)
         session.add(p)
 
-        f1 = Field(name="Field 1")
-        f2 = Field(name="Field 2")
+        f1 = Field(name="Field 1", resulttype=DataType.integer)
+        f2 = Field(name="Field 2", resulttype=DataType.integer)
         session.add_all([f1, f2])
 
-        s1.refdata[f1] = "100"
-        s1.refdata[f2] = "200"
-        s2.refdata[f1] = "10"
-        s2.refdata[f2] = "20"
-        s3.refdata[f1] = "30"
-        s3.refdata[f2] = "40"
+        s1.refdata[f1] = 100
+        s1.refdata[f2] = 200
+        s2.refdata[f1] = 10
+        s2.refdata[f2] = 20
+        s3.refdata[f1] = 30
+        s3.refdata[f2] = 40
 
         s1.timeseries["PX_LAST"] = read_frame("price.csv")["A"]
         s2.timeseries["PX_LAST"] = read_frame("price.csv")["B"]
@@ -49,7 +49,7 @@ class TestDatabase(TestCase):
         cls.db = Database(session=session)
 
     def test_reference(self):
-        f = pd.DataFrame(columns=["Field 1", "Field 2"], index=["A","B","C"], data=[["100", "200"],["10","20"],["30","40"]])
+        f = pd.DataFrame(columns=["Field 1", "Field 2"], index=["A","B","C"], data=[[100, 200],[10,20],[30,40]])
         f.index.name = "Asset"
         pdt.assert_frame_equal(f, self.db.reference())
 
