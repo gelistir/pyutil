@@ -98,10 +98,12 @@ class TestProducts(TestCase):
 
         pdt.assert_series_equal(t1, pd.Series({1: 7.0, 5: 3.0, 6: 3.0}))
 
-    def test_timeseries_of_symbol_1(self):
+    def test_timeseries_of_symbol_2(self):
         s = Product(name="Peter Maffay")
         s.timeseries["Peter"] = pd.Series({1: 2.0, 5: 3.0})
+        # that's a pandas Series
         ts = s.timeseries["Peter"]
-        print(type(ts))
-        print(s.timeseries["Peter"])
-        assert False
+        # that's an actual Timeseries sqlalchemy object
+        s._timeseries["Peter"][5] = 4.0
+        # back to pandas
+        self.assertEqual(s.timeseries["Peter"][5], 4.0)
