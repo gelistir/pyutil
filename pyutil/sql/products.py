@@ -44,12 +44,9 @@ class Field(Base):
 
 class ReferenceData(Base):
     __tablename__ = "reference_data"
-    id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
-    _field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey(Field._id))
+    _field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey(Field._id), primary_key=True)
     content = sq.Column(sq.String(200), nullable=False)
-    product_id = sq.Column(sq.Integer, sq.ForeignKey(ProductInterface.id))
-
-    sq.UniqueConstraint('product_id', '_field_id')
+    product_id = sq.Column(sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     def __repr__(self):
         return "{field} for {x}: {value}".format(field=self.field.name, value=self.content, x=self.product)
