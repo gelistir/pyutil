@@ -78,7 +78,7 @@ class TestProducts(TestCase):
         self.assertEqual(f.refdata[s], pd.Timestamp("2018-04-05").date())
         pdt.assert_series_equal(f.reference, pd.Series({"A": pd.Timestamp("2018-04-05").date()}))
 
-    def test_timeseries_of_symbol(self):
+    def test_timeseries_of_symbol_1(self):
         s = Product(name="Peter Maffay")
         s.timeseries["Peter"] = pd.Series({1: 2.0, 5: 3.0})
         # this will return a pandas series
@@ -97,3 +97,11 @@ class TestProducts(TestCase):
         self.assertEqual(t1.last_valid_index(), 6)
 
         pdt.assert_series_equal(t1, pd.Series({1: 7.0, 5: 3.0, 6: 3.0}))
+
+    def test_timeseries_of_symbol_1(self):
+        s = Product(name="Peter Maffay")
+        s.timeseries["Peter"] = pd.Series({1: 2.0, 5: 3.0})
+        ts = s.timeseries["Peter"]
+        print(type(ts))
+        print(s.timeseries["Peter"])
+        assert False
