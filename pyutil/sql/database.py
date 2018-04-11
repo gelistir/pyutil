@@ -1,6 +1,9 @@
 import pandas as _pd
-from pyutil.sql.models import Symbol as _Symbol, _TimeseriesData, _Timeseries, \
-    PortfolioSQL as _PortfolioSQL, Strategy as _Strategy, Frame
+
+from pyutil.sql.frames import Frame
+from pyutil.sql.models import Symbol
+from pyutil.sql.products import _TimeseriesData, Timeseries
+from pyutil.sql.models import PortfolioSQL as _PortfolioSQL, Symbol as _Symbol
 
 
 def _session_read():
@@ -23,11 +26,11 @@ class Database(object):
         return self.__session
 
     def asset(self, name):
-        return self.__session.query(_Symbol).filter_by(bloomberg_symbol = name).one()
+        return self.__session.query(Symbol).filter_by(bloomberg_symbol = name).one()
 
     def history(self, field="PX_LAST"):
-        x = self.__session.query(_TimeseriesData.date, _Symbol.bloomberg_symbol, _TimeseriesData.value).join(_Timeseries).join(
-            _Symbol).filter(_Timeseries.name == field)
+        x = self.__session.query(_TimeseriesData.date, Symbol.bloomberg_symbol, _TimeseriesData.value).join(Timeseries).join(
+            Symbol).filter(Timeseries.name == field)
         a = _pd.DataFrame.from_records(data=[(date, asset, price) for (date, asset, price) in x], index=["Date", "Asset"],
                                   columns=["Date", "Asset", "Price"])
         return a["Price"].unstack()

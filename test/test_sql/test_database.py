@@ -3,8 +3,11 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
+from pyutil.sql.base import Base
+from pyutil.sql.common import DataType
 from pyutil.sql.database import Database
-from pyutil.sql.models import _Base, Symbol, Field, SymbolType, PortfolioSQL, Frame, DataType
+from pyutil.sql.models import Symbol, SymbolType, PortfolioSQL
+from pyutil.sql.products import Field
 from pyutil.sql.session import session_test
 from test.config import test_portfolio, read_frame
 
@@ -12,7 +15,7 @@ from test.config import test_portfolio, read_frame
 class TestDatabase(TestCase):
     @classmethod
     def setUpClass(cls):
-        session = session_test(meta=_Base.metadata)
+        session = session_test(meta=Base.metadata)
 
         s1 = Symbol(bloomberg_symbol="A", group=SymbolType.equities, internal="A")
         s2 = Symbol(bloomberg_symbol="B", group=SymbolType.equities, internal="B")
@@ -25,8 +28,8 @@ class TestDatabase(TestCase):
         p = PortfolioSQL(name="Peter").upsert(portfolio=portfolio)
         session.add(p)
 
-        f1 = Field(name="Field 1", resulttype=DataType.integer)
-        f2 = Field(name="Field 2", resulttype=DataType.integer)
+        f1 = Field(name="Field 1", result=DataType.integer)
+        f2 = Field(name="Field 2", result=DataType.integer)
         session.add_all([f1, f2])
 
         s1.refdata[f1] = 100
@@ -39,12 +42,6 @@ class TestDatabase(TestCase):
         s1.timeseries["PX_LAST"] = read_frame("price.csv")["A"]
         s2.timeseries["PX_LAST"] = read_frame("price.csv")["B"]
         s3.timeseries["PX_LAST"] = read_frame("price.csv")["C"]
-
-        frame = read_frame("price.csv")
-        frame.index.name = "Date"
-        f = Frame(name="Peter")
-        f.frame = frame
-        session.add(f)
 
         cls.db = Database(session=session)
 
@@ -79,8 +76,3 @@ class TestDatabase(TestCase):
 
     def test_periods(self):
         self.assertAlmostEqual(self.db.period_returns()["One Year"]["Peter"], 0.015213, places=5)
-
-    def test_frame(self):
-        frame = read_frame("price.csv")
-        frame.index.name = "Date"
-        pdt.assert_frame_equal(self.db.frame(name="Peter"), frame)

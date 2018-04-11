@@ -2,7 +2,9 @@ from unittest import TestCase
 
 import pandas as pd
 
-from pyutil.sql.models import _Base, Symbol, _Timeseries
+from pyutil.sql.base import Base
+from pyutil.sql.models import Symbol
+from pyutil.sql.products import Timeseries
 from pyutil.sql.session import session_test, get_one_or_create, get_one_or_none
 
 import pandas.util.testing as pdt
@@ -10,7 +12,7 @@ import pandas.util.testing as pdt
 
 class TestSession(TestCase):
     def test_get_one_or_create(self):
-        session = session_test(meta=_Base.metadata)
+        session = session_test(meta=Base.metadata)
 
         x, exists = get_one_or_create(session, Symbol, bloomberg_symbol="B")
         self.assertFalse(exists)
@@ -21,11 +23,11 @@ class TestSession(TestCase):
         self.assertEqual(x, y)
 
     def test_get_one_or_none(self):
-        session = session_test(meta=_Base.metadata)
+        session = session_test(meta=Base.metadata)
         self.assertIsNone(get_one_or_none(session, Symbol, bloomberg_symbol="C"))
 
     def test_timeseries_1(self):
-        session = session_test(meta=_Base.metadata)
+        session = session_test(meta=Base.metadata)
 
         s = Symbol(bloomberg_symbol="A")
         session.add(s)
@@ -43,8 +45,8 @@ class TestSession(TestCase):
              pd.Timestamp("2010-01-04").date(): 5.0}))
 
     def test_timeseries_2(self):
-        session = session_test(meta=_Base.metadata)
-        t = _Timeseries(name="Peter")
+        session = session_test(meta=Base.metadata)
+        t = Timeseries(name="Peter")
         session.add(t)
 
         t.upsert(ts={pd.Timestamp("2010-01-02").date(): 10.0, pd.Timestamp("2010-01-05").date(): 10.0})
@@ -58,7 +60,7 @@ class TestSession(TestCase):
         # assert False
 
     def test_timeseries_3(self):
-        session = session_test(meta=_Base.metadata)
+        session = session_test(meta=Base.metadata)
         s = Symbol(bloomberg_symbol="A")
         session.add(s)
 
