@@ -33,6 +33,23 @@ class ProductInterface(Base):
     def frame(self):
         return _pd.DataFrame({name: ts for name, ts in self.timeseries.items()})
 
+    def upsert_ts(self, key):
+        """ upsert a timeseries """
+        if not key in self._timeseries.keys():
+            self.timeseries[key] = _pd.Series({})
+        return self._timeseries[key]
+
+    def last_valid(self, key):
+        if not key in self._timeseries.keys():
+            return None
+        else:
+            return self.timeseries[key].last_valid_index()
+
+        #return self._timeseries.upsert(ts)
+        #for d, v in ts.dropna().items():
+        #    self._timeseries[key].data[d] = v
+
+        #return self.timeseries[key]
 
 class Field(Base):
     __tablename__ = "reference_field"
@@ -114,6 +131,7 @@ class Timeseries(Base):
     def upsert(self, ts):
         for date, value in ts.items():
             self.data[date] = value
+        return self.series
 
 
 class _TimeseriesData(Base):

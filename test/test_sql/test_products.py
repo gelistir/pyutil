@@ -113,3 +113,19 @@ class TestProducts(TestCase):
         s.timeseries["Peter"] = pd.Series({1: 2.0, 5: 3.0})
         s.timeseries["Maffay"] = pd.Series({1: 2.0, 5: 5.0})
         self.assertEqual(s.frame["Maffay"][5], 5.0)
+
+    def test_timeseries_of_symbol_4(self):
+        s = Product(name="Peter Maffay")
+        x = s.upsert_ts(key="Peter")
+        x.upsert(pd.Series({1: 2.0, 5: 3.0}))
+        self.assertEqual(s.timeseries["Peter"][5], 3.0)
+
+    def test_last_valid(self):
+        x = pd.Series({})
+        self.assertIsNone(x.last_valid_index())
+
+        s = Product(name="Peter Maffay")
+        s.upsert_ts(key="Peter")
+        self.assertIsNone(s.last_valid("Peter"))
+
+
