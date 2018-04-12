@@ -35,10 +35,6 @@ class Symbol(ProductInterface):
 
     __mapper_args__ = {"polymorphic_identity": "symbol"}
 
-    @property
-    def reference(self):
-        return _pd.Series({field.name: x for field, x in self.refdata.items()})
-
     def __repr__(self):
         return "{name}".format(name=self.bloomberg_symbol)
 

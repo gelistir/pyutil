@@ -17,6 +17,22 @@ class ProductInterface(Base):
 
     __mapper_args__ = {"polymorphic_on": discriminator}
 
+    _refdata = relationship("ReferenceData", collection_class=attribute_mapped_collection("field"), cascade="all, delete-orphan", backref="product")
+
+    refdata = association_proxy("_refdata", "value", creator=lambda key, value: ReferenceData(field=key, content=value))
+
+    _timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan", backref="product")
+
+    timeseries = association_proxy("_timeseries", "series", creator=lambda key, value: Timeseries(name=key, data=value))
+
+    @property
+    def reference(self):
+        return _pd.Series({field.name: x for field, x in self.refdata.items()})
+
+    @property
+    def frame(self):
+        return _pd.DataFrame({name: ts for name, ts in self.timeseries.items()})
+
 
 class Field(Base):
     __tablename__ = "reference_field"
@@ -25,6 +41,11 @@ class Field(Base):
     type = sq.Column(_Enum(FieldType))
     result = sq.Column(_Enum(DataType), nullable=False)
 
+    _refdata_by_product = relationship("ReferenceData", backref="field",
+                                       collection_class=attribute_mapped_collection("product"))
+
+    refdata = association_proxy("_refdata_by_product", "value",
+                                creator=lambda key, value: ReferenceData(product=key, content=value))
     @property
     def reference(self):
         return _pd.Series({key.name: x for key, x in self.refdata.items()})
@@ -48,6 +69,7 @@ class ReferenceData(Base):
     content = sq.Column(sq.String(200), nullable=False)
     product_id = sq.Column(sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
 
+
     def __repr__(self):
         return "{field} for {x}: {value}".format(field=self.field.name, value=self.content, x=self.product)
 
@@ -65,18 +87,6 @@ class ReferenceData(Base):
         self.content = str(x)
 
 
-ProductInterface._refdata_by_field = relationship(ReferenceData, backref="symbol",
-                                         collection_class=attribute_mapped_collection("field"))
-Field._refdata_by_symbol = relationship(ReferenceData, backref="field",
-                                         collection_class=attribute_mapped_collection("symbol"))
-
-ProductInterface.refdata = association_proxy("_refdata_by_field", "value",
-                                   creator=lambda key, value: ReferenceData(field=key, content=value))
-
-Field.refdata = association_proxy("_refdata_by_symbol", "value",
-                                  creator=lambda key, value: ReferenceData(product=key, content=value))
-
-
 # time series data for a product
 class Timeseries(Base):
     __tablename__ = "ts_name"
@@ -88,6 +98,8 @@ class Timeseries(Base):
 
     _data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'),
                          cascade="all, delete-orphan", backref="ts")
+
+    data = association_proxy("_data", "value", creator=lambda key, value: _TimeseriesData(date=key, value=value))
 
     def __init__(self, name=None, product=None, data=None):
         self.name = name
@@ -101,18 +113,7 @@ class Timeseries(Base):
 
     def upsert(self, ts):
         for date, value in ts.items():
-            self[date] = value
-
-        return self
-
-    def __setitem__(self, key, value):
-        _TimeseriesData(ts=self, date=key, value=value)
-
-
-ProductInterface._timeseries = relationship(Timeseries, collection_class=attribute_mapped_collection('name'),
-                                   cascade="all, delete-orphan", backref="product")
-ProductInterface.timeseries = association_proxy("_timeseries", "series",
-                                      creator=lambda key, value: Timeseries(name=key, data=value))
+            self.data[date] = value
 
 
 class _TimeseriesData(Base):
@@ -125,5 +126,3 @@ class _TimeseriesData(Base):
         self.date = date
         self.value = value
         self.ts = ts
-
-

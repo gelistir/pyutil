@@ -24,8 +24,8 @@ class TestProducts(TestCase):
         self.assertEqual(ts.product, a)
 
         print(ts.series)
-        ts[pd.Timestamp("12-11-1978").date()] = 22.0
-        ts[pd.Timestamp("12-11-1978").date()] = 25.0
+        ts.data[pd.Timestamp("12-11-1978").date()] = 22.0
+        ts.data[pd.Timestamp("12-11-1978").date()] = 25.0
         print(ts.series)
 
     def test_ts2(self):
@@ -104,6 +104,12 @@ class TestProducts(TestCase):
         # that's a pandas Series
         ts = s.timeseries["Peter"]
         # that's an actual Timeseries sqlalchemy object
-        s._timeseries["Peter"][5] = 4.0
+        s._timeseries["Peter"].data[5] = 4.0
         # back to pandas
         self.assertEqual(s.timeseries["Peter"][5], 4.0)
+
+    def test_timeseries_of_symbol_3(self):
+        s = Product(name="Peter Maffay")
+        s.timeseries["Peter"] = pd.Series({1: 2.0, 5: 3.0})
+        s.timeseries["Maffay"] = pd.Series({1: 2.0, 5: 5.0})
+        self.assertEqual(s.frame["Maffay"][5], 5.0)
