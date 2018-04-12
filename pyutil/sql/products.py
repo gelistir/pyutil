@@ -39,17 +39,6 @@ class ProductInterface(Base):
             self.timeseries[key] = _pd.Series({})
         return self._timeseries[key]
 
-    def last_valid(self, key):
-        if not key in self._timeseries.keys():
-            return None
-        else:
-            return self.timeseries[key].last_valid_index()
-
-        #return self._timeseries.upsert(ts)
-        #for d, v in ts.dropna().items():
-        #    self._timeseries[key].data[d] = v
-
-        #return self.timeseries[key]
 
 class Field(Base):
     __tablename__ = "reference_field"
@@ -133,6 +122,9 @@ class Timeseries(Base):
             self.data[date] = value
         return self.series
 
+    @property
+    def last_valid(self):
+        return self.series.last_valid_index()
 
 class _TimeseriesData(Base):
     __tablename__ = 'ts_data'

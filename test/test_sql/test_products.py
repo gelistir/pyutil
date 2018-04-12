@@ -125,7 +125,7 @@ class TestProducts(TestCase):
         self.assertIsNone(x.last_valid_index())
 
         s = Product(name="Peter Maffay")
-        s.upsert_ts(key="Peter")
-        self.assertIsNone(s.last_valid("Peter"))
+        ts = s.upsert_ts(key="Peter")
+        self.assertIsNone(ts.last_valid)
 
 
