@@ -23,21 +23,32 @@ class ProductInterface(Base):
 
     _timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan", backref="product")
 
-    timeseries = association_proxy("_timeseries", "series", creator=lambda key, value: Timeseries(name=key, data=value))
-
     @property
     def reference(self):
         return _pd.Series({field.name: x for field, x in self.refdata.items()})
 
-    @property
-    def frame(self):
-        return _pd.DataFrame({name: ts for name, ts in self.timeseries.items()})
+    def upsert_ts(self, name, data=None):
+        """ upsert a timeseries, get Timeseries object """
+        if not name in self._timeseries.keys():
+            self._timeseries[name] = Timeseries(name=name, product=self)
 
-    def upsert_ts(self, key):
-        """ upsert a timeseries """
-        if not key in self._timeseries.keys():
-            self.timeseries[key] = _pd.Series({})
-        return self._timeseries[key]
+        return self._timeseries[name].upsert(data)
+
+    def get_pandas(self, names=None):
+        """ get a timeseries, get pandas object"""
+        if names is None:
+            return _pd.DataFrame({name: ts.series for name, ts in self._timeseries.items()})
+        else:
+            if isinstance(names, list):
+                return _pd.DataFrame({n: self._timeseries[n].series for n in names})
+            else:
+                try:
+                    return self._timeseries[names].series
+                except KeyError:
+                    return _pd.Series({})
+
+    def get_ref(self, field):
+        return self.refdata.get(field, default=None)
 
 
 class Field(Base):
@@ -117,14 +128,19 @@ class Timeseries(Base):
     def series(self):
         return _pd.Series({date: x.value for date, x in self._data.items()})
 
-    def upsert(self, ts):
-        for date, value in ts.items():
-            self.data[date] = value
-        return self.series
+    def upsert(self, ts=None):
+        try:
+            for date, value in ts.items():
+                self.data[date] = value
+        except AttributeError:
+            pass
+
+        return self
 
     @property
     def last_valid(self):
         return self.series.last_valid_index()
+
 
 class _TimeseriesData(Base):
     __tablename__ = 'ts_data'

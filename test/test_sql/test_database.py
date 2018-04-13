@@ -39,9 +39,9 @@ class TestDatabase(TestCase):
         s3.refdata[f1] = 30
         s3.refdata[f2] = 40
 
-        s1.timeseries["PX_LAST"] = read_frame("price.csv")["A"]
-        s2.timeseries["PX_LAST"] = read_frame("price.csv")["B"]
-        s3.timeseries["PX_LAST"] = read_frame("price.csv")["C"]
+        s1.upsert_ts(name="PX_LAST").upsert(ts=read_frame("price.csv")["A"])
+        s2.upsert_ts(name="PX_LAST").upsert(ts=read_frame("price.csv")["B"])
+        s3.upsert_ts(name="PX_LAST").upsert(ts=read_frame("price.csv")["C"])
 
         cls.db = Database(session=session)
 
@@ -54,7 +54,7 @@ class TestDatabase(TestCase):
         self.assertEqual(Symbol(bloomberg_symbol="A"), self.db.asset(name="A"))
 
     def test_history(self):
-        pdt.assert_series_equal(self.db.asset(name="A").timeseries["PX_LAST"], read_frame("price.csv")["A"], check_names=False)
+        pdt.assert_series_equal(self.db.asset(name="A").get_pandas(names="PX_LAST"), read_frame("price.csv")["A"], check_names=False)
         pdt.assert_frame_equal(self.db.history(), read_frame("price.csv")[["A","B","C"]], check_names=False)
 
     def test_ytd(self):
