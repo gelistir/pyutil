@@ -22,9 +22,9 @@ class TestDatabase(TestCase):
         s3 = Symbol(bloomberg_symbol="C", group=SymbolType.fixed_income, internal="C")
 
         # add all symbols to database
-        session.add_all([s1,s2,s3])
+        session.add_all([s1, s2, s3])
 
-        portfolio = test_portfolio().subportfolio(assets=["A","B","C"])
+        portfolio = test_portfolio().subportfolio(assets=["A", "B", "C"])
         p = PortfolioSQL(name="Peter").upsert(portfolio=portfolio)
         session.add(p)
 
@@ -32,12 +32,12 @@ class TestDatabase(TestCase):
         f2 = Field(name="Field 2", result=DataType.integer)
         session.add_all([f1, f2])
 
-        s1.refdata[f1] = 100
-        s1.refdata[f2] = 200
-        s2.refdata[f1] = 10
-        s2.refdata[f2] = 20
-        s3.refdata[f1] = 30
-        s3.refdata[f2] = 40
+        s1._refdata_proxy[f1] = 100
+        s1._refdata_proxy[f2] = 200
+        s2._refdata_proxy[f1] = 10
+        s2._refdata_proxy[f2] = 20
+        s3._refdata_proxy[f1] = 30
+        s3._refdata_proxy[f2] = 40
 
         s1.upsert_ts(name="PX_LAST").upsert(ts=read_frame("price.csv")["A"])
         s2.upsert_ts(name="PX_LAST").upsert(ts=read_frame("price.csv")["B"])
@@ -46,16 +46,18 @@ class TestDatabase(TestCase):
         cls.db = Database(session=session)
 
     def test_reference(self):
-        f = pd.DataFrame(columns=["Field 1", "Field 2"], index=["A","B","C"], data=[[100, 200],[10,20],[30,40]])
+        f = pd.DataFrame(columns=["Field 1", "Field 2"], index=["A", "B", "C"], data=[[100, 200], [10, 20], [30, 40]])
         f.index.name = "Asset"
+        print(self.db.reference())
         pdt.assert_frame_equal(f, self.db.reference())
 
     def test_asset(self):
         self.assertEqual(Symbol(bloomberg_symbol="A"), self.db.asset(name="A"))
 
     def test_history(self):
-        pdt.assert_series_equal(self.db.asset(name="A").get_pandas(names="PX_LAST"), read_frame("price.csv")["A"], check_names=False)
-        pdt.assert_frame_equal(self.db.history(), read_frame("price.csv")[["A","B","C"]], check_names=False)
+        pdt.assert_series_equal(self.db.asset(name="A").timeseries["PX_LAST"], read_frame("price.csv")["A"],
+                                check_names=False)
+        pdt.assert_frame_equal(self.db.history(), read_frame("price.csv")[["A", "B", "C"]], check_names=False)
 
     def test_ytd(self):
         self.assertAlmostEqual(self.db.ytd()["Jan"]["Peter"], 0.007706, places=5)

@@ -31,9 +31,8 @@ class TestProducts(TestCase):
     def test_ts2(self):
         a = Product(name="Peter Maffay")
         self.assertEqual(a.name, "Peter Maffay")
-        a.upsert_ts(name="PX_LAST").upsert(ts=pd.Series({pd.Timestamp("12-11-1978").date(): 25.0}))
-
-        #print(a.__a)
+        # you can upsert like this
+        a.upsert_ts(name="PX_LAST1").upsert(ts=pd.Series({pd.Timestamp("12-11-1978").date(): 25.0}))
 
     def test_field(self):
         f = Field(name="trades", result=DataType.integer, type=FieldType.dynamic)
@@ -46,8 +45,16 @@ class TestProducts(TestCase):
 
         self.assertEqual(d.value, 100)
 
-        a.refdata[f] = "200"
-        self.assertEqual(a.refdata[f], 200)
+        a._refdata_proxy[f] = "200"
+        print(a._refdata_proxy)
+        self.assertEqual(a.reference[f.name], 200)
+        self.assertEqual(a._refdata_proxy[f], 200)
+
+        with self.assertRaises(TypeError):
+            # you can not assign like this... need to go via refdata route...
+            a.reference[f.name] = "300"
+            self.assertEqual(a.reference[f.name], 300)
+            self.assertEqual(a._refdata_proxy[f], 300)
 
     def test_field_1(self):
         f = Field(name="Field 1", type=FieldType.dynamic, result=DataType.string)
@@ -85,19 +92,20 @@ class TestProducts(TestCase):
         ts = s.upsert_ts(name="Peter", data=pd.Series({1: 2.0, 5: 3.0}))
 
         # this will return a pandas series
-        t1 = s.get_pandas(names="Peter")
+        t1 = s.timeseries["Peter"]
         self.assertFalse(t1.empty)
         self.assertEqual(t1.last_valid_index(), 5)
         self.assertIsInstance(t1, pd.Series)
 
-        t2 = s.get_pandas(names="Maffay")
+        t2 = s.timeseries["Maffay"]
         self.assertTrue(t2.empty)
         self.assertIsInstance(t2, pd.Series)
 
         # upsert the Peter series
         ts.upsert(ts=pd.Series({1: 7.0, 6: 3.0}))
 
-        pdt.assert_series_equal(s.get_pandas(names="Peter"), pd.Series({1: 7.0, 5: 3.0, 6: 3.0}))
+        pdt.assert_series_equal(s.timeseries["Peter"], pd.Series({1: 7.0, 5: 3.0, 6: 3.0}))
+        pdt.assert_frame_equal(s.timeseries.to_pandas(series=False), pd.DataFrame({"Peter": pd.Series({1: 7.0, 5: 3.0, 6: 3.0})}))
 
     def test_timeseries_of_symbol_2(self):
         s = Product(name="Peter Maffay")
@@ -107,26 +115,14 @@ class TestProducts(TestCase):
         s.upsert_ts(name="Peter", data=pd.Series({5: 4.0}))
 
         # back to pandas
-        self.assertEqual(s.get_pandas(names="Peter")[5], 4.0)
+        self.assertEqual(s.timeseries["Peter"][5], 4.0)
 
     def test_timeseries_of_symbol_3(self):
         s = Product(name="Peter Maffay")
         s.upsert_ts(name="Peter", data=pd.Series({1: 2.0, 5: 3.0}))
         s.upsert_ts(name="Maffay", data=pd.Series({1: 2.0, 5: 5.0}))
 
-        self.assertEqual(s.get_pandas(names="Maffay")[5], 5.0)
-        x = s.get_pandas(names=["Peter", "Maffay"])
-        y = s.get_pandas()
-
-        pdt.assert_frame_equal(x,y)
-        z = s.get_pandas(names=["Maffay"])
-
-        self.assertEqual(z["Maffay"][5], 5.0)
-
-    def test_timeseries_of_symbol_4(self):
-        s = Product(name="Peter Maffay")
-        s.upsert_ts(name="Peter", data=pd.Series({1: 2.0, 5: 3.0}))
-        self.assertEqual(s.get_pandas(names="Peter")[5], 3.0)
+        self.assertEqual(s.timeseries["Maffay"][5], 5.0)
 
     def test_last_valid(self):
         x = pd.Series({})
@@ -140,7 +136,14 @@ class TestProducts(TestCase):
         s = Product(name="Hans")
         f1 = Field(name="Field 1", type=FieldType.dynamic, result=DataType.integer)
         f2 = Field(name="Field 2", type=FieldType.dynamic, result=DataType.integer)
-        s.refdata[f1] = 210
-        print(s.get_ref(field=f2))
+        s._refdata_proxy[f1] = 210
+        self.assertIsNone(s.reference[f2.name])
+        self.assertEqual(s.reference[f1.name], 210)
+        self.assertEqual(s._refdata_proxy[f1], 210)
+
+        with self.assertRaises(KeyError):
+            s._refdata_proxy[f2]
+
+
 
 

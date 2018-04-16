@@ -10,6 +10,27 @@ from sqlalchemy.types import Enum as _Enum
 from pyutil.sql.common import FieldType, DataType
 
 
+class _ReadDict(object):
+    def __init__(self, data, default=None):
+        self.__data = data
+        self.__default = default
+
+    def __getitem__(self, item):
+        try:
+            return self.__data[item]
+        except KeyError:
+            return self.__default
+
+    def keys(self):
+        return self.__data.keys()
+
+    def to_pandas(self, series=True):
+        if series:
+            return _pd.Series(self.__data)
+        else:
+            return _pd.DataFrame(self.__data)
+
+
 class ProductInterface(Base):
     __tablename__ = "productinterface"
     id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
@@ -19,13 +40,19 @@ class ProductInterface(Base):
 
     _refdata = relationship("ReferenceData", collection_class=attribute_mapped_collection("field"), cascade="all, delete-orphan", backref="product")
 
-    refdata = association_proxy("_refdata", "value", creator=lambda key, value: ReferenceData(field=key, content=value))
+    _refdata_proxy = association_proxy("_refdata", "value", creator=lambda key, value: ReferenceData(field=key, content=value))
 
     _timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan", backref="product")
 
+    _timeseries_proxy = association_proxy("_timeseries", "series", creator=lambda key, value: Timeseries(name=key, data=value))
+
     @property
     def reference(self):
-        return _pd.Series({field.name: x for field, x in self.refdata.items()})
+        return _ReadDict(data={field.name: x.value for field, x in self._refdata.items()}, default=None)
+
+    @property
+    def timeseries(self):
+        return _ReadDict(data={ts: x.series for ts, x in self._timeseries.items()}, default=_pd.Series({}))
 
     def upsert_ts(self, name, data=None):
         """ upsert a timeseries, get Timeseries object """
@@ -33,22 +60,6 @@ class ProductInterface(Base):
             self._timeseries[name] = Timeseries(name=name, product=self)
 
         return self._timeseries[name].upsert(data)
-
-    def get_pandas(self, names=None):
-        """ get a timeseries, get pandas object"""
-        if names is None:
-            return _pd.DataFrame({name: ts.series for name, ts in self._timeseries.items()})
-        else:
-            if isinstance(names, list):
-                return _pd.DataFrame({n: self._timeseries[n].series for n in names})
-            else:
-                try:
-                    return self._timeseries[names].series
-                except KeyError:
-                    return _pd.Series({})
-
-    def get_ref(self, field):
-        return self.refdata.get(field, default=None)
 
 
 class Field(Base):

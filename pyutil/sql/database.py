@@ -2,7 +2,7 @@ import pandas as _pd
 
 from pyutil.sql.frames import Frame
 from pyutil.sql.models import Symbol
-from pyutil.sql.products import _TimeseriesData, Timeseries
+from pyutil.sql.products import _TimeseriesData, Timeseries, ProductInterface
 from pyutil.sql.models import PortfolioSQL as _PortfolioSQL, Symbol as _Symbol
 
 
@@ -39,7 +39,7 @@ class Database(object):
 
     def reference(self):
         x = _pd.DataFrame(
-            {symbol.bloomberg_symbol: symbol.reference for symbol in self.__session.query(_Symbol)}).transpose()
+            {symbol.bloomberg_symbol: symbol.reference.to_pandas() for symbol in self.__session.query(_Symbol)}).transpose()
         x.index.name = "Asset"
         return x
 
