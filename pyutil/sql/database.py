@@ -26,11 +26,7 @@ class Database(object):
         return self.__session.query(_Symbol).filter_by(bloomberg_symbol = name).one()
 
     def history(self, field="PX_LAST"):
-        x = self.__session.query(_TimeseriesData.date, _Symbol.bloomberg_symbol, _TimeseriesData.value).join(_Timeseries).join(
-            _Symbol).filter(_Timeseries.name == field)
-        a = _pd.DataFrame.from_records(data=[(date, asset, price) for (date, asset, price) in x], index=["Date", "Asset"],
-                                  columns=["Date", "Asset", "Price"])
-        return a["Price"].unstack()
+        return _pd.DataFrame({symbol.bloomberg_symbol: symbol.timeseries[field] for symbol in self.__session.query(_Symbol) if field in symbol.timeseries.keys()})
 
     def reference(self):
         x = _pd.DataFrame({symbol.bloomberg_symbol: symbol.reference for symbol in self.__session.query(_Symbol)}).transpose()
