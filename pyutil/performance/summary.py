@@ -13,8 +13,12 @@ from .var import value_at_risk, conditional_value_at_risk
 def fromReturns(r):
     return NavSeries((1 + r).cumprod().dropna()).adjust(value=1.0)
 
-def fromNav(ts):
-    return NavSeries(ts.dropna()).adjust(value=1.0)
+def fromNav(ts, adjust=True):
+    x = NavSeries(ts.dropna())
+    if adjust:
+        return x.adjust(value=1.0)
+
+    return x
 
 def performance(nav, alpha=0.95, periods=None):
     return NavSeries(nav.dropna()).summary(alpha=alpha, periods=periods)
@@ -24,10 +28,22 @@ class NavSeries(pd.Series):
     def __init__(self, *args, **kwargs):
         super(NavSeries, self).__init__(*args, **kwargs)
 
+    @staticmethod
+    def _ser2arr(x, tz="CET"):
+        """ convert a pandas series into an array suitable for HighCharts """
+
+        def _f(x):
+            return pd.Timestamp(x, tz=tz).value * 1e-6
+
+        return [[_f(key), value] for key, value in x.dropna().items()]
+
     @property
     def __periods_per_year(self):
-        x = pd.Series(data=self.index)
-        return np.round(365 * 24 * 60 * 60 / x.diff().mean().total_seconds(), decimals=0)
+        if len(self.index) >= 2:
+            x = pd.Series(data=self.index)
+            return np.round(365 * 24 * 60 * 60 / x.diff().mean().total_seconds(), decimals=0)
+        else:
+            return 256
 
     def annualized_volatility(self, periods=None):
         t = periods or self.__periods_per_year
@@ -216,11 +232,8 @@ class NavSeries(pd.Series):
         return period_returns(self.returns, today=self.index[-1])
 
     def adjust(self, value=100.0):
-        #c = self.dropna()
-        #c = c/ c[c.dropna().index[0]]
         first = self[self.dropna().index[0]]
         return NavSeries(self * value / first)
-        #return NavSeries(adjust(self) * value)
 
     @property
     def monthly(self):
@@ -233,10 +246,6 @@ class NavSeries(pd.Series):
     @property
     def weekly(self):
         return NavSeries(self.__res("W"))
-
-    #@property
-    #def daily(self):
-    #    return NavSeries(self.__res("D"))
 
     def fee(self, daily_fee_basis_pts=0.5):
         ret = self.pct_change().fillna(0.0) - daily_fee_basis_pts / 10000.0
@@ -259,3 +268,10 @@ class NavSeries(pd.Series):
         # overwrite the last index with the trust last index
         a.index = a.index[:-1].append(pd.DatetimeIndex([self.index[-1]]))
         return a
+
+    def to_dictionary(self, name, **kwargs):
+        return {**{"nav": self._ser2arr(self), "drawdown": self._ser2arr(self.drawdown),
+                "volatility": self._ser2arr(self.ewm_volatility()), "name": name}, **kwargs}
+
+
+

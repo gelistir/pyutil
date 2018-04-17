@@ -22,6 +22,13 @@ def test_portfolio():
     return Portfolio(prices=read_frame("price.csv"), weights=read_frame("weight.csv"))
 
 
+def series2arrays(x, tz="CET"):
+    # this function converts a pandas series into a dictionary of two arrays
+    # to mock the behaviour of highcharts...
+    def __f(x):
+        return pd.Timestamp(x, tz=tz).value * 1e-6
+
+    return {"time": [__f(key) for key in x.index], "data": [float(a) for a in x.values]}
 
 
 if __name__ == '__main__':

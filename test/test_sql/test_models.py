@@ -3,72 +3,11 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.sql.models import Frame, Symbol, Field, Strategy, FieldType, \
-    SymbolType, PortfolioSQL, _Timeseries
+from pyutil.sql.models import Strategy, PortfolioSQL
 from test.config import test_portfolio, resource, read_frame
 
 
 class TestModels(TestCase):
-
-    def test_field(self):
-        f = Field(name="Field 1", type=FieldType.dynamic)
-        self.assertEqual(str(f), "Field 1")
-        self.assertEqual(f.type, FieldType.dynamic)
-        self.assertEqual(f, Field(name="Field 1", type=FieldType.dynamic))
-        s = Symbol(bloomberg_symbol="A")
-        f.refdata[s] = "AHA"
-        pdt.assert_series_equal(f.reference, pd.Series({"A": "AHA"}))
-
-    def test_symbol(self):
-        s = Symbol(bloomberg_symbol="Symbol 1", group=SymbolType.equities, internal="Symbol 1 internal")
-
-        self.assertEqual(s.bloomberg_symbol, "Symbol 1")
-        self.assertEqual(str(s), "Symbol 1")
-
-        f = Field(name="Field 1", type=FieldType.dynamic)
-        s.refdata[f] = "100"
-
-        self.assertEqual(s.refdata[f], "100")
-        self.assertSetEqual(set(s.refdata.keys()), {f})
-
-        pdt.assert_series_equal(s.reference, pd.Series({"Field 1": "100"}))
-
-        # update the already existing field
-        s.refdata[f] = "200"
-
-        pdt.assert_series_equal(s.reference, pd.Series({"Field 1": "200"}))
-
-    def test_timeseries(self):
-        x = _Timeseries(name="Peter")
-        self.assertTrue(x.series.empty)
-        x.upsert(ts=pd.Series({1: 2.0, 5: 3.0}))
-        pdt.assert_series_equal(x.series, pd.Series({1: 2.0, 5: 3.0}))
-
-    def test_timeseries_of_symbol(self):
-        s = Symbol(bloomberg_symbol="Symbol 1", group=SymbolType.equities, internal="Symbol 1 internal")
-        s.timeseries["Peter"] = pd.Series({1: 2.0, 5: 3.0})
-        # this will return a pandas series
-        t1 = s.timeseries["Peter"]
-        # this will return the actual Timeseries class
-        t2 = s._timeseries["Peter"]
-
-
-        self.assertFalse(t1.empty)
-        self.assertEqual(t1.last_valid_index(), 5)
-
-        t2.upsert(ts=pd.Series({1: 7.0, 6: 3.0}))
-
-        t1 = s.timeseries["Peter"]
-        self.assertFalse(t1.empty)
-        self.assertEqual(t1.last_valid_index(), 6)
-
-        pdt.assert_series_equal(t1, pd.Series({1: 7.0, 5: 3.0, 6: 3.0}))
-
-    def test_frame(self):
-        x = pd.DataFrame(data=[[1.2, 1.0], [1.0, 2.1]], index=["A", "B"], columns=["X1", "X2"])
-        x.index.names = ["index"]
-        f = Frame(frame=x, name="test")
-        pdt.assert_frame_equal(f.frame, x)
 
     def test_strategy(self):
         with open(resource("source.py"), "r") as f:

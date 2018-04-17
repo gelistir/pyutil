@@ -51,3 +51,5 @@ class TestDecorator(TestCase):
         self.assertEqual(len(x), 1)
         self.assertEqual(x[0][0], "attachment")
         self.assertIsNotNone(x[0][1])
+
+

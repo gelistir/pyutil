@@ -121,3 +121,7 @@ class Mail(object):
     def files(self):
         # List of tuples ("attachment or inline", (f[0], f[1]))
         return self.__files
+
+
+def mail():
+    Mail()

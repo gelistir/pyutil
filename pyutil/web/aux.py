@@ -1,39 +1,41 @@
+import json
+from collections import OrderedDict
+
 import pandas as pd
-from pyutil.performance.summary import performance as perf
-from pyutil.performance.month import monthlytable as mon
+
+
+def frame2dict(frame):
+    """ Pandas Dataframe to dict with "columns" and "data" """
+    return {'columns': list(frame.keys()),
+            'data': [frame.loc[key].dropna().to_dict(into=OrderedDict) for key in frame.index]}
 
 
 def series2array(x, tz="CET"):
     """ convert a pandas series into an array suitable for HighCharts """
-    return [[int(a),b] for a,b in __toStamps(x, tz=tz).apply(float).dropna().items()]
+
+    def __f(x):
+        return pd.Timestamp(x, tz=tz).value * 1e-6
+
+    return [[__f(key), value] for key, value in x.dropna().items()]
 
 
-def monthlytable(nav):
-    frame = 100 * mon(nav)
-    frame = frame.applymap("{0:.2f}%".format).replace("nan%", "")
-    frame.index = ['{:d}'.format(year) for year in frame.index]
-    frame = frame.reset_index().rename(columns={"index": "Year"})
-    return {"columns": list(frame.keys()), "data": [row.dropna().to_dict() for i, row in frame.iterrows()]}
+def rest2data(request):
+    return json.loads(request.data.decode("utf-8"))
 
 
-def performance(nav):
-    x = perf(nav)
+def reset_index(frame, index="Name"):
+    """ Prepare a pandas Dataframe for """
+    f = frame.reset_index().rename(columns={"index": index})
+    return frame2dict(f)
 
 
-    for key in x.index:
-        if key in {"First_at", "Last_at"}:
-            x[key] = x[key].strftime("%Y-%m-%d")
-        elif key in {"# Events", "# Events per year", "# Positive Events", "# Negative Events"}:
-            x[key] = '{:d}'.format(int(x[key]))
-        else:
-            x[key] = '{0:.2f}'.format(float(x[key]))
-
-    return x
-
-def name_value(x):
-    return [{"name": key, "value": value} for key, value in x.items()]
+def int2time(x, fmt="%Y-%m-%d"):
+    try:
+        return pd.Timestamp(int(x)*1e6).strftime(fmt)
+    except ValueError:
+        return ""
 
 
-def __toStamps(x, tz="CET"):
-    x.index = [pd.Timestamp(key, tz=tz).value * 1e-6 for key in x.index]
-    return x
+def double2percent(x):
+    return "{0:.2f}%".format(float(100.0*x)).replace("nan%", "")
+
