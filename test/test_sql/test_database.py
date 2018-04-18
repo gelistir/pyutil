@@ -49,8 +49,11 @@ class TestDatabase(TestCase):
     def test_reference(self):
         f = pd.DataFrame(columns=["Field 1", "Field 2"], index=["A", "B", "C"], data=[[100, 200], [10, 20], [30, 40]])
         f.index.name = "Asset"
-        print(self.db.reference())
-        pdt.assert_frame_equal(f, self.db.reference())
+
+        x = self.db.reference(cls=Symbol)
+        x = x.rename(index=lambda x: x.bloomberg_symbol)
+
+        pdt.assert_frame_equal(f, x)
 
 
     def test_history(self):

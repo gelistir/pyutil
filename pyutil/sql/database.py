@@ -36,9 +36,9 @@ class Database(object):
 
     def reference(self, cls=None, products=None):
         if products:
-            x = _pd.DataFrame({product: product.reference.to_pandas() for product in products}).transpose()
+            x = _pd.DataFrame({product: _pd.Series(product.reference) for product in products}).transpose()
         else:
-            x = _pd.DataFrame({symbol.bloomberg_symbol: symbol.reference.to_pandas() for symbol in
+            x = _pd.DataFrame({product: _pd.Series(product.reference) for product in
                                self.__session.query(ProductInterface).with_polymorphic(cls)}).transpose()
 
         x.index.name = "Asset"

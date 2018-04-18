@@ -103,7 +103,7 @@ class TestProducts(TestCase):
         ts.upsert(ts=pd.Series({1: 7.0, 6: 3.0}))
 
         pdt.assert_series_equal(s.timeseries["Peter"], pd.Series({1: 7.0, 5: 3.0, 6: 3.0}))
-        pdt.assert_frame_equal(s.timeseries.to_pandas(series=False), pd.DataFrame({"Peter": pd.Series({1: 7.0, 5: 3.0, 6: 3.0})}))
+        pdt.assert_frame_equal(pd.DataFrame(s.timeseries), pd.DataFrame({"Peter": pd.Series({1: 7.0, 5: 3.0, 6: 3.0})}))
 
     def test_timeseries_of_symbol_2(self):
         s = Product(name="Peter Maffay")

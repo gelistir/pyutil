@@ -10,28 +10,24 @@ from sqlalchemy.types import Enum as _Enum
 from pyutil.sql.common import FieldType, DataType
 
 
-class _ReadDict(object):
-    def __init__(self, data, default=None):
-        self.__data = data
+class _ReadDict(dict):
+    def __init__(self, seq=None, default=None, **kwargs):
+        super().__init__(seq, **kwargs)
         self.__default = default
 
     def __getitem__(self, item):
-        try:
-            return self.__data[item]
-        except KeyError:
-            return self.__default
+        return self.get(item, self.__default)
 
-    def keys(self):
-        return self.__data.keys()
+    def _immutable(self, *args, **kws):
+        raise TypeError('object is immutable')
 
-    def to_pandas(self, series=True):
-        if series:
-            return _pd.Series(self.__data)
-        else:
-            return _pd.DataFrame(self.__data)
-
-    def items(self):
-        return self.__data.items()
+    __setitem__ = _immutable
+    __delitem__ = _immutable
+    clear = _immutable
+    update = _immutable
+    setdefault = _immutable
+    pop = _immutable
+    popitem = _immutable
 
 
 class ProductInterface(Base):
@@ -44,22 +40,16 @@ class ProductInterface(Base):
     _refdata = relationship("ReferenceData", collection_class=attribute_mapped_collection("field"),
                             cascade="all, delete-orphan", backref="product")
 
-    #_refdata_proxy = association_proxy("_refdata", "value",
-    #                                   creator=lambda key, value: ReferenceData(field=key, content=value))
-
     _timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'),
                                cascade="all, delete-orphan", backref="product")
 
-    xxx = association_proxy("_timeseries", "series",
-                                          creator=lambda key, value: Timeseries(name=key, data=value))
-
     @property
     def reference(self):
-        return _ReadDict(data={field.name: x.value for field, x in self._refdata.items()}, default=None)
+        return _ReadDict(seq={field.name: x.value for field, x in self._refdata.items()}, default=None)
 
     @property
     def timeseries(self):
-        return _ReadDict(data={ts: x.series for ts, x in self._timeseries.items()}, default=_pd.Series({}))
+        return _ReadDict(seq={ts: x.series for ts, x in self._timeseries.items()}, default=_pd.Series({}))
 
     def upsert_ts(self, name, data=None):
        """ upsert a timeseries, get Timeseries object """
