@@ -6,8 +6,6 @@ portfolio.png
 portfolio.py
 setup.py
 
-docker-compose.test.yml
-docker-compose.yml
 
 tag.sh
 test.sh
@@ -15,6 +13,19 @@ test.sh
 todo
 
 LICENSE
+README.md
+build.sh
+article.md
+.travis.yml
+
+source
+results
+
+html-report
+html-coverage
+examples
+doc
+build
 
 
 
