@@ -41,13 +41,17 @@ class ProductInterface(Base):
 
     __mapper_args__ = {"polymorphic_on": discriminator}
 
-    _refdata = relationship("ReferenceData", collection_class=attribute_mapped_collection("field"), cascade="all, delete-orphan", backref="product")
+    _refdata = relationship("ReferenceData", collection_class=attribute_mapped_collection("field"),
+                            cascade="all, delete-orphan", backref="product")
 
-    _refdata_proxy = association_proxy("_refdata", "value", creator=lambda key, value: ReferenceData(field=key, content=value))
+    #_refdata_proxy = association_proxy("_refdata", "value",
+    #                                   creator=lambda key, value: ReferenceData(field=key, content=value))
 
-    _timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan", backref="product")
+    _timeseries = relationship("Timeseries", collection_class=attribute_mapped_collection('name'),
+                               cascade="all, delete-orphan", backref="product")
 
-    _timeseries_proxy = association_proxy("_timeseries", "series", creator=lambda key, value: Timeseries(name=key, data=value))
+    xxx = association_proxy("_timeseries", "series",
+                                          creator=lambda key, value: Timeseries(name=key, data=value))
 
     @property
     def reference(self):
@@ -58,11 +62,17 @@ class ProductInterface(Base):
         return _ReadDict(data={ts: x.series for ts, x in self._timeseries.items()}, default=_pd.Series({}))
 
     def upsert_ts(self, name, data=None):
-        """ upsert a timeseries, get Timeseries object """
-        if not name in self._timeseries.keys():
-            self._timeseries[name] = Timeseries(name=name, product=self)
+       """ upsert a timeseries, get Timeseries object """
+       if name not in self._timeseries.keys():
+           self._timeseries[name] = Timeseries(name=name, product=self)
 
-        return self._timeseries[name].upsert(data)
+       return self._timeseries[name].upsert(data)
+
+    def upsert_ref(self, field, value):
+        if field not in self._refdata.keys():
+            self._refdata[field] = ReferenceData(field=field, product=self, content=value)
+        else:
+            self._refdata[field].content = value
 
 
 class Field(Base):
@@ -77,6 +87,7 @@ class Field(Base):
 
     refdata = association_proxy("_refdata_by_product", "value",
                                 creator=lambda key, value: ReferenceData(product=key, content=value))
+
     @property
     def reference(self):
         return _pd.Series({key.name: x for key, x in self.refdata.items()})
@@ -99,7 +110,6 @@ class ReferenceData(Base):
     _field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey(Field._id), primary_key=True)
     content = sq.Column(sq.String(200), nullable=False)
     product_id = sq.Column(sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
-
 
     def __repr__(self):
         return "{field} for {x}: {value}".format(field=self.field.name, value=self.content, x=self.product)

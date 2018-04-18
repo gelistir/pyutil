@@ -27,12 +27,12 @@ class TestCommon(TestCase):
         f1 = Field(name="Field 1", result=DataType.integer)
         f2 = Field(name="Field 2", result=DataType.integer)
 
-        s1._refdata_proxy[f1] = 100
-        s1._refdata_proxy[f2] = 200
-        s2._refdata_proxy[f1] = 10
-        s2._refdata_proxy[f2] = 20
-        s3._refdata_proxy[f1] = 30
-        s3._refdata_proxy[f2] = 40
+        s1.upsert_ref(f1, value="100")
+        s1.upsert_ref(f2, value="200")
+        s2.upsert_ref(f1, value="10")
+        s2.upsert_ref(f2, value="20")
+        s3.upsert_ref(f1, value="30")
+        s3.upsert_ref(f2, value="40")
 
         s1.upsert_ts(name="PX_LAST").upsert(ts=read_frame("price.csv")["A"])
         s2.upsert_ts(name="PX_LAST").upsert(ts=read_frame("price.csv")["B"])

@@ -1,9 +1,8 @@
 import pandas as _pd
 
 from pyutil.sql.frames import Frame
-from pyutil.sql.models import Symbol
-from pyutil.sql.products import _TimeseriesData, Timeseries, ProductInterface
-from pyutil.sql.models import PortfolioSQL as _PortfolioSQL, Symbol as _Symbol
+from pyutil.sql.models import Symbol as _Symbol, PortfolioSQL as _PortfolioSQL
+from pyutil.sql.products import ProductInterface
 
 
 def _session_read():
@@ -25,21 +24,23 @@ class Database(object):
     def session(self):
         return self.__session
 
-    def asset(self, name):
-        return self.__session.query(Symbol).filter_by(bloomberg_symbol=name).one()
+    #def asset(self, name):
+    #    return self.__session.query(_Symbol).filter_by(bloomberg_symbol=name).one()
 
-    def history(self, field="PX_LAST"):
-        x = self.__session.query(_TimeseriesData.date, Symbol.bloomberg_symbol, _TimeseriesData.value).join(
-            Timeseries).join(
-            Symbol).filter(Timeseries.name == field)
-        a = _pd.DataFrame.from_records(data=[(date, asset, price) for (date, asset, price) in x],
-                                       index=["Date", "Asset"],
-                                       columns=["Date", "Asset", "Price"])
-        return a["Price"].unstack()
+    def history(self, cls=None, field="PX_LAST", products=None):
+        if products:
+            return _pd.DataFrame({product: product.timeseries[field] for product in products})
+        else:
+            return _pd.DataFrame({product: product.timeseries[field] for product in
+                                  self.session.query(ProductInterface).with_polymorphic(cls)})
 
-    def reference(self):
-        x = _pd.DataFrame(
-            {symbol.bloomberg_symbol: symbol.reference.to_pandas() for symbol in self.__session.query(_Symbol)}).transpose()
+    def reference(self, cls=None, products=None):
+        if products:
+            x = _pd.DataFrame({product: product.reference.to_pandas() for product in products}).transpose()
+        else:
+            x = _pd.DataFrame({symbol.bloomberg_symbol: symbol.reference.to_pandas() for symbol in
+                               self.__session.query(ProductInterface).with_polymorphic(cls)}).transpose()
+
         x.index.name = "Asset"
         return x
 
@@ -86,7 +87,6 @@ class Database(object):
             ascending=False)
         frame.index = [a.strftime("%b %d") for a in frame.index]
         frame = frame.head(n)
-        # ah, here comes the transpose. Date is now a column index but has been converted in a harmless string...
         frame = frame.transpose()
         frame["total"] = (frame + 1).prod(axis=1) - 1
         return frame
