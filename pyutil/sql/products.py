@@ -30,6 +30,9 @@ class _ReadDict(object):
         else:
             return _pd.DataFrame(self.__data)
 
+    def items(self):
+        return self.__data.items()
+
 
 class ProductInterface(Base):
     __tablename__ = "productinterface"
