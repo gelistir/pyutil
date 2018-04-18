@@ -1,24 +1,24 @@
 import pandas as _pd
 
 from pyutil.sql.frames import Frame
-from pyutil.sql.models import Symbol as _Symbol, PortfolioSQL as _PortfolioSQL
-from pyutil.sql.products import ProductInterface
+from pyutil.sql.session import session_scope
 
+from pyutil.sql.models import Symbol as _Symbol, PortfolioSQL as _PortfolioSQL, ProductInterface
 
-def _session_read():
-    import os
-    from sqlalchemy import create_engine as _create_engine
-    from sqlalchemy.orm import sessionmaker as _sessionmaker
-
-    engine = _create_engine('postgresql+psycopg2://{user}:{password}@quantsrv/symbols'.format(user=os.environ["reader"],
-                                                                                              password=os.environ[
-                                                                                                  "password_reader"]))
-    return _sessionmaker(bind=engine)()
-
+# def _session_read():
+#     import os
+#     from sqlalchemy import create_engine as _create_engine
+#     from sqlalchemy.orm import sessionmaker as _sessionmaker
+#
+#     engine = _create_engine('postgresql+psycopg2://{user}:{password}@quantsrv/symbols'.format(user=os.environ["reader"],
+#                                                                                               password=os.environ[
+#                                                                                                   "password_reader"]))
+#     return _sessionmaker(bind=engine)()
+#
 
 class Database(object):
     def __init__(self, session=None):
-        self.__session = session or _session_read()
+        self.__session = session or session_scope(user=os.environ["reader"], password=os.environ["password_reader"], db="symbols")
 
     @property
     def session(self):
