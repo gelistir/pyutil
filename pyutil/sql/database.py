@@ -1,24 +1,18 @@
 import pandas as _pd
+import os
+
+import sqlalchemy
 
 from pyutil.sql.frames import Frame
-from pyutil.sql.session import session_scope
+from pyutil.sql.session import session as create_session
 
 from pyutil.sql.models import Symbol as _Symbol, PortfolioSQL as _PortfolioSQL, ProductInterface
 
-# def _session_read():
-#     import os
-#     from sqlalchemy import create_engine as _create_engine
-#     from sqlalchemy.orm import sessionmaker as _sessionmaker
-#
-#     engine = _create_engine('postgresql+psycopg2://{user}:{password}@quantsrv/symbols'.format(user=os.environ["reader"],
-#                                                                                               password=os.environ[
-#                                                                                                   "password_reader"]))
-#     return _sessionmaker(bind=engine)()
-#
 
 class Database(object):
     def __init__(self, session=None):
-        self.__session = session or session_scope(user=os.environ["reader"], password=os.environ["password_reader"], db="symbols")
+        self.__session = session or create_session(user=os.environ["reader"], password=os.environ["password_reader"], db="symbols")
+        assert isinstance(self.__session, sqlalchemy.orm.session.Session), "The session is of type {t}".format(t=type(self.__session))
 
     @property
     def session(self):
