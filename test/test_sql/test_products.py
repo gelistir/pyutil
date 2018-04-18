@@ -45,16 +45,14 @@ class TestProducts(TestCase):
 
         self.assertEqual(d.value, 100)
 
-        a._refdata_proxy[f] = "200"
-        print(a._refdata_proxy)
+        a.upsert_ref(field=f, value="200")
+
         self.assertEqual(a.reference[f.name], 200)
-        self.assertEqual(a._refdata_proxy[f], 200)
 
         with self.assertRaises(TypeError):
             # you can not assign like this... need to go via refdata route...
             a.reference[f.name] = "300"
-            self.assertEqual(a.reference[f.name], 300)
-            self.assertEqual(a._refdata_proxy[f], 300)
+
 
     def test_field_1(self):
         f = Field(name="Field 1", type=FieldType.dynamic, result=DataType.string)
@@ -136,13 +134,10 @@ class TestProducts(TestCase):
         s = Product(name="Hans")
         f1 = Field(name="Field 1", type=FieldType.dynamic, result=DataType.integer)
         f2 = Field(name="Field 2", type=FieldType.dynamic, result=DataType.integer)
-        s._refdata_proxy[f1] = 210
+        s.upsert_ref(f1, value="210")
         self.assertIsNone(s.reference[f2.name])
         self.assertEqual(s.reference[f1.name], 210)
-        self.assertEqual(s._refdata_proxy[f1], 210)
 
-        with self.assertRaises(KeyError):
-            s._refdata_proxy[f2]
 
 
 
