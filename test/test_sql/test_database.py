@@ -5,6 +5,7 @@ import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
 from pyutil.sql.common import DataType
+from pyutil.sql.container import Portfolios, Assets
 from pyutil.sql.database import Database
 from pyutil.sql.models import Symbol, SymbolType, PortfolioSQL
 from pyutil.sql.products import Field
@@ -45,36 +46,31 @@ class TestDatabase(TestCase):
         s3.upsert_ts(name="PX_LAST").upsert(ts=read_frame("price.csv")["C"])
 
         cls.db = Database(session=session)
+        cls.portfolios = Portfolios([p])
+        cls.assets = Assets([s1, s2, s3])
 
     def test_reference(self):
         f = pd.DataFrame(columns=["Field 1", "Field 2"], index=["A", "B", "C"], data=[[100, 200], [10, 20], [30, 40]])
-        f.index.name = "Asset"
-
-        x = self.db.reference(cls=Symbol)
-        x = x.rename(index=lambda x: x.bloomberg_symbol)
-
+        x = self.assets.reference
         pdt.assert_frame_equal(f, x)
 
-
     def test_history(self):
-        pdt.assert_frame_equal(self.db.history().rename(columns=lambda x: x.bloomberg_symbol), read_frame("price.csv")[["A", "B", "C"]], check_names=False)
+        pdt.assert_frame_equal(self.assets.history(), read_frame("price.csv")[["A", "B", "C"]], check_names=False)
 
     def test_ytd(self):
-        self.assertAlmostEqual(self.db.ytd()["Jan"]["Peter"], 0.007706, places=5)
-        self.assertAlmostEqual(self.db.ytd(names=["Peter"])["Jan"]["Peter"], 0.007706, places=5)
+        self.assertAlmostEqual(self.portfolios.ytd["Jan"]["Peter"], 0.007706, places=5)
 
     def test_mtd(self):
-        self.assertAlmostEqual(self.db.mtd()["Apr 02"]["Peter"], 0.000838, places=5)
-        self.assertAlmostEqual(self.db.mtd(names=["Peter"])["Apr 22"]["Peter"], 0.00015664473396981293, places=5)
+        self.assertAlmostEqual(self.portfolios.mtd["Apr 02"]["Peter"], 0.000838, places=5)
 
     def test_sector(self):
         self.assertAlmostEqual(self.db.sector()["equities"]["Peter"], 0.135671, places=5)
 
     def test_recent(self):
-        self.assertAlmostEqual(self.db.recent(n=10)["Apr 21"]["Peter"], 0.002367, places=5)
+        self.assertAlmostEqual(self.portfolios.recent(n=10)["Apr 21"]["Peter"], 0.002367, places=5)
 
     def test_performance(self):
-        self.assertAlmostEqual(self.db.performance()["Max Nav"]["Peter"], 1.00077, places=5)
+        self.assertAlmostEqual(self.portfolios.performance["Max Nav"]["Peter"], 1.00077, places=5)
 
     def test_periods(self):
-        self.assertAlmostEqual(self.db.period_returns()["One Year"]["Peter"], 0.015213, places=5)
+        self.assertAlmostEqual(self.portfolios.period_returns["One Year"]["Peter"], 0.015213, places=5)

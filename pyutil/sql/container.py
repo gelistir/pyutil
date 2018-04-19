@@ -24,6 +24,9 @@ class Assets(ReadList):
     def group_internal(self):
         return pd.DataFrame({"Group": pd.Series(self.group), "Internal": pd.Series(self.internal)})
 
+    def history(self, field="PX_LAST"):
+        return pd.DataFrame({asset.bloomberg_symbol: asset.timeseries[field] for asset in self})
+
 
 class Portfolios(ReadList):
     def __init__(self, seq):
@@ -44,3 +47,21 @@ class Portfolios(ReadList):
         frame = frame.transpose()
         frame["total"] = (frame + 1).prod(axis=1) - 1
         return frame
+
+    def recent(self, n=15):
+        frame = pd.DataFrame({portfolio.name: portfolio.nav.recent() for portfolio in self}).sort_index(ascending=False)
+        frame.index = [a.strftime("%b %d") for a in frame.index]
+        frame = frame.head(n)
+        frame = frame.transpose()
+        frame["total"] = (frame + 1).prod(axis=1) - 1
+        return frame
+
+    @property
+    def period_returns(self):
+        frame = pd.DataFrame({portfolio.name: portfolio.nav.period_returns for portfolio in self}).sort_index(ascending=False)
+        return frame.transpose()
+
+    @property
+    def performance(self):
+        frame = pd.DataFrame({portfolio.name: portfolio.nav.summary() for portfolio in self}).sort_index(ascending=False)
+        return frame.transpose()

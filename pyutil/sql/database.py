@@ -18,9 +18,6 @@ class Database(object):
     def session(self):
         return self.__session
 
-    #def asset(self, name):
-    #    return self.__session.query(_Symbol).filter_by(bloomberg_symbol=name).one()
-
     def history(self, cls=None, field="PX_LAST", products=None):
         if products:
             return _pd.DataFrame({product: product.timeseries[field] for product in products})
@@ -44,24 +41,6 @@ class Database(object):
         else:
             return {portfolio.name: portfolio for portfolio in self.__session.query(_PortfolioSQL)}
 
-    def mtd(self, names=None):
-        frame = _pd.DataFrame(
-            {name: portfolio.nav.mtd_series for name, portfolio in self.portfolios(names).items()}).sort_index(
-            ascending=False)
-        frame.index = [a.strftime("%b %d") for a in frame.index]
-        frame = frame.transpose()
-        frame["total"] = (frame + 1).prod(axis=1) - 1
-        return frame
-
-    def ytd(self, names=None):
-        frame = _pd.DataFrame(
-            {name: portfolio.nav.ytd_series for name, portfolio in self.portfolios(names).items()}).sort_index(
-            ascending=False)
-        frame.index = [a.strftime("%b") for a in frame.index]
-        frame = frame.transpose()
-        frame["total"] = (frame + 1).prod(axis=1) - 1
-        return frame
-
     def sector(self, names=None):
         def f(frame):
             return frame.iloc[-1]
@@ -74,31 +53,6 @@ class Database(object):
         frame = frame.transpose()
         frame["total"] = frame.sum(axis=1)
         return frame
-
-    def recent(self, names=None, n=15):
-        frame = _pd.DataFrame(
-            {name: portfolio.nav.recent() for name, portfolio in self.portfolios(names).items()}).sort_index(
-            ascending=False)
-        frame.index = [a.strftime("%b %d") for a in frame.index]
-        frame = frame.head(n)
-        frame = frame.transpose()
-        frame["total"] = (frame + 1).prod(axis=1) - 1
-        return frame
-
-    def period_returns(self, names=None):
-        frame = _pd.DataFrame(
-            {name: portfolio.nav.period_returns for name, portfolio in self.portfolios(names).items()}).sort_index(
-            ascending=False)
-        return frame.transpose()
-
-    def performance(self, names=None):
-        frame = _pd.DataFrame(
-            {name: portfolio.nav.summary() for name, portfolio in self.portfolios(names).items()}).sort_index(
-            ascending=False)
-        return frame.transpose()
-
-    # def strategies(self):
-    #    return self.__session.query(_Strategy)
 
     def frame(self, name):
         return self.__session.query(Frame).filter_by(name=name).one().frame
