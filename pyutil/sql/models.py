@@ -11,6 +11,27 @@ from pyutil.sql.base import Base
 from pyutil.sql.products import ProductInterface
 
 
+class Assets(list):
+    def __init__(self, seq=()):
+        super().__init__(seq)
+
+    @property
+    def reference(self):
+        return _pd.DataFrame({asset.bloomberg_symbol: _pd.Series(asset.reference) for asset in self}).transpose()
+
+    @property
+    def internal(self):
+        return {asset.bloomberg_symbol: asset.internal for asset in self}
+    @property
+    def group(self):
+        return {asset.bloomberg_symbol: asset.group.name for asset in self}
+
+    @property
+    def group_internal(self):
+        return _pd.DataFrame({"Group": _pd.Series(self.group), "Internal": _pd.Series(self.internal)})
+
+
+
 class SymbolType(_enum.Enum):
     alternatives = "Alternatives"
     fixed_income = "Fixed Income"
@@ -24,6 +45,8 @@ class StrategyType(_enum.Enum):
     balanced = 'balanced'
     dynamic = 'dynamic'
 
+# Make association table!
+# Make Portfolio a ProductInterface
 
 class Symbol(ProductInterface):
     __tablename__ = "symbolsapp_symbol"
