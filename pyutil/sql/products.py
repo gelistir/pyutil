@@ -8,26 +8,7 @@ from pyutil.sql.base import Base
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.common import FieldType, DataType
-
-
-class _ReadDict(dict):
-    def __init__(self, seq=None, default=None, **kwargs):
-        super().__init__(seq, **kwargs)
-        self.__default = default
-
-    def __getitem__(self, item):
-        return self.get(item, self.__default)
-
-    def _immutable(self, *args, **kws):
-        raise TypeError('object is immutable')
-
-    __setitem__ = _immutable
-    __delitem__ = _immutable
-    clear = _immutable
-    update = _immutable
-    setdefault = _immutable
-    pop = _immutable
-    popitem = _immutable
+from pyutil.sql.immutable import ReadDict
 
 
 class ProductInterface(Base):
@@ -45,11 +26,11 @@ class ProductInterface(Base):
 
     @property
     def reference(self):
-        return _ReadDict(seq={field.name: x.value for field, x in self._refdata.items()}, default=None)
+        return ReadDict(seq={field.name: x.value for field, x in self._refdata.items()}, default=None)
 
     @property
     def timeseries(self):
-        return _ReadDict(seq={ts: x.series for ts, x in self._timeseries.items()}, default=_pd.Series({}))
+        return ReadDict(seq={ts: x.series for ts, x in self._timeseries.items()}, default=_pd.Series({}))
 
     def upsert_ts(self, name, data=None):
        """ upsert a timeseries, get Timeseries object """

@@ -11,25 +11,10 @@ from pyutil.sql.base import Base
 from pyutil.sql.products import ProductInterface
 
 
-class Assets(list):
-    def __init__(self, seq=()):
-        super().__init__(seq)
-
-    @property
-    def reference(self):
-        return _pd.DataFrame({asset.bloomberg_symbol: _pd.Series(asset.reference) for asset in self}).transpose()
-
-    @property
-    def internal(self):
-        return {asset.bloomberg_symbol: asset.internal for asset in self}
-    @property
-    def group(self):
-        return {asset.bloomberg_symbol: asset.group.name for asset in self}
-
-    @property
-    def group_internal(self):
-        return _pd.DataFrame({"Group": _pd.Series(self.group), "Internal": _pd.Series(self.internal)})
-
+_association_table = sq.Table('association', Base.metadata,
+                            sq.Column('symbol_id', sq.Integer, sq.ForeignKey('symbolsapp_symbol.id')),
+                            sq.Column('portfolio_id', sq.Integer, sq.ForeignKey('portfolio2.id'))
+                               )
 
 
 class SymbolType(_enum.Enum):
@@ -55,6 +40,7 @@ class Symbol(ProductInterface):
     bloomberg_symbol = sq.Column(sq.String(50), unique=True)
     group = sq.Column("gg", _Enum(SymbolType))
     internal = sq.Column(sq.String, nullable=True)
+    portfolio = _relationship("Portfolio", secondary=_association_table, back_populates="symbols")
 
     __mapper_args__ = {"polymorphic_identity": "symbol"}
 
@@ -67,6 +53,29 @@ class Symbol(ProductInterface):
     def __hash__(self):
         return hash(str(self.bloomberg_symbol))
 
+
+class Portfolio(ProductInterface):
+    __tablename__ = 'portfolio2'
+    _id = sq.Column("id", sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
+    _strategy_id = sq.Column("strategy_id", sq.Integer, sq.ForeignKey("strategiesapp_strategy.id"), nullable=True)
+    strategy = _relationship("Strategy", backref="_portfolio2")
+    __mapper_args__ = {"polymorphic_identity": "portfolio"}
+    symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio")
+
+    def upsert_price(self, symbol, data):
+        pass
+
+    def upsert_weight(self, symbol, data):
+        pass
+
+    @property
+    def empty(self):
+        pass
+
+    @property
+    def portfolio(self):
+        # load weights, load prices
+        pass
 
 class PortfolioSQL(Base):
     __tablename__ = 'portfolio'
