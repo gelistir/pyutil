@@ -20,9 +20,10 @@ class ReadDict(dict):
 
 
 class ReadList(list):
-    def __init__(self, seq, cls):
-        for x in seq:
-            assert isinstance(x, cls), "The object {object} has to be of type {type}".format(object=x, type=cls)
+    def __init__(self, seq, cls=None):
+        if cls:
+            for x in seq:
+                assert isinstance(x, cls), "The object {object} has to be of type {type}".format(object=x, type=cls)
 
 
         super().__init__(seq)

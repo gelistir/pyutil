@@ -1,8 +1,8 @@
 from unittest import TestCase
 
 from pyutil.sql.base import Base
-from pyutil.sql.models import Symbol
 from pyutil.sql.session import session_test, get_one_or_create, get_one_or_none
+from pyutil.sql.interfaces.symbol import Symbol
 
 
 class TestSession(TestCase):

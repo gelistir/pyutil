@@ -1,7 +1,7 @@
 import pandas as pd
 
 from pyutil.sql.immutable import ReadList
-from pyutil.sql.models import PortfolioSQL, Symbol
+from pyutil.sql.interfaces.symbol import Symbol, Portfolio
 
 
 class Assets(ReadList):
@@ -30,7 +30,7 @@ class Assets(ReadList):
 
 class Portfolios(ReadList):
     def __init__(self, seq):
-        super().__init__(seq, PortfolioSQL)
+        super().__init__(seq, Portfolio)
 
     @property
     def mtd(self):

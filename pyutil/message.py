@@ -125,3 +125,4 @@ class Mail(object):
 
 def mail():
     Mail()
+

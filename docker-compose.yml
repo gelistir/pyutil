@@ -8,6 +8,7 @@ services:
         - ./examples:/pyutil/examples
         - ./results:/pyutil/results
         - ./pyutil:/pyutil/pyutil
+        - ./sandbox:/pyutil/sandbox
      extra_hosts:
         # obviously you can not access
         - quantsrv:192.168.100.15
@@ -15,3 +16,4 @@ services:
        - .env
      volumes:
         -  /etc/localtime:/etc/localtime:ro
+     command: /bin/bash

@@ -5,6 +5,7 @@ from pyutil.portfolio.portfolio import Portfolio
 from pyutil.performance.summary import NavSeries
 
 
+
 def resource(name):
     base_dir = os.path.dirname(__file__)
     return os.path.join(base_dir, "resources", name)
@@ -20,6 +21,10 @@ def read_series(name, parse_dates=True, index_col=0, cname=None):
 
 def test_portfolio():
     return Portfolio(prices=read_frame("price.csv"), weights=read_frame("weight.csv"))
+
+
+def test_portfolio2():
+    p = read_frame("price.csv")
 
 
 def series2arrays(x, tz="CET"):
