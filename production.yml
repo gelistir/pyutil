@@ -1,0 +1,10 @@
+name: prod
+dependencies:
+- python>=3.6
+- pandas=0.21.0
+- sqlalchemy=1.2.6
+- nomkl
+- requests
+- pip:
+  - psycopg2
+
