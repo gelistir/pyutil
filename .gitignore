@@ -8,3 +8,5 @@ html-coverage
 html-report
 build
 .env
+
+env
