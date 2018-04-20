@@ -5,6 +5,4 @@ dependencies:
 - sqlalchemy=1.2.6
 - nomkl
 - requests
-- pip:
-  - psycopg2
-
+- psycopg2
