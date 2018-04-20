@@ -15,13 +15,13 @@ class TestModels(TestCase):
             # No, this doesn't work!
             portfolio = s.compute_portfolio(reader=None)
 
-            assets = {asset : Symbol(bloomberg_symbol=asset) for asset in portfolio.assets}
+            assets = {asset: Symbol(bloomberg_symbol=asset) for asset in portfolio.assets}
 
             p = Portfolio(name="test", strategy=s)
             print(portfolio)
             # upsert the portfolio, make sure you append the symbols!!!
-            for asset in assets.values():
-                p.symbols.append(asset)
+            #for asset in assets.values():
+            #    p.symbols.append(asset)
 
             p.upsert(portfolio, assets=assets)
 

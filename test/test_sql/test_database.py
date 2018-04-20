@@ -3,8 +3,7 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.sql.common import DataType
-from pyutil.sql.model.ref import Field
+from pyutil.sql.model.ref import Field, DataType
 from pyutil.sql.interfaces.symbol import Symbol, SymbolType, Portfolio
 from pyutil.sql.container import Portfolios, Assets
 from test.config import test_portfolio, read_frame

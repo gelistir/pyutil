@@ -66,9 +66,13 @@ class Portfolio(ProductInterface):
     name = sq.Column(sq.String, unique=True)
 
     def upsert_price(self, symbol, data):
+        if symbol not in self.symbols:
+            self.symbols.append(symbol)
         self.upsert_ts(name="price", data=data, secondary=symbol)
 
     def upsert_weight(self, symbol, data):
+        if symbol not in self.symbols:
+            self.symbols.append(symbol)
         self.upsert_ts(name="weight", data=data, secondary=symbol)
 
     @property
@@ -77,19 +81,11 @@ class Portfolio(ProductInterface):
 
     def upsert(self, portfolio, assets=None):
         for name, data in portfolio.weights.items():
-            print(name)
-            asset = assets[name]
-            print(asset)
-            self.upsert_weight(asset, data.dropna())
+            self.upsert_weight(assets[name], data.dropna())
 
         for name, data in portfolio.prices.items():
-            print(name)
-            asset = assets[name]
-            print(asset)
+            self.upsert_price(assets[name], data.dropna())
 
-            self.upsert_price(asset, data.dropna())
-
-        print(self._timeseries.keys())
         return self
 
     @property

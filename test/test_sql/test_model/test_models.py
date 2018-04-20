@@ -3,12 +3,11 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.sql.model.ref import Field
+from pyutil.sql.model.ref import Field, FieldType, DataType
 from pyutil.sql.model.ts import Timeseries
 
 from sqlalchemy import String, Column
 
-from pyutil.sql.common import FieldType, DataType
 from pyutil.sql.interfaces.products import ProductInterface
 
 
