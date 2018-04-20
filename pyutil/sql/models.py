@@ -1,9 +1,7 @@
-import enum as _enum
 from io import BytesIO as _BytesIO
 
 import pandas as _pd
 import sqlalchemy as sq
-from sqlalchemy.types import Enum as _Enum
 
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 from pyutil.sql.base import Base
@@ -22,11 +20,11 @@ from pyutil.sql.base import Base
 #     equities = "Equities"
 
 
-class StrategyType(_enum.Enum):
-    mdt = 'mdt'
-    conservative = 'conservative'
-    balanced = 'balanced'
-    dynamic = 'dynamic'
+# class StrategyType(_enum.Enum):
+#     mdt = 'mdt'
+#     conservative = 'conservative'
+#     balanced = 'balanced'
+#     dynamic = 'dynamic'
 
 
 # class Symbol(ProductInterface):
@@ -130,9 +128,9 @@ class PortfolioSQL(Base):
     #_strategy_id = sq.Column("strategy_id", sq.Integer, sq.ForeignKey("strategiesapp_strategy.id"), nullable=True)
     #strategy = _relationship("Strategy", back_populates="_portfolio")
 
-    @property
-    def empty(self):
-        return self.weight.empty and self.price.empty
+    #@property
+    #def empty(self):
+    #    return self.weight.empty and self.price.empty
 
     @staticmethod
     def _read(x):
@@ -157,39 +155,39 @@ class PortfolioSQL(Base):
         except ValueError:
             return _pd.DataFrame({})
 
-    @price.setter
-    def price(self, value):
-        self._prices = value.to_json(orient="split", date_format="iso").encode()
+    # @price.setter
+    # def price(self, value):
+    #     self._prices = value.to_json(orient="split", date_format="iso").encode()
+    #
+    # @weight.setter
+    # def weight(self, value):
+    #     self._weights = value.to_json(orient="split", date_format="iso").encode()
 
-    @weight.setter
-    def weight(self, value):
-        self._weights = value.to_json(orient="split", date_format="iso").encode()
-
-    @property
-    def last_valid(self):
-        try:
-            return self.portfolio.index[-1]
-        except:
-            return None
+    #@property
+    #def last_valid(self):
+    #    try:
+    #        return self.portfolio.index[-1]
+    #    except:
+    #        return None
 
     @property
     def assets(self):
         return self.portfolio.assets
 
-    @property
-    def nav(self):
-        return self.portfolio.nav
+    #@property
+    #def nav(self):
+    #    return self.portfolio.nav
 
-    def sector(self, map, total=False):
-        return self.portfolio.sector_weights(symbolmap=map, total=total)
+    #def sector(self, map, total=False):
+    #    return self.portfolio.sector_weights(symbolmap=map, total=total)
 
-    def upsert(self, portfolio):
-        start = portfolio.index[0]
-        p = self.price.truncate(after=start - _pd.DateOffset(seconds=1))
-        w = self.weight.truncate(after=start - _pd.DateOffset(seconds=1))
-        self.weight = _pd.concat([w, portfolio.weights], axis=0)
-        self.price = _pd.concat([p, portfolio.prices], axis=0)
-        return self
+    #def upsert(self, portfolio):
+    #    start = portfolio.index[0]
+    #    p = self.price.truncate(after=start - _pd.DateOffset(seconds=1))
+    #    w = self.weight.truncate(after=start - _pd.DateOffset(seconds=1))
+    #    self.weight = _pd.concat([w, portfolio.weights], axis=0)
+    #    self.price = _pd.concat([p, portfolio.prices], axis=0)
+    #    return self
 
 
 # class Strategy(Base):
