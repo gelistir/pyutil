@@ -5,7 +5,7 @@ import sqlalchemy as sq
 from sqlalchemy.orm import relationship as _relationship
 from sqlalchemy.types import Enum as _Enum
 
-from sql.interfaces.products import ProductInterface, Base
+from pyutil.sql.interfaces.products import ProductInterface, Base
 
 
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio

@@ -9,7 +9,7 @@ from pyutil.sql.model.ts import Timeseries
 from sqlalchemy import String, Column
 
 from pyutil.sql.common import FieldType, DataType
-from sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.products import ProductInterface
 
 
 
