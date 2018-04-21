@@ -9,8 +9,8 @@ import pandas.util.testing as pdt
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.s1 = Symbol(bloomberg_symbol="A", group=SymbolType.fixed_income)
-        cls.s2 = Symbol(bloomberg_symbol="B", group=SymbolType.equities)
+        cls.s1 = Symbol(bloomberg_symbol="A", group=SymbolType.fixed_income, internal="AA")
+        cls.s2 = Symbol(bloomberg_symbol="B", group=SymbolType.equities, internal="BB")
 
         cls.s1.upsert_ts(name="price", data={2: 10.0})
         cls.s2.upsert_ts(name="price", data={2: 12.0})
@@ -38,4 +38,3 @@ class TestPortfolio(TestCase):
 
     def test_portfolio(self):
         self.assertListEqual(self.s1.portfolio, [self.p])
-

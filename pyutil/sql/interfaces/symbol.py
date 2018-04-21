@@ -4,7 +4,6 @@ import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.orm import relationship as _relationship
 from sqlalchemy.types import Enum as _Enum
-
 from pyutil.sql.interfaces.products import ProductInterface, Base
 
 
@@ -42,7 +41,7 @@ class Symbol(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "symbol"}
 
     def __repr__(self):
-        return "{name}".format(name=self.bloomberg_symbol)
+        return "({name})".format(name=self.bloomberg_symbol)
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.bloomberg_symbol == other.bloomberg_symbol
@@ -118,11 +117,18 @@ class Portfolio(ProductInterface):
         return self.portfolio.sector_weights(symbolmap=map, total=False)
 
     @property
+    def sector_tail(self):
+        map = {asset: asset.group.name for asset in self.symbols}
+        w = self.portfolio.sector_weights(symbolmap=map, total=False)
+        return w.loc[w.index[-1]]
+
+    @property
     def assets2(self):
         return self.portfolio.assets
 
     def __lt__(self, other):
         return self.name < other.name
+
 
 
 class Strategy(Base):

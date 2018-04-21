@@ -10,22 +10,22 @@ class Assets(ReadList):
 
     @property
     def reference(self):
-        return pd.DataFrame({asset.bloomberg_symbol: pd.Series(asset.reference) for asset in self}).transpose()
+        return pd.DataFrame({asset: pd.Series(asset.reference) for asset in self}).transpose()
 
     @property
     def internal(self):
-        return {asset.bloomberg_symbol: asset.internal for asset in self}
+        return {asset: asset.internal for asset in self}
 
     @property
     def group(self):
-        return {asset.bloomberg_symbol: asset.group.name for asset in self}
+        return {asset: asset.group.name for asset in self}
 
     @property
     def group_internal(self):
         return pd.DataFrame({"Group": pd.Series(self.group), "Internal": pd.Series(self.internal)})
 
     def history(self, field="PX_LAST"):
-        return pd.DataFrame({asset.bloomberg_symbol: asset.timeseries[field] for asset in self})
+        return pd.DataFrame({asset: asset.timeseries[field] for asset in self})
 
 
 class Portfolios(ReadList):
@@ -65,3 +65,39 @@ class Portfolios(ReadList):
     def performance(self):
         frame = pd.DataFrame({portfolio.name: portfolio.nav.summary() for portfolio in self}).sort_index(ascending=False)
         return frame.transpose()
+
+    @property
+    def sector(self):
+        p = self[0]
+        print(p.sector_tail)
+
+        frame = pd.DataFrame({portfolio.name: portfolio.sector_tail for portfolio in self})
+        return frame.transpose()
+
+
+    @property
+    def frames(self):
+        return {"recent": self.recent(),
+            "ytd": self.ytd,
+            "mtd": self.mtd,
+            "sector": self.sector,
+            "periods": self.period_returns,
+            "performance": self.performance}
+
+
+def state(portfolio):
+    # this is now a list of proper symbol objects... portfolio is the database object!!!
+    assets = Assets(portfolio.symbols)
+        #assets = Assets(symbols=[self.__session.query(Symbol).filter_by(bloomberg_symbol=asset).one() for asset in self.__portfolio.assets])
+    print(assets.reference.index)
+    print(portfolio.portfolio.state.index)
+    print(assets.group_internal.index)
+
+    frame = pd.concat((assets.reference, portfolio.portfolio.state, assets.group_internal), axis=1, join="inner")
+
+    sector_weights = frame.groupby(by="Group")["Extrapolated"].sum()
+    frame["Sector Weight"] = frame["Group"].apply(lambda x: sector_weights[x])
+    frame["Relative Sector"] = 100*frame["Extrapolated"] / frame["Sector Weight"]
+    frame["Asset"] = frame.index
+
+    return frame.set_index(["Group", "Sector Weight", "Asset"])
