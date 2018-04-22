@@ -3,13 +3,15 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
+from pyutil.sql.base import Base
+from pyutil.sql.interfaces.symbol import SymbolType, Symbol
 from pyutil.sql.model.ref import Field, FieldType, DataType
 from pyutil.sql.model.ts import Timeseries
 
 from sqlalchemy import String, Column
 
 from pyutil.sql.interfaces.products import ProductInterface
-
+from pyutil.sql.session import session_test
 
 
 class _Product(ProductInterface):
@@ -66,6 +68,20 @@ class TestReference(TestCase):
 
         self.p1.upsert_ref(field=self.f1, value="120")
         self.assertEqual(self.p1.reference["x"], 120)
+
+        self.p2.upsert_ref(field=self.f1, value="110")
+
+
+    def test_2(self):
+        session = session_test(meta=Base.metadata)
+
+        f1 = Field(name="Field A", result=DataType.string, type=FieldType.static)
+        session.add(f1)
+
+        s = Symbol(bloomberg_symbol="A", group=SymbolType.fixed_income)
+        s.upsert_ref(field=f1, value=str("Prop A"))
+
+        self.assertDictEqual(s.reference, {"Field A": "Prop A"})
 
 
 class TestProductInterface(TestCase):

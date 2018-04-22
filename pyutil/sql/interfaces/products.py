@@ -1,11 +1,12 @@
 import pandas as _pd
 import sqlalchemy as sq
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.sql.base import Base
 from pyutil.sql.immutable import ReadDict
-from pyutil.sql.model.ref import ReferenceData
+from pyutil.sql.model.ref import ReferenceData, Field
 from pyutil.sql.model.ts import Timeseries
 
 
@@ -18,6 +19,8 @@ class ProductInterface(Base):
 
     _refdata = relationship(ReferenceData, collection_class=attribute_mapped_collection("field"),
                             cascade="all, delete-orphan", backref="product")
+
+    #refdata = association_proxy('_refdata', 'value', creator=lambda k, v: ReferenceData(field=k, content=v))
 
     _timeseries = relationship(Timeseries, collection_class=attribute_mapped_collection('key'),
                                cascade="all, delete-orphan", backref="product", foreign_keys=[Timeseries.product_id])
@@ -38,7 +41,6 @@ class ProductInterface(Base):
                 return name, secondary
             else:
                 return name
-
         k = key(name, secondary)
 
         if k not in self._timeseries.keys():
@@ -47,10 +49,14 @@ class ProductInterface(Base):
         return self._timeseries[k].upsert(data)
 
     def upsert_ref(self, field, value):
+        assert isinstance(field, Field)
+
         if field not in self._refdata.keys():
-            self._refdata[field] = ReferenceData(field=field, product=self, content=value)
+            r = ReferenceData(field=field, product=self, content=value)
+            self._refdata[field] = r
         else:
             self._refdata[field].content = value
+
 
     def frame(self, name):
         return _pd.DataFrame({x.secondary: x.series for x in self._timeseries.values() if x.name == name and x.secondary})

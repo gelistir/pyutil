@@ -86,14 +86,13 @@ class Portfolios(ReadList):
 
 
 def state(portfolio):
+    assert isinstance(portfolio, Portfolio)
+
     # this is now a list of proper symbol objects... portfolio is the database object!!!
     assets = Assets(portfolio.symbols)
-        #assets = Assets(symbols=[self.__session.query(Symbol).filter_by(bloomberg_symbol=asset).one() for asset in self.__portfolio.assets])
-    print(assets.reference.index)
-    print(portfolio.portfolio.state.index)
-    print(assets.group_internal.index)
 
     frame = pd.concat((assets.reference, portfolio.portfolio.state, assets.group_internal), axis=1, join="inner")
+    frame = frame.rename(index=lambda x: x.bloomberg_symbol)
 
     sector_weights = frame.groupby(by="Group")["Extrapolated"].sum()
     frame["Sector Weight"] = frame["Group"].apply(lambda x: sector_weights[x])

@@ -23,7 +23,6 @@ class StrategyType(_enum.Enum):
     dynamic = 'dynamic'
 
 
-
 _association_table = sq.Table('association', Base.metadata,
                             sq.Column('symbol_id', sq.Integer, sq.ForeignKey('symbolsapp_symbol.id')),
                             sq.Column('portfolio_id', sq.Integer, sq.ForeignKey('portfolio2.id'))
@@ -65,11 +64,13 @@ class Portfolio(ProductInterface):
     name = sq.Column(sq.String, unique=True)
 
     def upsert_price(self, symbol, data):
+        assert isinstance(symbol, Symbol)
         if symbol not in self.symbols:
             self.symbols.append(symbol)
         self.upsert_ts(name="price", data=data, secondary=symbol)
 
     def upsert_weight(self, symbol, data):
+        assert isinstance(symbol, Symbol)
         if symbol not in self.symbols:
             self.symbols.append(symbol)
         self.upsert_ts(name="weight", data=data, secondary=symbol)
@@ -79,11 +80,15 @@ class Portfolio(ProductInterface):
         return self.frame(name="price").empty and self.frame(name="weight").empty
 
     def upsert(self, portfolio, assets=None):
-        for name, data in portfolio.weights.items():
-            self.upsert_weight(assets[name], data.dropna())
+        for symbol, data in portfolio.weights.items():
+            if assets:
+                symbol = assets[symbol]
+            self.upsert_weight(symbol, data.dropna())
 
-        for name, data in portfolio.prices.items():
-            self.upsert_price(assets[name], data.dropna())
+        for symbol, data in portfolio.prices.items():
+            if assets:
+                symbol = assets[symbol]
+            self.upsert_price(symbol, data.dropna())
 
         return self
 

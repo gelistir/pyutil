@@ -1,7 +1,11 @@
-from pyutil.sql.base import Base
-from sqlalchemy.types import Enum
-import sqlalchemy as sq
 import enum as enum
+
+import pandas as pd
+import sqlalchemy as sq
+from sqlalchemy.orm import relationship
+from sqlalchemy.types import Enum
+
+from pyutil.sql.base import Base
 
 
 class FieldType(enum.Enum):
@@ -25,6 +29,7 @@ class DataType(enum.Enum):
     @property
     def value(self):
         # this is a bit of a hack, we are overriding the value attribute of the enum...
+        # otherwise we would get everytime the tuple of name and function back...
         return self.__v
 
     def __call__(self, *args):
@@ -38,6 +43,12 @@ class Field(Base):
     type = sq.Column(Enum(FieldType))
     result = sq.Column(Enum(DataType), nullable=False)
 
+    #_data = relationship("ReferenceData", collection_class=attribute_mapped_collection('product'), cascade="all, delete-orphan", backref="field")
+
+    #data = association_proxy('_data', 'value',
+    #                creator=lambda k, v: ReferenceData(product=k, content=v)
+    #            )
+
     def __repr__(self):
         return "{name}".format(name=self.name)
 
@@ -50,9 +61,13 @@ class Field(Base):
 
 class ReferenceData(Base):
     __tablename__ = "reference_data"
-    _field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey(Field._id), primary_key=True)
+    _field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey("reference_field.id"), primary_key=True)
     content = sq.Column(sq.String(200), nullable=False)
-    product_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), primary_key=True)
+    product_id = sq.Column("product_id", sq.Integer, sq.ForeignKey("productinterface.id"), primary_key=True)
+    field = relationship(Field)
+    #product = relationship("Product")
+    #field = relationship("Field", collection_class=attribute_mapped_collection('name'),
+    #                     cascade="all, delete-orphan", backref="data")
 
     def __repr__(self):
         return "{field} for {x}: {value}".format(field=self.field.name, value=self.content, x=self.product)
