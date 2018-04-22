@@ -4,7 +4,8 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.model.ref import Field, DataType
-from pyutil.sql.interfaces.symbol import Symbol, SymbolType, Portfolio
+from pyutil.sql.interfaces.symbol import Symbol, SymbolType
+from pyutil.sql.interfaces.portfolio import Portfolio
 from pyutil.sql.container import Portfolios, Assets, state
 from test.config import test_portfolio, read_frame
 
@@ -38,6 +39,7 @@ class TestDatabase(TestCase):
 
     def test_reference(self):
         f = pd.DataFrame(columns=["Field 1", "Field 2"], index=[self.s1, self.s2, self.s3], data=[[100, 200], [10, 20], [30, 40]])
+        f.index.names = ["Product"]
         x = self.assets.reference
         pdt.assert_frame_equal(f, x)
 
@@ -67,15 +69,3 @@ class TestDatabase(TestCase):
 
     def test_sector(self):
         print(self.portfolios.sector)
-
-# if __name__ == '__main__':
-#     x = TestDatabase()
-#     p = x.portfolios
-#     f = p.frames
-#
-#     #r = Report(session=test_session(), portfolio=test_portfolio())
-#     #r.state.to_csv("resources/state.csv")
-#     #f = frames(session=test_session())
-#
-#     for key, frame in f.items():
-#         frame.to_csv("../resources/{name}.csv".format(name=key))

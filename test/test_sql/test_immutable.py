@@ -3,6 +3,7 @@ from unittest import TestCase
 from pyutil.sql.immutable import ReadList
 from pyutil.sql.immutable import ReadDict
 
+
 class TestImmutable(TestCase):
     def test_list(self):
         x = ReadList([1,2,3], cls=int)

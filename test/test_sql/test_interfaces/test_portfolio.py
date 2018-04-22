@@ -1,7 +1,8 @@
 import pandas as pd
 from unittest import TestCase
 
-from pyutil.sql.interfaces.symbol import Symbol, SymbolType, Portfolio
+from pyutil.sql.interfaces.portfolio import Portfolio
+from pyutil.sql.interfaces.symbol import Symbol, SymbolType
 
 import pandas.util.testing as pdt
 
@@ -34,7 +35,6 @@ class TestPortfolio(TestCase):
         self.p.upsert_weight(symbol=self.s1, data={2: 0.5, 3: 0.5})
 
         pdt.assert_series_equal(self.p.nav, pd.Series({2: 1.0, 3: 1.05}))
-
 
     def test_portfolio(self):
         self.assertListEqual(self.s1.portfolio, [self.p])

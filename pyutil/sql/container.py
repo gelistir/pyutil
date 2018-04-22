@@ -1,7 +1,8 @@
 import pandas as pd
 
 from pyutil.sql.immutable import ReadList
-from pyutil.sql.interfaces.symbol import Symbol, Portfolio
+from pyutil.sql.interfaces.portfolio import Portfolio
+from pyutil.sql.interfaces.symbol import Symbol
 
 
 class Assets(ReadList):
@@ -10,7 +11,9 @@ class Assets(ReadList):
 
     @property
     def reference(self):
-        return pd.DataFrame({asset: pd.Series(asset.reference) for asset in self}).transpose()
+        x = pd.DataFrame({asset: pd.Series(asset.reference) for asset in self}).transpose()
+        x.index.names = ["Product"]
+        return x
 
     @property
     def internal(self):
@@ -25,7 +28,9 @@ class Assets(ReadList):
         return pd.DataFrame({"Group": pd.Series(self.group), "Internal": pd.Series(self.internal)})
 
     def history(self, field="PX_LAST"):
-        return pd.DataFrame({asset: asset.timeseries[field] for asset in self})
+        x = pd.DataFrame({asset: asset.timeseries[field] for asset in self})
+        x.index.names = ["Date"]
+        return x
 
 
 class Portfolios(ReadList):

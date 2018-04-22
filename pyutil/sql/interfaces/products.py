@@ -1,6 +1,5 @@
 import pandas as _pd
 import sqlalchemy as sq
-from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
@@ -19,8 +18,6 @@ class ProductInterface(Base):
 
     _refdata = relationship(ReferenceData, collection_class=attribute_mapped_collection("field"),
                             cascade="all, delete-orphan", backref="product")
-
-    #refdata = association_proxy('_refdata', 'value', creator=lambda k, v: ReferenceData(field=k, content=v))
 
     _timeseries = relationship(Timeseries, collection_class=attribute_mapped_collection('key'),
                                cascade="all, delete-orphan", backref="product", foreign_keys=[Timeseries.product_id])
@@ -56,7 +53,6 @@ class ProductInterface(Base):
             self._refdata[field] = r
         else:
             self._refdata[field].content = value
-
 
     def frame(self, name):
         return _pd.DataFrame({x.secondary: x.series for x in self._timeseries.values() if x.name == name and x.secondary})
