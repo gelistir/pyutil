@@ -50,14 +50,14 @@ class Strategy(Base):
     def assets(self):
         return self._portfolio.assets
 
-    def upsert(self, portfolio, days=0):
+    def upsert(self, portfolio, days=0, assets=None):
         if self._portfolio.last_valid:
             # this is tricky. as the portfolio object may not contain an index yet...
             last_valid = self._portfolio.last_valid
             # update the existing portfolio object, think about renaming upsert into update...
-            self._portfolio.upsert(portfolio=portfolio.truncate(before=last_valid - pd.DateOffset(days=days)))
+            self._portfolio.upsert(portfolio=portfolio.truncate(before=last_valid - pd.DateOffset(days=days)), assets=assets)
         else:
-            self._portfolio.upsert(portfolio=portfolio)
+            self._portfolio.upsert(portfolio=portfolio, assets=assets)
 
         return self._portfolio.portfolio
 
@@ -66,5 +66,5 @@ class Strategy(Base):
         return self._portfolio.portfolio
 
     @portfolio.setter
-    def portfolio(self, portfolio):
-        self._portfolio.upsert(portfolio=portfolio)
+    def portfolio(self, portfolio, assets=None):
+        self._portfolio.upsert(portfolio=portfolio, assets=assets)

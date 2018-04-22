@@ -7,6 +7,7 @@ from test.config import read_series
 from pyutil.performance.periods import periods, period_returns
 import pandas.util.testing as pdt
 
+
 class TestPeriods(TestCase):
     def test_periods(self):
         p = periods(today=pd.Timestamp("2015-05-01"))
@@ -23,7 +24,6 @@ class TestPeriods(TestCase):
         s = read_series("ts.csv", parse_dates=True).pct_change().dropna()
         y = period_returns(s, offset=periods(today=s.index[-1]))
         pdt.assert_series_equal(y, read_series("periods.csv", parse_dates=False), check_names=False)
-
 
     def test_period_returns_without_periods(self):
         s = read_series("ts.csv", parse_dates=True).pct_change().dropna()
