@@ -74,15 +74,13 @@ class Portfolio(ProductInterface):
     def nav(self):
         return self.portfolio.nav
 
-    @property
-    def sector(self):
+    def sector(self, total=False):
         map = {asset: asset.group.name for asset in self.symbols}
-        return self.portfolio.sector_weights(symbolmap=map, total=False)
+        return self.portfolio.sector_weights(symbolmap=map, total=total)
 
-    @property
-    def sector_tail(self):
+    def sector_tail(self, total=False):
         map = {asset: asset.group.name for asset in self.symbols}
-        w = self.portfolio.sector_weights(symbolmap=map, total=False)
+        w = self.portfolio.sector_weights(symbolmap=map, total=total)
         return w.loc[w.index[-1]]
 
     @property

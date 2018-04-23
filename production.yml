@@ -6,3 +6,5 @@ dependencies:
 - nomkl
 - requests
 - psycopg2
+- xlrd
+- xlsxwriter
