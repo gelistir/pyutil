@@ -38,6 +38,7 @@ class ProductInterface(Base):
                 return name, secondary
             else:
                 return name
+
         k = key(name, secondary)
 
         if k not in self._timeseries.keys():

@@ -31,10 +31,11 @@ class TestPortfolio(TestCase):
         self.assertTrue(self.p.empty)
         self.assertTrue(Portfolio(name="test2"))
 
-        self.p.upsert_price(symbol=self.s1, data={2: 10.0, 3: 11.0})
-        self.p.upsert_weight(symbol=self.s1, data={2: 0.5, 3: 0.5})
+        self.p.upsert_price(symbol=self.s1, data={pd.Timestamp("2012-05-05"): 10.0, pd.Timestamp("2012-05-07"): 11.0})
+        self.p.upsert_weight(symbol=self.s1, data={pd.Timestamp("2012-05-05"): 0.5, pd.Timestamp("2012-05-07"): 0.5})
 
-        pdt.assert_series_equal(self.p.nav, pd.Series({2: 1.0, 3: 1.05}))
+        pdt.assert_series_equal(self.p.nav, pd.Series({pd.Timestamp("2012-05-05"): 1.0, pd.Timestamp("2012-05-07"): 1.05}))
 
     def test_portfolio(self):
         self.assertListEqual(self.s1.portfolio, [self.p])
+

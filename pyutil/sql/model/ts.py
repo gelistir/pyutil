@@ -1,3 +1,5 @@
+import pandas as pd
+
 import pandas as _pd
 import sqlalchemy as sq
 
@@ -34,6 +36,7 @@ class Timeseries(Base):
 
     @property
     def series(self):
+        #print(type(list(self._data.keys())[0]))
         return _pd.Series({date: x.value for date, x in self._data.items()}).sort_index()
 
     def upsert(self, ts=None):

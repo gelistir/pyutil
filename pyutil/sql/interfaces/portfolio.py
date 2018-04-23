@@ -1,3 +1,5 @@
+import pandas as pd
+
 import sqlalchemy as sq
 from sqlalchemy.orm import relationship as _relationship
 
@@ -53,7 +55,7 @@ class Portfolio(ProductInterface):
     @property
     def portfolio(self):
         # does it work?
-        return _Portfolio(prices=self.price, weights=self.weight)
+        return _Portfolio(prices=self.price.sort_index(), weights=self.weight.sort_index())
 
     @property
     def last_valid(self):
@@ -64,11 +66,11 @@ class Portfolio(ProductInterface):
 
     @property
     def weight(self):
-        return self.frame(name="weight").sort_index()
+        return self.frame(name="weight").sort_index().rename(index=lambda x: pd.Timestamp(x))
 
     @property
     def price(self):
-        return self.frame(name="price").sort_index()
+        return self.frame(name="price").sort_index().rename(index=lambda x: pd.Timestamp(x))
 
     @property
     def nav(self):
