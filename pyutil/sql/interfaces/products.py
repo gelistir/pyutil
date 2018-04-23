@@ -56,4 +56,4 @@ class ProductInterface(Base):
             self._refdata[field].content = value
 
     def frame(self, name):
-        return _pd.DataFrame({x.secondary: x.series for x in self._timeseries.values() if x.name == name and x.secondary})
+        return _pd.DataFrame({x.secondary: x.series for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()

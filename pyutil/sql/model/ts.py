@@ -38,12 +38,14 @@ class Timeseries(Base):
     @property
     def series(self):
         x = _pd.Series({date: x.value for date, x in self._data.items()})
-        assert x.index.is_monotonic_increasing, "Price Index is not increasing"
         if not x.empty:
             if not isinstance(x.index[0], _pd.Timestamp):
                 x.rename(index=lambda a: _pd.Timestamp(a), inplace=True)
 
             assert isinstance(x.index[0], _pd.Timestamp), "Instance is {t}".format(t=type(x.index[0]))
+
+        x = x.sort_index()
+        assert x.index.is_monotonic_increasing, "Index is not increasing"
         return x
 
     def upsert(self, ts=None):
