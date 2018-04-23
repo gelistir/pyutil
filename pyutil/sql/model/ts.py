@@ -41,7 +41,7 @@ class Timeseries(Base):
         assert x.index.is_monotonic_increasing, "Price Index is not increasing"
         if not x.empty:
             if not isinstance(x.index[0], _pd.Timestamp):
-                x.rename(index=lambda a: _pd.Timestamp(a))
+                x.rename(index=lambda a: _pd.Timestamp(a), inplace=True)
 
             assert isinstance(x.index[0], _pd.Timestamp), "Instance is {t}".format(t=type(x.index[0]))
         return x
