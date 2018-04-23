@@ -3,7 +3,7 @@ import pandas as pd
 
 from pyutil.performance.summary import NavSeries, performance, fromNav
 from pyutil.timeseries.timeseries import adjust
-from test.config import read_series, resource
+from test.config import read_series
 
 import pandas.util.testing as pdt
 s = NavSeries(read_series("ts.csv", parse_dates=True))
@@ -97,3 +97,16 @@ class TestSummary(TestCase):
         self.assertListEqual(a["drawdown"], [])
         self.assertListEqual(a["volatility"], [])
 
+    def test_with_dates(self):
+        a = pd.Series({pd.Timestamp("2010-01-05").date(): 2.0,
+                       pd.Timestamp("2012-02-13").date(): 3.0,
+                       pd.Timestamp("2012-02-14").date(): 4.0
+                       })
+
+        n = NavSeries(a)
+        pdt.assert_series_equal(n.mtd_series, pd.Series({pd.Timestamp("2012-02-13"): 0.5, pd.Timestamp("2012-02-14"): 1.0/3.0}))
+        pdt.assert_series_equal(n.ytd_series, pd.Series({pd.Timestamp("2012-02-29"): 1.0}))
+
+        # we made 100% in Feb
+        self.assertEqual(n.mtd, 1.0)
+        self.assertEqual(n.ytd, 1.0)

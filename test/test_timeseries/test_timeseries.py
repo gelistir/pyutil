@@ -39,3 +39,8 @@ class TestTimeseries(TestCase):
         pdt.assert_series_equal(b, pd.Series({pd.Timestamp("2012-02-13").date(): 3.0,
                        pd.Timestamp("2012-02-14").date(): 4.0
                        }))
+
+        c = ytd(a, today=pd.Timestamp("2012-04-14").date())
+        pdt.assert_series_equal(c, pd.Series({pd.Timestamp("2012-02-13").date(): 3.0,
+                       pd.Timestamp("2012-02-14").date(): 4.0
+                       }))

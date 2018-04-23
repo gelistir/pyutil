@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from datetime import date
 
 import pandas as pd
 import numpy as np
@@ -27,6 +28,10 @@ def performance(nav, alpha=0.95, periods=None):
 class NavSeries(pd.Series):
     def __init__(self, *args, **kwargs):
         super(NavSeries, self).__init__(*args, **kwargs)
+        if not self.empty:
+            if isinstance(self.index[0], date):
+                self.rename(index=lambda x: pd.Timestamp(x), inplace=True)
+
 
     @staticmethod
     def _ser2arr(x, tz="CET"):
