@@ -10,6 +10,7 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from pyutil.sql.base import Base
 
 
+
 # time series data for a product
 class Timeseries(Base):
     __tablename__ = "ts_name"
@@ -39,6 +40,9 @@ class Timeseries(Base):
         x = _pd.Series({date: x.value for date, x in self._data.items()})
         assert x.index.is_monotonic_increasing, "Price Index is not increasing"
         if not x.empty:
+            if not isinstance(x.index[0], _pd.Timestamp):
+                x.rename(index=lambda a: _pd.Timestamp(a))
+
             assert isinstance(x.index[0], _pd.Timestamp), "Instance is {t}".format(t=type(x.index[0]))
         return x
 
