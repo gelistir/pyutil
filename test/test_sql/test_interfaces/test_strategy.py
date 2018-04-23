@@ -3,8 +3,7 @@ from unittest import TestCase
 
 from pyutil.sql.interfaces.portfolio import Portfolio
 from pyutil.sql.interfaces.symbol import Symbol
-
-from sql.interfaces.strategy import Strategy
+from pyutil.sql.interfaces.strategy import Strategy
 from test.config import resource
 
 
