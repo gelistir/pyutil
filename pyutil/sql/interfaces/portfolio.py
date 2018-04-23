@@ -23,39 +23,32 @@ class Portfolio(ProductInterface):
     symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio")
     name = sq.Column(sq.String, unique=True)
 
-    def upsert_price(self, symbol, data):
-        assert isinstance(symbol, Symbol)
-        if symbol not in self.symbols:
-            self.symbols.append(symbol)
-        self.upsert_ts(name="price", data=data, secondary=symbol)
-
-    def upsert_weight(self, symbol, data):
-        assert isinstance(symbol, Symbol)
-        if symbol not in self.symbols:
-            self.symbols.append(symbol)
-        self.upsert_ts(name="weight", data=data, secondary=symbol)
-
     @property
     def empty(self):
         return self.frame(name="price").empty and self.frame(name="weight").empty
 
     def upsert(self, portfolio, assets=None):
+        assert isinstance(portfolio, _Portfolio)
         for symbol, data in portfolio.weights.items():
             if assets:
                 symbol = assets[symbol]
-            self.upsert_weight(symbol, data.dropna())
+
+            if symbol not in self.symbols:
+                self.symbols.append(symbol)
+
+            self.upsert_ts(name="weight", secondary=symbol, data=data.dropna())
 
         for symbol, data in portfolio.prices.items():
             if assets:
                 symbol = assets[symbol]
-            self.upsert_price(symbol, data.dropna())
+            self.upsert_ts(name="price", secondary=symbol, data=data.dropna())
 
         return self
 
     @property
     def portfolio(self):
         # does it work?
-        return _Portfolio(prices=self.price.sort_index(), weights=self.weight.sort_index())
+        return _Portfolio(prices=self.price, weights=self.weight)
 
     @property
     def last_valid(self):
@@ -66,11 +59,11 @@ class Portfolio(ProductInterface):
 
     @property
     def weight(self):
-        return self.frame(name="weight").rename(index=lambda x: pd.Timestamp(x))
+        return self.frame(name="weight").rename(index=lambda x: pd.Timestamp(x)).sort_index()
 
     @property
     def price(self):
-        return self.frame(name="price").rename(index=lambda x: pd.Timestamp(x))
+        return self.frame(name="price").rename(index=lambda x: pd.Timestamp(x)).sort_index()
 
     @property
     def nav(self):
@@ -81,13 +74,8 @@ class Portfolio(ProductInterface):
         return self.portfolio.sector_weights(symbolmap=map, total=total)
 
     def sector_tail(self, total=False):
-        map = {asset: asset.group.name for asset in self.symbols}
-        w = self.portfolio.sector_weights(symbolmap=map, total=total)
-        return w.loc[w.index[-1]]
-
-    @property
-    def assets2(self):
-        return self.portfolio.assets
+        w=self.sector(total=total)
+        return w.loc[w.index[-1]].rename(None)
 
     def __lt__(self, other):
         return self.name < other.name

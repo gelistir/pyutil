@@ -30,9 +30,9 @@ class TestDatabase(TestCase):
         cls.s3.upsert_ref(f1, value="30")
         cls.s3.upsert_ref(f2, value="40")
 
-        cls.s1.upsert_ts(name="PX_LAST").upsert(ts=read_frame("price.csv")["A"])
-        cls.s2.upsert_ts(name="PX_LAST").upsert(ts=read_frame("price.csv")["B"])
-        cls.s3.upsert_ts(name="PX_LAST").upsert(ts=read_frame("price.csv")["C"])
+        cls.s1.upsert_ts(name="PX_LAST", data=read_frame("price.csv")["A"])
+        cls.s2.upsert_ts(name="PX_LAST", data=read_frame("price.csv")["B"])
+        cls.s3.upsert_ts(name="PX_LAST", data=read_frame("price.csv")["C"])
 
         cls.portfolios = Portfolios([p])
         cls.assets = Assets([cls.s1, cls.s2, cls.s3])

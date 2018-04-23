@@ -3,12 +3,11 @@ import pandas as pd
 import pandas as _pd
 import sqlalchemy as sq
 
-from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.sql.base import Base
-
+from datetime import date as datetype
 
 
 # time series data for a product
@@ -24,8 +23,6 @@ class Timeseries(Base):
 
     _data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'),
                          cascade="all, delete-orphan", backref="ts")
-
-    data = association_proxy("_data", "value", creator=lambda key, value: _TimeseriesData(date=key, value=value))
 
     def __init__(self, name=None, product=None, data=None, secondary=None):
         self.secondary = secondary
@@ -46,14 +43,21 @@ class Timeseries(Base):
 
         x = x.sort_index()
         assert x.index.is_monotonic_increasing, "Index is not increasing"
+        assert not x.index.has_duplicates, "Index has duplicates"
         return x
 
     def upsert(self, ts=None):
-        try:
+        if ts is not None:
             for date, value in ts.items():
-                self.data[date] = value
-        except AttributeError:
-            pass
+                assert isinstance(date, pd.Timestamp)
+                assert date.hour == 0
+                assert date.minute == 0
+                assert date.second == 0
+                d = date.date()
+                if d not in self._data.keys():
+                    self._data[d] = _TimeseriesData(date=d, value=value, ts=self)
+                else:
+                    self._data[d].value = value
 
         return self
 
@@ -75,7 +79,8 @@ class _TimeseriesData(Base):
     value = sq.Column(sq.Float)
     _ts_id = sq.Column("ts_id", sq.Integer, sq.ForeignKey(Timeseries.id), primary_key=True)
 
-    def __init__(self, date=None, value=None, ts=None):
+    def __init__(self, date, value, ts):
+        assert isinstance(date, datetype)
         self.date = date
         self.value = value
         self.ts = ts

@@ -41,9 +41,11 @@ class ProductInterface(Base):
 
         k = key(name, secondary)
 
+        # do we need a new timeseries object?
         if k not in self._timeseries.keys():
             self._timeseries[k] = Timeseries(name=name, product=self, secondary=secondary)
 
+        # now update the timeseries object
         return self._timeseries[k].upsert(data)
 
     def upsert_ref(self, field, value):
