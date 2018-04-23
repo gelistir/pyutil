@@ -15,8 +15,10 @@ class StrategyType(_enum.Enum):
     balanced = 'balanced'
     dynamic = 'dynamic'
 
+
 Portfolio._strategy_id = sq.Column("strategy_id", sq.Integer, sq.ForeignKey("strategiesapp_strategy.id"), nullable=True)
 Portfolio.strategy = _relationship("Strategy", back_populates="_portfolio")
+
 
 class Strategy(Base):
     __tablename__ = "strategiesapp_strategy"
@@ -42,9 +44,12 @@ class Strategy(Base):
         exec(compiled, module.__dict__)
         return module
 
-    def compute_portfolio(self, reader):
-        config = self.__module().Configuration(reader=reader)
-        return config.portfolio
+    def configuration(self, reader=None):
+        # Configuration only needs a reader to access the symbols...
+        # Reader is a function taking the name of an asset as a parameter
+        module = self.__module()
+        config = module.Configuration(reader=reader)
+        return config
 
     @property
     def assets(self):
@@ -64,7 +69,3 @@ class Strategy(Base):
     @property
     def portfolio(self):
         return self._portfolio.portfolio
-
-    @portfolio.setter
-    def portfolio(self, portfolio, assets=None):
-        self._portfolio.upsert(portfolio=portfolio, assets=assets)

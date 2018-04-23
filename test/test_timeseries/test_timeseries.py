@@ -27,3 +27,15 @@ class TestTimeseries(TestCase):
         pdt.assert_series_equal(consecutive(x), pd.Series(index=x.index, data=[1, 0, 0, 1, 2, 3, 0, 0, 1, 2]))
 
 
+    def test_mtd_date(self):
+        # works also for dates
+        a = pd.Series({pd.Timestamp("2010-01-05").date(): 2.0,
+                       pd.Timestamp("2012-02-13").date(): 3.0,
+                       pd.Timestamp("2012-02-14").date(): 4.0
+                       })
+
+
+        b = mtd(a, today=pd.Timestamp("2012-02-14").date())
+        pdt.assert_series_equal(b, pd.Series({pd.Timestamp("2012-02-13").date(): 3.0,
+                       pd.Timestamp("2012-02-14").date(): 4.0
+                       }))

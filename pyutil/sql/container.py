@@ -32,6 +32,8 @@ class Assets(ReadList):
         x.index.names = ["Date"]
         return x
 
+    def to_dict(self):
+        return {asset.bloomberg_symbol: asset for asset in self}
 
 class Portfolios(ReadList):
     def __init__(self, seq):

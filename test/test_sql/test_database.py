@@ -52,9 +52,6 @@ class TestDatabase(TestCase):
     def test_mtd(self):
         self.assertAlmostEqual(self.portfolios.mtd["Apr 02"]["Peter"], 0.000838, places=5)
 
-    # def test_sector(self):
-    #    self.assertAlmostEqual(self.db.sector["equities"]["Peter"], 0.135671, places=5)
-
     def test_recent(self):
         self.assertAlmostEqual(self.portfolios.recent(n=10)["Apr 21"]["Peter"], 0.002367, places=5)
 

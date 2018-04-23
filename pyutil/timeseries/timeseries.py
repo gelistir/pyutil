@@ -1,3 +1,5 @@
+from datetime import date
+
 import pandas as pd
 
 
@@ -13,7 +15,7 @@ def adjust(ts: pd.Series) -> pd.Series:
     return c / c[c.index[0]]
 
 
-def ytd(ts: pd.Series, today=None)->pd.Series:
+def ytd(ts: pd.Series, today=None) -> pd.Series:
     """
     Extract year to date of a series or a frame
 
@@ -23,7 +25,6 @@ def ytd(ts: pd.Series, today=None)->pd.Series:
     :return: ts or frame starting at the first day of today's year
     """
     today = today or pd.Timestamp("today")
-    assert isinstance(ts.index[0], pd.Timestamp)
     first_day_of_year = (today + pd.offsets.YearBegin(-1)).date()
     last_day_of_month = (today + pd.offsets.MonthEnd(0)).date()
     return ts.truncate(before=first_day_of_year, after=last_day_of_month)
@@ -39,14 +40,23 @@ def mtd(ts: pd.Series, today=None) -> pd.Series:
     :return: ts or frame starting at the first day of today's month
     """
     today = today or pd.Timestamp("today")
-    assert isinstance(ts.index[0], pd.Timestamp)
     first_day_of_month = (today + pd.offsets.MonthBegin(-1)).date()
     return ts.truncate(before=first_day_of_month, after=today)
 
 
-def consecutive(ts: pd.Series)->pd.Series:
-    d = pd.Series(index = ts.index)
+def consecutive(ts: pd.Series) -> pd.Series:
+    d = pd.Series(index=ts.index)
     last = 0
-    for i,t in ts.items():
+    for i, t in ts.items():
         d[i], last = (last + 1, last + 1) if t else (0, 0)
     return d.apply(int)
+
+
+def _to_date(ts):
+    return ts.rename(index=lambda x: x.date())
+
+
+def _to_datetime(ts):
+    return ts.rename(index=lambda x: pd.Timestamp(x))
+
+    #ts.index = [a.date() for a in ts.index]

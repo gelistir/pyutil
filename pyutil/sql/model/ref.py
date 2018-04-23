@@ -58,6 +58,9 @@ class Field(Base):
     def __hash__(self):
         return hash(str(self.name))
 
+    def __repr__(self):
+        return "(field)".format(field=self.name)
+
 
 class ReferenceData(Base):
     __tablename__ = "reference_data"
