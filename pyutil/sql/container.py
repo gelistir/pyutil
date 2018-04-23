@@ -73,21 +73,16 @@ class Portfolios(ReadList):
         frame = pd.DataFrame({portfolio.name: portfolio.nav.summary() for portfolio in self}).sort_index(ascending=False)
         return frame.transpose()
 
-    @property
-    def sector(self):
-        p = self[0]
-        print(p.sector_tail)
-
-        frame = pd.DataFrame({portfolio.name: portfolio.sector_tail for portfolio in self})
+    def sector(self, total=False):
+        frame = pd.DataFrame({portfolio.name: portfolio.sector_tail(total=total) for portfolio in self})
         return frame.transpose()
 
 
-    @property
-    def frames(self):
+    def frames(self, total=False):
         return {"recent": self.recent(),
             "ytd": self.ytd,
             "mtd": self.mtd,
-            "sector": self.sector,
+            "sector": self.sector(total=total),
             "periods": self.period_returns,
             "performance": self.performance}
 
