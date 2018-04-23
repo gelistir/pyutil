@@ -64,11 +64,11 @@ class Portfolio(ProductInterface):
 
     @property
     def weight(self):
-        return self.frame(name="weight")
+        return self.frame(name="weight").sort_index()
 
     @property
     def price(self):
-        return self.frame(name="price")
+        return self.frame(name="price").sort_index()
 
     @property
     def nav(self):

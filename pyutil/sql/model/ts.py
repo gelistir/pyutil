@@ -34,7 +34,7 @@ class Timeseries(Base):
 
     @property
     def series(self):
-        return _pd.Series({date: x.value for date, x in self._data.items()})
+        return _pd.Series({date: x.value for date, x in self._data.items()}).sort_index()
 
     def upsert(self, ts=None):
         try:

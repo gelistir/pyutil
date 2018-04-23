@@ -70,7 +70,7 @@ class Portfolio(object):
     def __init__(self, prices, weights=None):
         # if you don't specify any weights, we initialize them with nan
         if weights is None:
-            weights = pd.DataFrame(index=prices.index, columns=prices.keys(), data=np.nan)
+            weights = pd.DataFrame(index=prices.index, columns=prices.keys(), data=0.0)
 
         # If weights is a Series, each weight per asset!
         if isinstance(weights, pd.Series):
