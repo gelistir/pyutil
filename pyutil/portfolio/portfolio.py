@@ -308,4 +308,8 @@ class Portfolio(object):
         weights["Gap"] = 100.0 * (self.weights.loc[today] - p.weights.loc[today])
         return weights
 
-
+    def last_valid_index(self):
+        try:
+            return self.index[-1]
+        except:
+            return None

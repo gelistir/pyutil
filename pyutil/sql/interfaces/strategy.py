@@ -56,18 +56,15 @@ class Strategy(Base):
         return self._portfolio.assets
 
     def upsert(self, portfolio, days=0, assets=None):
-        last_valid = self._portfolio.last_valid
-        if last_valid:
-            # this is tricky. as the portfolio object may not contain an index yet...
-            # last_valid = self._portfolio.last_valid
-            # update the existing portfolio object, think about renaming upsert into update...
-            p = portfolio.truncate(before=last_valid - pd.DateOffset(days=days))
+        if not self._portfolio.empty:
 
+            p = portfolio.truncate(before=self.portfolio.last_valid_index() - pd.DateOffset(days=days))
             self._portfolio.upsert(portfolio=p, assets=assets)
+
         else:
             self._portfolio.upsert(portfolio=portfolio, assets=assets)
 
-        return self._portfolio.portfolio
+        return self.portfolio
         # todo: make strategy a ProductInterface
         # todo: update nav right here...
 

@@ -1,5 +1,3 @@
-import pandas as pd
-
 import sqlalchemy as sq
 from sqlalchemy.orm import relationship as _relationship
 
@@ -8,9 +6,9 @@ from pyutil.sql.interfaces.products import ProductInterface, Base
 from pyutil.sql.interfaces.symbol import Symbol
 
 _association_table = sq.Table('association', Base.metadata,
-                            sq.Column('symbol_id', sq.Integer, sq.ForeignKey('symbolsapp_symbol.id')),
-                            sq.Column('portfolio_id', sq.Integer, sq.ForeignKey('portfolio2.id'))
-                               )
+                              sq.Column('symbol_id', sq.Integer, sq.ForeignKey('symbolsapp_symbol.id')),
+                              sq.Column('portfolio_id', sq.Integer, sq.ForeignKey('portfolio2.id'))
+                              )
 
 Symbol.portfolio = _relationship("Portfolio", secondary=_association_table, back_populates="symbols")
 
@@ -50,20 +48,20 @@ class Portfolio(ProductInterface):
         # does it work?
         return _Portfolio(prices=self.price, weights=self.weight)
 
-    @property
-    def last_valid(self):
-        try:
-            return self.portfolio.index[-1]
-        except:
-            return None
+    # @property
+    # def last_valid(self):
+    #    try:
+    #        return self.portfolio.index[-1]
+    #    except:
+    #        return None
 
     @property
     def weight(self):
-        return self.frame(name="weight").rename(index=lambda x: pd.Timestamp(x)).sort_index()
+        return self.frame(name="weight")  # .rename(index=lambda x: pd.Timestamp(x)).sort_index()
 
     @property
     def price(self):
-        return self.frame(name="price").rename(index=lambda x: pd.Timestamp(x)).sort_index()
+        return self.frame(name="price")  # .sort_index()
 
     @property
     def nav(self):
@@ -74,7 +72,7 @@ class Portfolio(ProductInterface):
         return self.portfolio.sector_weights(symbolmap=map, total=total)
 
     def sector_tail(self, total=False):
-        w=self.sector(total=total)
+        w = self.sector(total=total)
         return w.loc[w.index[-1]].rename(None)
 
     def __lt__(self, other):

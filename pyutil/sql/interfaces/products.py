@@ -52,8 +52,7 @@ class ProductInterface(Base):
         assert isinstance(field, Field)
 
         if field not in self._refdata.keys():
-            r = ReferenceData(field=field, product=self, content=value)
-            self._refdata[field] = r
+            self._refdata[field] = ReferenceData(field=field, product=self, content=value)
         else:
             self._refdata[field].content = value
 

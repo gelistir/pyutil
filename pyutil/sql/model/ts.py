@@ -36,24 +36,32 @@ class Timeseries(Base):
     def series(self):
         x = _pd.Series({date: x.value for date, x in self._data.items()})
         if not x.empty:
-            if not isinstance(x.index[0], _pd.Timestamp):
-                x.rename(index=lambda a: _pd.Timestamp(a), inplace=True)
+            # we read date from database!
+            #if not isinstance(x.index[0], _pd.Timestamp):
+            x = x.rename(index=lambda a: _pd.Timestamp(a)).sort_index()
 
-            assert isinstance(x.index[0], _pd.Timestamp), "Instance is {t}".format(t=type(x.index[0]))
+            #assert isinstance(x.index[0], _pd.Timestamp), "Instance is {t}".format(t=type(x.index[0]))
 
-        x = x.sort_index()
-        assert x.index.is_monotonic_increasing, "Index is not increasing"
-        assert not x.index.has_duplicates, "Index has duplicates"
+            #x = x.sort_index()
+            assert x.index.is_monotonic_increasing, "Index is not increasing"
+            assert not x.index.has_duplicates, "Index has duplicates"
         return x
 
     def upsert(self, ts=None):
         if ts is not None:
             for date, value in ts.items():
-                assert isinstance(date, pd.Timestamp)
-                assert date.hour == 0
-                assert date.minute == 0
-                assert date.second == 0
-                d = date.date()
+                if isinstance(date, pd.Timestamp):
+                    assert date.hour == 0
+                    assert date.minute == 0
+                    assert date.second == 0
+                    d = date.date()
+
+                elif isinstance(date, datetype):
+                    d = date
+
+                else:
+                    raise AssertionError("The index has to be a datetime or date object")
+
                 if d not in self._data.keys():
                     self._data[d] = _TimeseriesData(date=d, value=value, ts=self)
                 else:

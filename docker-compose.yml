@@ -5,8 +5,6 @@ services:
        context: .
        dockerfile: Dockerfile
      volumes:
-        - ./examples:/pyutil/examples
-        - ./results:/pyutil/results
         - ./pyutil:/pyutil/pyutil
         - ./sandbox:/pyutil/sandbox
      extra_hosts:
