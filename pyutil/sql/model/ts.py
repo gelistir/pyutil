@@ -36,8 +36,11 @@ class Timeseries(Base):
 
     @property
     def series(self):
-        #print(type(list(self._data.keys())[0]))
-        return _pd.Series({date: x.value for date, x in self._data.items()}).sort_index()
+        x = _pd.Series({date: x.value for date, x in self._data.items()})
+        assert x.index.is_monotonic_increasing, "Price Index is not increasing"
+        if not x.empty:
+            assert isinstance(x.index[0], _pd.Timestamp), "Instance is {t}".format(t=type(x.index[0]))
+        return x
 
     def upsert(self, ts=None):
         try:

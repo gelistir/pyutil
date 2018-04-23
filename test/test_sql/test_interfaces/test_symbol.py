@@ -1,3 +1,4 @@
+import pandas as pd
 from unittest import TestCase
 
 from pyutil.sql.model.ref import Field, FieldType, DataType
@@ -15,13 +16,13 @@ class TestSymbol(TestCase):
         cls.p1.upsert_ref(cls.f1, value="100")
         cls.p1.upsert_ref(cls.f1, value="200")
 
-        cls.p1.upsert_ts(name="price", data={2: 10.0})
+        cls.p1.upsert_ts(name="price", data={pd.Timestamp("12-11-1978"): 10.0})
 
     def test_reference(self):
         self.assertEqual(self.p1.reference["x"], 200)
 
     def test_timeseries(self):
-        self.assertEqual(self.p1.timeseries["price"][2], 10.0)
+        self.assertEqual(self.p1.timeseries["price"][pd.Timestamp("12-11-1978")], 10.0)
 
     def test_portfolio(self):
         self.assertListEqual(self.p1.portfolio, [])

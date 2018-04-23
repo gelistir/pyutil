@@ -66,11 +66,11 @@ class Portfolio(ProductInterface):
 
     @property
     def weight(self):
-        return self.frame(name="weight").sort_index().rename(index=lambda x: pd.Timestamp(x))
+        return self.frame(name="weight").rename(index=lambda x: pd.Timestamp(x))
 
     @property
     def price(self):
-        return self.frame(name="price").sort_index().rename(index=lambda x: pd.Timestamp(x))
+        return self.frame(name="price").rename(index=lambda x: pd.Timestamp(x))
 
     @property
     def nav(self):

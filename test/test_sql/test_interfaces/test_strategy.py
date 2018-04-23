@@ -29,3 +29,11 @@ class TestStrategy(TestCase):
             p.upsert(portfolio, assets=assets)
 
             self.assertEqual(s._portfolio.last_valid, pd.Timestamp("2015-04-22"))
+
+            p.upsert(portfolio.tail(5), assets=assets)
+
+            s.upsert(3*portfolio.tail(5), days=3, assets=assets)
+
+
+            print(p.portfolio.weights.tail(10))
+

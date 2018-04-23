@@ -16,8 +16,8 @@ class TestProductInterface(TestCase):
         cls.f1 = Field(name="x", type=FieldType.dynamic, result=DataType.integer)
 
     def test_timeseries(self):
-        self.p1.upsert_ts(name="correlation", data={2: 0.5}, secondary=self.p2)
-        self.p1.upsert_ts(name="price", data={2: 10.0})
+        self.p1.upsert_ts(name="correlation", data={pd.Timestamp("12-11-1978"): 0.5}, secondary=self.p2)
+        self.p1.upsert_ts(name="price", data={pd.Timestamp("12-11-1978"): 10.0})
 
         self.assertSetEqual(set(self.p1._timeseries.keys()), set(self.p1.timeseries.keys()))
         self.assertTrue("price" in self.p1.timeseries.keys())
@@ -25,7 +25,7 @@ class TestProductInterface(TestCase):
 
         # test the frame
         self.assertTrue(self.p1.frame("price").empty)
-        pdt.assert_frame_equal(self.p1.frame("correlation"), pd.DataFrame(index=[2], columns=[self.p2], data=[[0.5]]))
+        pdt.assert_frame_equal(self.p1.frame("correlation"), pd.DataFrame(index=[pd.Timestamp("12-11-1978")], columns=[self.p2], data=[[0.5]]))
 
         self.assertTrue(self.p1.frame("NoNoNo").empty)
 
