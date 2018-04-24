@@ -7,6 +7,7 @@ from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.interfaces.portfolio import Portfolio
 from pyutil.sql.interfaces.products import Base
+from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 
 
 class StrategyType(_enum.Enum):
@@ -30,7 +31,7 @@ class Strategy(Base):
     _portfolio = _relationship(Portfolio, uselist=False, back_populates="strategy")
     type = sq.Column(_Enum(StrategyType))
 
-    def __init__(self, name, active=True, source=""):
+    def __init__(self, name, active=True, source="", type=StrategyType.conservative):
         self.name = name
         self._portfolio = Portfolio(name=self.name, strategy=self)
         self.active = active
@@ -51,11 +52,10 @@ class Strategy(Base):
         config = module.Configuration(reader=reader)
         return config
 
-    @property
-    def assets(self):
-        return self._portfolio.assets
-
     def upsert(self, portfolio, days=0, assets=None):
+
+        assert isinstance(portfolio, _Portfolio)
+
         if not self._portfolio.empty:
 
             p = portfolio.truncate(before=self.portfolio.last_valid_index() - pd.DateOffset(days=days))

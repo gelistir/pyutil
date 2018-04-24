@@ -22,4 +22,15 @@ class TestReference(TestCase):
 
         self.p2.upsert_ref(field=self.f1, value="110")
 
+    def test_datatype(self):
+        x = DataType.integer
+        self.assertEqual(x.value, "integer")
+        self.assertEqual(x("120"), 120)
+
+    def test_field(self):
+        f1 = Field(name="Peter", type=FieldType.dynamic, result=DataType.string)
+        self.assertEqual(str(f1), "(Peter)")
+
+        self.p1.upsert_ref(field=f1, value="Maffay")
+
 

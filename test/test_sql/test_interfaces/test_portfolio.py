@@ -53,4 +53,8 @@ class TestPortfolio(TestCase):
         print(self.p.sector_tail())
         #todo: fill up
 
+    def test_lt(self):
+        p1 = Portfolio(name="A")
+        p2 = Portfolio(name="B")
+        self.assertTrue(p1 < p2)
 

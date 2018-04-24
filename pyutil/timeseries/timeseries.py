@@ -1,5 +1,3 @@
-from datetime import date
-
 import pandas as pd
 
 
@@ -50,13 +48,3 @@ def consecutive(ts: pd.Series) -> pd.Series:
     for i, t in ts.items():
         d[i], last = (last + 1, last + 1) if t else (0, 0)
     return d.apply(int)
-
-
-def _to_date(ts):
-    return ts.rename(index=lambda x: x.date())
-
-
-def _to_datetime(ts):
-    return ts.rename(index=lambda x: pd.Timestamp(x))
-
-    #ts.index = [a.date() for a in ts.index]

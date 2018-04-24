@@ -3,8 +3,10 @@ from unittest import TestCase
 
 from pyutil.sql.interfaces.portfolio import Portfolio
 from pyutil.sql.interfaces.symbol import Symbol
-from pyutil.sql.interfaces.strategy import Strategy
-from test.config import resource
+from pyutil.sql.interfaces.strategy import Strategy, StrategyType
+from pyutil.sql.container import Assets
+from test.config import resource, test_portfolio
+import pandas.util.testing as pdt
 
 
 class TestStrategy(TestCase):
@@ -36,3 +38,11 @@ class TestStrategy(TestCase):
 
             print(p.portfolio.weights.tail(10))
 
+    def test_upsert(self):
+        s = Strategy(name="Maffay", active=True, source="", type=StrategyType.dynamic)
+        p = Portfolio(name="test")
+        assets = Assets([Symbol(bloomberg_symbol=asset) for asset in ["A", "B", "C", "D", "E", "F", "G"]])
+
+        x = s.upsert(test_portfolio(), assets=assets.to_dict())
+        pdt.assert_frame_equal(x.weights.rename(columns=lambda x: x.bloomberg_symbol), test_portfolio().weights)
+        pdt.assert_frame_equal(x.prices.rename(columns=lambda x: x.bloomberg_symbol), test_portfolio().prices)

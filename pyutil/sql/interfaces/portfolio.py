@@ -48,20 +48,13 @@ class Portfolio(ProductInterface):
         # does it work?
         return _Portfolio(prices=self.price, weights=self.weight)
 
-    # @property
-    # def last_valid(self):
-    #    try:
-    #        return self.portfolio.index[-1]
-    #    except:
-    #        return None
-
     @property
     def weight(self):
-        return self.frame(name="weight")  # .rename(index=lambda x: pd.Timestamp(x)).sort_index()
+        return self.frame(name="weight")
 
     @property
     def price(self):
-        return self.frame(name="price")  # .sort_index()
+        return self.frame(name="price")
 
     @property
     def nav(self):

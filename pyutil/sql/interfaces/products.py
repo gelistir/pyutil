@@ -5,7 +5,7 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.sql.base import Base
 from pyutil.sql.immutable import ReadDict
-from pyutil.sql.model.ref import ReferenceData, Field
+from pyutil.sql.model.ref import _ReferenceData, Field
 from pyutil.sql.model.ts import Timeseries
 
 
@@ -16,7 +16,7 @@ class ProductInterface(Base):
 
     __mapper_args__ = {"polymorphic_on": discriminator}
 
-    _refdata = relationship(ReferenceData, collection_class=attribute_mapped_collection("field"),
+    _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
                             cascade="all, delete-orphan", backref="product")
 
     _timeseries = relationship(Timeseries, collection_class=attribute_mapped_collection('key'),
@@ -52,7 +52,7 @@ class ProductInterface(Base):
         assert isinstance(field, Field)
 
         if field not in self._refdata.keys():
-            self._refdata[field] = ReferenceData(field=field, product=self, content=value)
+            self._refdata[field] = _ReferenceData(field=field, product=self, content=value)
         else:
             self._refdata[field].content = value
 

@@ -10,7 +10,7 @@ from pyutil.sql.container import Portfolios, Assets, state
 from test.config import test_portfolio, read_frame
 
 
-class TestDatabase(TestCase):
+class TestContainer(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.s1 = Symbol(bloomberg_symbol="A", group=SymbolType.equities, internal="A")
@@ -64,5 +64,11 @@ class TestDatabase(TestCase):
     def test_state(self):
         print(state(self.portfolios[0]))
 
+    def test_to_dict(self):
+        self.assertDictEqual(self.assets.to_dict(), {"A": self.s1, "B": self.s2, "C": self.s3})
+
     def test_sector(self):
-        print(self.portfolios.sector)
+        self.assertAlmostEqual(self.portfolios.sector(total=True)["equities"]["Peter"], 0.135671, places=5)
+
+    def test_frames(self):
+        self.assertSetEqual(set(self.portfolios.frames().keys()), {"recent","ytd","mtd","sector","periods","performance"})

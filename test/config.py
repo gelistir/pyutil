@@ -4,6 +4,7 @@ import pandas as pd
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.performance.summary import NavSeries
 
+pd.options.display.width = 300
 
 
 def resource(name):
@@ -16,7 +17,8 @@ def read_frame(name, parse_dates=True, index_col=0):
 
 
 def read_series(name, parse_dates=True, index_col=0, cname=None):
-    return pd.read_csv(resource(name), index_col=index_col, header=None, squeeze=True, parse_dates=parse_dates, names=[cname])
+    return pd.read_csv(resource(name), index_col=index_col, header=None, squeeze=True, parse_dates=parse_dates,
+                       names=[cname])
 
 
 def test_portfolio():
@@ -44,5 +46,3 @@ if __name__ == '__main__':
     ts.monthlytable.to_csv(resource("monthtable.csv"))
 
     ts.period_returns.to_csv(resource("periods.csv"))
-
-

@@ -26,11 +26,5 @@ class Symbol(ProductInterface):
     def __repr__(self):
         return "({name})".format(name=self.bloomberg_symbol)
 
-    def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.bloomberg_symbol == other.bloomberg_symbol
-
-    def __hash__(self):
-        return hash(str(self.bloomberg_symbol))
-
     def __lt__(self, other):
         return self.bloomberg_symbol < other.bloomberg_symbol

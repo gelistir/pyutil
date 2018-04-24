@@ -37,12 +37,7 @@ class Timeseries(Base):
         x = _pd.Series({date: x.value for date, x in self._data.items()})
         if not x.empty:
             # we read date from database!
-            #if not isinstance(x.index[0], _pd.Timestamp):
             x = x.rename(index=lambda a: _pd.Timestamp(a)).sort_index()
-
-            #assert isinstance(x.index[0], _pd.Timestamp), "Instance is {t}".format(t=type(x.index[0]))
-
-            #x = x.sort_index()
             assert x.index.is_monotonic_increasing, "Index is not increasing"
             assert not x.index.has_duplicates, "Index has duplicates"
         return x
