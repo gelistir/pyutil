@@ -34,7 +34,7 @@ class NavSeries(pd.Series):
 
 
     @staticmethod
-    def _ser2arr(x, tz="CET"):
+    def _ser2arr(x, tz=None):
         """ convert a pandas series into an array suitable for HighCharts """
 
         def _f(x):
@@ -274,9 +274,9 @@ class NavSeries(pd.Series):
         a.index = a.index[:-1].append(pd.DatetimeIndex([self.index[-1]]))
         return a
 
-    def to_dictionary(self, name, **kwargs):
-        return {**{"nav": self._ser2arr(self), "drawdown": self._ser2arr(self.drawdown),
-                "volatility": self._ser2arr(self.ewm_volatility()), "name": name}, **kwargs}
+    def to_dictionary(self, name, tz=None, **kwargs):
+        return {**{"nav": self._ser2arr(self, tz=tz), "drawdown": self._ser2arr(self.drawdown, tz=tz),
+                "volatility": self._ser2arr(self.ewm_volatility(), tz=tz), "name": name}, **kwargs}
 
 
 

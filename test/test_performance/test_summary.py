@@ -6,6 +6,7 @@ from pyutil.timeseries.timeseries import adjust
 from test.config import read_series
 
 import pandas.util.testing as pdt
+
 s = NavSeries(read_series("ts.csv", parse_dates=True))
 
 
@@ -17,20 +18,20 @@ class TestSummary(TestCase):
 
     def test_summary(self):
         pdt.assert_series_equal(s.summary().apply(str), read_series("summary.csv").apply(str), check_names=False)
-        x = NavSeries(pd.Series(index=[pd.Timestamp("2017-01-04"),pd.Timestamp("2017-02-06")], data=[1.0,1.02]))
+        x = NavSeries(pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-02-06")], data=[1.0, 1.02]))
         self.assertAlmostEqual(float(x.summary()["Annua Return"]), 22.0, places=10)
 
     def test_autocorrelation(self):
         self.assertAlmostEqual(s.autocorrelation, 0.070961153249184269, places=10)
 
     def test_mtd(self):
-        self.assertAlmostEqual(100*s.mtd, 1.4133604922211385, places=10)
-        x = pd.Series(index=[pd.Timestamp("2017-01-04"),pd.Timestamp("2017-01-06")], data=[1.0,1.6])
+        self.assertAlmostEqual(100 * s.mtd, 1.4133604922211385, places=10)
+        x = pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-01-06")], data=[1.0, 1.6])
         self.assertAlmostEqual(NavSeries(x).mtd, 0.6, places=10)
 
     def test_ytd(self):
-        self.assertAlmostEqual(100*s.ytd, 2.1718996734564122, places=10)
-        x = pd.Series(index=[pd.Timestamp("2017-01-04"),pd.Timestamp("2017-03-06")], data=[1.0,1.6])
+        self.assertAlmostEqual(100 * s.ytd, 2.1718996734564122, places=10)
+        x = pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-03-06")], data=[1.0, 1.6])
         self.assertAlmostEqual(NavSeries(x).mtd, 0.6, places=10)
 
     def test_monthly_table(self):
@@ -59,12 +60,12 @@ class TestSummary(TestCase):
 
     def test_weekly(self):
         self.assertEqual(len(s.weekly.index), 70)
-        #print(s.daily)
-        #self.assertEqual(len(s.daily.index), 477)
+        # print(s.daily)
+        # self.assertEqual(len(s.daily.index), 477)
 
     def test_annual_returns(self):
         aaa = adjust(s)
-        #print(aaa.truncate(after=pd.Timestamp("2015-01-01")))
+        # print(aaa.truncate(after=pd.Timestamp("2015-01-01")))
 
         xx = s.annual_returns
         print(xx)
@@ -78,7 +79,7 @@ class TestSummary(TestCase):
         self.assertAlmostEqual(x.autocorrelation, 0.070961153249184269, places=10)
 
     def test_periods(self):
-        p=s.period_returns
+        p = s.period_returns
         self.assertAlmostEqual(p.loc["Three Years"], 0.011645579858904798, places=10)
 
     def test_drawdown_periods(self):
@@ -104,9 +105,25 @@ class TestSummary(TestCase):
                        })
 
         n = NavSeries(a)
-        pdt.assert_series_equal(n.mtd_series, pd.Series({pd.Timestamp("2012-02-13"): 0.5, pd.Timestamp("2012-02-14"): 1.0/3.0}))
+        pdt.assert_series_equal(n.mtd_series,
+                                pd.Series({pd.Timestamp("2012-02-13"): 0.5, pd.Timestamp("2012-02-14"): 1.0 / 3.0}))
         pdt.assert_series_equal(n.ytd_series, pd.Series({pd.Timestamp("2012-02-29"): 1.0}))
 
         # we made 100% in Feb
         self.assertEqual(n.mtd, 1.0)
         self.assertEqual(n.ytd, 1.0)
+
+    def test_to_dictinoary(self):
+        a = pd.Series({pd.Timestamp("2010-01-05"): 2.0,
+                       pd.Timestamp("2012-02-13"): 3.0,
+                       pd.Timestamp("2012-02-14"): 4.0})
+
+        x = NavSeries._ser2arr(a, tz=None)
+        y = NavSeries._ser2arr(a, tz="CET")
+
+        r1 = pd.Series({pd.Timestamp(a * 1e6): b for a, b in x})
+        r2 = pd.Series({pd.Timestamp(a * 1e6, tz="CET"): b for a, b in y})
+
+        pdt.assert_series_equal(a, r1)
+        # this second statement is not true as r2 has tz information
+        # pdt.assert_series_equal(a, r2)
