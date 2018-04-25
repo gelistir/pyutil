@@ -38,10 +38,11 @@ class Assets(ReadList):
 class Portfolios(ReadList):
     def __init__(self, seq):
         super().__init__(seq, Portfolio)
+        self.__portfolio = {portfolio.name : portfolio.nav for portfolio in self}
 
     @property
     def mtd(self):
-        frame = pd.DataFrame({portfolio.name: portfolio.nav.mtd_series for portfolio in self}).sort_index(ascending=False)
+        frame = pd.DataFrame({key: item.mtd_series for key, item in self.__portfolio.items()}).sort_index(ascending=False)
         frame.index = [a.strftime("%b %d") for a in frame.index]
         frame = frame.transpose()
         frame["total"] = (frame + 1).prod(axis=1) - 1
@@ -49,14 +50,14 @@ class Portfolios(ReadList):
 
     @property
     def ytd(self):
-        frame = pd.DataFrame({portfolio.name: portfolio.nav.ytd_series for portfolio in self}).sort_index(ascending=False)
+        frame = pd.DataFrame({key: item.ytd_series for key, item in self.__portfolio.items()}).sort_index(ascending=False)
         frame.index = [a.strftime("%b") for a in frame.index]
         frame = frame.transpose()
         frame["total"] = (frame + 1).prod(axis=1) - 1
         return frame
 
     def recent(self, n=15):
-        frame = pd.DataFrame({portfolio.name: portfolio.nav.recent() for portfolio in self}).sort_index(ascending=False)
+        frame = pd.DataFrame({key: item.recent() for key, item in self.__portfolio.items()}).sort_index(ascending=False)
         frame.index = [a.strftime("%b %d") for a in frame.index]
         frame = frame.head(n)
         frame = frame.transpose()
@@ -65,12 +66,12 @@ class Portfolios(ReadList):
 
     @property
     def period_returns(self):
-        frame = pd.DataFrame({portfolio.name: portfolio.nav.period_returns for portfolio in self}).sort_index(ascending=False)
+        frame = pd.DataFrame({key: item.period_returns for key, item in self.__portfolio.items()}).sort_index(ascending=False)
         return frame.transpose()
 
     @property
     def performance(self):
-        frame = pd.DataFrame({portfolio.name: portfolio.nav.summary() for portfolio in self}).sort_index(ascending=False)
+        frame = pd.DataFrame({key: item.summary() for key, item in self.__portfolio.items()}).sort_index(ascending=False)
         return frame.transpose()
 
     def sector(self, total=False):
