@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship as _relationship
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.interfaces.portfolio import Portfolio
-from pyutil.sql.interfaces.products import Base
+from pyutil.sql.interfaces.products import Base, ProductInterface
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 
 
@@ -20,10 +20,7 @@ class StrategyType(_enum.Enum):
 Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio", primaryjoin="Portfolio.id == Strategy.portfolio_id")
 
 
-class Strategy(Base):
-    __tablename__ = "strategy"
-
-    _id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
+class Strategy(ProductInterface):
     name = sq.Column(sq.String(50), unique=True)
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)

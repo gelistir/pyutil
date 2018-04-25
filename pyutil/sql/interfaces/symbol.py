@@ -17,7 +17,6 @@ class Symbol(ProductInterface):
     bloomberg_symbol = sq.Column(sq.String(50), unique=True)
     group = sq.Column(_Enum(SymbolType))
     internal = sq.Column(sq.String, nullable=True)
-    #id = sq.Column("id", sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     __mapper_args__ = {"polymorphic_identity": "symbol"}
 
