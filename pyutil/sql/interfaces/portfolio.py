@@ -6,16 +6,16 @@ from pyutil.sql.interfaces.products import ProductInterface, Base
 from pyutil.sql.interfaces.symbol import Symbol
 
 _association_table = sq.Table('association', Base.metadata,
-                              sq.Column('symbol_id', sq.Integer, sq.ForeignKey('symbolsapp_symbol.id')),
-                              sq.Column('portfolio_id', sq.Integer, sq.ForeignKey('portfolio2.id'))
+                              sq.Column('symbol_id', sq.Integer, sq.ForeignKey('symbol.id')),
+                              sq.Column('portfolio_id', sq.Integer, sq.ForeignKey('portfolio.id'))
                               )
 
 Symbol.portfolio = _relationship("Portfolio", secondary=_association_table, back_populates="symbols")
 
 
 class Portfolio(ProductInterface):
-    __tablename__ = 'portfolio2'
-    _id = sq.Column("id", sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
+    # the id property comes from HasIdMixin, so no longer needed...
+    # id = sq.Column("id", sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     __mapper_args__ = {"polymorphic_identity": "portfolio"}
     symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio")

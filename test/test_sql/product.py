@@ -1,4 +1,4 @@
-from sqlalchemy import String, Column
+from sqlalchemy import String, Column, Integer, ForeignKey
 
 from pyutil.sql.interfaces.products import ProductInterface
 

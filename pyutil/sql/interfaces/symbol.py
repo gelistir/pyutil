@@ -14,11 +14,8 @@ class SymbolType(_enum.Enum):
 
 
 class Symbol(ProductInterface):
-    __tablename__ = "symbolsapp_symbol"
-    _id = sq.Column("id", sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
-
     bloomberg_symbol = sq.Column(sq.String(50), unique=True)
-    group = sq.Column("gg", _Enum(SymbolType))
+    group = sq.Column(_Enum(SymbolType))
     internal = sq.Column(sq.String, nullable=True)
 
     __mapper_args__ = {"polymorphic_identity": "symbol"}

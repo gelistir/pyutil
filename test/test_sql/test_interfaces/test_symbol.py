@@ -33,3 +33,7 @@ class TestSymbol(TestCase):
     def test_group(self):
         self.assertEqual(self.p1.group.name, "fixed_income")
 
+    #def test_id(self):
+    #    print(self.p1.id)
+    #    print(self.p1.id)
+    #    assert False

@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship as _relationship
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.interfaces.portfolio import Portfolio
-from pyutil.sql.interfaces.products import Base
+from pyutil.sql.interfaces.products import Base, ProductInterface
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 
 
@@ -16,19 +16,13 @@ class StrategyType(_enum.Enum):
     balanced = 'balanced'
     dynamic = 'dynamic'
 
+class Strategy(ProductInterface):
+    __mapper_args__ = {"polymorphic_identity": "strategy"}
 
-Portfolio._strategy_id = sq.Column("strategy_id", sq.Integer, sq.ForeignKey("strategiesapp_strategy.id"), nullable=True)
-Portfolio.strategy = _relationship("Strategy", back_populates="_portfolio")
-
-
-class Strategy(Base):
-    __tablename__ = "strategiesapp_strategy"
-
-    _id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
     name = sq.Column(sq.String(50), unique=True)
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)
-    _portfolio = _relationship(Portfolio, uselist=False, back_populates="strategy")
+    _portfolio = _relationship(Portfolio, uselist=False, backref="strategy", foreign_keys=[Portfolio.id])
     type = sq.Column(_Enum(StrategyType))
 
     def __init__(self, name, active=True, source="", type=StrategyType.conservative):
@@ -71,3 +65,5 @@ class Strategy(Base):
     @property
     def portfolio(self):
         return self._portfolio.portfolio
+
+Portfolio._strategy_id = sq.Column("strategy_id", sq.Integer, sq.ForeignKey("strategy.id"), nullable=True)
