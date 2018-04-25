@@ -18,7 +18,7 @@ class TestContainer(TestCase):
         cls.s3 = Symbol(bloomberg_symbol="C", group=SymbolType.fixed_income, internal="C")
 
         portfolio = test_portfolio().subportfolio(assets=["A", "B", "C"])
-        p = Portfolio(name="Peter").upsert(portfolio=portfolio, assets={"A": cls.s1, "B": cls.s2, "C": cls.s3})
+        p = Portfolio(name="Peter").upsert_portfolio(portfolio=portfolio, assets={"A": cls.s1, "B": cls.s2, "C": cls.s3})
 
         f1 = Field(name="Field 1", result=DataType.integer)
         f2 = Field(name="Field 2", result=DataType.integer)

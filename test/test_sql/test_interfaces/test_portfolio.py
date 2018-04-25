@@ -35,7 +35,7 @@ class TestPortfolio(TestCase):
         weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1], data=[[0.5],[0.5]])
         p = _Portfolio(prices=prices, weights=weights)
 
-        self.p.upsert(portfolio=p)
+        self.p.upsert_portfolio(portfolio=p)
         pdt.assert_series_equal(self.p.nav, pd.Series({pd.Timestamp("2012-05-05"): 1.0, pd.Timestamp("2012-05-07"): 1.05}))
 
     def test_portfolio(self):
@@ -48,7 +48,7 @@ class TestPortfolio(TestCase):
         weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1], data=[[0.5],[0.5]])
         p = _Portfolio(prices=prices, weights=weights)
 
-        self.p.upsert(portfolio=p)
+        self.p.upsert_portfolio(portfolio=p)
         print(self.p.sector())
         print(self.p.sector_tail())
         #todo: fill up

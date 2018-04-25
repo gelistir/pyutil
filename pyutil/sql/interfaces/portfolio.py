@@ -26,7 +26,7 @@ class Portfolio(ProductInterface):
     def empty(self):
         return self.frame(name="price").empty and self.frame(name="weight").empty
 
-    def upsert(self, portfolio, assets=None):
+    def upsert_portfolio(self, portfolio, assets=None):
         assert isinstance(portfolio, _Portfolio)
         for symbol, data in portfolio.weights.items():
             if assets:

@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship as _relationship
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.interfaces.portfolio import Portfolio
-from pyutil.sql.interfaces.products import Base, ProductInterface
+from pyutil.sql.interfaces.products import Base
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 
 
@@ -16,15 +16,20 @@ class StrategyType(_enum.Enum):
     balanced = 'balanced'
     dynamic = 'dynamic'
 
-class Strategy(ProductInterface):
-    __mapper_args__ = {"polymorphic_identity": "strategy"}
 
+Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio")
+
+
+class Strategy(Base):
+    __tablename__ = "strategy"
+
+    _id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
     name = sq.Column(sq.String(50), unique=True)
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)
-    _portfolio = _relationship(Portfolio, uselist=False, backref="strategy", foreign_keys=[Portfolio.id])
+    portfolio_id = sq.Column(sq.Integer, sq.ForeignKey("portfolio.id"), nullable=False)
+    _portfolio = _relationship(Portfolio, uselist=False, back_populates="strategy")
     type = sq.Column(_Enum(StrategyType))
-    #id = sq.Column("id", sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     def __init__(self, name, active=True, source="", type=StrategyType.conservative):
         self.name = name
@@ -54,10 +59,10 @@ class Strategy(ProductInterface):
         if not self._portfolio.empty:
 
             p = portfolio.truncate(before=self.portfolio.last_valid_index() - pd.DateOffset(days=days))
-            self._portfolio.upsert(portfolio=p, assets=assets)
+            self._portfolio.upsert_portfolio(portfolio=p, assets=assets)
 
         else:
-            self._portfolio.upsert(portfolio=portfolio, assets=assets)
+            self._portfolio.upsert_portfolio(portfolio=portfolio, assets=assets)
 
         return self.portfolio
         # todo: make strategy a ProductInterface
@@ -66,5 +71,3 @@ class Strategy(ProductInterface):
     @property
     def portfolio(self):
         return self._portfolio.portfolio
-
-Portfolio._strategy_id = sq.Column("strategy_id", sq.Integer, sq.ForeignKey("strategy.id"), nullable=True)

@@ -18,5 +18,5 @@ class TestSession(TestCase):
         self.assertEqual(x, y)
 
     def test_get_one_or_none(self):
-        session = session_test(meta=Base.metadata)
+        session = session_test(meta=Base.metadata, echo=True)
         self.assertIsNone(get_one_or_none(session, Symbol, bloomberg_symbol="C"))
