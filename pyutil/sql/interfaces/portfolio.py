@@ -1,7 +1,7 @@
 import sqlalchemy as sq
 from sqlalchemy.orm import relationship as _relationship
 
-from performance.summary import fromNav
+from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 from pyutil.sql.interfaces.products import ProductInterface, Base
 from pyutil.sql.interfaces.symbol import Symbol
