@@ -11,5 +11,6 @@ RUN pip install --upgrade pip && \
 
 # copy only the package
 COPY ./pyutil /pyutil/pyutil
+COPY ./sandbox /pyutil/sandbox
 
 WORKDIR pyutil

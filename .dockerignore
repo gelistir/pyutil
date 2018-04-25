@@ -1,6 +1,5 @@
 .git*
 .gitignore*
-sandbox*
 
 portfolio.png
 portfolio.py
@@ -30,4 +29,4 @@ build
 env
 
 
-
+**/__pycache__

@@ -1,7 +1,7 @@
 import pandas as _pd
 import sqlalchemy as sq
 from sqlalchemy.ext.declarative import has_inherited_table
-from sqlalchemy.ext.declarative.base import declared_attr
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
@@ -18,15 +18,21 @@ from pyutil.sql.model.ts import Timeseries
 #            return sq.Column(sq.ForeignKey('productinterface.id'), primary_key=True)
 #        else:
 #            return sq.Column(sq.Integer, primary_key=True, autoincrement=True)
-
-class ProductInterface(Base):
+class MyMixin(object):
 
     @declared_attr
     def __tablename__(cls):
         return cls.__name__.lower()
 
-    # the attribute id now comes from HasIdMixin, so no longer needed...
-    id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
+    @declared_attr.cascading
+    def id(cls):
+        if has_inherited_table(cls):
+            return sq.Column(sq.ForeignKey('productinterface.id'), primary_key=True)
+        else:
+            return sq.Column(sq.Integer, primary_key=True, autoincrement=True)
+
+
+class ProductInterface(MyMixin, Base):
 
     discriminator = sq.Column(sq.String)
     __mapper_args__ = {"polymorphic_on": discriminator}

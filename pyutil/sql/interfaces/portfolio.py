@@ -15,7 +15,7 @@ Symbol.portfolio = _relationship("Portfolio", secondary=_association_table, back
 
 class Portfolio(ProductInterface):
     # the id property comes from HasIdMixin, so no longer needed...
-    id = sq.Column("id", sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
+    #id = sq.Column("id", sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     __mapper_args__ = {"polymorphic_identity": "portfolio"}
     symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio")

@@ -24,7 +24,7 @@ class Strategy(ProductInterface):
     source = sq.Column(sq.String)
     _portfolio = _relationship(Portfolio, uselist=False, backref="strategy", foreign_keys=[Portfolio.id])
     type = sq.Column(_Enum(StrategyType))
-    id = sq.Column("id", sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
+    #id = sq.Column("id", sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     def __init__(self, name, active=True, source="", type=StrategyType.conservative):
         self.name = name
