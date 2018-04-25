@@ -11,15 +11,7 @@ from pyutil.sql.model.ref import _ReferenceData, Field
 from pyutil.sql.model.ts import Timeseries
 
 
-#class HasIdMixin(object):
-#    @declared_attr.cascading
-#    def id(cls):
-#        if has_inherited_table(cls):
-#            return sq.Column(sq.ForeignKey('productinterface.id'), primary_key=True)
-#        else:
-#            return sq.Column(sq.Integer, primary_key=True, autoincrement=True)
 class MyMixin(object):
-
     @declared_attr
     def __tablename__(cls):
         return cls.__name__.lower()
@@ -36,8 +28,6 @@ class ProductInterface(MyMixin, Base):
 
     discriminator = sq.Column(sq.String)
     __mapper_args__ = {"polymorphic_on": discriminator}
-                       #"polymorphic_identity": "product"
-                       #}
 
     _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
                             cascade="all, delete-orphan", backref="product")

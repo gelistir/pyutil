@@ -17,7 +17,7 @@ class StrategyType(_enum.Enum):
     dynamic = 'dynamic'
 
 
-Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio")
+Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio", primaryjoin="Portfolio.id == Strategy.portfolio_id")
 
 
 class Strategy(Base):
