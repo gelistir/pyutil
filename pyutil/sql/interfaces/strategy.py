@@ -28,7 +28,7 @@ class Strategy(Base):
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)
     portfolio_id = sq.Column(sq.Integer, sq.ForeignKey("portfolio.id"), nullable=False)
-    _portfolio = _relationship(Portfolio, uselist=False, back_populates="strategy")
+    _portfolio = _relationship(Portfolio, uselist=False, back_populates="strategy", foreign_keys=[portfolio_id])
     type = sq.Column(_Enum(StrategyType))
 
     def __init__(self, name, active=True, source="", type=StrategyType.conservative):
@@ -36,6 +36,7 @@ class Strategy(Base):
         self._portfolio = Portfolio(name=self.name, strategy=self)
         self.active = active
         self.source = source
+        self.type = type
 
     def __module(self):
         from types import ModuleType
