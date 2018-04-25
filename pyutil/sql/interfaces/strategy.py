@@ -21,6 +21,7 @@ Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_p
 
 
 class Strategy(ProductInterface):
+    __mapper_args__ = {"polymorphic_identity": "strategy"}
     name = sq.Column(sq.String(50), unique=True)
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)
