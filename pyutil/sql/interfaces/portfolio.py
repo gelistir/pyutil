@@ -1,6 +1,7 @@
 import sqlalchemy as sq
 from sqlalchemy.orm import relationship as _relationship
 
+from performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 from pyutil.sql.interfaces.products import ProductInterface, Base
 from pyutil.sql.interfaces.symbol import Symbol
@@ -41,6 +42,12 @@ class Portfolio(ProductInterface):
                 symbol = assets[symbol]
             self.upsert_ts(name="price", secondary=symbol, data=data.dropna())
 
+        # recompute here the entire portfolio
+        p = self.portfolio
+
+        # upsert the underlying time series data, this is slow here but later when we access the data we don't need to recompute the nav or the leverage
+        self.upsert_ts("nav", data=p.nav)
+        self.upsert_ts("leverage", data=p.leverage)
         return self
 
     @property
@@ -58,7 +65,11 @@ class Portfolio(ProductInterface):
 
     @property
     def nav(self):
-        return self.portfolio.nav
+        return fromNav(self.timeseries["nav"])
+
+    @property
+    def leverage(self):
+        return self.timeseries["leverage"]
 
     def sector(self, total=False):
         map = {asset: asset.group.name for asset in self.symbols}
@@ -70,3 +81,4 @@ class Portfolio(ProductInterface):
 
     def __lt__(self, other):
         return self.name < other.name
+

@@ -58,3 +58,8 @@ class TestPortfolio(TestCase):
         p2 = Portfolio(name="B")
         self.assertTrue(p1 < p2)
 
+    def test_leverage(self):
+        prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1], data=[[10.0],[11.0]])
+        weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1], data=[[0.5],[0.5]])
+        p = _Portfolio(prices=prices, weights=weights)
+        pdt.assert_series_equal(p.leverage, pd.Series({pd.Timestamp("2012-05-05"): 0.5, pd.Timestamp("2012-05-07"): 0.5}))
