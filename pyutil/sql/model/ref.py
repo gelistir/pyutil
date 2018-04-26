@@ -38,7 +38,7 @@ class DataType(enum.Enum):
 
 class Field(Base):
     __tablename__ = "reference_field"
-    _id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
+    id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
     name = sq.Column(sq.String(50), unique=True)
     type = sq.Column(Enum(FieldType))
     result = sq.Column(Enum(DataType), nullable=False)
@@ -46,13 +46,23 @@ class Field(Base):
     def __repr__(self):
         return "({field})".format(field=self.name)
 
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
 
 class _ReferenceData(Base):
     __tablename__ = "reference_data"
-    _field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey("reference_field.id"), primary_key=True)
-    content = sq.Column(sq.String(200), nullable=False)
-    _product_id = sq.Column("product_id", sq.Integer, sq.ForeignKey("productinterface.id"), primary_key=True)
+    field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey(Field.id), primary_key=True)
     field = relationship(Field)
+
+    content = sq.Column(sq.String(200), nullable=False)
+
+    product_id = sq.Column("product_id", sq.Integer, sq.ForeignKey("productinterface.id"), primary_key=True)
+    product = relationship("ProductInterface", foreign_keys=[product_id], back_populates="_refdata")
+
 
     @property
     def value(self):

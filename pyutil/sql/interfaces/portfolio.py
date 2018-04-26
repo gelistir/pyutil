@@ -3,21 +3,16 @@ from sqlalchemy.orm import relationship as _relationship
 
 from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
-from pyutil.sql.interfaces.products import ProductInterface, Base
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbol import Symbol
+from sql.interfaces.association import association_table
 
-_association_table = sq.Table('association', Base.metadata,
-                              sq.Column('symbol_id', sq.Integer, sq.ForeignKey('symbol.id')),
-                              sq.Column('portfolio_id', sq.Integer, sq.ForeignKey('portfolio.id'))
-                              )
+_association_table = association_table(left="symbol", right="portfolio")
 
 Symbol.portfolio = _relationship("Portfolio", secondary=_association_table, back_populates="symbols")
 
 
 class Portfolio(ProductInterface):
-    # the id property comes from HasIdMixin, so no longer needed...
-    #id = sq.Column("id", sq.Integer, sq.ForeignKey(ProductInterface.id), primary_key=True)
-
     __mapper_args__ = {"polymorphic_identity": "portfolio"}
     symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio")
     name = sq.Column(sq.String, unique=True)
@@ -65,7 +60,10 @@ class Portfolio(ProductInterface):
 
     @property
     def nav(self):
-        return fromNav(self.timeseries["nav"])
+        if "nav" in self.timeseries.keys():
+            return fromNav(self.timeseries["nav"])
+        else:
+            return self.portfolio.nav
 
     @property
     def leverage(self):

@@ -33,4 +33,10 @@ class TestReference(TestCase):
 
         self.p1.upsert_ref(field=f1, value="Maffay")
 
+    def test_eq(self):
+        f1 = Field(name="Peter", type=FieldType.dynamic, result=DataType.string)
+        f2 = Field(name="Peter", type=FieldType.dynamic, result=DataType.string)
+        self.assertEqual(f1, f2)
+        self.assertEqual(hash(f1), hash(f2))
+
 
