@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship as _relationship
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.interfaces.portfolio import Portfolio
-from pyutil.sql.interfaces.products import Base, ProductInterface
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 
 
@@ -70,3 +70,7 @@ class Strategy(ProductInterface):
     @property
     def portfolio(self):
         return self._portfolio.portfolio
+
+
+# strategy has to be defined in a file
+# defining a class Configuration (accepting a reader)
