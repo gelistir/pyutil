@@ -1,9 +1,10 @@
 import enum as _enum
+import pandas as pd
 
 import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
-from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.products import ProductInterface, Products
 
 
 class SymbolType(_enum.Enum):
@@ -25,3 +26,32 @@ class Symbol(ProductInterface):
 
     def __lt__(self, other):
         return self.bloomberg_symbol < other.bloomberg_symbol
+
+
+class Symbols(list):
+    def __init__(self, seq):
+        super().__init__(seq)
+        for a in seq:
+            assert isinstance(a, Symbol)
+
+    @property
+    def reference(self):
+        return Products(self).reference
+
+    @property
+    def internal(self):
+        return {asset: asset.internal for asset in self}
+
+    @property
+    def group(self):
+        return {asset: asset.group.name for asset in self}
+
+    @property
+    def group_internal(self):
+        return pd.DataFrame({"Group": pd.Series(self.group), "Internal": pd.Series(self.internal)})
+
+    def history(self, field="PX_LAST"):
+        return Products(self).history(field=field)
+
+    def to_dict(self):
+        return {asset.bloomberg_symbol: asset for asset in self}

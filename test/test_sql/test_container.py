@@ -4,9 +4,8 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.model.ref import Field, DataType
-from pyutil.sql.interfaces.symbol import Symbol, SymbolType
-from pyutil.sql.interfaces.portfolio import Portfolio
-from pyutil.sql.container import Portfolios, Assets, state
+from pyutil.sql.interfaces.symbol import Symbol, SymbolType, Symbols
+from pyutil.sql.interfaces.portfolio import Portfolio, Portfolios
 from test.config import test_portfolio, read_frame
 
 
@@ -35,7 +34,7 @@ class TestContainer(TestCase):
         cls.s3.upsert_ts(name="PX_LAST", data=read_frame("price.csv")["C"])
 
         cls.portfolios = Portfolios([p])
-        cls.assets = Assets([cls.s1, cls.s2, cls.s3])
+        cls.assets = Symbols([cls.s1, cls.s2, cls.s3])
 
     def test_reference(self):
         f = pd.DataFrame(columns=["Field 1", "Field 2"], index=[self.s1, self.s2, self.s3], data=[[100, 200], [10, 20], [30, 40]])
@@ -62,7 +61,7 @@ class TestContainer(TestCase):
         self.assertAlmostEqual(self.portfolios.period_returns["One Year"]["Peter"], 0.015213, places=5)
 
     def test_state(self):
-        print(state(self.portfolios[0]))
+        print(self.portfolios[0].state)
 
     def test_to_dict(self):
         self.assertDictEqual(self.assets.to_dict(), {"A": self.s1, "B": self.s2, "C": self.s3})

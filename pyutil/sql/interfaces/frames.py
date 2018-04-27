@@ -2,13 +2,12 @@ from io import BytesIO
 
 import pandas as pd
 from sqlalchemy import String, LargeBinary, Column
+from pyutil.sql.interfaces.products import ProductInterface
 
-from pyutil.sql.base import Base
 
-
-class Frame(Base):
-    __tablename__ = 'frame'
-    name = Column(String, primary_key=True)
+class Frame(ProductInterface):
+    __mapper_args__ = {"polymorphic_identity": "frame"}
+    name = Column(String, unique=True)
     _data = Column("data", LargeBinary)
     _index = Column("index", String)
 

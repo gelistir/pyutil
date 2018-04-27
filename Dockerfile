@@ -1,5 +1,5 @@
 # Set the base image to Ubuntu, use a public image
-FROM continuumio/miniconda3
+FROM continuumio/miniconda3 as builder
 
 COPY requirements.txt requirements.txt
 
@@ -11,6 +11,13 @@ RUN pip install --upgrade pip && \
 
 # copy only the package
 COPY ./pyutil /pyutil/pyutil
-COPY ./sandbox /pyutil/sandbox
 
 WORKDIR pyutil
+
+#### Here the test-configuration
+
+FROM builder as test
+
+RUN pip install --no-cache-dir httpretty pytest pytest-cov pytest-html sphinx
+COPY ./test            /pyutil/test
+CMD py.test --cov=pyutil  --cov-report html:/html-coverage --cov-report term --html=/html-report/report.html test

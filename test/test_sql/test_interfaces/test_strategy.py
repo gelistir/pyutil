@@ -5,9 +5,8 @@ from sqlalchemy.exc import IntegrityError
 
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.portfolio import Portfolio
-from pyutil.sql.interfaces.symbol import Symbol
+from pyutil.sql.interfaces.symbol import Symbol, Symbols
 from pyutil.sql.interfaces.strategy import Strategy, StrategyType
-from pyutil.sql.container import Assets
 from pyutil.sql.base import Base
 from pyutil.sql.session import session_test
 from test.config import resource, test_portfolio
@@ -55,7 +54,7 @@ class TestStrategy(TestCase):
         session.commit()
 
         # define a bunch of assets
-        assets = Assets([Symbol(bloomberg_symbol=asset) for asset in ["A", "B", "C", "D", "E", "F", "G"]])
+        assets = Symbols([Symbol(bloomberg_symbol=asset) for asset in ["A", "B", "C", "D", "E", "F", "G"]])
         session.add_all(assets)
 
 

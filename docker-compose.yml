@@ -1,9 +1,10 @@
-version: '3.3'
+version: '3.4'
 services:
   pyutil:
      build:
        context: .
        dockerfile: Dockerfile
+       target: builder
      volumes:
         - ./pyutil:/pyutil/pyutil
         - ./sandbox:/pyutil/sandbox
