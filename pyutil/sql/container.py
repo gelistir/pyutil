@@ -11,7 +11,10 @@ class Assets(ReadList):
 
     @property
     def reference(self):
-        x = pd.DataFrame({asset: pd.Series(asset.reference) for asset in self}).transpose()
+        def f(ref):
+            return pd.Series(dict(ref)).rename(index=lambda x: x.name)
+
+        x = pd.DataFrame({asset: f(asset.reference) for asset in self}).transpose()
         x.index.names = ["Product"]
         return x
 

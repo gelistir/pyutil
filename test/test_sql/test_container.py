@@ -23,12 +23,12 @@ class TestContainer(TestCase):
         f1 = Field(name="Field 1", result=DataType.integer)
         f2 = Field(name="Field 2", result=DataType.integer)
 
-        cls.s1.upsert_ref(f1, value="100")
-        cls.s1.upsert_ref(f2, value="200")
-        cls.s2.upsert_ref(f1, value="10")
-        cls.s2.upsert_ref(f2, value="20")
-        cls.s3.upsert_ref(f1, value="30")
-        cls.s3.upsert_ref(f2, value="40")
+        cls.s1.reference[f1] = "100"
+        cls.s1.reference[f2] = "200"
+        cls.s2.reference[f1] = "10"
+        cls.s2.reference[f2] = "20"
+        cls.s3.reference[f1] = "30"
+        cls.s3.reference[f2] = "40"
 
         cls.s1.upsert_ts(name="PX_LAST", data=read_frame("price.csv")["A"])
         cls.s2.upsert_ts(name="PX_LAST", data=read_frame("price.csv")["B"])

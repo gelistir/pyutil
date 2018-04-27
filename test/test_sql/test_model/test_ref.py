@@ -13,14 +13,14 @@ class TestReference(TestCase):
 
     def test_reference(self):
         self.assertEqual(self.f1.type, FieldType.dynamic)
+        self.p1.reference[self.f1] = "100"
+        #self.p1.upsert_ref(field=self.f1, value="100")
+        self.assertEqual(self.p1.reference[self.f1], 100)
 
-        self.p1.upsert_ref(field=self.f1, value="100")
-        self.assertEqual(self.p1.reference["x"], 100)
+        self.p1.reference[self.f1] = "120"
+        self.assertEqual(self.p1.reference[self.f1], 120)
 
-        self.p1.upsert_ref(field=self.f1, value="120")
-        self.assertEqual(self.p1.reference["x"], 120)
-
-        self.p2.upsert_ref(field=self.f1, value="110")
+        #self.p2.upsert_ref(field=self.f1, value="110")
 
     def test_datatype(self):
         x = DataType.integer
@@ -30,8 +30,6 @@ class TestReference(TestCase):
     def test_field(self):
         f1 = Field(name="Peter", type=FieldType.dynamic, result=DataType.string)
         self.assertEqual(str(f1), "(Peter)")
-
-        self.p1.upsert_ref(field=f1, value="Maffay")
 
     def test_eq(self):
         f1 = Field(name="Peter", type=FieldType.dynamic, result=DataType.string)

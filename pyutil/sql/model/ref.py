@@ -68,3 +68,7 @@ class _ReferenceData(Base):
     def value(self):
         return self.field.result(self.content)
 
+    @value.setter
+    def value(self, value):
+        assert isinstance(value, str)
+        self.content = value

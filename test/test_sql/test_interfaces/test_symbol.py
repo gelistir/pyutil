@@ -13,13 +13,13 @@ class TestSymbol(TestCase):
 
         cls.f1 = Field(name="x", type=FieldType.dynamic, result=DataType.integer)
 
-        cls.p1.upsert_ref(cls.f1, value="100")
-        cls.p1.upsert_ref(cls.f1, value="200")
+        cls.p1.reference[cls.f1] = "100" #upsert_ref(cls.f1, value="100")
+        cls.p1.reference[cls.f1] = "200" #upsert_ref(cls.f1, value="200")
 
         cls.p1.upsert_ts(name="price", data={pd.Timestamp("12-11-1978"): 10.0})
 
     def test_reference(self):
-        self.assertEqual(self.p1.reference["x"], 200)
+        self.assertEqual(self.p1.reference[self.f1], 200)
 
     def test_timeseries(self):
         self.assertEqual(self.p1.timeseries["price"][pd.Timestamp("12-11-1978")], 10.0)
