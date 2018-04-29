@@ -25,10 +25,6 @@ def test_portfolio():
     return Portfolio(prices=read_frame("price.csv"), weights=read_frame("weight.csv"))
 
 
-def test_portfolio2():
-    p = read_frame("price.csv")
-
-
 def series2arrays(x, tz="CET"):
     # this function converts a pandas series into a dictionary of two arrays
     # to mock the behaviour of highcharts...

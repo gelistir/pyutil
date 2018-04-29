@@ -61,12 +61,12 @@ class TestPortfolio(TestCase):
         pdt.assert_frame_equal(2 * portfolio.weights, (2 * portfolio).weights, check_names=False)
 
     def test_iron_threshold(self):
-        p1 = test_portfolio().iron_threshold(threshold=0.05)
-        self.assertEqual(len(p1.trading_days), 40)
+        p1 = test_portfolio().truncate(before="2015-01-01").iron_threshold(threshold=0.05)
+        self.assertEqual(len(p1.trading_days), 5)
 
     def test_iron_time(self):
-        p2 = test_portfolio().iron_time(rule="3M")
-        self.assertEqual(len(p2.trading_days), 10)
+        p2 = test_portfolio().truncate(before="2014-07-01").iron_time(rule="3M")
+        self.assertEqual(len(p2.trading_days), 4)
 
 
     #def test_transaction_report(self):
