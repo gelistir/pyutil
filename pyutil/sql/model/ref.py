@@ -52,6 +52,9 @@ class Field(Base):
     def __hash__(self):
         return hash(self.name)
 
+    def __lt__(self, other):
+        return self.name < self.name
+
 
 class _ReferenceData(Base):
     __tablename__ = "reference_data"
