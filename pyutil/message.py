@@ -18,6 +18,7 @@ class Mail(object):
         self.__mailgun_key = mailgunkey or os.environ["MAILGUNKEY"]
         self.__files = list()
         self.__subject = ""
+        self.__text = ""
 
     def attach_file(self, name, localpath, mode="r+b"):
         """
@@ -66,15 +67,15 @@ class Mail(object):
         self.__files.extend([("inline", (name, stream))])
         return self
 
-    def send(self, text="", html=None, logger=None):
+    def send(self, html=None, logger=None):
         """
         send an email
         """
         logger = logger or logging.getLogger(__name__)
-        assert text != "" or html, "Specify either some text or some html!"
+        assert self.text != "" or html, "Specify either some text or some html!"
 
         try:
-            data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": text}
+            data = {"from": self.fromAdr, "to": self.toAdr, "subject": self.subject, "text": self.text}
             if html:
                 data["html"] = html
 
@@ -94,6 +95,11 @@ class Mail(object):
                     pass
 
     @property
+    def text(self):
+        return self.__text
+
+
+    @property
     def toAdr(self):
         return self.__toAdr
 
@@ -104,6 +110,10 @@ class Mail(object):
     @property
     def subject(self):
         return self.__subject
+
+    @text.setter
+    def text(self, value):
+        self.__text = value
 
     @subject.setter
     def subject(self, value):
