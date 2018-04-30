@@ -15,7 +15,7 @@ Symbol.portfolio = _relationship("Portfolio", secondary=_association_table, back
 
 class Portfolio(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "portfolio"}
-    symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio")
+    symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio", lazy='joined')
     name = sq.Column(sq.String, unique=True)
 
     @property

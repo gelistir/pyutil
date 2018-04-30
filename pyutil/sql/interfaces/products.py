@@ -31,10 +31,10 @@ class ProductInterface(MyMixin, Base):
     __mapper_args__ = {"polymorphic_on": discriminator}
 
     _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
-                            cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id])
+                            cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id], lazy="joined")
 
     _timeseries = relationship(Timeseries, collection_class=attribute_mapped_collection('key'),
-                               cascade="all, delete-orphan", back_populates="product", foreign_keys=[Timeseries.product_id])
+                               cascade="all, delete-orphan", back_populates="product", foreign_keys=[Timeseries.product_id], lazy="joined")
 
     timeseries = association_proxy('_timeseries', 'series', creator=None)
 
