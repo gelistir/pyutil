@@ -2,7 +2,7 @@ import pandas as pd
 from unittest import TestCase
 
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
-from pyutil.sql.interfaces.portfolio import Portfolio
+from pyutil.sql.interfaces.portfolio import Portfolio, Portfolios
 from pyutil.sql.interfaces.symbol import Symbol, SymbolType
 
 import pandas.util.testing as pdt
@@ -31,12 +31,15 @@ class TestPortfolio(TestCase):
         # you always have to give the prices again through the portfolio interface!
         self.assertTrue(self.p.empty)
 
-        prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1], data=[[10.0],[11.0]])
-        weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1], data=[[0.5],[0.5]])
+        prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
+                              data=[[10.0], [11.0]])
+        weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
+                               data=[[0.5], [0.5]])
         p = _Portfolio(prices=prices, weights=weights)
 
         self.p.upsert_portfolio(portfolio=p)
-        pdt.assert_series_equal(self.p.nav, pd.Series({pd.Timestamp("2012-05-05"): 1.0, pd.Timestamp("2012-05-07"): 1.05}))
+        pdt.assert_series_equal(self.p.nav,
+                                pd.Series({pd.Timestamp("2012-05-05"): 1.0, pd.Timestamp("2012-05-07"): 1.05}))
 
     def test_portfolio(self):
         self.assertListEqual(self.s1.portfolio, [self.p])
@@ -44,14 +47,19 @@ class TestPortfolio(TestCase):
     def test_sector(self):
         print(self.p.sector(total=True))
 
-        prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1], data=[[10.0],[11.0]])
-        weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1], data=[[0.5],[0.5]])
+        prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
+                              data=[[10.0], [11.0]])
+        weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
+                               data=[[0.5], [0.5]])
         p = _Portfolio(prices=prices, weights=weights)
 
         self.p.upsert_portfolio(portfolio=p)
-        print(self.p.sector())
-        print(self.p.sector_tail())
-        #todo: fill up
+        #print(self.p.sector())
+        #print(self.p.sector_tail())
+        pp = Portfolios([self.p])
+        print(pp.sector(total=False))
+
+        # todo: fill up
 
     def test_lt(self):
         p1 = Portfolio(name="A")
@@ -59,7 +67,10 @@ class TestPortfolio(TestCase):
         self.assertTrue(p1 < p2)
 
     def test_leverage(self):
-        prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1], data=[[10.0],[11.0]])
-        weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1], data=[[0.5],[0.5]])
+        prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
+                              data=[[10.0], [11.0]])
+        weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
+                               data=[[0.5], [0.5]])
         p = _Portfolio(prices=prices, weights=weights)
-        pdt.assert_series_equal(p.leverage, pd.Series({pd.Timestamp("2012-05-05"): 0.5, pd.Timestamp("2012-05-07"): 0.5}))
+        pdt.assert_series_equal(p.leverage,
+                                pd.Series({pd.Timestamp("2012-05-05"): 0.5, pd.Timestamp("2012-05-07"): 0.5}))

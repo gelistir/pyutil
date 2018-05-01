@@ -2,6 +2,7 @@ import enum as _enum
 import pandas as pd
 
 import sqlalchemy as sq
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.interfaces.products import ProductInterface, Products
@@ -38,11 +39,11 @@ class Symbols(list):
     def reference(self):
         return Products(self).reference
 
-    @property
+    @hybrid_property
     def internal(self):
         return {asset: asset.internal for asset in self}
 
-    @property
+    @hybrid_property
     def group(self):
         return {asset: asset.group.name for asset in self}
 

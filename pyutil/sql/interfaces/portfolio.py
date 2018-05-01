@@ -1,5 +1,6 @@
 import pandas as pd
 import sqlalchemy as sq
+from sqlalchemy import inspect
 from sqlalchemy.orm import relationship as _relationship
 
 from pyutil.performance.summary import fromNav
@@ -15,7 +16,7 @@ Symbol.portfolio = _relationship("Portfolio", secondary=_association_table, back
 
 class Portfolio(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "portfolio"}
-    symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio", lazy='joined')
+    symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio", lazy="joined")
     name = sq.Column(sq.String, unique=True)
 
     @property
@@ -145,6 +146,12 @@ class Portfolios(list):
         return frame.transpose()
 
     def sector(self, total=False):
+        for portfolio in self:
+            print(type(inspect(portfolio)))
+            print(inspect(portfolio).detached)
+            print(inspect(portfolio).pending)
+
+
         frame = pd.DataFrame({portfolio.name: portfolio.sector_tail(total=total) for portfolio in self})
         return frame.transpose()
 

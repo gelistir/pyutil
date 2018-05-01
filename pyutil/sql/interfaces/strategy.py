@@ -17,7 +17,7 @@ class StrategyType(_enum.Enum):
     dynamic = 'dynamic'
 
 
-Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio", primaryjoin="Portfolio.id == Strategy.portfolio_id")
+
 
 
 class Strategy(ProductInterface):
@@ -70,6 +70,8 @@ class Strategy(ProductInterface):
     @property
     def portfolio(self):
         return self._portfolio.portfolio
+
+Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio", primaryjoin="Portfolio.id == Strategy.portfolio_id")
 
 
 # strategy has to be defined in a file
