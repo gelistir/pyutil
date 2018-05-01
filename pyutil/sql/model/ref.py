@@ -2,6 +2,7 @@ import enum as enum
 
 import pandas as pd
 import sqlalchemy as sq
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Enum
 
@@ -39,9 +40,26 @@ class DataType(enum.Enum):
 class Field(Base):
     __tablename__ = "reference_field"
     id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
-    name = sq.Column(sq.String(50), unique=True)
-    type = sq.Column(Enum(FieldType))
-    result = sq.Column(Enum(DataType), nullable=False)
+    __name = sq.Column("name", sq.String(50), unique=True)
+    __type = sq.Column("type", Enum(FieldType))
+    __result = sq.Column("result", Enum(DataType), nullable=False)
+
+    def __init__(self, name, result, type=None):
+        self.__name = name
+        self.__result = result
+        self.__type = type
+
+    @hybrid_property
+    def name(self):
+        return self.__name
+
+    @hybrid_property
+    def result(self):
+        return self.__result
+
+    @hybrid_property
+    def type(self):
+        return self.__type
 
     def __repr__(self):
         return "({field})".format(field=self.name)

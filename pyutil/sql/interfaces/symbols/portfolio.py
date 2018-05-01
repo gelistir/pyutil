@@ -5,9 +5,8 @@ from sqlalchemy.orm import relationship as _relationship
 
 from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
-from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.interfaces.symbol import Symbol, Symbols
-from pyutil.sql.interfaces.association import association_table
+from pyutil.sql.interfaces.products import ProductInterface, association_table
+from pyutil.sql.interfaces.symbols.symbol import Symbol, Symbols
 
 _association_table = association_table(left="symbol", right="portfolio")
 

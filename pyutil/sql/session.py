@@ -7,9 +7,9 @@ from sqlalchemy.orm.exc import NoResultFound
 
 
 @contextmanager
-def session_scope(server=None, db=None, user=None, password=None):
+def session_scope(server=None, db=None, user=None, password=None, echo=False):
     """Provide a transactional scope around a series of operations."""
-    ses = session(server=server, db=db, user=user, password=password)
+    ses = session(server=server, db=db, user=user, password=password, echo=echo)
     try:
         yield ses
         ses.commit()
@@ -20,13 +20,13 @@ def session_scope(server=None, db=None, user=None, password=None):
         ses.close()
 
 
-def session(server=None, db=None, user=None, password=None):
+def session(server=None, db=None, user=None, password=None, echo=False):
     user = user or os.environ["user"]
     password = password or os.environ["password"]
     server = server or os.environ["server"]
     db = db or os.environ["db"]
 
-    engine = create_engine('postgresql+psycopg2://{user}:{password}@{server}/{db}'.format(user=user, password=password, server=server, db=db))
+    engine = create_engine('postgresql+psycopg2://{user}:{password}@{server}/{db}'.format(user=user, password=password, server=server, db=db), echo=echo)
     return sessionmaker(bind=engine)()
 
 
@@ -43,8 +43,8 @@ def session_test(meta, file=None, echo=False):
     return sessionmaker(bind=engine)()
 
 
-def session_file(file):
-    engine = create_engine("sqlite:///{file}".format(file=file))
+def session_file(file, echo=False):
+    engine = create_engine("sqlite:///{file}".format(file=file), echo=echo)
     return sessionmaker(bind=engine)()
 
 

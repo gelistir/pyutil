@@ -5,8 +5,7 @@ import sqlalchemy as _sq
 from pyutil.performance.summary import NavSeries as _NavSeries
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
-from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.interfaces.association import association_table
+from pyutil.sql.interfaces.products import ProductInterface, association_table
 from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
