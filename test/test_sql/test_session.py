@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from pyutil.sql.base import Base
 from pyutil.sql.session import session_test, get_one_or_create, get_one_or_none
-from pyutil.sql.interfaces.symbol import Symbol
+from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.interfaces.risk.currency import Currency
 
 

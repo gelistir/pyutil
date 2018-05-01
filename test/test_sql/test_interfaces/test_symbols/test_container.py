@@ -4,8 +4,8 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.model.ref import Field, DataType
-from pyutil.sql.interfaces.symbol import Symbol, SymbolType, Symbols
-from pyutil.sql.interfaces.portfolio import Portfolio, Portfolios
+from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType, Symbols
+from pyutil.sql.interfaces.symbols.portfolio import Portfolio, Portfolios
 from test.config import test_portfolio, read_frame
 
 

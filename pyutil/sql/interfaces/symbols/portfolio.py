@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship as _relationship
 
 from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
-from pyutil.sql.interfaces.products import ProductInterface, association_table
+from pyutil.sql.interfaces.products import ProductInterface, association_table, Products
 from pyutil.sql.interfaces.symbols.symbol import Symbol, Symbols
 
 _association_table = association_table(left="symbol", right="portfolio")
@@ -61,10 +61,7 @@ class Portfolio(ProductInterface):
 
     @property
     def nav(self):
-        if "nav" in self.timeseries.keys():
-            return fromNav(self.timeseries["nav"])
-        else:
-            return self.portfolio.nav
+        return fromNav(self.get_timeseries(name="nav"))
 
     @property
     def leverage(self):
@@ -105,6 +102,10 @@ class Portfolios(list):
         for a in seq:
             assert isinstance(a, Portfolio)
         self.__portfolio = {portfolio.name: portfolio.nav for portfolio in self}
+
+    @property
+    def reference(self):
+        return Products(self).reference
 
     @property
     def mtd(self):

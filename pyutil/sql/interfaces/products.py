@@ -84,7 +84,7 @@ class Products(list):
         def f(ref):
             return pd.Series(dict(ref)).rename(index=lambda x: x.name)
 
-        x = pd.DataFrame({product: f(product.reference) for product in self}).transpose()
+        x =  pd.DataFrame({product: f(product.reference) for product in self}).transpose()
         x.index.names = ["Product"]
         return x
 

@@ -2,7 +2,7 @@ import pandas as pd
 from unittest import TestCase
 
 from pyutil.sql.model.ref import Field, FieldType, DataType
-from pyutil.sql.interfaces.symbol import Symbol, SymbolType
+from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 
 
 class TestSymbol(TestCase):

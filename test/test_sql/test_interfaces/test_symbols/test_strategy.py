@@ -2,8 +2,8 @@ from unittest import TestCase
 
 import pandas as pd
 
-from pyutil.sql.interfaces.strategy import Strategy
-from pyutil.sql.interfaces.symbol import Symbol
+from pyutil.sql.interfaces.symbols.strategy import Strategy
+from pyutil.sql.interfaces.symbols.symbol import Symbol
 from test.config import resource
 
 

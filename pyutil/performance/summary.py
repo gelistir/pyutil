@@ -237,8 +237,11 @@ class NavSeries(pd.Series):
         return period_returns(self.returns, today=self.index[-1])
 
     def adjust(self, value=100.0):
-        first = self[self.dropna().index[0]]
-        return NavSeries(self * value / first)
+        if self.empty:
+            return NavSeries(pd.Series({}))
+        else:
+            first = self[self.dropna().index[0]]
+            return NavSeries(self * value / first)
 
     @property
     def monthly(self):

@@ -2,8 +2,8 @@ import pandas as pd
 from unittest import TestCase
 
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
-from pyutil.sql.interfaces.portfolio import Portfolio, Portfolios
-from pyutil.sql.interfaces.symbol import Symbol, SymbolType
+from pyutil.sql.interfaces.symbols.portfolio import Portfolio, Portfolios
+from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 
 import pandas.util.testing as pdt
 

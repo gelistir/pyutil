@@ -2,7 +2,7 @@ import sqlalchemy as _sq
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyutil.performance.summary import fromNav
-from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.products import ProductInterface, Products
 from pyutil.sql.model.ref import Field, DataType, FieldType
 
 
@@ -55,3 +55,15 @@ class Security(ProductInterface):
     @property
     def bloomberg_ticker(self):
         return self.get_reference(field=FIELDS["Lobnek Ticker Symbol Bloomberg"])
+
+
+class Securities(list):
+    def __init__(self, seq):
+        super().__init__(seq)
+        for a in seq:
+            assert isinstance(a, Security)
+
+    @property
+    def reference(self):
+        return Products(self).reference
+

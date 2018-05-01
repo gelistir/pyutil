@@ -3,7 +3,7 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.sql.interfaces.frames import Frame
+from pyutil.sql.interfaces.symbols.frames import Frame
 
 
 class TestModels(TestCase):

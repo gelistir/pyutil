@@ -5,7 +5,7 @@ import sqlalchemy as _sq
 from pyutil.performance.summary import NavSeries as _NavSeries
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
-from pyutil.sql.interfaces.products import ProductInterface, association_table
+from pyutil.sql.interfaces.products import ProductInterface, association_table, Products
 from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
@@ -132,3 +132,14 @@ class Owner(ProductInterface):
             return _NavSeries((x + 1.0).cumprod())
         except:
             return _NavSeries(_pd.Series({}))
+
+
+class Owners(list):
+    def __init__(self, seq):
+        super().__init__(seq)
+        for a in seq:
+            assert isinstance(a, Owner)
+
+    @property
+    def reference(self):
+        return Products(self).reference
