@@ -76,7 +76,7 @@ class ProductInterface(MyMixin, Base):
         return self._timeseries[k].upsert(data)
 
     def frame(self, name):
-        return _pd.DataFrame({x.secondary: x.series for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
+        return _pd.DataFrame({x.secondary: x.series_fast for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
 
 
 class Products(object):

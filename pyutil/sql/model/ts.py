@@ -1,3 +1,5 @@
+from io import BytesIO
+
 import pandas as pd
 
 import pandas as _pd
@@ -22,6 +24,7 @@ class Timeseries(Base):
     secondary_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), nullable=True)
     secondary = relationship("ProductInterface", foreign_keys=[secondary_id])
 
+    _jdata = sq.Column("jdata", sq.LargeBinary)
     sq.UniqueConstraint('product', 'name', 'secondary_id')
 
     _data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'),
@@ -65,11 +68,28 @@ class Timeseries(Base):
                 else:
                     self._data[d].value = value
 
+        # update data
+        x = _pd.Series({date: x.value for date, x in self._data.items()})
+        if not x.empty:
+            # we read date from database!
+            x = x.rename(index=lambda a: _pd.Timestamp(a)).sort_index()
+            assert x.index.is_monotonic_increasing, "Index is not increasing"
+            assert not x.index.has_duplicates, "Index has duplicates"
+
+        self._jdata = x.to_json().encode()
         return self
 
     @property
+    def series_fast(self):
+        try:
+            return pd.read_json(BytesIO(self._jdata).read().decode(), typ="series")
+        except ValueError:
+            return pd.Series({})
+
+    @property
     def last_valid(self):
-        return self.series.last_valid_index()
+        #print(self.series_fast)
+        return self.series_fast.last_valid_index()
 
     @property
     def key(self):
