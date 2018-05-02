@@ -81,9 +81,10 @@ class _ReferenceData(Base):
 
     content = sq.Column(sq.String(200), nullable=False)
 
-    product_id = sq.Column("product_id", sq.Integer, sq.ForeignKey("productinterface.id"), primary_key=True)
+    product_id = sq.Column("product_id", sq.Integer, sq.ForeignKey("productinterface.id"), primary_key=True, index=True)
     product = relationship("ProductInterface", foreign_keys=[product_id], back_populates="_refdata")
 
+    sq.UniqueConstraint("field_id", "product_id")
 
     @property
     def value(self):

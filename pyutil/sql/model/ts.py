@@ -16,7 +16,7 @@ class Timeseries(Base):
     id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
     name = sq.Column(sq.String(100), nullable=False)
 
-    product_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"))
+    product_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), index=True)
     product = relationship("ProductInterface", foreign_keys=[product_id], back_populates="_timeseries")
 
     secondary_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), nullable=True)
@@ -83,7 +83,9 @@ class _TimeseriesData(Base):
     __tablename__ = 'ts_data'
     date = sq.Column(sq.Date, primary_key=True)
     value = sq.Column(sq.Float)
-    ts_id = sq.Column("ts_id", sq.Integer, sq.ForeignKey(Timeseries.id), primary_key=True)
+    ts_id = sq.Column("ts_id", sq.Integer, sq.ForeignKey(Timeseries.id), primary_key=True, index=True)
+
+    sq.UniqueConstraint('data', 'ts_id')
 
     def __init__(self, date, value, ts):
         assert isinstance(date, datetype)
