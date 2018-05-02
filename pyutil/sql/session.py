@@ -40,8 +40,9 @@ def session_test(meta, file=None, echo=False, views=None):
     meta.drop_all(engine)
     meta.create_all(engine)
 
-    #with open(resource("views.ddl"), "r") as f:
     connection = engine.connect()
+    views = views or []
+
     for a in views:
         connection.execute(a)
 
