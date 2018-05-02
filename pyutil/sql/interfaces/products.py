@@ -43,7 +43,7 @@ class ProductInterface(MyMixin, Base):
     _timeseries = relationship(Timeseries, collection_class=attribute_mapped_collection('key'),
                                cascade="all, delete-orphan", back_populates="product", foreign_keys=[Timeseries.product_id], lazy="joined")
 
-    timeseries = association_proxy('_timeseries', 'series', creator=None)
+    timeseries = association_proxy('_timeseries', 'series_fast', creator=None)
 
     reference = association_proxy('_refdata', 'value', creator=lambda k, v: _ReferenceData(field=k, content=v))
 

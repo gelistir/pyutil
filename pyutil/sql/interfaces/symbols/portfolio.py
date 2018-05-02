@@ -1,5 +1,6 @@
 import pandas as pd
 import sqlalchemy as sq
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 
 from pyutil.performance.summary import fromNav
@@ -9,17 +10,28 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol, Symbols
 
 _association_table = association_table(left="symbol", right="portfolio")
 
-Symbol.portfolio = _relationship("Portfolio", secondary=_association_table, back_populates="symbols")
+Symbol.portfolio = _relationship("Portfolio", secondary=_association_table, back_populates="_symbols")
 
 
 class Portfolio(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "portfolio"}
-    symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio", lazy="joined")
-    name = sq.Column(sq.String, unique=True)
+    _symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio", lazy="joined")
+    __name = sq.Column("name", sq.String, unique=True)
+
+    def __init__(self, name):
+        self.__name = name
+
+    @hybrid_property
+    def name(self):
+        return self.__name
 
     @property
     def empty(self):
         return self.frame(name="price").empty and self.frame(name="weight").empty
+
+    @property
+    def symbols(self):
+        return self._symbols
 
     def upsert_portfolio(self, portfolio, assets=None):
         assert isinstance(portfolio, _Portfolio)
@@ -67,7 +79,7 @@ class Portfolio(ProductInterface):
         return self.timeseries["leverage"]
 
     def sector(self, total=False):
-        map = {asset: asset.group.name for asset in self.symbols}
+        map = {asset: asset.group for asset in self.symbols}
         return self.portfolio.sector_weights(symbolmap=map, total=total)
 
     def sector_tail(self, total=False):

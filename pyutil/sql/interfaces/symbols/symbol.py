@@ -17,14 +17,14 @@ class SymbolType(_enum.Enum):
 
 class Symbol(ProductInterface):
     __bloomberg_symbol = sq.Column("bloomberg_symbol", sq.String(50), unique=True)
-    group = sq.Column(_Enum(SymbolType))
+    __group = sq.Column(_Enum(SymbolType))
     internal = sq.Column(sq.String, nullable=True)
 
     __mapper_args__ = {"polymorphic_identity": "symbol"}
 
     def __init__(self, bloomberg_symbol, group=None, internal=None):
         self.__bloomberg_symbol = bloomberg_symbol
-        self.group = group
+        self.__group = group
         self.internal = internal
 
     def __repr__(self):
@@ -32,6 +32,10 @@ class Symbol(ProductInterface):
 
     def __lt__(self, other):
         return self.bloomberg_symbol < other.bloomberg_symbol
+
+    @hybrid_property
+    def group(self):
+        return self.__group.name
 
     @hybrid_property
     def bloomberg_symbol(self):
@@ -54,7 +58,7 @@ class Symbols(Products):
 
     @hybrid_property
     def group(self):
-        return {asset: asset.group.name for asset in self.list}
+        return {asset: asset.group for asset in self.list}
 
     @property
     def group_internal(self):

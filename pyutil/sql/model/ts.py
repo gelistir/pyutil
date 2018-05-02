@@ -38,15 +38,15 @@ class Timeseries(Base):
         if data is not None:
             self.upsert(data)
 
-    @property
-    def series(self):
-        x = _pd.Series({date: x.value for date, x in self._data.items()})
-        if not x.empty:
-            # we read date from database!
-            x = x.rename(index=lambda a: _pd.Timestamp(a)).sort_index()
-            assert x.index.is_monotonic_increasing, "Index is not increasing"
-            assert not x.index.has_duplicates, "Index has duplicates"
-        return x
+    # @property
+    # def series(self):
+    #     x = _pd.Series({date: x.value for date, x in self._data.items()})
+    #     if not x.empty:
+    #         # we read date from database!
+    #         x = x.rename(index=lambda a: _pd.Timestamp(a)).sort_index()
+    #         assert x.index.is_monotonic_increasing, "Index is not increasing"
+    #         assert not x.index.has_duplicates, "Index has duplicates"
+    #     return x
 
     def upsert(self, ts=None):
         if ts is not None:
@@ -82,7 +82,7 @@ class Timeseries(Base):
     @property
     def series_fast(self):
         try:
-            return pd.read_json(BytesIO(self._jdata).read().decode(), typ="series")
+            return pd.read_json(BytesIO(self._jdata).read().decode(), typ="series").apply(float)
         except ValueError:
             return pd.Series({})
 

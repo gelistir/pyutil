@@ -7,6 +7,8 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 
 import pandas.util.testing as pdt
 
+from test.config import test_portfolio
+
 
 class TestPortfolio(TestCase):
     @classmethod
@@ -76,3 +78,19 @@ class TestPortfolio(TestCase):
         p = _Portfolio(prices=prices, weights=weights)
         pdt.assert_series_equal(p.leverage,
                                 pd.Series({pd.Timestamp("2012-05-05"): 0.5, pd.Timestamp("2012-05-07"): 0.5}))
+
+class TestPortfolioBig(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.p = Portfolio(name="test")
+        cls.test_portfolio = test_portfolio()
+
+        assets = {asset: Symbol(bloomberg_symbol=asset) for asset in cls.test_portfolio.assets}
+
+        cls.p.upsert_portfolio(portfolio=cls.test_portfolio, assets=assets)
+
+    def test_load(self):
+
+        pdt.assert_frame_equal(self.p.weight.rename(columns=lambda x: x.bloomberg_symbol), self.test_portfolio.weights)
+        pdt.assert_frame_equal(self.p.price.rename(columns=lambda x: x.bloomberg_symbol), self.test_portfolio.prices)
+

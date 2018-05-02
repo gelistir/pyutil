@@ -2,6 +2,7 @@ import enum as _enum
 
 import pandas as pd
 import sqlalchemy as sq
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 from sqlalchemy.types import Enum as _Enum
 
@@ -19,19 +20,23 @@ class StrategyType(_enum.Enum):
 
 class Strategy(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "strategy"}
-    name = sq.Column(sq.String(50), unique=True)
+    __name = sq.Column(sq.String(50), unique=True)
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)
-    portfolio_id = sq.Column(sq.Integer, sq.ForeignKey("portfolio.id"), nullable=False)
-    _portfolio = _relationship(Portfolio, uselist=False, back_populates="strategy", foreign_keys=[portfolio_id], lazy="joined")
+    _portfolio_id = sq.Column("portfolio_id", sq.Integer, sq.ForeignKey("portfolio.id"), nullable=False)
+    _portfolio = _relationship(Portfolio, uselist=False, back_populates="strategy", foreign_keys=[_portfolio_id], lazy="joined")
     type = sq.Column(_Enum(StrategyType))
 
     def __init__(self, name, active=True, source="", type=StrategyType.conservative):
-        self.name = name
-        self._portfolio = Portfolio(name=self.name, strategy=self)
+        self.__name = name
+        self._portfolio = Portfolio(name=self.name)
         self.active = active
         self.source = source
         self.type = type
+
+    @hybrid_property
+    def name(self):
+        return self.__name
 
     def __module(self):
         from types import ModuleType
@@ -69,7 +74,7 @@ class Strategy(ProductInterface):
         return self._portfolio.portfolio
 
 
-Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio", primaryjoin="Portfolio.id == Strategy.portfolio_id")
+Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio", primaryjoin="Portfolio.id == Strategy._portfolio_id")
 
 
 # strategy has to be defined in a file

@@ -31,7 +31,7 @@ class TestSymbol(TestCase):
         self.assertIsNone(self.p1.internal)
 
     def test_group(self):
-        self.assertEqual(self.p1.group.name, "fixed_income")
+        self.assertEqual(self.p1.group, "fixed_income")
 
     #def test_id(self):
     #    print(self.p1.id)

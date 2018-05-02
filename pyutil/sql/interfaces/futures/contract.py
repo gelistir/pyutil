@@ -1,4 +1,5 @@
 from sqlalchemy import Date
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 import sqlalchemy as sq
@@ -9,9 +10,9 @@ from pyutil.sql.interfaces.products import ProductInterface
 
 class Contract(ProductInterface):
     _future_id = sq.Column("future_id", sq.Integer, sq.ForeignKey("future.id"))
-    future = relationship("Future", foreign_keys=[_future_id], back_populates="contracts")
-    notice = sq.Column(Date)
-    figi = sq.Column(sq.String(200), unique=True)
+    _future = relationship("Future", foreign_keys=[_future_id], back_populates="contracts")
+    __notice = sq.Column("notice", Date)
+    __figi = sq.Column("figi", sq.String(200), unique=True)
     bloomberg_symbol = sq.Column(sq.String(200), unique=True)
     fut_month_yr = sq.Column(sq.String(200), unique=True)
 
@@ -19,14 +20,31 @@ class Contract(ProductInterface):
 
     def alive(self, today=None):
         today = today or _pd.Timestamp("today").date()
-        return self.notice > today
+        return self.__notice > today
+
+    def __init__(self, future, figi, notice):
+        self._future = future
+        self.__figi = figi
+        self.__notice = notice
+
+    @hybrid_property
+    def future(self):
+        return self._future
+
+    @hybrid_property
+    def figi(self):
+        return self.__figi
+
+    @hybrid_property
+    def notice(self):
+        return self.__notice
 
     def __repr__(self):
-        return self.bloomberg_symbol
+        return "({name})".format(name=self.bloomberg_symbol)
 
     @property
     def quandl(self):
-        return "{quandl}{month}{year}".format(quandl=self.future.quandl, month=self.month_x, year=self.year)
+        return "{quandl}{month}{year}".format(quandl=self._future.quandl, month=self.month_x, year=self.year)
 
     @property
     def month_x(self):

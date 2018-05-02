@@ -16,12 +16,12 @@ class Future(ProductInterface):
     category = relationship(FuturesCategory, uselist=False, backref="future", foreign_keys=[_category_id])
     exchange = relationship(Exchange, uselist=False, backref="future", foreign_keys=[_exchange_id])
 
-    contracts = relationship(Contract, back_populates="future", foreign_keys=[Contract.id], order_by=Contract.notice)
+    contracts = relationship(Contract, back_populates="_future", foreign_keys=[Contract.id], order_by=Contract.notice)
     # todo: test the ordering
     __mapper_args__ = {"polymorphic_identity": "Future"}
 
     def __repr__(self):
-        return self.name
+        return "({name})".format(name=self.name)
 
     @property
     def max_notice(self):
@@ -34,8 +34,10 @@ class Future(ProductInterface):
     def figis(self):
         return [c.figi for c in self.contracts]
 
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.name == other.name
+
 
 class Futures(Products):
     def __init__(self, futures):
         super().__init__(futures, cls=Future, attribute="name")
-
