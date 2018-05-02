@@ -35,6 +35,8 @@ class TestDatabaseRisk(TestCase):
                                pd.DataFrame(index=[self.s1], columns=["Field A"], data=[[100]]), check_names=False)
 
     def test_owners(self):
+        print(self.db.owners.reference)
+
         pdt.assert_frame_equal(self.db.owners.reference,
                                pd.DataFrame(index=[self.o1], columns=["Field A"], data=[[200]]), check_names=False)
 

@@ -77,6 +77,9 @@ class Portfolio(ProductInterface):
     def __lt__(self, other):
         return self.name < other.name
 
+    def __repr__(self):
+        return "({name})".format(name=self.name)
+
     @property
     def state(self):
 
@@ -95,24 +98,11 @@ class Portfolio(ProductInterface):
         return frame.set_index(["Group", "Sector Weight", "Asset"])
 
 
-class Portfolios(object):
+class Portfolios(Products):
     def __init__(self, portfolios):
-        for a in portfolios:
-            assert isinstance(a, Portfolio)
+        super().__init__(portfolios, cls=Portfolio, attribute="name")
 
-        self.__portfolios = {portfolio.name: portfolio for portfolio in portfolios}
-        self.__nav = {name: portfolio.nav for name, portfolio in self.__portfolios.items()}
-
-    def __getitem__(self, item):
-        return self.__portfolios[item]
-
-    def __iter__(self):
-        for portfolio in self.__portfolios.values():
-            yield portfolio
-
-    @property
-    def reference(self):
-        return Products(self.__portfolios.values()).reference
+        self.__nav = {name: portfolio.nav for name, portfolio in self.to_dict().items()}
 
     @property
     def mtd(self):
@@ -153,7 +143,7 @@ class Portfolios(object):
         return frame.transpose()
 
     def sector(self, total=False):
-        frame = pd.DataFrame({name: portfolio.sector_tail(total=total) for name, portfolio in self.__portfolios.items()})
+        frame = pd.DataFrame({name: portfolio.sector_tail(total=total) for name, portfolio in self.to_dict().items()})
         return frame.transpose()
 
     def frames(self, total=False):

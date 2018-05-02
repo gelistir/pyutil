@@ -35,21 +35,7 @@ class Future(ProductInterface):
         return [c.figi for c in self.contracts]
 
 
-class Futures(object):
+class Futures(Products):
     def __init__(self, futures):
-        for a in futures:
-            assert isinstance(a, Future)
+        super().__init__(futures, cls=Future, attribute="name")
 
-        self.__futures = {s.name: s for s in futures}
-
-    def __getitem__(self, item):
-        return self.__futures[item]
-
-    def __iter__(self):
-        for future in self.__futures.values():
-            yield future
-
-
-    @property
-    def reference(self):
-        return Products(self.__futures.values()).reference

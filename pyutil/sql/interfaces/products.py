@@ -49,7 +49,7 @@ class ProductInterface(MyMixin, Base):
 
     @property
     def reference_series(self):
-        return pd.Series(dict(self.reference))
+        return pd.Series(dict(self.reference)).rename(index=lambda x: x.name)
 
     def get_reference(self, field, default=None):
         return dict(self.reference).get(field, default)
@@ -79,21 +79,39 @@ class ProductInterface(MyMixin, Base):
         return _pd.DataFrame({x.secondary: x.series for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
 
 
-class Products(list):
-    def __init__(self, seq):
-        super().__init__(seq)
+class Products(object):
+    def __init__(self, products, cls, attribute="name"):
+        for p in products:
+            assert isinstance(p, cls)
+
+        self.__products = {getattr(x, attribute): x for x in products}
+
+    def __getitem__(self, item):
+        return self.__products[item]
+
+    def __iter__(self):
+        for symbol in self.list:
+            yield symbol
+
+
+    @property
+    def list(self):
+        return list(self.__products.values())
 
     @property
     def reference(self):
-        def f(ref):
-            return pd.Series(dict(ref)).rename(index=lambda x: x.name)
-
-        x =  pd.DataFrame({product: f(product.reference) for product in self}).transpose()
+        x =  pd.DataFrame({product: product.reference_series for product in self.list}).transpose()
         x.index.names = ["Product"]
         return x
 
     def history(self, field="PX_LAST"):
         # this could be slow
-        x = pd.DataFrame({product: product.get_timeseries(name=field) for product in self})
+        x = pd.DataFrame({product: product.get_timeseries(name=field) for product in self.list})
         x.index.names = ["Date"]
         return x
+
+    def to_dict(self):
+        return self.__products
+
+    def __repr__(self):
+        return str(self.__products)

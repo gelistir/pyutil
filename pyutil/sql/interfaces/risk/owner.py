@@ -134,20 +134,6 @@ class Owner(ProductInterface):
             return _NavSeries(_pd.Series({}))
 
 
-class Owners(object):
+class Owners(Products):
     def __init__(self, owners):
-        for a in owners:
-            assert isinstance(a, Owner)
-
-        self.__owners = {x.name: x for x in owners}
-
-    @property
-    def reference(self):
-        return Products(self.__owners.values()).reference
-
-    def __getitem__(self, item):
-        return self.__owners[item]
-
-    def __iter__(self):
-        for owner in self.__owners.values():
-            yield owner
+        super().__init__(owners, cls=Owner, attribute="name")
