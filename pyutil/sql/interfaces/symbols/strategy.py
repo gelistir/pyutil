@@ -17,9 +17,6 @@ class StrategyType(_enum.Enum):
     dynamic = 'dynamic'
 
 
-
-
-
 class Strategy(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "strategy"}
     name = sq.Column(sq.String(50), unique=True)
@@ -70,6 +67,7 @@ class Strategy(ProductInterface):
     @property
     def portfolio(self):
         return self._portfolio.portfolio
+
 
 Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio", primaryjoin="Portfolio.id == Strategy.portfolio_id")
 

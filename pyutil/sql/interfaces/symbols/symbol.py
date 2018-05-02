@@ -44,8 +44,6 @@ class Symbol(ProductInterface):
         return hash(self.bloomberg_symbol)
 
 
-
-
 class Symbols(list):
     def __init__(self, seq):
         super().__init__(seq)
