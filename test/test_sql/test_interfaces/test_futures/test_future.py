@@ -50,10 +50,10 @@ class TestFutures(TestCase):
 
     def test_contract(self):
         f = self.future()
-        c = Contract(futures=f, notice=pd.Timestamp("2000-03-16"), figi="B1", bloomberg_symbol="ESH00 Index", fut_month_yr="MAR 00")
+        c = Contract(future=f, notice=pd.Timestamp("2000-03-16"), figi="B1", bloomberg_symbol="ESH00 Index", fut_month_yr="MAR 00")
         self.assertListEqual(f.contracts, [c])
 
-        self.assertEqual(c.futures, f)
+        self.assertEqual(c.future, f)
         self.assertEqual(c.bloomberg_symbol, "ESH00 Index")
         self.assertFalse(c.alive(today=pd.Timestamp("2001-02-15")))
         self.assertTrue(c.alive(today=pd.Timestamp("2000-01-15")))

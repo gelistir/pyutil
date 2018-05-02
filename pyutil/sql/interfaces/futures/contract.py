@@ -8,8 +8,8 @@ from pyutil.sql.interfaces.products import ProductInterface
 
 
 class Contract(ProductInterface):
-    _futures_id = sq.Column("futures_id", sq.Integer, sq.ForeignKey("futures.id"))
-    futures = relationship("Futures", foreign_keys=[_futures_id], back_populates="contracts")
+    _future_id = sq.Column("future_id", sq.Integer, sq.ForeignKey("future.id"))
+    future = relationship("Future", foreign_keys=[_future_id], back_populates="contracts")
     notice = sq.Column(Date)
     figi = sq.Column(sq.String(200), unique=True)
     bloomberg_symbol = sq.Column(sq.String(200), unique=True)
@@ -26,7 +26,7 @@ class Contract(ProductInterface):
 
     @property
     def quandl(self):
-        return "{quandl}{month}{year}".format(quandl=self.futures.quandl, month=self.month_x, year=self.year)
+        return "{quandl}{month}{year}".format(quandl=self.future.quandl, month=self.month_x, year=self.year)
 
     @property
     def month_x(self):

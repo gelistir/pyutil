@@ -61,7 +61,7 @@ class Securities(object):
     def __init__(self, securities):
         for a in securities:
             assert isinstance(a, Security)
-        self.__securities = {s.name: s for s in securities}
+        self.__securities = {s.entity_id: s for s in securities}
 
     @property
     def reference(self):
