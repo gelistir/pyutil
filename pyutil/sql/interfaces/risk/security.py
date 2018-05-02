@@ -57,13 +57,15 @@ class Security(ProductInterface):
         return self.get_reference(field=FIELDS["Lobnek Ticker Symbol Bloomberg"])
 
 
-class Securities(list):
-    def __init__(self, seq):
-        super().__init__(seq)
-        for a in seq:
+class Securities(object):
+    def __init__(self, securities):
+        for a in securities:
             assert isinstance(a, Security)
+        self.__securities = {s.name: s for s in securities}
 
     @property
     def reference(self):
-        return Products(self).reference
+        return Products(self.__securities.values()).reference
 
+    def __getitem__(self, item):
+        return self.__securities[item]

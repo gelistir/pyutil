@@ -47,6 +47,10 @@ class ProductInterface(MyMixin, Base):
 
     reference = association_proxy('_refdata', 'value', creator=lambda k, v: _ReferenceData(field=k, content=v))
 
+    @property
+    def reference_series(self):
+        return pd.Series(dict(self.reference))
+
     def get_reference(self, field, default=None):
         return dict(self.reference).get(field, default)
 

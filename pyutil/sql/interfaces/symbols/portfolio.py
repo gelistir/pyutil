@@ -1,6 +1,5 @@
 import pandas as pd
 import sqlalchemy as sq
-from sqlalchemy import inspect
 from sqlalchemy.orm import relationship as _relationship
 
 from pyutil.performance.summary import fromNav
@@ -96,20 +95,24 @@ class Portfolio(ProductInterface):
         return frame.set_index(["Group", "Sector Weight", "Asset"])
 
 
-class Portfolios(list):
-    def __init__(self, seq):
-        super().__init__(seq)
-        for a in seq:
+class Portfolios(object):
+    def __init__(self, portfolios):
+        for a in portfolios:
             assert isinstance(a, Portfolio)
-        self.__portfolio = {portfolio.name: portfolio.nav for portfolio in self}
+
+        self.__portfolios = {portfolio.name: portfolio for portfolio in portfolios}
+        self.__nav = {name: portfolio.nav for name, portfolio in self.__portfolios.items()}
+
+    def __getitem__(self, item):
+        return self.__portfolios[item]
 
     @property
     def reference(self):
-        return Products(self).reference
+        return Products(self.__portfolios.values()).reference
 
     @property
     def mtd(self):
-        frame = pd.DataFrame({key: item.mtd_series for key, item in self.__portfolio.items()}).sort_index(
+        frame = pd.DataFrame({key: item.mtd_series for key, item in self.__nav.items()}).sort_index(
             ascending=False)
         frame.index = [a.strftime("%b %d") for a in frame.index]
         frame = frame.transpose()
@@ -118,7 +121,7 @@ class Portfolios(list):
 
     @property
     def ytd(self):
-        frame = pd.DataFrame({key: item.ytd_series for key, item in self.__portfolio.items()}).sort_index(
+        frame = pd.DataFrame({key: item.ytd_series for key, item in self.__nav.items()}).sort_index(
             ascending=False)
         frame.index = [a.strftime("%b") for a in frame.index]
         frame = frame.transpose()
@@ -126,7 +129,7 @@ class Portfolios(list):
         return frame
 
     def recent(self, n=15):
-        frame = pd.DataFrame({key: item.recent() for key, item in self.__portfolio.items()}).sort_index(ascending=False)
+        frame = pd.DataFrame({key: item.recent() for key, item in self.__nav.items()}).sort_index(ascending=False)
         frame.index = [a.strftime("%b %d") for a in frame.index]
         frame = frame.head(n)
         frame = frame.transpose()
@@ -135,24 +138,18 @@ class Portfolios(list):
 
     @property
     def period_returns(self):
-        frame = pd.DataFrame({key: item.period_returns for key, item in self.__portfolio.items()}).sort_index(
+        frame = pd.DataFrame({key: item.period_returns for key, item in self.__nav.items()}).sort_index(
             ascending=False)
         return frame.transpose()
 
     @property
     def performance(self):
-        frame = pd.DataFrame({key: item.summary() for key, item in self.__portfolio.items()}).sort_index(
+        frame = pd.DataFrame({key: item.summary() for key, item in self.__nav.items()}).sort_index(
             ascending=False)
         return frame.transpose()
 
     def sector(self, total=False):
-        for portfolio in self:
-            print(type(inspect(portfolio)))
-            print(inspect(portfolio).detached)
-            print(inspect(portfolio).pending)
-
-
-        frame = pd.DataFrame({portfolio.name: portfolio.sector_tail(total=total) for portfolio in self})
+        frame = pd.DataFrame({name: portfolio.sector_tail(total=total) for name, portfolio in self.__portfolios.items()})
         return frame.transpose()
 
     def frames(self, total=False):

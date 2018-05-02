@@ -44,30 +44,34 @@ class Symbol(ProductInterface):
         return hash(self.bloomberg_symbol)
 
 
-class Symbols(list):
-    def __init__(self, seq):
-        super().__init__(seq)
-        for a in seq:
+class Symbols(object):
+    def __init__(self, symbols):
+        for a in symbols:
             assert isinstance(a, Symbol)
+
+        self.__symbols = {s.bloomberg_symbol: s for s in symbols}
+
+    def __getitem__(self, item):
+        return self.__symbols[item]
 
     @property
     def reference(self):
-        return Products(self).reference
+        return Products(self.__symbols.values()).reference
 
     @hybrid_property
     def internal(self):
-        return {asset: asset.internal for asset in self}
+        return {asset: asset.internal for asset in self.__symbols.values()}
 
     @hybrid_property
     def group(self):
-        return {asset: asset.group.name for asset in self}
+        return {asset: asset.group.name for asset in self.__symbols.values()}
 
     @property
     def group_internal(self):
         return pd.DataFrame({"Group": pd.Series(self.group), "Internal": pd.Series(self.internal)})
 
     def history(self, field="PX_LAST"):
-        return Products(self).history(field=field)
+        return Products(self.__symbols.values()).history(field=field)
 
     def to_dict(self):
-        return {asset.bloomberg_symbol: asset for asset in self}
+        return self.__symbols

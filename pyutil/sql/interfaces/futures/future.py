@@ -3,13 +3,11 @@ import sqlalchemy as sq
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
-from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.products import ProductInterface, Products
 from sqlalchemy.orm import relationship
 
 
-
-class Futures(ProductInterface):
-
+class Future(ProductInterface):
     name = sq.Column(sq.String(200), unique=True)
     internal = sq.Column(sq.String(200), unique=True)
     quandl = sq.Column(sq.String(200), nullable=True)
@@ -35,3 +33,18 @@ class Futures(ProductInterface):
     @property
     def figis(self):
         return [c.figi for c in self.contracts]
+
+
+class Futures(object):
+    def __init__(self, futures):
+        for a in futures:
+            assert isinstance(a, Future)
+
+        self.__futures = {s.name: s for s in futures}
+
+    def __getitem__(self, item):
+        return self.__futures[item]
+
+    @property
+    def reference(self):
+        return Products(self.__futures.values()).reference

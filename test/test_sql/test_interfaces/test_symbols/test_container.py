@@ -61,7 +61,7 @@ class TestContainer(TestCase):
         self.assertAlmostEqual(self.portfolios.period_returns["One Year"]["Peter"], 0.015213, places=5)
 
     def test_state(self):
-        print(self.portfolios[0].state)
+        print(self.portfolios["Peter"].state)
 
     def test_to_dict(self):
         self.assertDictEqual(self.assets.to_dict(), {"A": self.s1, "B": self.s2, "C": self.s3})

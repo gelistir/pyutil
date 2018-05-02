@@ -5,7 +5,7 @@ import pandas as pd
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
-from pyutil.sql.interfaces.futures.futures import Futures
+from pyutil.sql.interfaces.futures.future import Future
 from pyutil.sql.model.ref import Field, DataType, FieldType
 
 
@@ -16,7 +16,7 @@ class TestFutures(TestCase):
         # define a category
         c = FuturesCategory(name="Equity Index")
         # define the future
-        return Futures(name="ES1 Index", internal="S&P 500 E-Mini Futures", quandl="CME/ES", exchange=e, category=c)
+        return Future(name="ES1 Index", internal="S&P 500 E-Mini Futures", quandl="CME/ES", exchange=e, category=c)
 
     def test_exchange(self):
         e = Exchange(name="Chicago Mercantile Exchange", exch_code="CME")
@@ -72,7 +72,7 @@ class TestFutures(TestCase):
         # define an exchange
         e = Exchange(name="Chicago Mercantile Exchange", exch_code="CME")
         c = FuturesCategory(name="Agricultural Products")
-        f = Futures(name="C 1 Comdty", exchange=e, category=c)
+        f = Future(name="C 1 Comdty", exchange=e, category=c)
 
         self.assertIsNone(f.max_notice)
         self.assertListEqual(f.contracts, [])
