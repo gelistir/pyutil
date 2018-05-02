@@ -30,7 +30,7 @@ def session(server=None, db=None, user=None, password=None, echo=False):
     return sessionmaker(bind=engine)()
 
 
-def session_test(meta, file=None, echo=False):
+def session_test(meta, file=None, echo=False, views=None):
     if file:
         engine = create_engine("sqlite:///{file}".format(file=file), echo=echo)
     else:
@@ -39,6 +39,11 @@ def session_test(meta, file=None, echo=False):
     # make the tables...
     meta.drop_all(engine)
     meta.create_all(engine)
+
+    #with open(resource("views.ddl"), "r") as f:
+    connection = engine.connect()
+    for a in views:
+        connection.execute(a)
 
     return sessionmaker(bind=engine)()
 

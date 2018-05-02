@@ -5,8 +5,8 @@ from pyutil.sql.interfaces.products import ProductInterface
 
 
 class Currency(ProductInterface):
-    __name = sq.Column("name", sq.String(50), unique=True, nullable=False)
     __mapper_args__ = {"polymorphic_identity": "Currency"}
+    __name = sq.Column("name", sq.String(50), unique=True, nullable=False)
 
     def __init__(self, name):
         self.__name = name

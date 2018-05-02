@@ -17,6 +17,8 @@ class TestDatabaseSymbols(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.session = session_test(meta=Base.metadata, echo=False)
+
+        # create a view on the spot
         a = cls.session.connection()
         a.execute("CREATE VIEW my_view AS SELECT * FROM symbol")
 
@@ -54,6 +56,5 @@ class TestDatabaseSymbols(TestCase):
         self.assertEqual(s.reference[self.f1], 100)
 
     def test_view_3(self):
-        print(pd.read_sql("SELECT * FROM my_view", con=self.session.connection()))
-
-        assert False
+        a = pd.read_sql("SELECT * FROM my_view", con=self.session.connection(), index_col=["bloomberg_symbol"])
+        pdt.assert_frame_equal(a, pd.DataFrame(index=["AA"], columns=["group", "internal", "id"], data=[["equities",None,1]]), check_names=False)

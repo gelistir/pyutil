@@ -28,9 +28,9 @@ FIELDS = {
 class Owner(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Owner"}
     __entity_id = _sq.Column("entity_id", _sq.Integer, unique=True, nullable=False)
-    __securities = _relationship(Security, secondary=_association_table, backref="owner")
+    __securities = _relationship(Security, secondary=_association_table, backref="owner", lazy="joined")
     __currency_id = _sq.Column("currency_id", _sq.Integer, _sq.ForeignKey(Currency.id), nullable=True)
-    __currency = _relationship(Currency, foreign_keys=[__currency_id])
+    __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
 
     def __init__(self, entity_id, currency):
         self.__entity_id = entity_id
