@@ -147,3 +147,7 @@ class Owners(object):
 
     def __getitem__(self, item):
         return self.__owners[item]
+
+    def __iter__(self):
+        for owner in self.__owners.values():
+            yield owner

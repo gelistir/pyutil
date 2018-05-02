@@ -45,6 +45,11 @@ class Futures(object):
     def __getitem__(self, item):
         return self.__futures[item]
 
+    def __iter__(self):
+        for future in self.__futures.values():
+            yield future
+
+
     @property
     def reference(self):
         return Products(self.__futures.values()).reference

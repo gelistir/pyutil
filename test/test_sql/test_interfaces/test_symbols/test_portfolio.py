@@ -59,6 +59,8 @@ class TestPortfolio(TestCase):
         pp = Portfolios([self.p])
         print(pp.sector(total=False))
 
+        for x in pp:
+            print(x)
         # todo: fill up
 
     def test_lt(self):

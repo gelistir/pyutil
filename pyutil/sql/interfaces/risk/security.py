@@ -69,3 +69,7 @@ class Securities(object):
 
     def __getitem__(self, item):
         return self.__securities[item]
+
+    def __iter__(self):
+        for security in self.__securities.values():
+            yield security

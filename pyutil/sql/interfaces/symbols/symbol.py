@@ -54,6 +54,10 @@ class Symbols(object):
     def __getitem__(self, item):
         return self.__symbols[item]
 
+    def __iter__(self):
+        for symbol in self.__symbols.values():
+            yield symbol
+
     @property
     def reference(self):
         return Products(self.__symbols.values()).reference

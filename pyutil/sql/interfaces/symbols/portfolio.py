@@ -106,6 +106,10 @@ class Portfolios(object):
     def __getitem__(self, item):
         return self.__portfolios[item]
 
+    def __iter__(self):
+        for portfolio in self.__portfolios.values():
+            yield portfolio
+
     @property
     def reference(self):
         return Products(self.__portfolios.values()).reference
