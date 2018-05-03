@@ -34,7 +34,8 @@ class MyMixin(object):
 
 
 class ProductInterface(MyMixin, Base):
-    __name = sq.Column("name", sq.String(200), unique=True, nullable=True)
+    # note that the name should not be unique as Portfolio and Strategy can have the same name
+    __name = sq.Column("name", sq.String(200), unique=False, nullable=True)
     discriminator = sq.Column(sq.String)
     __mapper_args__ = {"polymorphic_on": discriminator}
 
