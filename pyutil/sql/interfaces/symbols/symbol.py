@@ -17,7 +17,7 @@ class SymbolType(_enum.Enum):
 
 class Symbol(ProductInterface):
     __bloomberg_symbol = sq.Column("bloomberg_symbol", sq.String(50), unique=True)
-    __group = sq.Column(_Enum(SymbolType))
+    __group = sq.Column("group", _Enum(SymbolType))
     internal = sq.Column(sq.String, nullable=True)
 
     __mapper_args__ = {"polymorphic_identity": "symbol"}
@@ -62,5 +62,6 @@ class Symbols(Products):
 
     @property
     def group_internal(self):
+        # todo: fillna not working?
         return pd.DataFrame({"Group": pd.Series(self.group), "Internal": pd.Series(self.internal)})
 

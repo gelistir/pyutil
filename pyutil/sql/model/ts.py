@@ -38,15 +38,15 @@ class Timeseries(Base):
         if data is not None:
             self.upsert(data)
 
-    # @property
-    # def series(self):
-    #     x = _pd.Series({date: x.value for date, x in self._data.items()})
-    #     if not x.empty:
-    #         # we read date from database!
-    #         x = x.rename(index=lambda a: _pd.Timestamp(a)).sort_index()
-    #         assert x.index.is_monotonic_increasing, "Index is not increasing"
-    #         assert not x.index.has_duplicates, "Index has duplicates"
-    #     return x
+    @property
+    def series_slow(self):
+        x = _pd.Series({date: x.value for date, x in self._data.items()})
+        if not x.empty:
+            # we read date from database!
+            x = x.rename(index=lambda a: _pd.Timestamp(a)).sort_index()
+            assert x.index.is_monotonic_increasing, "Index is not increasing"
+            assert not x.index.has_duplicates, "Index has duplicates"
+        return x
 
     def upsert(self, ts=None):
         if ts is not None:
@@ -88,7 +88,6 @@ class Timeseries(Base):
 
     @property
     def last_valid(self):
-        #print(self.series_fast)
         return self.series_fast.last_valid_index()
 
     @property

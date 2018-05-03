@@ -38,10 +38,10 @@ class ProductInterface(MyMixin, Base):
     __mapper_args__ = {"polymorphic_on": discriminator}
 
     _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
-                            cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id], lazy="joined")
+                            cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id]) #, lazy="joined")
 
     _timeseries = relationship(Timeseries, collection_class=attribute_mapped_collection('key'),
-                               cascade="all, delete-orphan", back_populates="product", foreign_keys=[Timeseries.product_id], lazy="joined")
+                               cascade="all, delete-orphan", back_populates="product", foreign_keys=[Timeseries.product_id]) #, lazy="joined")
 
     timeseries = association_proxy('_timeseries', 'series_fast', creator=None)
 
@@ -78,6 +78,8 @@ class ProductInterface(MyMixin, Base):
     def frame(self, name):
         return _pd.DataFrame({x.secondary: x.series_fast for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
 
+    def __repr__(self):
+        return "({d}, {id})".format(d=self.discriminator, id=self.id)
 
 class Products(object):
     def __init__(self, products, cls, attribute="name"):
