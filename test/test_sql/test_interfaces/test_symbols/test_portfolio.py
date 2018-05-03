@@ -13,8 +13,8 @@ from test.config import test_portfolio
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.s1 = Symbol(bloomberg_symbol="A", group=SymbolType.fixed_income, internal="AA")
-        cls.s2 = Symbol(bloomberg_symbol="B", group=SymbolType.equities, internal="BB")
+        cls.s1 = Symbol(name="A", group=SymbolType.fixed_income, internal="AA")
+        cls.s2 = Symbol(name="B", group=SymbolType.equities, internal="BB")
 
         cls.s1.upsert_ts(name="price", data={pd.Timestamp("2012-05-05"): 10.0})
         cls.s2.upsert_ts(name="price", data={pd.Timestamp("2012-05-05"): 12.0})
@@ -79,18 +79,19 @@ class TestPortfolio(TestCase):
         pdt.assert_series_equal(p.leverage,
                                 pd.Series({pd.Timestamp("2012-05-05"): 0.5, pd.Timestamp("2012-05-07"): 0.5}))
 
+
 class TestPortfolioBig(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.p = Portfolio(name="test")
         cls.test_portfolio = test_portfolio()
 
-        assets = {asset: Symbol(bloomberg_symbol=asset) for asset in cls.test_portfolio.assets}
+        assets = {asset: Symbol(name=asset) for asset in cls.test_portfolio.assets}
 
         cls.p.upsert_portfolio(portfolio=cls.test_portfolio, assets=assets)
 
     def test_load(self):
 
-        pdt.assert_frame_equal(self.p.weight.rename(columns=lambda x: x.bloomberg_symbol), self.test_portfolio.weights)
-        pdt.assert_frame_equal(self.p.price.rename(columns=lambda x: x.bloomberg_symbol), self.test_portfolio.prices)
+        pdt.assert_frame_equal(self.p.weight.rename(columns=lambda x: x.name), self.test_portfolio.weights)
+        pdt.assert_frame_equal(self.p.price.rename(columns=lambda x: x.name), self.test_portfolio.prices)
 

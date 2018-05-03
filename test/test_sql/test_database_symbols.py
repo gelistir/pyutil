@@ -19,7 +19,7 @@ class TestDatabaseSymbols(TestCase):
         cls.session = session_test(meta=Base.metadata, echo=False)
 
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
-        cls.s1 = Symbol(bloomberg_symbol="AA", group=SymbolType.equities)
+        cls.s1 = Symbol(name="AA", group=SymbolType.equities)
 
         cls.s1.reference[cls.f1] = "100"
 

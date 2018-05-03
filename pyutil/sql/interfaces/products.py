@@ -4,6 +4,7 @@ import sqlalchemy as sq
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import has_inherited_table
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
@@ -33,7 +34,7 @@ class MyMixin(object):
 
 
 class ProductInterface(MyMixin, Base):
-
+    __name = sq.Column("name", sq.String(200), unique=True, nullable=True)
     discriminator = sq.Column(sq.String)
     __mapper_args__ = {"polymorphic_on": discriminator}
 
@@ -44,9 +45,16 @@ class ProductInterface(MyMixin, Base):
                                cascade="all, delete-orphan", back_populates="product", foreign_keys=[Timeseries.product_id]) #, lazy="joined")
 
     timeseries = association_proxy('_timeseries', 'series_fast', creator=None)
-
     reference = association_proxy('_refdata', 'value', creator=lambda k, v: _ReferenceData(field=k, content=v))
 
+    sq.UniqueConstraint('discriminator', 'name')
+
+    def __init__(self, name):
+        self.__name = name
+
+    @hybrid_property
+    def name(self):
+        return self.__name
     @property
     def reference_series(self):
         return pd.Series(dict(self.reference)).rename(index=lambda x: x.name)
@@ -79,7 +87,17 @@ class ProductInterface(MyMixin, Base):
         return _pd.DataFrame({x.secondary: x.series_fast for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
 
     def __repr__(self):
-        return "({d}, {id})".format(d=self.discriminator, id=self.id)
+        return "{d}({name})".format(d=self.discriminator, name=self.name)
+
+    def __lt__(self, other):
+        return self.name < other.name
+
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
+
 
 class Products(object):
     def __init__(self, products, cls, attribute="name"):

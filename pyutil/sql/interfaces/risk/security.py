@@ -22,17 +22,11 @@ FIELDS = {
 
 class Security(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Security"}
-    __entity_id = _sq.Column("entity_id", _sq.Integer, unique=True, nullable=False)
+    __entity_id = _sq.Column("entity_id", _sq.Integer, nullable=False)
 
-    def __init__(self, entity_id):
-        self.__entity_id = entity_id
-
-    def __repr__(self):
-        return "Security({entity})".format(entity=self.entity_id,)
-
-    @hybrid_property
-    def entity_id(self):
-        return self.__entity_id
+    def __init__(self, name):
+        super().__init__(name=name)
+        self.__entity_id = name
 
     @property
     def price(self):
@@ -59,5 +53,5 @@ class Security(ProductInterface):
 
 class Securities(Products):
     def __init__(self, securities):
-        super().__init__(securities, cls=Security, attribute="entity_id")
+        super().__init__(securities, cls=Security, attribute="name")
 

@@ -23,22 +23,17 @@ FIELDS = {
 }
 
 
-
-
 class Owner(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Owner"}
-    __entity_id = _sq.Column("entity_id", _sq.Integer, unique=True, nullable=False)
+    __entity_id = _sq.Column("entity_id", _sq.Integer, nullable=False)
     __securities = _relationship(Security, secondary=_association_table, backref="owner", lazy="joined")
     __currency_id = _sq.Column("currency_id", _sq.Integer, _sq.ForeignKey(Currency.id), nullable=True)
     __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
 
-    def __init__(self, entity_id, currency):
-        self.__entity_id = entity_id
+    def __init__(self, name, currency):
+        super().__init__(name=name)
+        self.__entity_id = name
         self.__currency = currency
-
-    @hybrid_property
-    def entity_id(self):
-        return self.__entity_id
 
     @hybrid_property
     def currency(self):
@@ -47,13 +42,6 @@ class Owner(ProductInterface):
     @property
     def securities(self):
         return self.__securities
-
-    def __repr__(self):
-        return "Owner({entity})".format(entity=self.entity_id)
-
-    @hybrid_property
-    def name(self):
-        return self.get_reference(field=FIELDS["name"])
 
     @property
     def returns(self):

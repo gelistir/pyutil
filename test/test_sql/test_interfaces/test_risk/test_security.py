@@ -17,9 +17,9 @@ TICKER = FIELDSSECURITY["Lobnek Ticker Symbol Bloomberg"]
 
 class TestSecurity(unittest.TestCase):
     def test_security(self):
-        s1 = Security(entity_id=123)
+        s1 = Security(name=123)
 
-        self.assertEqual(s1.entity_id, 123)
+        #self.assertEqual(s1.entity_id, 123)
         self.assertEqual(str(s1), "Security(123)")
 
         s1.price_upsert(ts={t1: 11.1, t2: 12.1})

@@ -19,11 +19,11 @@ NAME = FIELDSOWNER["name"]
 class TestOwner(unittest.TestCase):
     def test_name(self):
         usd = Currency(name="USD")
-        o = Owner(entity_id=100, currency=usd)
-        o.reference[NAME] = "Peter Maffay"
-        self.assertEqual(o.name, "Peter Maffay")
+        o = Owner(name=100, currency=usd)
+        #o.reference[NAME] = "Peter Maffay"
+        #self.assertEqual(o.name, "Peter Maffay")
         self.assertEqual(o.currency, usd)
-        self.assertEqual(o.entity_id, 100)
+        #self.assertEqual(o.entity_id, 100)
         self.assertEqual(str(o), "Owner(100)")
         self.assertIsNone(o.current_position)
 
@@ -33,13 +33,13 @@ class TestOwner(unittest.TestCase):
 
     def test_return(self):
         usd = Currency(name="USD")
-        o = Owner(entity_id=100, currency=usd)
+        o = Owner(name=100, currency=usd)
         o.returns_upsert(ts={t1: 0.1, t2: 0.2})
         pdt.assert_series_equal(o.returns, pd.Series({t1: 0.1, t2: 0.2}))
         pdt.assert_series_equal(o.nav, pd.Series(index=[t0,t1,t2], data=[1.0, 1.1, 1.32]))
 
     def test_volatility(self):
-        o = Owner(entity_id=100, currency=Currency(name="USD"))
+        o = Owner(name=100, currency=Currency(name="USD"))
         o.volatility_upsert(ts={t1: 0.1, t2: 0.3})
         pdt.assert_series_equal(o.volatility, pd.Series({t1: 0.1, t2: 0.3}))
 
@@ -49,15 +49,15 @@ class TestOwner(unittest.TestCase):
         self.assertEqual(usd.name, "USD")
 
         # create an owner
-        o = Owner(entity_id=100, currency=usd)
-        self.assertEqual(o.entity_id, 100)
+        o = Owner(name=100, currency=usd)
+        self.assertEqual(o.name, 100)
         self.assertEqual(o.currency, usd)
 
         # create a security
-        s1 = Security(entity_id=123)
+        s1 = Security(name=123)
         s1.reference[KIID] = "5"
         s1.reference[CUSTODIAN] = "UBS"
-        self.assertEqual(s1.entity_id, 123)
+        #self.assertEqual(s1.entity_id, 123)
         self.assertEqual(s1.kiid, 5)
         self.assertEqual(s1.reference[CUSTODIAN], "UBS")
 

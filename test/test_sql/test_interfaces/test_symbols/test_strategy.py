@@ -6,6 +6,26 @@ from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from test.config import resource
 
+# Code in source.py
+#
+# import pandas as pd
+#
+# from test.config import test_portfolio
+#
+#
+# class Configuration(object):
+#     def __init__(self, reader):
+#         self.__reader = reader
+#         self.__portfolio = test_portfolio().truncate(before=pd.Timestamp("2015-04-01"))
+#
+#     @property
+#     def portfolio(self):
+#         return self.__portfolio
+#
+#     @property
+#     def assets(self):
+#         return self.__portfolio.assets
+
 
 class TestStrategy(TestCase):
     def test_strategy(self):
@@ -20,7 +40,7 @@ class TestStrategy(TestCase):
             assets = config.assets
             self.assertListEqual(assets, ["A", "B", "C", "D", "E", "F", "G"])
 
-            assets = {asset: Symbol(bloomberg_symbol=asset) for asset in assets}
+            assets = {asset: Symbol(name=asset) for asset in assets}
 
             # store the portfolio we have just computed in there...
             s.upsert(portfolio, assets=assets)

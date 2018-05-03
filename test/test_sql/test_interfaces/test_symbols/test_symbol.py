@@ -8,8 +8,8 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 class TestSymbol(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.p1 = Symbol(bloomberg_symbol="A", group=SymbolType.fixed_income)
-        cls.p2 = Symbol(bloomberg_symbol="B", group=SymbolType.equities)
+        cls.p1 = Symbol(name="A", group=SymbolType.fixed_income)
+        cls.p2 = Symbol(name="B", group=SymbolType.equities)
 
         cls.f1 = Field(name="x", type=FieldType.dynamic, result=DataType.integer)
 
@@ -32,8 +32,3 @@ class TestSymbol(TestCase):
 
     def test_group(self):
         self.assertEqual(self.p1.group, "fixed_income")
-
-    #def test_id(self):
-    #    print(self.p1.id)
-    #    print(self.p1.id)
-    #    assert False

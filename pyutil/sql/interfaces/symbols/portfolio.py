@@ -1,6 +1,4 @@
 import pandas as pd
-import sqlalchemy as sq
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 
 from pyutil.performance.summary import fromNav
@@ -16,14 +14,9 @@ Symbol.portfolio = _relationship("Portfolio", secondary=_association_table, back
 class Portfolio(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "portfolio"}
     _symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio", lazy="joined")
-    __name = sq.Column("name", sq.String, unique=True)
 
     def __init__(self, name):
-        self.__name = name
-
-    @hybrid_property
-    def name(self):
-        return self.__name
+        super().__init__(name)
 
     @property
     def empty(self):
@@ -86,12 +79,6 @@ class Portfolio(ProductInterface):
         w = self.sector(total=total)
         return w.loc[w.index[-1]].rename(None)
 
-    def __lt__(self, other):
-        return self.name < other.name
-
-    def __repr__(self):
-        return "({name})".format(name=self.name)
-
     @property
     def state(self):
 
@@ -100,7 +87,7 @@ class Portfolio(ProductInterface):
 
         frame = pd.concat((assets.reference, self.portfolio.state, assets.group_internal), axis=1,
                               join="inner")
-        frame = frame.rename(index=lambda x: x.bloomberg_symbol)
+        frame = frame.rename(index=lambda x: x.name)
 
         sector_weights = frame.groupby(by="Group")["Extrapolated"].sum()
         frame["Sector Weight"] = frame["Group"].apply(lambda x: sector_weights[x])

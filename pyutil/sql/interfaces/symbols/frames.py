@@ -2,25 +2,18 @@ from io import BytesIO
 
 import pandas as pd
 from sqlalchemy import String, LargeBinary, Column
-from sqlalchemy.ext.hybrid import hybrid_property
-
 from pyutil.sql.interfaces.products import ProductInterface
 
 
 class Frame(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "frame"}
-    __name = Column("name", String, unique=True)
     __data = Column("data", LargeBinary)
     __index = Column("index", String)
 
     def __init__(self, name, frame=None):
-        self.__name = name
+        super().__init__(name)
         if frame is not None:
             self.frame = frame
-
-    @hybrid_property
-    def name(self):
-        return self.__name
 
     @property
     def frame(self):

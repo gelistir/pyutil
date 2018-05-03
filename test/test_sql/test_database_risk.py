@@ -18,12 +18,12 @@ class TestDatabaseRisk(TestCase):
     def setUpClass(cls):
         cls.session = session_test(meta=Base.metadata, echo=False)
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
-        cls.s1 = Security(entity_id=1)
+        cls.s1 = Security(name=1)
 
         cls.s1.reference[cls.f1] = "100"
 
         cls.c1 = Currency(name="USD")
-        cls.o1 = Owner(entity_id=2, currency=cls.c1)
+        cls.o1 = Owner(name=2, currency=cls.c1)
         cls.o1.reference[cls.f1] = "200"
 
         cls.session.add_all([cls.s1, cls.o1])

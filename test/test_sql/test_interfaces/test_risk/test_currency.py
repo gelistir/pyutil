@@ -14,7 +14,7 @@ class TestCurrency(unittest.TestCase):
         c2 = Currency(name="CHF")
 
         self.assertEqual(c1.name, "USD")
-        self.assertEqual(str(c1), "(USD)")
+        self.assertEqual(str(c1), "Currency(USD)")
         self.assertTrue(c2 < c1)
 
         # you can not change the name of a currency!

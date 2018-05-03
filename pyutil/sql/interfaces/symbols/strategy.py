@@ -20,7 +20,6 @@ class StrategyType(_enum.Enum):
 
 class Strategy(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "strategy"}
-    __name = sq.Column("name", sq.String(50), unique=True)
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)
     _portfolio_id = sq.Column("portfolio_id", sq.Integer, sq.ForeignKey("portfolio.id"), nullable=False)
@@ -28,15 +27,11 @@ class Strategy(ProductInterface):
     type = sq.Column(_Enum(StrategyType))
 
     def __init__(self, name, active=True, source="", type=StrategyType.conservative):
-        self.__name = name
+        super().__init__(name)
         self._portfolio = Portfolio(name=self.name)
         self.active = active
         self.source = source
         self.type = type
-
-    @hybrid_property
-    def name(self):
-        return self.__name
 
     def __module(self):
         from types import ModuleType

@@ -22,7 +22,8 @@ class Contract(ProductInterface):
         today = today or _pd.Timestamp("today").date()
         return self.__notice > today
 
-    def __init__(self, future, figi, notice):
+    def __init__(self, name, future, figi, notice):
+        super().__init__(name)
         self._future = future
         self.__figi = figi
         self.__notice = notice

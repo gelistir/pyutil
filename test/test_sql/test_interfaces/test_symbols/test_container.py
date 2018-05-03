@@ -12,9 +12,9 @@ from test.config import test_portfolio, read_frame
 class TestContainer(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.s1 = Symbol(bloomberg_symbol="A", group=SymbolType.equities, internal="A")
-        cls.s2 = Symbol(bloomberg_symbol="B", group=SymbolType.equities, internal="B")
-        cls.s3 = Symbol(bloomberg_symbol="C", group=SymbolType.fixed_income, internal="C")
+        cls.s1 = Symbol(name="A", group=SymbolType.equities, internal="A")
+        cls.s2 = Symbol(name="B", group=SymbolType.equities, internal="B")
+        cls.s3 = Symbol(name="C", group=SymbolType.fixed_income, internal="C")
 
         portfolio = test_portfolio().subportfolio(assets=["A", "B", "C"])
         p = Portfolio(name="Peter").upsert_portfolio(portfolio=portfolio, assets={"A": cls.s1, "B": cls.s2, "C": cls.s3})
@@ -43,7 +43,7 @@ class TestContainer(TestCase):
         pdt.assert_frame_equal(f, x)
 
     def test_history(self):
-        pdt.assert_frame_equal(self.assets.history().rename(columns= lambda x: x.bloomberg_symbol), read_frame("price.csv")[["A", "B", "C"]], check_names=False)
+        pdt.assert_frame_equal(self.assets.history().rename(columns= lambda x: x.name), read_frame("price.csv")[["A", "B", "C"]], check_names=False)
 
     def test_ytd(self):
         self.assertAlmostEqual(self.portfolios.ytd["Jan"]["Peter"], 0.007706, places=5)
