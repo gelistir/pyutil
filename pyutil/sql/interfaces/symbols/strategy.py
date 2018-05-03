@@ -20,7 +20,7 @@ class StrategyType(_enum.Enum):
 
 class Strategy(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "strategy"}
-    __name = sq.Column(sq.String(50), unique=True)
+    __name = sq.Column("name", sq.String(50), unique=True)
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)
     _portfolio_id = sq.Column("portfolio_id", sq.Integer, sq.ForeignKey("portfolio.id"), nullable=False)
