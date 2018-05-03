@@ -4,6 +4,7 @@ import pandas as pd
 
 import pandas as _pd
 import sqlalchemy as sq
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
@@ -16,7 +17,7 @@ from datetime import date as datetype
 class Timeseries(Base):
     __tablename__ = "ts_name"
     id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
-    name = sq.Column(sq.String(100), nullable=False)
+    __name = sq.Column("name", sq.String(100), nullable=False)
 
     product_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), index=True)
     product = relationship("ProductInterface", foreign_keys=[product_id], back_populates="_timeseries")
@@ -32,11 +33,15 @@ class Timeseries(Base):
 
     def __init__(self, name=None, product=None, data=None, secondary=None):
         self.secondary = secondary
-        self.name = name
+        self.__name = name
         self.product = product
 
         if data is not None:
             self.upsert(data)
+
+    @hybrid_property
+    def name(self):
+        return self.__name
 
     @property
     def series_slow(self):
