@@ -14,9 +14,3 @@ class Database(object):
     @property
     def portfolios(self):
         return Portfolios(self.__session.query(Portfolio))
-
-    def symbol(self, bloomberg_symbol):
-        return self.__session.query(Symbol).filter_by(bloomberg_symbol=bloomberg_symbol).one()
-
-    def portfolio(self, name):
-        return self.__session.query(Portfolio).filter_by(name=name).one()

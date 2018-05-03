@@ -14,9 +14,3 @@ class Database(object):
     @property
     def securities(self):
         return Securities(self.__session.query(Security))
-
-    def owner(self, entity_id):
-        return self.__session.query(Owner).filter_by(entity_id=entity_id).one()
-
-    def security(self, entity_id):
-        return self.__session.query(Security).filter_by(entity_id=entity_id).one()

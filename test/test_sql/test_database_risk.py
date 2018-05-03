@@ -1,7 +1,6 @@
 from unittest import TestCase
 
 import pandas as pd
-from sqlalchemy.orm.exc import NoResultFound
 
 from pyutil.sql.base import Base
 from pyutil.sql.db_risk import Database
@@ -39,17 +38,3 @@ class TestDatabaseRisk(TestCase):
 
         pdt.assert_frame_equal(self.db.owners.reference,
                                pd.DataFrame(index=[self.o1], columns=["Field A"], data=[[200]]), check_names=False)
-
-    def test_owner(self):
-        with self.assertRaises(NoResultFound):
-            self.db.owner(entity_id=5)
-
-        o = self.db.owner(entity_id=2)
-        self.assertEqual(o.reference[self.f1], 200)
-
-    def test_security(self):
-        with self.assertRaises(NoResultFound):
-            self.db.security(entity_id=5)
-
-        s = self.db.security(entity_id=1)
-        self.assertEqual(s.reference[self.f1], 100)
