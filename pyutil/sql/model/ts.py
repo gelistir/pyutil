@@ -25,7 +25,7 @@ class Timeseries(Base):
     secondary_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), nullable=True)
     secondary = relationship("ProductInterface", foreign_keys=[secondary_id])
 
-    _jdata = sq.Column("jdata", sq.LargeBinary)
+    _jdata = sq.Column("jdata", sq.LargeBinary, nullable=True)
     sq.UniqueConstraint('product', 'name', 'secondary_id')
 
     _data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'),
@@ -36,8 +36,8 @@ class Timeseries(Base):
         self.__name = name
         self.product = product
 
-        if data is not None:
-            self.upsert(data)
+        #if data is not None:
+        self.upsert(data)
 
     @hybrid_property
     def name(self):
@@ -87,9 +87,12 @@ class Timeseries(Base):
     @property
     def series_fast(self):
         try:
-            return pd.read_json(BytesIO(self._jdata).read().decode(), typ="series").apply(float)
+            # todo: apply float?
+            x = pd.read_json(BytesIO(self._jdata).read().decode(), typ="series")
         except ValueError:
-            return pd.Series({})
+            x = pd.Series({})
+
+        return x.apply(float)
 
     @property
     def last_valid(self):

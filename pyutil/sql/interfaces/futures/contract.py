@@ -22,11 +22,14 @@ class Contract(ProductInterface):
         today = today or _pd.Timestamp("today").date()
         return self.__notice > today
 
-    def __init__(self, name, future, figi, notice):
-        super().__init__(name)
+    def __init__(self, future, figi, notice, bloomberg_symbol=None, fut_month_yr=None):
+        super().__init__(name=figi)
         self._future = future
         self.__figi = figi
         self.__notice = notice
+        self.bloomberg_symbol = bloomberg_symbol
+        self.fut_month_yr = fut_month_yr
+
 
     @hybrid_property
     def future(self):
