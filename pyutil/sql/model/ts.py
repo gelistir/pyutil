@@ -1,6 +1,7 @@
 from io import BytesIO
 
 import pandas as pd
+import numpy as np
 
 import pandas as _pd
 import sqlalchemy as sq
@@ -56,25 +57,26 @@ class Timeseries(Base):
     def upsert(self, ts=None):
         if ts is not None:
             for date, value in ts.items():
-                if isinstance(date, pd.Timestamp):
-                    assert date.hour == 0
-                    assert date.minute == 0
-                    assert date.second == 0
-                    d = date.date()
+                if np.isfinite(value):
+                    if isinstance(date, pd.Timestamp):
+                        assert date.hour == 0
+                        assert date.minute == 0
+                        assert date.second == 0
+                        d = date.date()
 
-                elif isinstance(date, datetype):
-                    d = date
+                    elif isinstance(date, datetype):
+                        d = date
 
-                else:
-                    raise AssertionError("The index has to be a datetime or date object")
+                    else:
+                        raise AssertionError("The index has to be a datetime or date object")
 
-                if d not in self._data.keys():
-                    self._data[d] = _TimeseriesData(date=d, value=value, ts=self)
-                else:
-                    self._data[d].value = value
+                    if d not in self._data.keys():
+                        self._data[d] = _TimeseriesData(date=d, value=value, ts=self)
+                    else:
+                        self._data[d].value = value
 
         # update data
-        x = _pd.Series({date: x.value for date, x in self._data.items()})
+        x = _pd.Series({date: x.value for date, x in self._data.items()}).dropna()
         if not x.empty:
             # we read date from database!
             x = x.rename(index=lambda a: _pd.Timestamp(a)).sort_index()

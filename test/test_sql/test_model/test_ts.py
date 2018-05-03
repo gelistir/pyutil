@@ -55,3 +55,18 @@ class TestTimeseries(TestCase):
         self.assertTrue(x.index.is_monotonic_increasing)
 
         pdt.assert_series_equal(x, pd.Series({pd.Timestamp("2010-01-01"): 10.1, pd.Timestamp("2010-01-02"): 8.1}))
+
+    def test_with_nan(self):
+        import numpy as np
+
+        ts1 = Timeseries(name="x", product=self.p1)
+        ts1.upsert(ts={pd.Timestamp("2010-01-01"): np.nan})
+
+        pdt.assert_series_equal(ts1.series_fast, ts1.series_slow, check_dtype=False, check_index_type=False)
+
+        ts1.upsert(ts={pd.Timestamp("2010-01-01"): 5.0})
+
+        pdt.assert_series_equal(ts1.series_fast, ts1.series_slow)
+        pdt.assert_series_equal(ts1.series_fast, pd.Series({pd.Timestamp("2010-01-01"): 5.0}))
+
+
