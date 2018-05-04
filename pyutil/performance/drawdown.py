@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 
@@ -12,15 +11,9 @@ def drawdown(price):
     """
     assert isinstance(price, pd.Series)
     assert price.index.is_monotonic_increasing
+    assert not (price < 0).any()
 
-    high_water_mark = np.empty(len(price.index))
-    moving_max_value = 0
-    for i, value in enumerate(price.values):
-        assert value > 0
-        moving_max_value = max(moving_max_value, value)
-        high_water_mark[i] = moving_max_value
-
-    return pd.Series(data=1.0 - (price.values / high_water_mark), index=price.index)
+    return 1 - price / price.expanding(min_periods=1).max()
 
 
 def drawdown_periods(price, eps=0):
@@ -33,20 +26,24 @@ def drawdown_periods(price, eps=0):
     """
     d = drawdown(price=price)
 
+    # the first price can not be in drawdown
+    #assert d.iloc[0] == 0
+
     # Drawdown days
     is_down = d > eps
+    #assert not is_down.iloc[0]
 
-    # first day of drawdowns
-    is_first = ((~is_down).shift(1) * is_down)
-    is_first.iloc[0] = is_down.iloc[0]
-    is_first = is_first.apply(bool)
+    s = pd.Series(index=is_down.index[1:], data=[r for r in zip(is_down[:-1], is_down[1:])])
 
-    # last day of drawdowns
-    is_last = (is_down * (~is_down).shift(-1))
-    is_last.iloc[-1] = is_down.iloc[-1]
-    is_last = is_last.apply(bool)
+    # move from no-drawdown to drawdown
+    start = list(s[s == (False, True)].index)
 
-    is_first = list(is_first.loc[is_first].index)
-    is_last = list(is_last.loc[is_last].index)
+    # move from drawdown to drawdown
+    end = list(s[s == (True, False)].index)
 
-    return pd.Series({start: end - start for start, end in zip(is_first, is_last)})
+    # eventually append the very last day...
+    if len(end) < len(start):
+        # add a point to the series... value doesn't matter
+        end.append(s.index[-1])
+
+    return pd.Series({s: e-s for s, e in zip(start, end)})
