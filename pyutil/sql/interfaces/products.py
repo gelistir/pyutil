@@ -51,14 +51,17 @@ class ProductInterface(MyMixin, Base):
     sq.UniqueConstraint('discriminator', 'name')
 
     def __init__(self, name):
-        self.__name = name
+        self.__name = str(name)
 
     @hybrid_property
     def name(self):
         return self.__name
-    @property
-    def reference_series(self):
-        return pd.Series(dict(self.reference)).rename(index=lambda x: x.name)
+
+    def reference_series(self, rename=False):
+        x = pd.Series(dict(self.reference))
+        if rename:
+            x = x.rename(index=lambda x: x.name)
+        return x
 
     def get_reference(self, field, default=None):
         return dict(self.reference).get(field, default)
@@ -84,8 +87,13 @@ class ProductInterface(MyMixin, Base):
         # now update the timeseries object
         return self._timeseries[k].upsert(data)
 
-    def frame(self, name):
-        return _pd.DataFrame({x.secondary: x.series_fast for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
+    def frame(self, name, rename=False):
+
+        x = _pd.DataFrame({x.secondary: x.series_fast for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
+        if rename:
+            x.rename(columns=lambda x: x.name)
+
+        return x
 
     def __repr__(self):
         return "{d}({name})".format(d=self.discriminator, name=self.name)
@@ -114,25 +122,34 @@ class Products(object):
         for symbol in self.list:
             yield symbol
 
-
     @property
     def list(self):
         return list(self.__products.values())
 
-    @property
-    def reference(self):
-        x =  pd.DataFrame({product: product.reference_series for product in self.list}).transpose()
+    #@property
+    def reference(self, rename=False):
+        x = pd.DataFrame({product: product.reference_series(rename=rename) for product in self.list}).transpose()
         x.index.names = ["Product"]
+        if rename:
+            x = x.rename(index=lambda x: x.name)
+
         return x
 
-    def history(self, field="PX_LAST"):
+    def history(self, field="PX_LAST", rename=False):
         # this could be slow
         x = pd.DataFrame({product: product.get_timeseries(name=field) for product in self.list})
         x.index.names = ["Date"]
+        if rename:
+            x = x.rename(columns=lambda x: x.name)
+
         return x
 
     def to_dict(self):
         return self.__products
 
     def __repr__(self):
-        return str(self.__products)
+        s = "\n"
+        a = max([len(k) for k in self.__products.keys()])
+
+        seq = ["{key:{a}.{a}} {product}".format(key=key, product=product, a=a) for key, product in self.__products.items()]
+        return s.join(seq)

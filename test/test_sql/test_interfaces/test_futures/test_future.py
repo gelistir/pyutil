@@ -39,24 +39,28 @@ class TestFuture(TestCase):
 
     def test_future_with_contracts(self):
         session = session_test(Base.metadata, echo=True)
-
-
         f = future()
-        session.add(f)
-        session.commit()
 
         c1 = Contract(figi="BB1", notice=pd.Timestamp("2010-01-01").date())
         c2 = Contract(figi="BB2", notice=pd.Timestamp("2009-03-01").date())
 
         f.contracts.append(c1)
         f.contracts.append(c2)
+        session.add(f)
         session.commit()
-        #print(sorted(f.contracts)) #, key=lambda x: x.notice))
-        print(f.contracts[0] < f.contracts[1])
-        print(f.contracts[0])
-        print(f.contracts[1])
 
-        print(f.contracts)
+        self.assertTrue(f.contracts[0].notice < f.contracts[1].notice)
+        self.assertEqual(f.contracts[0].future, f)
+        self.assertEqual(f.contracts[1].future, f)
+
+        # You can not modify the underlying future of a contract!
+        with self.assertRaises(AttributeError):
+            c = f.contracts[0]
+            c.future = f
+
+        self.assertEqual(f.max_notice, pd.Timestamp("2010-01-01").date())
+        self.assertListEqual(f.figis, ["BB2", "BB1"])
+
 
 class TestFutures(TestCase):
     def test_futures(self):

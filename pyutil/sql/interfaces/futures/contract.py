@@ -1,6 +1,5 @@
-from datetime import date as _Date
+from datetime import date as Date
 
-from sqlalchemy import Date
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
@@ -11,10 +10,10 @@ from pyutil.sql.interfaces.products import ProductInterface, Products
 
 
 class Contract(ProductInterface):
-    _future_id = sq.Column("future_id", sq.Integer, sq.ForeignKey("future.id"), nullable=False)
+    _future_id = sq.Column("future_id", sq.Integer, sq.ForeignKey("future.id"))
     _future = relationship("Future", foreign_keys=[_future_id], back_populates="contracts")
-    __notice = sq.Column("notice", Date)
-    __figi = sq.Column("figi", sq.String(200), unique=True)
+    _notice = sq.Column("notice", sq.Date)
+    _figi = sq.Column("figi", sq.String(200), unique=True)
     bloomberg_symbol = sq.Column(sq.String(200))
     fut_month_yr = sq.Column(sq.String(200))
 
@@ -22,8 +21,8 @@ class Contract(ProductInterface):
 
     def alive(self, today=None):
         today = today or _pd.Timestamp("today").date()
-        assert isinstance(today, _Date)
-        return self.__notice > today
+        assert isinstance(today, Date)
+        return self.notice > today
 
     def __lt__(self, other):
         return self.notice < other.notice
@@ -31,28 +30,24 @@ class Contract(ProductInterface):
     def __init__(self, figi, notice, bloomberg_symbol=None, fut_month_yr=None):
         super().__init__(name=figi)
 
-        # how can I check it's a Future? Not really, I would need to import the Future! But Future imports Contract...
-        #assert future is not None, "The future can not be none"
+        assert isinstance(notice, Date)
 
-        assert isinstance(notice, _Date)
-
-        self.__figi = figi
-        self.__notice = notice
+        self._figi = figi
+        self._notice = notice
         self.bloomberg_symbol = bloomberg_symbol
         self.fut_month_yr = fut_month_yr
 
+    @hybrid_property
+    def figi(self):
+        return self._figi
 
     @hybrid_property
     def future(self):
         return self._future
 
     @hybrid_property
-    def figi(self):
-        return self.__figi
-
-    @hybrid_property
     def notice(self):
-        return self.__notice
+        return self._notice
 
     @property
     def quandl(self):

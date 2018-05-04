@@ -7,8 +7,6 @@ from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
 from pyutil.sql.interfaces.futures.future import Future
 
-from pyutil.sql.base import Base
-
 def future():
     # define an exchange
     e = Exchange(name="Chicago Mercantile Exchange", exch_code="CME")
@@ -32,8 +30,14 @@ class TestContract(TestCase):
         self.assertEqual(c.month_xyz, "MAR")
         self.assertEqual(c.month_x, "H")
         self.assertEqual(c.year, 2000)
-        #self.assertEqual(c.quandl, "CME/ESH2000")
         self.assertEqual(str(c), "Contract(B3BB5)")
 
         c = Contract(figi="B3BB5", notice=pd.Timestamp("1960-01-01").date(), bloomberg_symbol="AAA", fut_month_yr="MAR 60")
         self.assertEqual(c.year, 1960)
+
+    def test_invariance(self):
+        c = Contract(figi="B3BB5", notice=pd.Timestamp("2010-01-01").date(), bloomberg_symbol="AAA", fut_month_yr="MAR 00")
+        with self.assertRaises(AttributeError):
+            c.figi = "NoNoNo"
+
+

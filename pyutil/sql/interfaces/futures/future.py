@@ -17,7 +17,7 @@ class Future(ProductInterface):
     category = relationship(FuturesCategory, uselist=False, backref="future", foreign_keys=[_category_id])
     exchange = relationship(Exchange, uselist=False, backref="future", foreign_keys=[_exchange_id])
 
-    contracts = relationship("Contract", back_populates="_future", foreign_keys=[Contract.id], order_by=Contract.notice, collection_class=ordering_list("notice"))
+    contracts = relationship("Contract", back_populates="_future", foreign_keys=[Contract._future_id], order_by=Contract.notice, collection_class=ordering_list("notice"))
     # todo: test the ordering
     __mapper_args__ = {"polymorphic_identity": "Future"}
 
@@ -31,8 +31,8 @@ class Future(ProductInterface):
     @property
     def max_notice(self):
         try:
-            return max(contract.notice for contract in self.contracts)
-        except ValueError:
+            return self.contracts[-1].notice
+        except IndexError:
             return None
 
     @property

@@ -37,7 +37,7 @@ class TestCurrency(unittest.TestCase):
             c1.timeseries["Peter"]
 
         # here we don't have the KeyError!
-        pdt.assert_series_equal(c1.get_timeseries(name="Peter"), pd.Series({}))
+        pdt.assert_series_equal(c1.get_timeseries(name="Peter"), pd.Series({}), check_names=False)
 
         pdt.assert_series_equal(c1.timeseries["HaHa"], pd.Series({pd.Timestamp("2010-01-01"): 10.0}))
 

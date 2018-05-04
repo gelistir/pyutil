@@ -50,7 +50,7 @@ class TestOwner(unittest.TestCase):
 
         # create an owner
         o = Owner(name=100, currency=usd)
-        self.assertEqual(o.name, 100)
+        self.assertEqual(o.name, "100")
         self.assertEqual(o.currency, usd)
 
         # create a security

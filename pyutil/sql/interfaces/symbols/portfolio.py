@@ -85,7 +85,7 @@ class Portfolio(ProductInterface):
         # this is now a list of proper symbol objects... portfolio is the database object!!!
         assets = Symbols(self.symbols)
 
-        frame = pd.concat((assets.reference, self.portfolio.state, assets.group_internal), axis=1,
+        frame = pd.concat((assets.reference(rename=False).rename(columns=lambda x: x.name), self.portfolio.state, assets.group_internal), axis=1,
                               join="inner")
         frame = frame.rename(index=lambda x: x.name)
 

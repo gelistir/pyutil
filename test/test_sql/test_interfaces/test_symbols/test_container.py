@@ -37,9 +37,9 @@ class TestContainer(TestCase):
         cls.assets = Symbols([cls.s1, cls.s2, cls.s3])
 
     def test_reference(self):
-        f = pd.DataFrame(columns=["Field 1", "Field 2"], index=[self.s1, self.s2, self.s3], data=[[100, 200], [10, 20], [30, 40]])
+        f = pd.DataFrame(columns=["Field 1", "Field 2"], index=["A", "B", "C"], data=[[100, 200], [10, 20], [30, 40]])
         f.index.names = ["Product"]
-        x = self.assets.reference
+        x = self.assets.reference(rename=True)
         pdt.assert_frame_equal(f, x)
 
     def test_history(self):
