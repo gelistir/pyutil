@@ -67,6 +67,7 @@ class ProductInterface(MyMixin, Base):
         return dict(self.reference).get(field, default)
 
     def get_timeseries(self, name, default=_pd.Series({})):
+        # todo: is this efficient? maybe remove the timeseries proxy and only rely on get_timeseries?
         return dict(self.timeseries).get(name, default)
 
     def upsert_ts(self, name, data=None, secondary=None):

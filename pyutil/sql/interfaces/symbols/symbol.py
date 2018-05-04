@@ -6,7 +6,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.interfaces.products import ProductInterface, Products
-
+from pyutil.performance.summary import fromNav
 
 class SymbolType(_enum.Enum):
     alternatives = "Alternatives"
@@ -29,6 +29,9 @@ class Symbol(ProductInterface):
     @hybrid_property
     def group(self):
         return self.__group.name
+
+    def to_html_dict(self, name="PX_LAST"):
+        return fromNav(ts=self.get_timeseries(name=name), adjust=False).to_dictionary(name=self.name)
 
 
 class Symbols(Products):

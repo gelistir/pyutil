@@ -32,3 +32,6 @@ class TestSymbol(TestCase):
 
     def test_group(self):
         self.assertEqual(self.p1.group, "fixed_income")
+
+    def test_to_html_dict(self):
+        self.p1.to_html_dict(name="price")
