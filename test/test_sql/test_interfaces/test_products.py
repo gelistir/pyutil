@@ -18,6 +18,10 @@ class TestProductInterface(TestCase):
         cls.f1 = Field(name="x", type=FieldType.dynamic, result=DataType.integer)
         cls.f2 = Field(name="y", type=FieldType.dynamic, result=DataType.integer)
 
+    def test_name_invariant(self):
+        with self.assertRaises(AttributeError):
+            self.p1.name="AA"
+
     def test_timeseries(self):
         self.p1.upsert_ts(name="correlation", data={pd.Timestamp("12-11-1978"): 0.5}, secondary=self.p2)
         self.p1.upsert_ts(name="price", data={pd.Timestamp("12-11-1978"): 10.0})

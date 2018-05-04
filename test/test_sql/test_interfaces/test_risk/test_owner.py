@@ -20,10 +20,8 @@ class TestOwner(unittest.TestCase):
     def test_name(self):
         usd = Currency(name="USD")
         o = Owner(name=100, currency=usd)
-        #o.reference[NAME] = "Peter Maffay"
-        #self.assertEqual(o.name, "Peter Maffay")
+
         self.assertEqual(o.currency, usd)
-        #self.assertEqual(o.entity_id, 100)
         self.assertEqual(str(o), "Owner(100)")
         self.assertIsNone(o.current_position)
 

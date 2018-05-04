@@ -1,4 +1,3 @@
-import sqlalchemy as _sq
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyutil.performance.summary import fromNav
@@ -22,11 +21,6 @@ FIELDS = {
 
 class Security(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Security"}
-    __entity_id = _sq.Column("entity_id", _sq.Integer, nullable=False)
-
-    def __init__(self, name):
-        super().__init__(name=name)
-        self.__entity_id = name
 
     @property
     def price(self):

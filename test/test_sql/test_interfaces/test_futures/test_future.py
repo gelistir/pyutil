@@ -60,12 +60,3 @@ class TestFuture(TestCase):
 
         self.assertEqual(f.max_notice, pd.Timestamp("2010-01-01").date())
         self.assertListEqual(f.figis, ["BB2", "BB1"])
-
-
-class TestFutures(TestCase):
-    def test_futures(self):
-        # create a future
-        f = future()
-        # make a "dictionary" of futures
-        x = Futures([f])
-        self.assertEqual(x["ES1 Index"], f)

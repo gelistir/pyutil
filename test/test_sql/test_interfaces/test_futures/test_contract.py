@@ -18,6 +18,7 @@ def future():
 
 class TestContract(TestCase):
     def test_contract(self):
+        # Contract doesn't need a future here...
         c = Contract(figi="B3BB5", notice=pd.Timestamp("2010-01-01").date(), bloomberg_symbol="AAA", fut_month_yr="MAR 00")
         self.assertEqual(c.notice, pd.Timestamp("2010-01-01").date())
         self.assertEqual(c.bloomberg_symbol, "AAA")
