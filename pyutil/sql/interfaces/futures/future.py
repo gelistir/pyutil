@@ -1,3 +1,6 @@
+import pandas as pd
+import numpy as np
+
 import sqlalchemy as sq
 from sqlalchemy import asc
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -39,7 +42,54 @@ class Future(ProductInterface):
     def figis(self):
         return [c.figi for c in self.contracts]
 
+    def roll_builder(self, offset_days=0, offset_months=0):
+        # Returns a series date, Contract to roll into...
 
+        m = dict()
+
+        # enforce that the contracts are sorted
+        contracts = sorted(self.contracts, key=lambda x: x.notice)
+
+        # offsets
+        for r_out, r_in in zip(contracts[:-1], contracts[1:]):
+            m[r_out.notice - pd.offsets.DateOffset(days=offset_days, months=offset_months)] = r_in
+
+        # make sure also the first contract is included
+        m[pd.Timestamp("1900-01-01")] = contracts[0]
+
+        return _Rollmap(pd.Series(m))
+
+
+#todo: create tests...
 class Futures(Products):
     def __init__(self, futures):
         super().__init__(futures, cls=Future, attribute="name")
+
+
+class _Rollmap(pd.Series):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def truncate(self, before=None, after=None, **kwargs):
+        after = after or self.index[-1]
+        before = before or self.index[0]
+
+        assert before >= self.index[0]
+        assert after <= self.index[-1]
+
+        if before in self.index:
+            return self.truncate(before=before, after=after)
+        else:
+            x = self
+            # can be done better
+            x.loc[before] = np.nan
+            return x.sort_index().ffill().truncate(before=before, after=after)
+
+        #b = super().truncate(before=before, after=after)
+
+        # this is the last point in time a priori or at "before"
+        #t0 = max([t for t in self.index if t <= before])
+        #b.loc[before] = self.loc[t0]
+
+        #return b.sort_index()
+
