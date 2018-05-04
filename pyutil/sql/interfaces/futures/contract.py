@@ -1,3 +1,5 @@
+from datetime import date as _Date
+
 from sqlalchemy import Date
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -5,26 +7,35 @@ from sqlalchemy.orm import relationship
 import sqlalchemy as sq
 import pandas as _pd
 
-from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.products import ProductInterface, Products
 
 
 class Contract(ProductInterface):
-    _future_id = sq.Column("future_id", sq.Integer, sq.ForeignKey("future.id"))
+    _future_id = sq.Column("future_id", sq.Integer, sq.ForeignKey("future.id"), nullable=False)
     _future = relationship("Future", foreign_keys=[_future_id], back_populates="contracts")
     __notice = sq.Column("notice", Date)
     __figi = sq.Column("figi", sq.String(200), unique=True)
-    bloomberg_symbol = sq.Column(sq.String(200), unique=True)
-    fut_month_yr = sq.Column(sq.String(200), unique=True)
+    bloomberg_symbol = sq.Column(sq.String(200))
+    fut_month_yr = sq.Column(sq.String(200))
 
     __mapper_args__ = {"polymorphic_identity": "Contract"}
 
     def alive(self, today=None):
         today = today or _pd.Timestamp("today").date()
+        assert isinstance(today, _Date)
         return self.__notice > today
 
-    def __init__(self, future, figi, notice, bloomberg_symbol=None, fut_month_yr=None):
+    def __lt__(self, other):
+        return self.notice < other.notice
+
+    def __init__(self, figi, notice, bloomberg_symbol=None, fut_month_yr=None):
         super().__init__(name=figi)
-        self._future = future
+
+        # how can I check it's a Future? Not really, I would need to import the Future! But Future imports Contract...
+        #assert future is not None, "The future can not be none"
+
+        assert isinstance(notice, _Date)
+
         self.__figi = figi
         self.__notice = notice
         self.bloomberg_symbol = bloomberg_symbol
@@ -42,9 +53,6 @@ class Contract(ProductInterface):
     @hybrid_property
     def notice(self):
         return self.__notice
-
-    def __repr__(self):
-        return "({name})".format(name=self.bloomberg_symbol)
 
     @property
     def quandl(self):
@@ -68,3 +76,8 @@ class Contract(ProductInterface):
             return y + 2000
         else:
             return y + 1900
+
+
+class Contracts(Products):
+    def __init__(self, futures):
+        super().__init__(futures, cls=Contract, attribute="name")

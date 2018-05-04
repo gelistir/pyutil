@@ -2,7 +2,6 @@ import enum as _enum
 
 import pandas as pd
 import sqlalchemy as sq
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 from sqlalchemy.types import Enum as _Enum
 
