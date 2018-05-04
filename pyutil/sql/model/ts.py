@@ -94,7 +94,7 @@ class Timeseries(Base):
         except ValueError:
             x = pd.Series({})
 
-        return x.apply(float)
+        return x.apply(float).sort_index()
 
     @property
     def last_valid(self):
