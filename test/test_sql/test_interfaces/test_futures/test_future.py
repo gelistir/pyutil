@@ -10,6 +10,7 @@ from pyutil.sql.interfaces.futures.future import Future, Futures
 from pyutil.sql.base import Base
 from pyutil.sql.session import session_test
 
+import pandas.util.testing as pdt
 
 def future():
     # define an exchange
@@ -60,3 +61,24 @@ class TestFuture(TestCase):
 
         self.assertEqual(f.max_notice, pd.Timestamp("2010-01-01").date())
         self.assertListEqual(f.figis, ["BB2", "BB1"])
+
+    def test_rollmap(self):
+        f = future()
+
+        # add the contracts
+        c1 = Contract(notice=pd.Timestamp("2014-01-01").date(), figi="A1",
+                      bloomberg_symbol="AZ14 Comdty", fut_month_yr="Jan 14")
+        c2 = Contract(notice=pd.Timestamp("2015-01-01").date(), figi="A2",
+                      bloomberg_symbol="AZ15 Comdty", fut_month_yr="Jan 15")
+        c3 = Contract(notice=pd.Timestamp("2016-01-01").date(), figi="A3",
+                      bloomberg_symbol="AZ16 Comdty", fut_month_yr="Jan 16")
+        c4 = Contract(notice=pd.Timestamp("2017-01-01").date(), figi="A4",
+                      bloomberg_symbol="AZ17 Comdty", fut_month_yr="Jan 17")
+
+        # use an abritrary order here...
+        f.contracts.extend([c4, c2, c3, c1])
+
+        x = f.roll_builder(offset_days=5).truncate(before=pd.Timestamp("2014-12-11"))
+
+        pdt.assert_series_equal(x, pd.Series(index=pd.DatetimeIndex([pd.Timestamp("2014-12-11").date(), pd.Timestamp("2014-12-27").date(), pd.Timestamp("2015-12-27").date()]), data=[c2,c3,c4]))
+

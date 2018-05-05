@@ -27,11 +27,10 @@ def drawdown_periods(price, eps=0):
     d = drawdown(price=price)
 
     # the first price can not be in drawdown
-    #assert d.iloc[0] == 0
+    assert d.iloc[0] == 0
 
     # Drawdown days
     is_down = d > eps
-    #assert not is_down.iloc[0]
 
     s = pd.Series(index=is_down.index[1:], data=[r for r in zip(is_down[:-1], is_down[1:])])
 
