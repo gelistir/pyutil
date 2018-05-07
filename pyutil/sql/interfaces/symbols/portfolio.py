@@ -88,7 +88,6 @@ class Portfolio(ProductInterface):
         frame = pd.concat((assets.reference, self.portfolio.state.rename(index=lambda x: x.name), assets.group_internal), axis=1,
                               join="inner")
 
-
         sector_weights = frame.groupby(by="Group")["Extrapolated"].sum()
         frame["Sector Weight"] = frame["Group"].apply(lambda x: sector_weights[x])
         frame["Relative Sector"] = 100 * frame["Extrapolated"] / frame["Sector Weight"]

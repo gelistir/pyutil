@@ -1,12 +1,14 @@
 import pandas as pd
 import sqlalchemy as _sq
-from pyutil.performance.summary import NavSeries as _NavSeries
+from pyutil.performance.summary import NavSeries as _NavSeries, fromNav
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 from pyutil.sql.interfaces.products import ProductInterface, association_table, Products
 from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
+
+from pyutil.web.aux import double2percent, reset_index
 
 _association_table = association_table(left="security", right="owner", name="security_owner")
 
@@ -122,6 +124,13 @@ class Owner(ProductInterface):
             return _NavSeries((x + 1.0).cumprod())
         except:
             return _NavSeries(pd.Series({}))
+
+    def to_html_dict(self):
+        w = self.position.applymap(double2percent)
+        w = w.rename(columns=lambda x: x.strftime("%Y-%m-%d"))
+        w.index.names = ["Asset"]
+
+        return fromNav(ts=self.nav, adjust=False).to_dictionary(name=self.name, weights=reset_index(w))
 
 
 class Owners(Products):
