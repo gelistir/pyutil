@@ -26,11 +26,10 @@ class TestProductInterface(TestCase):
         self.p1.upsert_ts(name="correlation", data={pd.Timestamp("12-11-1978"): 0.5}, secondary=self.p2)
         self.p1.upsert_ts(name="price", data={pd.Timestamp("12-11-1978"): 10.0})
 
-        self.assertSetEqual(set(self.p1._timeseries.keys()), set(self.p1.timeseries.keys()))
-        self.assertTrue("price" in self.p1.timeseries.keys())
-        self.assertTrue(("correlation", self.p2) in self.p1.timeseries.keys())
+        self.assertTrue("price" in self.p1._timeseries.keys())
+        self.assertTrue(("correlation", self.p2) in self.p1._timeseries.keys())
 
-        pdt.assert_series_equal(self.p1.timeseries["price"], pd.Series({pd.Timestamp("12-11-1978"): 10.0}))
+        pdt.assert_series_equal(self.p1.get_timeseries("price"), pd.Series({pd.Timestamp("12-11-1978"): 10.0}))
 
         # test the frame
         self.assertTrue(self.p1.frame("price").empty)
@@ -97,15 +96,12 @@ class TestProducts(TestCase):
         field = Field(name="Field 1", result=DataType.string)
 
         x = Products(products=[p1, p2], cls=Product, attribute="name")
-        self.assertTrue(x.reference().empty)
+        self.assertTrue(x.reference.empty)
 
         p1.reference[field] = "X"
         p2.reference[field] = "Y"
 
-        pdt.assert_frame_equal(x.reference(), pd.DataFrame(index=[p1, p2], columns=[field], data=[["X"], ["Y"]]),
-                               check_names=False)
-        pdt.assert_frame_equal(x.reference(rename=True),
-                               pd.DataFrame(index=["A", "B"], columns=["Field 1"], data=[["X"], ["Y"]]),
+        pdt.assert_frame_equal(x.reference, pd.DataFrame(index=["A", "B"], columns=["Field 1"], data=[["X"], ["Y"]]),
                                check_names=False)
 
     def test_timeseries(self):

@@ -22,7 +22,7 @@ class TestSymbol(TestCase):
         self.assertEqual(self.p1.reference[self.f1], 200)
 
     def test_timeseries(self):
-        self.assertEqual(self.p1.timeseries["price"][pd.Timestamp("12-11-1978")], 10.0)
+        self.assertEqual(self.p1.get_timeseries("price")[pd.Timestamp("12-11-1978")], 10.0)
 
     def test_portfolio(self):
         self.assertListEqual(self.p1.portfolio, [])

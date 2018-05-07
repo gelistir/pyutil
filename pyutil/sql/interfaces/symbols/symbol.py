@@ -37,11 +37,11 @@ class Symbols(Products):
 
     @hybrid_property
     def internal(self):
-        return {asset: asset.internal for asset in self}
+        return {asset.name: asset.internal for asset in self}
 
     @hybrid_property
     def group(self):
-        return {asset: asset.group.name for asset in self}
+        return {asset.name: asset.group.name for asset in self}
 
     @property
     def group_internal(self):

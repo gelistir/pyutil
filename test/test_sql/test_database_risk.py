@@ -30,11 +30,11 @@ class TestDatabaseRisk(TestCase):
         cls.db = Database(session = cls.session)
 
     def test_securities(self):
-        pdt.assert_frame_equal(self.db.securities.reference(rename=False),
-                               pd.DataFrame(index=[self.s1], columns=[self.f1], data=[[100]]), check_names=False)
+        pdt.assert_frame_equal(self.db.securities.reference,
+                               pd.DataFrame(index=["1"], columns=["Field A"], data=[[100]]), check_names=False)
 
     def test_owners(self):
         print(self.db.owners.reference)
 
-        pdt.assert_frame_equal(self.db.owners.reference(rename=False),
-                               pd.DataFrame(index=[self.o1], columns=[self.f1], data=[[200]]), check_names=False)
+        pdt.assert_frame_equal(self.db.owners.reference,
+                               pd.DataFrame(index=["2"], columns=["Field A"], data=[[200]]), check_names=False)

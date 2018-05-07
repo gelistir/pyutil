@@ -34,7 +34,7 @@ class TestOwner(unittest.TestCase):
         o = Owner(name=100, currency=usd)
         o.returns_upsert(ts={t1: 0.1, t2: 0.2})
         pdt.assert_series_equal(o.returns, pd.Series({t1: 0.1, t2: 0.2}))
-        pdt.assert_series_equal(o.nav, pd.Series(index=[t0,t1,t2], data=[1.0, 1.1, 1.32]))
+        pdt.assert_series_equal(o.nav, pd.Series(index=[t0, t1, t2], data=[1.0, 1.1, 1.32]))
 
     def test_volatility(self):
         o = Owner(name=100, currency=Currency(name="USD"))
@@ -55,7 +55,7 @@ class TestOwner(unittest.TestCase):
         s1 = Security(name=123)
         s1.reference[KIID] = "5"
         s1.reference[CUSTODIAN] = "UBS"
-        #self.assertEqual(s1.entity_id, 123)
+        # self.assertEqual(s1.entity_id, 123)
         self.assertEqual(s1.kiid, 5)
         self.assertEqual(s1.reference[CUSTODIAN], "UBS")
 
@@ -63,9 +63,8 @@ class TestOwner(unittest.TestCase):
         self.assertTrue(o.reference_securities.empty)
         # appending securities can be done explicitly as demonstrated here or by defining a position in the security
         o.securities.append(s1)
-        print(o.reference_securities)
         pdt.assert_frame_equal(o.reference_securities,
-                               pd.DataFrame(index=[s1], columns=["Custodian", "KIID"], data=[["UBS", 5]]),
+                               pd.DataFrame(index=["123"], columns=["Custodian", "KIID"], data=[["UBS", 5]]),
                                check_dtype=False)
         # let's remove the security we have just added!
         o.securities.pop(0)
@@ -79,19 +78,33 @@ class TestOwner(unittest.TestCase):
         o.position_upsert(security=s1, ts={t1: 0.1, t2: 0.4})
         self.assertListEqual(o.securities, [s1])
 
-        pdt.assert_frame_equal(o.position, pd.DataFrame(index=[t1, t2], columns=[s1], data=[[0.1], [0.4]]))
-        pdt.assert_series_equal(o.current_position, pd.Series({s1: 0.4}))
-        pdt.assert_frame_equal(o.position_by(), pd.DataFrame(index=[s1], columns=[t1, t2, "Custodian", "KIID"], data=[[0.1,0.4,"UBS",5]]), check_dtype=False)
-        pdt.assert_frame_equal(o.position_by(index="KIID"), pd.DataFrame(index=[5], columns=pd.Index([t1, t2]), data=[[0.1,0.4]]), check_names=False)
+        pdt.assert_frame_equal(o.position,
+                               pd.DataFrame(columns=[t1, t2], index=["123"], data=[[0.1, 0.4]]))
+
+        pdt.assert_series_equal(o.current_position, pd.Series({"123": 0.4}))
+
+        pdt.assert_frame_equal(o.position_by(), pd.DataFrame(index=["123"], columns=[t1, t2, "Custodian", "KIID"],
+                                                             data=[[0.1, 0.4, "UBS", 5]]), check_dtype=False)
+
+        pdt.assert_frame_equal(o.position_by(index="KIID"),
+                               pd.DataFrame(index=[5], columns=pd.Index([t1, t2]), data=[[0.1, 0.4]]),
+                               check_names=False)
 
         # update the volatility, note that you can update the volatility even after the security has been added to the owner
         s1.volatility_upsert(currency=usd, ts={t1: 2.5, t2: 2.5})
-        pdt.assert_frame_equal(o.vola_securities(), pd.DataFrame(index=[t1, t2], columns=[s1], data=[[2.5],[2.5]]))
-        pdt.assert_frame_equal(o.vola_weighted(), pd.DataFrame(index=[t1, t2], columns=[s1], data=[[0.25],[1.0]]))
+        pdt.assert_frame_equal(o.vola_securities, pd.DataFrame(columns=[t1, t2], index=["123"], data=[[2.5, 2.5]]))
 
-        pdt.assert_frame_equal(o.vola_weighted_by(), pd.DataFrame(index=[s1], columns=[t1, t2, "Custodian", "KIID"], data=[[0.25,1.0,"UBS",5]]), check_dtype=False)
-        pdt.assert_frame_equal(o.vola_weighted_by(index="KIID"), pd.DataFrame(index=[5], columns=pd.Index([t1, t2]), data=[[0.25,1.0]]), check_names=False)
+        pdt.assert_frame_equal(o.vola_securities, pd.DataFrame(columns=[t1, t2], index=["123"], data=[[2.5, 2.5]]))
+
+        pdt.assert_frame_equal(o.vola_weighted, pd.DataFrame(columns=[t1, t2], index=["123"], data=[[0.25, 1.0]]))
+
+
+        pdt.assert_frame_equal(o.vola_weighted_by(), pd.DataFrame(index=["123"], columns=[t1, t2, "Custodian", "KIID"],
+                                                                  data=[[0.25, 1.0, "UBS", 5]]), check_dtype=False)
+        pdt.assert_frame_equal(o.vola_weighted_by(index="KIID"),
+                               pd.DataFrame(index=[5], columns=pd.Index([t1, t2]), data=[[0.25, 1.0]]),
+                               check_names=False)
 
         self.assertListEqual(o.securities, [s1])
-        pdt.assert_series_equal(o.kiid, pd.Series(index=[s1], data=[5]))
-        pdt.assert_frame_equal(o.kiid_weighted, pd.DataFrame(index=[t1, t2], columns=[s1], data=[[0.5],[2.0]]))
+        pdt.assert_series_equal(o.kiid, pd.Series(index=["123"], data=[5]))
+        pdt.assert_frame_equal(o.kiid_weighted, pd.DataFrame(index=["123"], columns=[t1, t2], data=[[0.5, 2.0]]))

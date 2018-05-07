@@ -34,5 +34,5 @@ class TestDatabaseFutures(TestCase):
         cls.db = Database(session=cls.session)
 
     def test_futures(self):
-        pdt.assert_frame_equal(self.db.futures.reference(rename=False),
-                               pd.DataFrame(index=[self.fut1], columns=[self.f1], data=[[100]]), check_names=False)
+        pdt.assert_frame_equal(self.db.futures.reference,
+                               pd.DataFrame(index=["ES1 Index"], columns=["Field A"], data=[[100]]), check_names=False)

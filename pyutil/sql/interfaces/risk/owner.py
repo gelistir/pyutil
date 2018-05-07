@@ -41,7 +41,7 @@ class Owner(ProductInterface):
 
     @property
     def returns(self):
-        return self.timeseries["return"]
+        return self.get_timeseries("return")
 
     def returns_upsert(self, ts):
         self.upsert_ts(name="return", data=ts)
@@ -57,43 +57,46 @@ class Owner(ProductInterface):
 
     @property
     def volatility(self):
-        return self.timeseries["volatility"]
+        return self.get_timeseries("volatility")
 
     @property
     def position(self):
-        return self.frame(name="position")
+        return self.frame(name="position", rename=True).transpose()
 
     def position_by(self, index=None):
         if index:
-            a = pd.concat((self.position.transpose(), self.reference_securities[index]), axis=1)
+            assert isinstance(index, str), "Index has to be a string"
+            a = pd.concat((self.position, self.reference_securities[index]), axis=1)
             a = a.groupby(by=index).sum()
             return a.rename(columns=lambda x: pd.Timestamp(x))
 
-        return pd.concat((self.position.transpose(), self.reference_securities), axis=1)
+        return pd.concat((self.position, self.reference_securities), axis=1)
 
+    @property
     def vola_securities(self):
-        return pd.DataFrame({security: security.volatility[self.currency] for security in self.securities})
+        x = pd.DataFrame({security: security.volatility[self.currency] for security in self.securities})
+        return x.rename(columns=lambda x: x.name).transpose()
 
+    @property
     def vola_weighted(self):
-        return self.position.multiply(self.vola_securities()).dropna(axis=0, how="all").dropna(axis=1, how="all")
+        return self.position.multiply(self.vola_securities).dropna(axis=0, how="all").dropna(axis=1, how="all")
 
     def vola_weighted_by(self, index=None):
         if index:
-            a = pd.concat((self.vola_weighted().transpose(), self.reference_securities[index]), axis=1)
+            a = pd.concat((self.vola_weighted, self.reference_securities[index]), axis=1)
             a = a.groupby(by=index).sum()
             return a.rename(columns=lambda x: pd.Timestamp(x))
 
-        return pd.concat((self.vola_weighted().transpose(), self.reference_securities), axis=1)
+        return pd.concat((self.vola_weighted, self.reference_securities), axis=1)
 
     @property
     def reference_securities(self):
-        y = pd.DataFrame({security: pd.Series(dict(security.reference)).sort_index() for security in self.securities})
-        y = y.rename(index=lambda f: f.name).sort_index()
-        return y.transpose()
+        y = pd.DataFrame({security: pd.Series(dict(security.reference_series)).sort_index() for security in self.securities})
+        return y.rename(columns=lambda f: f.name).sort_index().transpose()
 
     @property
     def current_position(self):
-        p = self.position.ffill()
+        p = self.position.transpose().ffill()
         if len(p.index) >= 1:
             return p.loc[p.index[-1]].rename(None)
         else:
@@ -101,11 +104,14 @@ class Owner(ProductInterface):
 
     @property
     def kiid(self):
-        return pd.Series({security: security.kiid for security in self.securities})
+        x = pd.Series({security: security.kiid for security in self.securities})
+        return x.rename(index=lambda x: x.name)
 
     @property
     def kiid_weighted(self):
-        return self.position.apply(lambda a: a * self.kiid, axis=1).dropna(axis=0, how="all")
+        print(self.kiid)
+        print(self.position)
+        return self.position.apply(lambda a: a * self.kiid, axis=0).dropna(axis=0, how="all")
 
     @property
     def nav(self):

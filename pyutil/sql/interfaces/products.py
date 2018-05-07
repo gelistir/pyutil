@@ -40,12 +40,12 @@ class ProductInterface(MyMixin, Base):
     __mapper_args__ = {"polymorphic_on": discriminator}
 
     _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
-                            cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id]) #, lazy="joined")
+                            cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id], lazy="joined")
 
     _timeseries = relationship(Timeseries, collection_class=attribute_mapped_collection('key'),
-                               cascade="all, delete-orphan", back_populates="product", foreign_keys=[Timeseries.product_id]) #, lazy="joined")
+                               cascade="all, delete-orphan", back_populates="product", foreign_keys=[Timeseries.product_id])
 
-    timeseries = association_proxy('_timeseries', 'series_fast', creator=None)
+    #timeseries = association_proxy('_timeseries', 'series_fast', creator=None)
     reference = association_proxy('_refdata', 'value', creator=lambda k, v: _ReferenceData(field=k, content=v))
 
     sq.UniqueConstraint('discriminator', 'name')
@@ -57,18 +57,26 @@ class ProductInterface(MyMixin, Base):
     def name(self):
         return self.__name
 
-    def reference_series(self, rename=False):
-        x = pd.Series(dict(self.reference))
-        if rename:
-            x = x.rename(index=lambda x: x.name)
-        return x
+    @property
+    def reference_series(self):
+        return pd.Series(dict(self.reference)).rename(index=lambda x: x.name)
+
+        #if rename:
+        #return x.rename(index=lambda x: x.name)
+        #return x
 
     def get_reference(self, field, default=None):
-        return dict(self.reference).get(field, default)
+        if field in self._refdata.keys():
+            return self._refdata[field].value
+        else:
+            return default
 
     def get_timeseries(self, name, default=_pd.Series({})):
         # todo: is this efficient? maybe remove the timeseries proxy and only rely on get_timeseries?
-        return dict(self.timeseries).get(name, default)
+        if name in self._timeseries.keys():
+            return self._timeseries[name].series_fast
+        else:
+            return default
 
     def upsert_ts(self, name, data=None, secondary=None):
         """ upsert a timeseries, get Timeseries object """
@@ -92,7 +100,7 @@ class ProductInterface(MyMixin, Base):
 
         x = _pd.DataFrame({x.secondary: x.series_fast for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
         if rename:
-            x.rename(columns=lambda x: x.name)
+            return x.rename(columns=lambda x: x.name)
 
         return x
 
@@ -123,17 +131,14 @@ class Products(object):
         for symbol in self.__products.values():
             yield symbol
 
-    #@property
-    #def list(self):
-    #    return list(self.__products.values())
-
-    def reference(self, rename=False):
-        x = pd.DataFrame({product: product.reference_series(rename=rename) for product in self}).transpose()
+    @property
+    def reference(self):#, rename=True):
+        x = pd.DataFrame({product: product.reference_series for product in self}).transpose()
         x.index.names = ["Product"]
-        if rename:
-            x = x.rename(index=lambda x: x.name)
+        #if rename:
+        return x.rename(index=lambda x: x.name)
 
-        return x.fillna("")
+        #return x.fillna("")
 
     def history(self, field="PX_LAST", rename=False):
         # this could be slow
