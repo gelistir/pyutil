@@ -2,7 +2,8 @@ import json
 from unittest import TestCase
 
 from pyutil.web.engine import month, performance
-from test.config import series2arrays, read_frame
+from test.config import read_frame
+from pandasweb.highcharts import series2arrays
 
 
 class Request(object):

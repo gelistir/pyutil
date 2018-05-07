@@ -112,18 +112,3 @@ class TestSummary(TestCase):
         # we made 100% in Feb
         self.assertEqual(n.mtd, 1.0)
         self.assertEqual(n.ytd, 1.0)
-
-    def test_to_dictinoary(self):
-        a = pd.Series({pd.Timestamp("2010-01-05"): 2.0,
-                       pd.Timestamp("2012-02-13"): 3.0,
-                       pd.Timestamp("2012-02-14"): 4.0})
-
-        x = NavSeries._ser2arr(a, tz=None)
-        y = NavSeries._ser2arr(a, tz="CET")
-
-        r1 = pd.Series({pd.Timestamp(a * 1e6): b for a, b in x})
-        r2 = pd.Series({pd.Timestamp(a * 1e6, tz="CET"): b for a, b in y})
-
-        pdt.assert_series_equal(a, r1)
-        # this second statement is not true as r2 has tz information
-        # pdt.assert_series_equal(a, r2)

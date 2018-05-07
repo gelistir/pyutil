@@ -11,7 +11,8 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from pyutil.sql.base import Base
 from pyutil.sql.model.ref import _ReferenceData
 from pyutil.sql.model.ts import Timeseries
-from pyutil.web.aux import reset_index
+#from pyutil.web.aux import reset_index
+#from pandasweb.frames import frame2dict
 
 
 def association_table(left, right, name="association"):
@@ -138,8 +139,8 @@ class Products(object):
         x.index.names = ["Product"]
         return x.rename(index=lambda x: x.name)
 
-    def reference_web(self, index="Product"):
-        return reset_index(self.reference, index=index)
+    #def reference_web(self, index="Product"):
+    #    return reset_index(self.reference, index=index)
 
     def history(self, field="PX_LAST", rename=False):
         # this could be slow

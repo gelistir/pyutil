@@ -5,14 +5,15 @@ import numpy as np
 
 nav = read_series("nav.csv")
 
-from pyutil.web.aux import series2array, frame2dict, int2time, double2percent
+from pyutil.web.aux import int2time, double2percent
+from pandasweb.frames import frame2dict
 
 
 class TestWeb(TestCase):
-    def test_series2array(self):
-        x = series2array(nav)
-        self.assertEqual(len(x), 41)
-        self.assertEqual(x[0], [1418252400000, 1.2940225007396362])
+    #def test_series2array(self):
+    #    x = series2array(nav)
+    #    self.assertEqual(len(x), 41)
+    #    self.assertEqual(x[0], [1418252400000, 1.2940225007396362])
 
     def test_frame2dict(self):
         x = nav.to_frame(name="nav")
@@ -23,14 +24,6 @@ class TestWeb(TestCase):
         self.assertListEqual(y["columns"], ["nav"])
         for n, a in enumerate(y["data"]):
             self.assertAlmostEqual(a["nav"], x.values[n], places=10)
-
-    def test_date(self):
-        x = pd.Series(index=[pd.Timestamp("2020-01-01").date(), pd.Timestamp("2020-01-02").date()], data=[5.0, 6.0])
-        y = pd.Series(index=[pd.Timestamp("2020-01-01"), pd.Timestamp("2020-01-02")], data=[5.0, 6.0])
-
-        self.assertEqual(series2array(x)[0][0], 1577833200000)
-        self.assertListEqual(series2array(x), series2array(y))
-        self.assertEqual(pd.Timestamp(1577833200000 * 1e6, tz="CET").date(), pd.Timestamp("2020-01-01").date())
 
     def test_frame(self):
         x = pd.DataFrame(index=["Asset A"], columns=[pd.Timestamp("2015-04-11").date()], data=[[2.0]])

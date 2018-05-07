@@ -10,6 +10,7 @@ from .drawdown import drawdown as dd, drawdown_periods as dp
 from .periods import period_returns
 from .var import value_at_risk, conditional_value_at_risk
 
+from pandasweb.highcharts import series2array
 
 def fromReturns(r):
     return NavSeries((1 + r).cumprod().dropna()).adjust(value=1.0)
@@ -33,14 +34,14 @@ class NavSeries(pd.Series):
                 self.rename(index=lambda x: pd.Timestamp(x), inplace=True)
 
 
-    @staticmethod
-    def _ser2arr(x, tz=None):
-        """ convert a pandas series into an array suitable for HighCharts """
-
-        def _f(x):
-            return pd.Timestamp(x, tz=tz).value * 1e-6
-
-        return [[_f(key), value] for key, value in x.dropna().items()]
+    # @staticmethod
+    # def _ser2arr(x, tz=None):
+    #     """ convert a pandas series into an array suitable for HighCharts """
+    #
+    #     def _f(x):
+    #         return pd.Timestamp(x, tz=tz).value * 1e-6
+    #
+    #     return [[_f(key), value] for key, value in x.dropna().items()]
 
     @property
     def __periods_per_year(self):
@@ -278,8 +279,8 @@ class NavSeries(pd.Series):
         return a
 
     def to_dictionary(self, name, tz=None, **kwargs):
-        return {**{"nav": self._ser2arr(self, tz=tz), "drawdown": self._ser2arr(self.drawdown, tz=tz),
-                "volatility": self._ser2arr(self.ewm_volatility(), tz=tz), "name": name}, **kwargs}
+        return {**{"nav": series2array(self, tz=tz), "drawdown": series2array(self.drawdown, tz=tz),
+                "volatility": series2array(self.ewm_volatility(), tz=tz), "name": name}, **kwargs}
 
 
 
