@@ -83,7 +83,6 @@ class TestProducts(TestCase):
 
         x = Products(products=[p1, p2], cls=Product, attribute="name")
         self.assertDictEqual(x.to_dict(), {"A": p1, "B": p2})
-        self.assertListEqual(x.list, [p1, p2])
 
         for product in x:
             self.assertIsInstance(product, Product)

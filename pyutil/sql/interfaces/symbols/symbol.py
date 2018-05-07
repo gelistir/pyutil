@@ -8,6 +8,7 @@ from sqlalchemy.types import Enum as _Enum
 from pyutil.sql.interfaces.products import ProductInterface, Products
 from pyutil.performance.summary import fromNav
 
+
 class SymbolType(_enum.Enum):
     alternatives = "Alternatives"
     fixed_income = "Fixed Income"
@@ -16,19 +17,15 @@ class SymbolType(_enum.Enum):
 
 
 class Symbol(ProductInterface):
-    __group = sq.Column("group", _Enum(SymbolType))
+    group = sq.Column("group", _Enum(SymbolType))
     internal = sq.Column(sq.String, nullable=True)
 
     __mapper_args__ = {"polymorphic_identity": "symbol"}
 
     def __init__(self, name, group=None, internal=None):
         super().__init__(name)
-        self.__group = group
+        self.group = group
         self.internal = internal
-
-    @hybrid_property
-    def group(self):
-        return self.__group.name
 
     def to_html_dict(self, name="PX_LAST"):
         return fromNav(ts=self.get_timeseries(name=name), adjust=False).to_dictionary(name=self.name)
@@ -40,11 +37,11 @@ class Symbols(Products):
 
     @hybrid_property
     def internal(self):
-        return {asset: asset.internal for asset in self.list}
+        return {asset: asset.internal for asset in self}
 
     @hybrid_property
     def group(self):
-        return {asset: asset.group for asset in self.list}
+        return {asset: asset.group.name for asset in self}
 
     @property
     def group_internal(self):

@@ -120,25 +120,24 @@ class Products(object):
         return self.__products[item]
 
     def __iter__(self):
-        for symbol in self.list:
+        for symbol in self.__products.values():
             yield symbol
 
-    @property
-    def list(self):
-        return list(self.__products.values())
-
     #@property
+    #def list(self):
+    #    return list(self.__products.values())
+
     def reference(self, rename=False):
-        x = pd.DataFrame({product: product.reference_series(rename=rename) for product in self.list}).transpose()
+        x = pd.DataFrame({product: product.reference_series(rename=rename) for product in self}).transpose()
         x.index.names = ["Product"]
         if rename:
             x = x.rename(index=lambda x: x.name)
 
-        return x
+        return x.fillna("")
 
     def history(self, field="PX_LAST", rename=False):
         # this could be slow
-        x = pd.DataFrame({product: product.get_timeseries(name=field) for product in self.list})
+        x = pd.DataFrame({product: product.get_timeseries(name=field) for product in self})
         x.index.names = ["Date"]
         if rename:
             x = x.rename(columns=lambda x: x.name)
@@ -149,8 +148,6 @@ class Products(object):
         return self.__products
 
     def __repr__(self):
-        s = "\n"
         a = max([len(k) for k in self.__products.keys()])
-
         seq = ["{key:{a}.{a}} {product}".format(key=key, product=product, a=a) for key, product in self.__products.items()]
-        return s.join(seq)
+        return "\n".join(seq)
