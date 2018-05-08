@@ -96,7 +96,7 @@ class Portfolio(ProductInterface):
         return frame.set_index(["Group", "Sector Weight", "Asset"])
 
     def to_html_dict(self):
-        return fromNav(ts=self.nav, adjust=False).to_dictionary(name=self.name)
+        return fromNav(ts=self.nav, adjust=False).to_dictionary()
 
 
 class Portfolios(Products):
