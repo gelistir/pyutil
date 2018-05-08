@@ -22,6 +22,9 @@ FIELDS = {
 class Security(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Security"}
 
+    def __repr__(self):
+        return "Security({id}: {name})".format(id=self.name, name=self.get_reference(field=FIELDS["name"]))
+
     @property
     def price(self):
         return fromNav(self.get_timeseries(name="price"), adjust=False)

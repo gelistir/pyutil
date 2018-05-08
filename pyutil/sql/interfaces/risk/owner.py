@@ -34,6 +34,9 @@ class Owner(ProductInterface):
         super().__init__(name=name)
         self.__currency = currency
 
+    def __repr__(self):
+        return "Owner({id}: {name})".format(id=self.name, name=self.get_reference(field=FIELDS["name"]))
+
     @hybrid_property
     def currency(self):
         return self.__currency
@@ -112,8 +115,6 @@ class Owner(ProductInterface):
 
     @property
     def kiid_weighted(self):
-        print(self.kiid)
-        print(self.position)
         return self.position.apply(lambda a: a * self.kiid, axis=0).dropna(axis=0, how="all")
 
     @property
