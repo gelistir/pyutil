@@ -87,7 +87,7 @@ class TestProducts(TestCase):
             self.assertIsInstance(product, Product)
 
         self.assertEqual(x["A"], p1)
-        self.assertEqual(str(x), "A Test-Product(A)\nB Test-Product(B)")
+        self.assertEqual(str(x), "A   Test-Product(A)\nB   Test-Product(B)")
 
     def test_reference(self):
         p1 = Product(name="A")

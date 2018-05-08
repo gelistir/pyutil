@@ -22,7 +22,7 @@ class TestOwner(unittest.TestCase):
         o = Owner(name=100, currency=usd)
 
         self.assertEqual(o.currency, usd)
-        self.assertEqual(str(o), "Owner(100)")
+        self.assertEqual(str(o), "Owner(100: None)")
         self.assertIsNone(o.current_position)
 
         with self.assertRaises(AttributeError):
