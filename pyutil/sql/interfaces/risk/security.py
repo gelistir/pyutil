@@ -48,7 +48,7 @@ class Security(ProductInterface):
         return self.get_reference(field=FIELDS["Lobnek Ticker Symbol Bloomberg"])
 
     def to_html_dict(self):
-        return fromNav(ts=self.price, adjust=False).to_dictionary(name=self.name)
+        return fromNav(ts=self.price, adjust=False).to_dictionary()
 
 
 class Securities(Products):

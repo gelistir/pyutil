@@ -8,8 +8,8 @@ from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
 
-from pyutil.web.aux import double2percent
-from pandasweb.frames import frame2dict
+#from pyutil.web.aux import double2percent
+#from pandasweb.frames import frame2dict
 
 _association_table = association_table(left="security", right="owner", name="security_owner")
 
@@ -141,12 +141,7 @@ class Owner(ProductInterface):
             return _NavSeries(pd.Series({}))
 
     def to_html_dict(self):
-        w = self.position.applymap(double2percent)
-        w = w.rename(columns=lambda x: x.strftime("%Y-%m-%d"))
-        w.index.names = ["Entity ID"]
-        w = w.reset_index()
-
-        return fromNav(ts=self.nav, adjust=False).to_dictionary(name=self.name, weights=frame2dict(w))
+        return fromNav(ts=self.nav, adjust=False).to_dictionary()
 
 
 class Owners(Products):

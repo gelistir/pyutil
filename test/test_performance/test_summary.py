@@ -87,16 +87,16 @@ class TestSummary(TestCase):
         self.assertEqual(p.loc[pd.Timestamp("2014-03-07").date()], pd.Timedelta(days=66))
 
     def test_to_dictionary(self):
-        x = s.to_dictionary(name="Peter Maffay", falco="the greatest")
-        self.assertSetEqual(set(x.keys()), {"nav", "drawdown", "volatility", "name", "falco"})
+        x = s.to_dictionary()
+        self.assertSetEqual(set(x.keys()), {"nav", "drawdown", "volatility"})
 
         # don't crash here!
         n = NavSeries({})
-        a = n.to_dictionary(name="Hans")
+        a = n.to_dictionary()
 
-        self.assertListEqual(a["nav"], [])
-        self.assertListEqual(a["drawdown"], [])
-        self.assertListEqual(a["volatility"], [])
+        self.assertTrue(a["nav"].empty)
+        self.assertTrue(a["drawdown"].empty)
+        self.assertTrue(a["volatility"].empty)
 
     def test_with_dates(self):
         a = pd.Series({pd.Timestamp("2010-01-05").date(): 2.0,
