@@ -74,7 +74,45 @@ class ProductInterface(MyMixin, Base):
         if name in self._timeseries.keys():
             return self._timeseries[name].series_fast
         else:
-            return defaultxx
+            return default
+
+    def upsert_ts(self, name, data=None, secondary=None):
+        """ upsert a timeseries, get Timeseries object """
+
+        def key(name, secondary=None):
+            if secondary:
+                return name, secondary
+            else:
+                return name
+
+        k = key(name, secondary)
+
+        # do we need a new timeseries object?
+        if k not in self._timeseries.keys():
+            self._timeseries[k] = Timeseries(name=name, product=self, secondary=secondary)
+
+        # now update the timeseries object
+        return self._timeseries[k].upsert(data)
+
+    def frame(self, name, rename=False):
+
+        x = _pd.DataFrame({x.secondary: x.series_fast for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
+        if rename:
+            return x.rename(columns=lambda x: x.name)
+
+        return x
+
+    def __repr__(self):
+        return "{d}({name})".format(d=self.discriminator, name=self.name)
+
+    def __lt__(self, other):
+        return self.name < other.name
+
+    def __eq__(self, other):
+        return self.__class__ == other.__class__ and self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
 
 
 class Products(object):
