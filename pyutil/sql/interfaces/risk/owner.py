@@ -8,7 +8,7 @@ from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
 
-from pyutil.web.aux import double2percent#, reset_index
+from pyutil.web.aux import double2percent
 from pandasweb.frames import frame2dict
 
 _association_table = association_table(left="security", right="owner", name="security_owner")

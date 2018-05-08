@@ -12,8 +12,10 @@ from .var import value_at_risk, conditional_value_at_risk
 
 from pandasweb.highcharts import series2array
 
+
 def fromReturns(r):
     return NavSeries((1 + r).cumprod().dropna()).adjust(value=1.0)
+
 
 def fromNav(ts, adjust=True):
     x = NavSeries(ts.dropna())

@@ -1,25 +1,16 @@
-import json
 from unittest import TestCase
 
 from pyutil.web.engine import month, performance
 from test.config import read_frame
 from pandasweb.highcharts import series2arrays
-
-
-class Request(object):
-    def __init__(self, data):
-        self.__data = data.encode('utf-8')
-
-    @property
-    def data(self):
-        return self.__data
+from pandasweb.rest import Request
 
 
 class TestDatabase(TestCase):
     @classmethod
     def setUpClass(cls):
         ts = read_frame("price.csv")["A"].dropna()
-        cls.request = Request(data=json.dumps(series2arrays(ts)))
+        cls.request = Request(data=series2arrays(ts))
 
     def test_month(self):
         x = month(self.request)
@@ -36,8 +27,8 @@ class TestDatabase(TestCase):
                                          {'name': 'Max Drawdown', 'value': '32.61'},
                                          {'name': 'Max % return', 'value': '4.07'},
                                          {'name': 'Min % return', 'value': '-9.11'}, {'name': 'MTD', 'value': '1.43'},
-                                         {'name': 'YTD', 'value': '1.33'}, {'name': 'Current Nav', 'value': '1200.59'},
-                                         {'name': 'Max Nav', 'value': '1692.70'},
+                                         {'name': 'YTD', 'value': '1.33'}, {'name': 'Current Nav', 'value': '0.72'},
+                                         {'name': 'Max Nav', 'value': '1.01'},
                                          {'name': 'Current Drawdown', 'value': '29.07'},
                                          {'name': 'Calmar Ratio (3Y)', 'value': '-0.44'},
                                          {'name': '# Positive Events', 'value': '285'},
