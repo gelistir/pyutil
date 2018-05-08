@@ -67,20 +67,32 @@ class Owner(ProductInterface):
 
     @property
     def position(self):
-        return self.frame(name="position", rename=True).transpose()
+        frame = self.frame(name="position", rename=True)
+        frame = frame.rename(index=lambda t: t.date())
+        frame = frame.transpose()
+        return frame
+
 
     def position_by(self, index=None):
         if index:
             assert isinstance(index, str), "Index has to be a string"
             a = pd.concat((self.position, self.reference_securities[index]), axis=1)
             a = a.groupby(by=index).sum()
-            return a.rename(columns=lambda x: pd.Timestamp(x))
+            return a
+            #return a.rename(columns=lambda x: pd.Timestamp(x).date())
+        #print(self.position)
+        #print(type(self.position.columns[0]))
+        #print(self.reference_securities)
+        a = pd.concat((self.position, self.reference_securities), axis=1)
+        #print(a)
+        #assert False
 
-        return pd.concat((self.position, self.reference_securities), axis=1)
+        return a
 
     @property
     def vola_securities(self):
         x = pd.DataFrame({security: security.volatility[self.currency] for security in self.securities})
+        x = x.rename(index=lambda t: t.date())
         return x.rename(columns=lambda x: x.name).transpose()
 
     @property
@@ -91,7 +103,8 @@ class Owner(ProductInterface):
         if index:
             a = pd.concat((self.vola_weighted, self.reference_securities[index]), axis=1)
             a = a.groupby(by=index).sum()
-            return a.rename(columns=lambda x: pd.Timestamp(x))
+            return a
+            #return a.rename(columns=lambda x: pd.Timestamp(x).date())
 
         return pd.concat((self.vola_weighted, self.reference_securities), axis=1)
 
