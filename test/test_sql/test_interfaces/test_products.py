@@ -75,6 +75,7 @@ class TestProductInterface(TestCase):
         pdt.assert_series_equal(x, pd.Series({}))
 
 
+
 class TestProducts(TestCase):
     def test_products(self):
         p1 = Product(name="A")
@@ -103,6 +104,7 @@ class TestProducts(TestCase):
 
         pdt.assert_frame_equal(x.reference, pd.DataFrame(index=["A", "B"], columns=["Field 1"], data=[["X"], ["Y"]]),
                                check_names=False)
+
 
     def test_timeseries(self):
         p1 = Product(name="A")

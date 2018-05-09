@@ -7,7 +7,7 @@ from pyutil.sql.db_risk import Database
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
-from pyutil.sql.model.ref import Field, DataType, FieldType
+from pyutil.sql.model.ref import Field, DataType, FieldType, _ReferenceData
 from pyutil.sql.session import session_test
 
 import pandas.util.testing as pdt
@@ -28,6 +28,7 @@ class TestDatabaseRisk(TestCase):
 
         cls.session.add_all([cls.s1, cls.o1])
         cls.db = Database(session = cls.session)
+        cls.session.commit()
 
     def test_securities(self):
         pdt.assert_frame_equal(self.db.securities.reference,
@@ -38,3 +39,5 @@ class TestDatabaseRisk(TestCase):
 
         pdt.assert_frame_equal(self.db.owners.reference,
                                pd.DataFrame(index=["2"], columns=["Field A"], data=[[200]]), check_names=False)
+
+

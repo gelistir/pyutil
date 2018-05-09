@@ -8,9 +8,6 @@ from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
 
-#from pyutil.web.aux import double2percent
-#from pandasweb.frames import frame2dict
-
 _association_table = association_table(left="security", right="owner", name="security_owner")
 
 
@@ -22,6 +19,9 @@ FIELDS = {
     "23. LWM - AUM Type": Field(name="AUM Type", result=DataType.string, type=FieldType.other),
     "Inception Date": Field(name="Inception Date", result=DataType.string, type=FieldType.other)  # don't use date here...
 }
+
+def date2str(x):
+    return x.strftime("%Y-%m-%d")
 
 
 class Owner(ProductInterface):
@@ -68,7 +68,7 @@ class Owner(ProductInterface):
     @property
     def position(self):
         frame = self.frame(name="position", rename=True)
-        frame = frame.rename(index=lambda t: t.date())
+        frame = frame.rename(index=lambda t: date2str(t))
         frame = frame.transpose()
         return frame
 
@@ -79,20 +79,14 @@ class Owner(ProductInterface):
             a = pd.concat((self.position, self.reference_securities[index]), axis=1)
             a = a.groupby(by=index).sum()
             return a
-            #return a.rename(columns=lambda x: pd.Timestamp(x).date())
-        #print(self.position)
-        #print(type(self.position.columns[0]))
-        #print(self.reference_securities)
-        a = pd.concat((self.position, self.reference_securities), axis=1)
-        #print(a)
-        #assert False
 
-        return a
+        return pd.concat((self.position, self.reference_securities), axis=1)
+
 
     @property
     def vola_securities(self):
         x = pd.DataFrame({security: security.volatility[self.currency] for security in self.securities})
-        x = x.rename(index=lambda t: t.date())
+        x = x.rename(index=lambda t: date2str(t))
         return x.rename(columns=lambda x: x.name).transpose()
 
     @property

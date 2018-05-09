@@ -4,12 +4,12 @@ import sqlalchemy as sq
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import has_inherited_table
 from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.sql.base import Base
-from pyutil.sql.model.ref import _ReferenceData
+from pyutil.sql.model.ref import _ReferenceData, Field
 from pyutil.sql.model.ts import Timeseries
 
 
@@ -37,6 +37,7 @@ class ProductInterface(MyMixin, Base):
     # note that the name should not be unique as Portfolio and Strategy can have the same name
     __name = sq.Column("name", sq.String(200), unique=False, nullable=True)
     discriminator = sq.Column(sq.String)
+
     __mapper_args__ = {"polymorphic_on": discriminator}
 
     _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
@@ -45,7 +46,6 @@ class ProductInterface(MyMixin, Base):
     _timeseries = relationship(Timeseries, collection_class=attribute_mapped_collection('key'),
                                cascade="all, delete-orphan", back_populates="product", foreign_keys=[Timeseries.product_id])
 
-    #timeseries = association_proxy('_timeseries', 'series_fast', creator=None)
     reference = association_proxy('_refdata', 'value', creator=lambda k, v: _ReferenceData(field=k, content=v))
 
     sq.UniqueConstraint('discriminator', 'name')
@@ -61,7 +61,11 @@ class ProductInterface(MyMixin, Base):
     def reference_series(self):
         return pd.Series(dict(self.reference)).rename(index=lambda x: x.name)
 
+    @hybrid_method
     def get_reference(self, field, default=None):
+        assert isinstance(field, Field)
+        #if isinstance(field, str):
+        #    field = Field(name=field)
         if field in self._refdata.keys():
             return self._refdata[field].value
         else:
@@ -112,7 +116,6 @@ class ProductInterface(MyMixin, Base):
     def __hash__(self):
         return hash(self.name)
 
-
 class Products(object):
     def __init__(self, products, cls, attribute="name"):
         for p in products:
@@ -149,3 +152,6 @@ class Products(object):
         a = max([len(k) for k in self.__products.keys()])
         seq = ["{key:{a}.{a}}   {product}".format(key=key, product=product, a=a) for key, product in sorted(self.__products.items())]
         return "\n".join(seq)
+
+
+
