@@ -3,14 +3,14 @@ from unittest import TestCase
 from pyutil.web.engine import month, performance
 from test.config import read_frame
 from pandasweb.highcharts import series2arrays
-from pandasweb.rest import Request
+from pandasweb.rest import data2request
 
 
 class TestDatabase(TestCase):
     @classmethod
     def setUpClass(cls):
         ts = read_frame("price.csv")["A"].dropna()
-        cls.request = Request(data=series2arrays(ts))
+        cls.request = data2request(data=series2arrays(ts))
 
     def test_month(self):
         x = month(self.request)

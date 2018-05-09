@@ -11,8 +11,6 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from pyutil.sql.base import Base
 from pyutil.sql.model.ref import _ReferenceData
 from pyutil.sql.model.ts import Timeseries
-#from pyutil.web.aux import reset_index
-#from pandasweb.frames import frame2dict
 
 
 def association_table(left, right, name="association"):
@@ -149,5 +147,5 @@ class Products(object):
 
     def __repr__(self):
         a = max([len(k) for k in self.__products.keys()])
-        seq = ["{key:{a}.{a}}   {product}".format(key=key, product=product, a=a) for key, product in self.__products.items()]
+        seq = ["{key:{a}.{a}}   {product}".format(key=key, product=product, a=a) for key, product in sorted(self.__products.items())]
         return "\n".join(seq)

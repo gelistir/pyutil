@@ -1,4 +1,4 @@
 psycopg2-binary
 sqlalchemy
 
-git+https://github.com/tschm/pandasweb.git@0.0.1#egg=pandasweb
+git+https://github.com/tschm/pandasweb.git@0.0.2#egg=pandasweb
