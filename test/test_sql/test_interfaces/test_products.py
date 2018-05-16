@@ -68,6 +68,8 @@ class TestProductInterface(TestCase):
         f = Field(name="z", type=FieldType.dynamic, result=DataType.integer)
         self.assertEqual(self.p1.get_reference(field=f, default=5), 5)
         self.assertIsNone(self.p1.get_reference(field=f))
+        self.assertEqual(self.p1.get_reference(field="z", default=5), 5)
+
         # assert False
 
     def test_with_unknown_ts(self):

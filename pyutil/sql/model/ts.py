@@ -88,13 +88,12 @@ class Timeseries(Base):
 
     @property
     def series_fast(self):
-        try:
-            # todo: apply float?
-            x = pd.read_json(BytesIO(self._jdata).read().decode(), typ="series")
-        except ValueError:
-            x = pd.Series({})
 
-        return x.apply(float).sort_index()
+        x = pd.read_json(BytesIO(self._jdata).read().decode(), typ="series")
+        if not x.empty:
+            return x.apply(float).sort_index()
+        else:
+            return pd.Series({})
 
     @property
     def last_valid(self):

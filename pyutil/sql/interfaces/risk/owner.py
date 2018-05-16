@@ -35,7 +35,7 @@ class Owner(ProductInterface):
         self.__currency = currency
 
     def __repr__(self):
-        return "Owner({id}: {name})".format(id=self.name, name=self.get_reference(field=FIELDS["name"]))
+        return "Owner({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
 
     @hybrid_property
     def currency(self):
@@ -70,6 +70,7 @@ class Owner(ProductInterface):
         frame = self.frame(name="position", rename=True)
         frame = frame.rename(index=lambda t: date2str(t))
         frame = frame.transpose()
+        frame.index.names = ["Asset"]
         return frame
 
 

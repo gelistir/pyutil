@@ -37,3 +37,8 @@ class TestSecurity(unittest.TestCase):
         self.assertIsNone(s1.bloomberg_ticker)
         s1.reference[TICKER] = "HAHA US Equity"
         self.assertEqual(s1.bloomberg_ticker, "HAHA US Equity")
+
+        x = s1.to_html_dict()
+        assert "nav" in x
+        assert "drawdown" in x
+        assert "volatility" in x

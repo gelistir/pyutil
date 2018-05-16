@@ -69,4 +69,8 @@ class TestTimeseries(TestCase):
         pdt.assert_series_equal(ts1.series_fast, ts1.series_slow)
         pdt.assert_series_equal(ts1.series_fast, pd.Series({pd.Timestamp("2010-01-01"): 5.0}))
 
+    def test_series_fast(self):
+        ts1 = Timeseries(name="peter", product=self.p1)
+        pdt.assert_series_equal(ts1.series_fast, pd.Series({}))
+
 

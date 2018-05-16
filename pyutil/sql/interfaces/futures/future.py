@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 
 import sqlalchemy as sq
-from sqlalchemy import asc
 from sqlalchemy.ext.orderinglist import ordering_list
 
 from pyutil.sql.interfaces.futures.category import FuturesCategory
@@ -60,7 +59,6 @@ class Future(ProductInterface):
         return _Rollmap(pd.Series(m))
 
 
-#todo: create tests...
 class Futures(Products):
     def __init__(self, futures):
         super().__init__(futures, cls=Future, attribute="name")
@@ -84,12 +82,3 @@ class _Rollmap(pd.Series):
             # can be done better
             x.loc[before] = np.nan
             return x.sort_index().ffill().truncate(before=before, after=after)
-
-        #b = super().truncate(before=before, after=after)
-
-        # this is the last point in time a priori or at "before"
-        #t0 = max([t for t in self.index if t <= before])
-        #b.loc[before] = self.loc[t0]
-
-        #return b.sort_index()
-

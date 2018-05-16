@@ -63,9 +63,13 @@ class ProductInterface(MyMixin, Base):
 
     @hybrid_method
     def get_reference(self, field, default=None):
-        assert isinstance(field, Field)
-        #if isinstance(field, str):
-        #    field = Field(name=field)
+        if isinstance(field, Field):
+            pass
+        else:
+            # loop over all fields
+            fields = {f.name : f for f in self._refdata.keys()}
+            field = fields.get(field)
+
         if field in self._refdata.keys():
             return self._refdata[field].value
         else:

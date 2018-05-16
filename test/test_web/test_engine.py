@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from pyutil.web.engine import month, performance
+from pyutil.web.engine import month, performance, drawdown, volatility
 from test.config import read_frame
 from pandasweb.highcharts import series2arrays
 from pandasweb.rest import data2request
@@ -37,6 +37,18 @@ class TestDatabase(TestCase):
                                          {'name': 'Conditional Value at Risk (alpha = 95)', 'value': '2.76'},
                                          {'name': 'First_at', 'value': '2013-01-01'},
                                          {'name': 'Last_at', 'value': '2015-04-22'}])
+
+    def test_drawdown(self):
+        x = drawdown(self.request)
+        self.assertEqual(x[2][0],  1357171200000)
+        self.assertAlmostEqual(x[2][1], 0.0136048372754759, places=10)
+
+    def test_volatility(self):
+        x = volatility(self.request)
+        self.assertEqual(x[2][0],  1363219200000)
+        self.assertAlmostEqual(x[2][1], 0.11651354870460683, places=10)
+
+
 
 
 

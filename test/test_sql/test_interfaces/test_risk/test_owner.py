@@ -83,12 +83,12 @@ class TestOwner(unittest.TestCase):
 
         print(o.position)
         pdt.assert_frame_equal(o.position,
-                               pd.DataFrame(columns=pd.Index([t1.strftime("%Y-%m-%d"), t2.strftime("%Y-%m-%d")]), index=["123"], data=[[0.1, 0.4]]))
+                               pd.DataFrame(columns=pd.Index([t1.strftime("%Y-%m-%d"), t2.strftime("%Y-%m-%d")]), index=["123"], data=[[0.1, 0.4]]), check_names=False)
 
-        pdt.assert_series_equal(o.current_position, pd.Series({"123": 0.4}))
+        pdt.assert_series_equal(o.current_position, pd.Series({"123": 0.4}), check_names=False)
 
         pdt.assert_frame_equal(o.position_by(), pd.DataFrame(index=["123"], columns=[date2str(t1), date2str(t2), "Custodian", "KIID"],
-                                                             data=[[0.1, 0.4, "UBS", 5]]), check_dtype=False)
+                                                             data=[[0.1, 0.4, "UBS", 5]]), check_dtype=False, check_names=False)
 
         pdt.assert_frame_equal(o.position_by(index="KIID"),
                                pd.DataFrame(index=[5], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.1, 0.4]]),
@@ -98,15 +98,15 @@ class TestOwner(unittest.TestCase):
         s1.volatility_upsert(currency=usd, ts={t1: 2.5, t2: 2.5})
         pdt.assert_frame_equal(o.vola_securities, pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123"], data=[[2.5, 2.5]]))
 
-        pdt.assert_frame_equal(o.vola_weighted, pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123"], data=[[0.25, 1.0]]))
+        pdt.assert_frame_equal(o.vola_weighted, pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123"], data=[[0.25, 1.0]]), check_names=False)
 
 
         pdt.assert_frame_equal(o.vola_weighted_by(), pd.DataFrame(index=["123"], columns=[date2str(t1), date2str(t2), "Custodian", "KIID"],
-                                                                  data=[[0.25, 1.0, "UBS", 5]]), check_dtype=False)
+                                                                  data=[[0.25, 1.0, "UBS", 5]]), check_dtype=False, check_names=False)
         pdt.assert_frame_equal(o.vola_weighted_by(index="KIID"),
                                pd.DataFrame(index=[5], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.25, 1.0]]),
                                check_names=False)
 
         self.assertListEqual(o.securities, [s1])
         pdt.assert_series_equal(o.kiid, pd.Series(index=["123"], data=[5]))
-        pdt.assert_frame_equal(o.kiid_weighted, pd.DataFrame(index=["123"], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.5, 2.0]]))
+        pdt.assert_frame_equal(o.kiid_weighted, pd.DataFrame(index=["123"], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.5, 2.0]]), check_names=False)
