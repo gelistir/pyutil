@@ -65,52 +65,57 @@ class Owner(ProductInterface):
     def volatility(self):
         return self.get_timeseries("volatility")
 
-    @property
-    def position(self):
+    #@property
+    def position(self, sum=False):
         frame = self.frame(name="position", rename=True)
         frame = frame.rename(index=lambda t: date2str(t))
         frame = frame.transpose()
         frame.index.names = ["Asset"]
+        if sum:
+            frame.loc["Sum"] = frame.sum(axis=0)
+
         return frame
 
 
-    def position_by(self, index=None):
-        if index:
-            assert isinstance(index, str), "Index has to be a string"
-            a = pd.concat((self.position, self.reference_securities[index]), axis=1)
-            a = a.groupby(by=index).sum()
+    def position_by(self, index_col=None, sum=False):
+        if index_col:
+            assert isinstance(index_col, str), "Index has to be a string"
+            a = pd.concat((self.position(sum=False), self.reference_securities[index_col]), axis=1)
+            a = a.groupby(by=index_col).sum()
+            if sum:
+                a.loc["Sum"] = a.sum(axis=0)
             return a
 
-        return pd.concat((self.position, self.reference_securities), axis=1)
+        return pd.concat((self.position(sum=sum), self.reference_securities), axis=1)
 
 
     @property
     def vola_securities(self):
-        x = pd.DataFrame({security: security.volatility[self.currency] for security in self.securities})
-        x = x.rename(index=lambda t: date2str(t))
-        return x.rename(columns=lambda x: x.name).transpose()
+        x = pd.DataFrame({security.name: security.volatility[self.currency] for security in self.securities})
+        return x.rename(index=lambda t: date2str(t)).transpose()
 
-    @property
-    def vola_weighted(self):
-        return self.position.multiply(self.vola_securities).dropna(axis=0, how="all").dropna(axis=1, how="all")
+    def vola_weighted(self, sum=False):
+        x = self.position(sum=False).multiply(self.vola_securities).dropna(axis=0, how="all").dropna(axis=1, how="all")
+        if sum:
+            x.loc["Sum"] = x.sum(axis=0)
 
-    def vola_weighted_by(self, index=None):
+        return x
+
+
+    def vola_weighted_by(self, index=None, sum=False):
         if index:
-            a = pd.concat((self.vola_weighted, self.reference_securities[index]), axis=1)
-            a = a.groupby(by=index).sum()
-            return a
-            #return a.rename(columns=lambda x: pd.Timestamp(x).date())
+            a = pd.concat((self.vola_weighted(sum=sum), self.reference_securities[index]), axis=1)
+            return a.groupby(by=index).sum()
 
-        return pd.concat((self.vola_weighted, self.reference_securities), axis=1)
+        return pd.concat((self.vola_weighted(sum=sum), self.reference_securities), axis=1)
 
     @property
     def reference_securities(self):
-        y = pd.DataFrame({security: pd.Series(dict(security.reference_series)).sort_index() for security in self.securities})
-        return y.rename(columns=lambda f: f.name).sort_index().transpose()
+        return pd.DataFrame({security.name: security.reference_series.sort_index() for security in self.securities}).sort_index().transpose()
 
     @property
     def current_position(self):
-        p = self.position.transpose().ffill()
+        p = self.position(sum=False).transpose().ffill()
         if len(p.index) >= 1:
             return p.loc[p.index[-1]].rename(None)
         else:
@@ -118,12 +123,11 @@ class Owner(ProductInterface):
 
     @property
     def kiid(self):
-        x = pd.Series({security: security.kiid for security in self.securities})
-        return x.rename(index=lambda x: x.name)
+        return pd.Series({security.name: security.kiid for security in self.securities})
 
     @property
     def kiid_weighted(self):
-        return self.position.apply(lambda a: a * self.kiid, axis=0).dropna(axis=0, how="all")
+        return self.position(sum=False).apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
 
     @property
     def nav(self):
