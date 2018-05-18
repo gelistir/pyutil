@@ -53,5 +53,9 @@ class Security(ProductInterface):
 
 class Securities(Products):
     def __init__(self, securities):
-        super().__init__(securities, cls=Security, attribute="name")
+        super().__init__(securities, cls=Security, attribute="name", f=lambda x: int(x))
 
+    def __repr__(self):
+        d = {key: product for key, product in self.to_dict().items()}
+        seq = ["{key:10d}   {product}".format(key=key, product=d[key]) for key in sorted(d)]
+        return "\n".join(seq)

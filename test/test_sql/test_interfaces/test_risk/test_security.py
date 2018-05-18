@@ -5,7 +5,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.interfaces.risk.currency import Currency
-from pyutil.sql.interfaces.risk.security import Security
+from pyutil.sql.interfaces.risk.security import Security, Securities
 from pyutil.sql.interfaces.risk.security import FIELDS as FIELDSSECURITY
 
 t1 = pd.Timestamp("1978-11-16")
@@ -42,3 +42,10 @@ class TestSecurity(unittest.TestCase):
         assert "nav" in x
         assert "drawdown" in x
         assert "volatility" in x
+
+    def test_securities(self):
+        s1 = Security(name=100)
+        s2 = Security(name=1300)
+
+        o = Securities([s1,s2])
+        self.assertEqual(str(o), "       100   Security(100: None)\n      1300   Security(1300: None)")

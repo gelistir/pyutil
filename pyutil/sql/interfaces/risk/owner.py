@@ -65,9 +65,8 @@ class Owner(ProductInterface):
     def volatility(self):
         return self.get_timeseries("volatility")
 
-    #@property
     def position(self, sum=False):
-        frame = self.frame(name="position", rename=True)
+        frame = self.frame(name="position", rename=True).rename(columns=lambda x: int(x))
         frame = frame.rename(index=lambda t: date2str(t))
         frame = frame.transpose()
         frame.index.names = ["Asset"]
@@ -78,20 +77,21 @@ class Owner(ProductInterface):
 
 
     def position_by(self, index_col=None, sum=False):
+        return self.__weighted_by(f = self.position, index_col=index_col, sum=sum)
+
+    def __weighted_by(self, f, index_col=None, sum=False):
         if index_col:
-            assert isinstance(index_col, str), "Index has to be a string"
-            a = pd.concat((self.position(sum=False), self.reference_securities[index_col]), axis=1)
+            a = pd.concat((f(sum=False), self.reference_securities[index_col]), axis=1)
             a = a.groupby(by=index_col).sum()
             if sum:
                 a.loc["Sum"] = a.sum(axis=0)
             return a
 
-        return pd.concat((self.position(sum=sum), self.reference_securities), axis=1)
-
+        return pd.concat((f(sum=sum), self.reference_securities), axis=1)
 
     @property
     def vola_securities(self):
-        x = pd.DataFrame({security.name: security.volatility[self.currency] for security in self.securities})
+        x = pd.DataFrame({int(security.name): security.volatility[self.currency] for security in self.securities})
         return x.rename(index=lambda t: date2str(t)).transpose()
 
     def vola_weighted(self, sum=False):
@@ -102,16 +102,13 @@ class Owner(ProductInterface):
         return x
 
 
-    def vola_weighted_by(self, index=None, sum=False):
-        if index:
-            a = pd.concat((self.vola_weighted(sum=sum), self.reference_securities[index]), axis=1)
-            return a.groupby(by=index).sum()
+    def vola_weighted_by(self, index_col=None, sum=False):
+        return self.__weighted_by(f = self.vola_weighted, index_col=index_col, sum=sum)
 
-        return pd.concat((self.vola_weighted(sum=sum), self.reference_securities), axis=1)
 
     @property
     def reference_securities(self):
-        return pd.DataFrame({security.name: security.reference_series.sort_index() for security in self.securities}).sort_index().transpose()
+        return pd.DataFrame({int(security.name): security.reference_series.sort_index() for security in self.securities}).sort_index().transpose()
 
     @property
     def current_position(self):
@@ -123,11 +120,17 @@ class Owner(ProductInterface):
 
     @property
     def kiid(self):
-        return pd.Series({security.name: security.kiid for security in self.securities})
+        return pd.Series({int(security.name): security.kiid for security in self.securities})
 
-    @property
-    def kiid_weighted(self):
-        return self.position(sum=False).apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
+    def kiid_weighted(self, sum=False):
+        x = self.position(sum=False).apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
+        if sum:
+            x.loc["Sum"] = x.sum(axis=0)
+        return x
+
+    def kiid_weighted_by(self, index_col=None, sum=False):
+        return self.__weighted_by(f = self.kiid_weighted, index_col=index_col, sum=sum)
+
 
     @property
     def nav(self):
@@ -145,4 +148,9 @@ class Owner(ProductInterface):
 
 class Owners(Products):
     def __init__(self, owners):
-        super().__init__(owners, cls=Owner, attribute="name")
+        super().__init__(owners, cls=Owner, attribute="name", f=lambda x: int(x))
+
+    def __repr__(self):
+        d = {key: product for key, product in self.to_dict().items()}
+        seq = ["{key:10d}   {product}".format(key=key, product=d[key]) for key in sorted(d)]
+        return "\n".join(seq)

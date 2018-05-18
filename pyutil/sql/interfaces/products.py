@@ -121,11 +121,11 @@ class ProductInterface(MyMixin, Base):
         return hash(self.name)
 
 class Products(object):
-    def __init__(self, products, cls, attribute="name"):
+    def __init__(self, products, cls, attribute="name", f=lambda x: x):
         for p in products:
             assert isinstance(p, cls)
 
-        self.__products = {getattr(x, attribute): x for x in products}
+        self.__products = {f(getattr(x, attribute)): x for x in products}
 
     def __getitem__(self, item):
         return self.__products[str(item)]
@@ -136,9 +136,9 @@ class Products(object):
 
     @property
     def reference(self):
-        x = pd.DataFrame({product: product.reference_series for product in self}).transpose()
+        x = pd.DataFrame({key: product.reference_series for key, product in self.__products.items()}).transpose()
         x.index.names = ["Product"]
-        return x.rename(index=lambda x: x.name).fillna("")
+        return x.fillna("")
 
     def history(self, field="PX_LAST", rename=False):
         # this could be slow
