@@ -17,7 +17,7 @@ class FieldType(enum.Enum):
 
 class DataType(enum.Enum):
     string = ("string", lambda x: x)
-    integer = ("integer", lambda x: int(x))
+    integer = ("integer", lambda x: int(float(x))) # that's weird...
     float = ("float", lambda x: float(x))
     date = ("date", lambda x: pd.to_datetime(int(x)*1e6).date())
     datetime = ("datetime", lambda x: pd.to_datetime(int(x)*1e6))
@@ -42,9 +42,9 @@ class Field(Base):
     id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
     __name = sq.Column("name", sq.String(50), unique=True)
     __type = sq.Column("type", Enum(FieldType))
-    __result = sq.Column("result", Enum(DataType), nullable=False)
+    __result = sq.Column("result", Enum(DataType))
 
-    def __init__(self, name, result, type=None):
+    def __init__(self, name, result=None, type=None):
         self.__name = name
         self.__result = result
         self.__type = type
@@ -88,7 +88,10 @@ class _ReferenceData(Base):
 
     @property
     def value(self):
-        return self.field.result(self.content)
+        if self.field.result:
+            return self.field.result(self.content)
+        else:
+            return self.content
 
     @value.setter
     def value(self, value):
