@@ -151,7 +151,7 @@ class TestOwner(unittest.TestCase):
         pdt.assert_frame_equal(pd.DataFrame(index=['100', '1300'], columns=["Name"], data=[["Peter"],["Maffay"]]), o.reference, check_names=False)
 
         #print(o.to_html_dict())
-        self.assertDictEqual(o.to_html_dict(), {'columns': ['Name', 'Entity ID'], 'data': [OrderedDict([('Name', 'Peter'), ('Entity ID', '100')]), OrderedDict([('Name', 'Maffay'), ('Entity ID', '1300')])]})
+        self.assertDictEqual(o.to_html_dict(), {'columns': ['Entity ID', 'Name'], 'data': [OrderedDict([('Entity ID', '100'), ('Name', 'Peter')]), OrderedDict([('Entity ID', '1300'), ('Name', 'Maffay')])]})
 
         #assert False
 

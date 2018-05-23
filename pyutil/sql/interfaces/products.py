@@ -160,8 +160,12 @@ class Products(object):
 
     def to_html(self, index_name):
         x = self.reference.fillna("")
-        x[index_name] = [str(a) for a in x.index]
-        return frame2dict(x.reset_index(drop=True))
+
+        # every index has to be string!
+        x.index = [str(a) for a in x.index]
+        x.index.names = [index_name]
+
+        return frame2dict(x.reset_index(drop=False))
 
 
 
