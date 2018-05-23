@@ -80,5 +80,5 @@ class TestSecurity(unittest.TestCase):
                               labels = [[0, 0], [0, 0], [0, 1]],
                               names = ['Security', 'Date', 'Currency'])
 
-        pdt.assert_frame_equal(o.securities_volatility, pd.DataFrame(index=index, columns=["Volatility"], data=[[40.0],[50.0]]))
+        pdt.assert_frame_equal(o.volatilities, pd.DataFrame(index=index, columns=["Volatility"], data=[[40.0], [50.0]]))
 

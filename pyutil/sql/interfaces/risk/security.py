@@ -72,7 +72,7 @@ class Securities(Products):
         return f
 
     @property
-    def securities_volatility(self):
+    def volatilities(self):
         frame = pd.concat({sec.name: sec.frame("volatility", rename=True).stack() for sec in self}, axis=0)
         frame = frame.to_frame(name="Volatility")
         frame.index.names = ["Security", "Date", "Currency"]
