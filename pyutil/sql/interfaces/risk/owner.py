@@ -1,5 +1,7 @@
 import pandas as pd
 import sqlalchemy as _sq
+from pandasweb.frames import frame2dict
+
 from pyutil.performance.summary import NavSeries as _NavSeries, fromNav
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
@@ -154,3 +156,21 @@ class Owners(Products):
         d = {key: product for key, product in self.to_dict().items()}
         seq = ["{key:10d}   {product}".format(key=key, product=d[key]) for key in sorted(d)]
         return "\n".join(seq)
+
+    def to_html_dict(self, index_name="Entity ID"):
+        return self.to_html(index_name=index_name)
+
+    @property
+    def returns(self):
+        return pd.DataFrame({owner.get_reference("Name") : owner.returns for owner in self})
+
+    @property
+    def positions(self):
+        frame = pd.concat({o.get_reference("Name"): o.position().stack() for o in self}, axis=0)
+        frame = frame.to_frame(name="Weight")
+        frame.index.names = ["Owner", "Asset", "Date"]
+        return frame
+
+    @property
+    def volatility(self):
+        return pd.DataFrame({o.get_reference("Name"): o.volatility for o in self}).transpose()

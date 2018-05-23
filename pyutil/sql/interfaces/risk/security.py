@@ -1,3 +1,6 @@
+import pandas as pd
+
+from pandasweb.frames import frame2dict
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyutil.performance.summary import fromNav
@@ -59,3 +62,20 @@ class Securities(Products):
         d = {key: product for key, product in self.to_dict().items()}
         seq = ["{key:10d}   {product}".format(key=key, product=d[key]) for key in sorted(d)]
         return "\n".join(seq)
+
+    def to_html_dict(self, index_name="Entity ID"):
+        return self.to_html(index_name=index_name)
+
+    @property
+    def prices(self):
+        f = pd.DataFrame({sec.name : sec.get_timeseries("price") for sec in self}).transpose()
+        f = f.stack(level=0).dropna().to_frame(name="Price").sort_index(level=1, ascending=False)
+        f.index.names=["Owned ID","Date"]
+        return f
+
+    @property
+    def securities_volatility(self):
+        frame = pd.concat({s.name: s.frame("volatility", rename=True).stack() for s in self}, axis=0)
+        frame = frame.to_frame(name="Volatility")
+        frame.index.names = ["Security", "Date", "Currency"]
+        return frame

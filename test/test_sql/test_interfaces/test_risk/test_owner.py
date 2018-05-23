@@ -1,4 +1,6 @@
 import unittest
+from collections import OrderedDict
+
 import pandas as pd
 
 from pyutil.sql.interfaces.risk.security import Security, FIELDS as FIELDSSECURITY
@@ -137,19 +139,24 @@ class TestOwner(unittest.TestCase):
                                check_names=False)
 
     def test_owners(self):
-        o1 = Owner(name=100, currency=Currency(name="USD"))
-        o2 = Owner(name=1300, currency=Currency(name="USD"))
+        o1 = Owner(name='100', currency=Currency(name="USD"))
+        o2 = Owner(name='1300', currency=Currency(name="USD"))
 
         o = Owners([o1,o2])
         self.assertEqual(str(o), "       100   Owner(100: None)\n      1300   Owner(1300: None)")
 
         o1.reference[NAME] = "Peter"
         o2.reference[NAME] = "Maffay"
-        pdt.assert_frame_equal(pd.DataFrame(index=[100, 1300], columns=["Name"], data=[["Peter"],["Maffay"]]), o.reference, check_names=False)
+        pdt.assert_frame_equal(pd.DataFrame(index=['100', '1300'], columns=["Name"], data=[["Peter"],["Maffay"]]), o.reference, check_names=False)
+
+        #print(o.to_html_dict())
+        self.assertDictEqual(o.to_html_dict(), {'columns': ['Name', 'Entity ID'], 'data': [OrderedDict([('Name', 'Peter'), ('Entity ID', '100')]), OrderedDict([('Name', 'Maffay'), ('Entity ID', '1300')])]})
+
+        #assert False
 
 
     def test_kiid(self):
-        o = Owner(name=100, currency=Currency(name="USD"))
+        o = Owner(name='100', currency=Currency(name="USD"))
 
         # create a security
         s1 = Security(name=123)

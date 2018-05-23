@@ -48,3 +48,5 @@ class Symbols(Products):
         # todo: fillna not working?
         return pd.DataFrame({"Group": pd.Series(self.group), "Internal": pd.Series(self.internal)})
 
+    def to_html_dict(self):
+        return self.to_html(index_name="Bloomberg")

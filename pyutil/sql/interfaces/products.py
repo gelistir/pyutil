@@ -1,6 +1,7 @@
 import pandas as _pd
 import pandas as pd
 import sqlalchemy as sq
+from pandasweb.frames import frame2dict
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import has_inherited_table
 from sqlalchemy.ext.declarative import declared_attr
@@ -136,7 +137,7 @@ class Products(object):
 
     @property
     def reference(self):
-        x = pd.DataFrame({key: product.reference_series for key, product in self.__products.items()}).transpose()
+        x = pd.DataFrame({str(key): product.reference_series for key, product in self.__products.items()}).transpose()
         x.index.names = ["Product"]
         return x.fillna("")
 
@@ -156,6 +157,12 @@ class Products(object):
         a = max([len(k) for k in self.__products.keys()])
         seq = ["{key:{a}.{a}}   {product}".format(key=key, product=product, a=a) for key, product in sorted(self.__products.items())]
         return "\n".join(seq)
+
+    def to_html(self, index_name):
+        x = self.reference.fillna("")
+        x[index_name] = [str(a) for a in x.index]
+        return frame2dict(x.reset_index(drop=True))
+
 
 
 
