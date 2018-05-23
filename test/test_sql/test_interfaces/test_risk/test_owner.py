@@ -54,15 +54,15 @@ class TestOwner(unittest.TestCase):
         pdt.assert_series_equal(o.nav, pd.Series(index=[t0, t1, t2], data=[1.0, 1.1, 1.32]))
 
     def test_volatility(self):
-        o = Owner(name=100, currency=Currency(name="USD"))
+        o = Owner(name="100", currency=Currency(name="USD"))
         o.volatility_upsert(ts={t1: 0.1, t2: 0.3})
         pdt.assert_series_equal(o.volatility, pd.Series({t1: 0.1, t2: 0.3}))
 
     def test_add_security(self):
-        o = Owner(name=100, currency=Currency(name="USD"))
+        o = Owner(name="100", currency=Currency(name="USD"))
 
         # create a security
-        s1 = Security(name=123)
+        s1 = Security(name="123")
         s1.reference[KIID] = "5"
 
         # note that the security is not linked to the owner yet
@@ -72,7 +72,7 @@ class TestOwner(unittest.TestCase):
         # appending securities can be done explicitly as demonstrated here or by defining a position in the security
         o.securities.append(s1)
         pdt.assert_frame_equal(o.reference_securities,
-                               pd.DataFrame(index=[123], columns=["KIID"], data=[[5]]), check_dtype=False)
+                               pd.DataFrame(index=["123"], columns=["KIID"], data=[[5]]), check_dtype=False)
         self.assertListEqual(o.securities, [s1])
 
         # let's remove the security we have just added!
@@ -80,33 +80,34 @@ class TestOwner(unittest.TestCase):
         self.assertTrue(o.reference_securities.empty)
 
     def test_position(self):
-        o = Owner(name=100, currency=Currency(name="USD"))
+        o = Owner(name="100", currency=Currency(name="USD"))
 
         # create a security
-        s1 = Security(name=123)
+        s1 = Security(name="123")
         s1.reference[KIID] = 5
 
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
         o.position_upsert(security=s1, ts={t1: 0.1, t2: 0.4})
 
         pdt.assert_frame_equal(o.position(sum=False),
-                               pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=[123],
+                               pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123"],
                                             data=[[0.1, 0.4]]), check_names=False)
 
         pdt.assert_frame_equal(o.position(sum=True),
-                               pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=[123, "Sum"],
+                               pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123", "Sum"],
                                             data=[[0.1, 0.4],[0.1, 0.4]]), check_names=False)
 
-        pdt.assert_series_equal(o.current_position, pd.Series({123: 0.4}), check_names=False)
+        pdt.assert_series_equal(o.current_position, pd.Series({"123": 0.4}), check_names=False)
 
-        pdt.assert_frame_equal(o.position_by(), pd.DataFrame(index=[123], columns=[date2str(t1), date2str(t2), "KIID"],
-                                                             data=[[0.1, 0.4, 5]]), check_dtype=False, check_names=False)
+        print(o.position_by())
+        pdt.assert_frame_equal(o.position_by(), pd.DataFrame(index=["123"], columns=[date2str(t1), date2str(t2), "KIID"],
+                                                              data=[[0.1, 0.4, 5]]), check_dtype=False, check_names=False)
 
         print(o.position_by(index_col="KIID"))
 
         pdt.assert_frame_equal(o.position_by(index_col="KIID"), pd.DataFrame(index=[5], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.1, 0.4]]), check_names=False)
 
-        pdt.assert_frame_equal(o.position_by(sum=True), pd.DataFrame(index=[123, "Sum"], columns=[date2str(t1), date2str(t2), "KIID"],
+        pdt.assert_frame_equal(o.position_by(sum=True), pd.DataFrame(index=["123", "Sum"], columns=[date2str(t1), date2str(t2), "KIID"],
                                                              data=[[0.1, 0.4, 5],[0.1,0.4,None]]), check_dtype=False, check_names=False)
 
         pdt.assert_frame_equal(o.position_by(index_col="KIID", sum=True), pd.DataFrame(index=[5, "Sum"], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.1, 0.4], [0.1, 0.4]]), check_names=False)
@@ -127,12 +128,12 @@ class TestOwner(unittest.TestCase):
         s1.volatility_upsert(currency=o.currency, ts={t1: 2.5, t2: 2.5})
 
 
-        pdt.assert_frame_equal(o.vola_securities, pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=[123], data=[[2.5, 2.5]]))
+        pdt.assert_frame_equal(o.vola_securities, pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123"], data=[[2.5, 2.5]]))
 
-        pdt.assert_frame_equal(o.vola_weighted(sum=False), pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=[123], data=[[0.25, 1.0]]), check_names=False)
+        pdt.assert_frame_equal(o.vola_weighted(sum=False), pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123"], data=[[0.25, 1.0]]), check_names=False)
 
 
-        pdt.assert_frame_equal(o.vola_weighted_by(), pd.DataFrame(index=[123], columns=[date2str(t1), date2str(t2), "KIID"],
+        pdt.assert_frame_equal(o.vola_weighted_by(), pd.DataFrame(index=["123"], columns=[date2str(t1), date2str(t2), "KIID"],
                                                                    data=[[0.25, 1.0, 5]]), check_dtype=False, check_names=False)
         pdt.assert_frame_equal(o.vola_weighted_by(index_col="KIID"),
                                pd.DataFrame(index=[5], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.25, 1.0]]),
@@ -159,17 +160,17 @@ class TestOwner(unittest.TestCase):
         o = Owner(name='100', currency=Currency(name="USD"))
 
         # create a security
-        s1 = Security(name=123)
+        s1 = Security(name="123")
         s1.reference[KIID] = 5
 
         # update the position in security s1
         o.position_upsert(security=s1, ts={t1: 0.1, t2: 0.4})
 
-        pdt.assert_series_equal(o.kiid, pd.Series(index=[123], data=[5]))
+        pdt.assert_series_equal(o.kiid, pd.Series(index=["123"], data=[5]))
 
-        pdt.assert_frame_equal(o.kiid_weighted(sum=False), pd.DataFrame(index=[123], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.5, 2.0]]), check_names=False)
+        pdt.assert_frame_equal(o.kiid_weighted(sum=False), pd.DataFrame(index=["123"], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.5, 2.0]]), check_names=False)
 
-        pdt.assert_frame_equal(o.kiid_weighted(sum=True), pd.DataFrame(index=[123, "Sum"], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.5, 2.0], [0.5,2.0]]), check_names=False)
+        pdt.assert_frame_equal(o.kiid_weighted(sum=True), pd.DataFrame(index=["123", "Sum"], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.5, 2.0], [0.5,2.0]]), check_names=False)
 
         #print(o.reference_securities)
 

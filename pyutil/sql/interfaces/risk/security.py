@@ -1,6 +1,4 @@
 import pandas as pd
-
-from pandasweb.frames import frame2dict
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyutil.performance.summary import fromNav
@@ -51,7 +49,7 @@ class Security(ProductInterface):
         return self.get_reference(field=FIELDS["Lobnek Ticker Symbol Bloomberg"])
 
     def to_html_dict(self):
-        return fromNav(ts=self.price, adjust=False).to_dictionary()
+        return fromNav(ts=self.price, adjust=False).to_dictionary(name=self.get_reference("Name"))
 
 
 class Securities(Products):
@@ -75,7 +73,7 @@ class Securities(Products):
 
     @property
     def securities_volatility(self):
-        frame = pd.concat({s.name: s.frame("volatility", rename=True).stack() for s in self}, axis=0)
+        frame = pd.concat({sec.name: sec.frame("volatility", rename=True).stack() for sec in self}, axis=0)
         frame = frame.to_frame(name="Volatility")
         frame.index.names = ["Security", "Date", "Currency"]
         return frame

@@ -15,6 +15,8 @@ class Database(object):
     def securities(self):
         return Securities(self.__session.query(Security))
 
+    #def owner(self, name):
+    #    return self.__session.query(Owner).filter_by(name)
     def owner(self, value, field="Name"):
         return self.__session.query(_ReferenceData.content, Field.name, Owner)\
             .join(Owner, _ReferenceData.product_id==Owner.id)\

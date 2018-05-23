@@ -27,8 +27,8 @@ class Symbol(ProductInterface):
         self.group = group
         self.internal = internal
 
-    def to_html_dict(self, name="PX_LAST"):
-        return fromNav(ts=self.get_timeseries(name=name), adjust=False).to_dictionary()
+    def to_html_dict(self, name="PX_LAST", **kwargs):
+        return fromNav(ts=self.get_timeseries(name=name), adjust=False).to_dictionary(**kwargs)
 
 
 class Symbols(Products):

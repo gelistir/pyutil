@@ -68,9 +68,8 @@ class Owner(ProductInterface):
         return self.get_timeseries("volatility")
 
     def position(self, sum=False):
-        frame = self.frame(name="position", rename=True).rename(columns=lambda x: int(x))
-        frame = frame.rename(index=lambda t: date2str(t))
-        frame = frame.transpose()
+        frame = self.frame(name="position", rename=True)
+        frame = frame.rename(index=lambda t: date2str(t)).transpose()
         frame.index.names = ["Asset"]
         if sum:
             frame.loc["Sum"] = frame.sum(axis=0)
@@ -93,7 +92,7 @@ class Owner(ProductInterface):
 
     @property
     def vola_securities(self):
-        x = pd.DataFrame({int(security.name): security.volatility[self.currency] for security in self.securities})
+        x = pd.DataFrame({security.name: security.volatility[self.currency] for security in self.securities})
         return x.rename(index=lambda t: date2str(t)).transpose()
 
     def vola_weighted(self, sum=False):
@@ -110,7 +109,7 @@ class Owner(ProductInterface):
 
     @property
     def reference_securities(self):
-        return pd.DataFrame({int(security.name): security.reference_series.sort_index() for security in self.securities}).sort_index().transpose()
+        return pd.DataFrame({security.name: security.reference_series.sort_index() for security in self.securities}).sort_index().transpose()
 
     @property
     def current_position(self):
@@ -122,7 +121,7 @@ class Owner(ProductInterface):
 
     @property
     def kiid(self):
-        return pd.Series({int(security.name): security.kiid for security in self.securities})
+        return pd.Series({security.name: security.kiid for security in self.securities})
 
     def kiid_weighted(self, sum=False):
         x = self.position(sum=False).apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
@@ -145,7 +144,12 @@ class Owner(ProductInterface):
             return _NavSeries(pd.Series({}))
 
     def to_html_dict(self):
-        return fromNav(ts=self.nav, adjust=False).to_dictionary()
+        def double2percent(x):
+            return "{0:.2f}%".format(float(100.0 * x)).replace("nan%", "")
+
+        w = self.position(sum=False).applymap(double2percent).reset_index()
+        #w["Asset"] = w["Asset"].apply(str)
+        return fromNav(ts=self.nav, adjust=False).to_dictionary(name=self.get_reference("Name"), weights=frame2dict(w))
 
 
 class Owners(Products):
@@ -174,3 +178,5 @@ class Owners(Products):
     @property
     def volatility(self):
         return pd.DataFrame({o.get_reference("Name"): o.volatility for o in self}).transpose()
+
+

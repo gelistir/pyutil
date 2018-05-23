@@ -41,9 +41,11 @@ class TestSecurity(unittest.TestCase):
         self.assertEqual(s1.bloomberg_ticker, "HAHA US Equity")
 
         x = s1.to_html_dict()
+        print(x)
         assert "nav" in x
         assert "drawdown" in x
         assert "volatility" in x
+
 
     def test_securities(self):
         s1 = Security(name=100)

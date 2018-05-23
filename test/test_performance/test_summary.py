@@ -93,10 +93,10 @@ class TestSummary(TestCase):
         # don't crash here!
         n = NavSeries({})
         a = n.to_dictionary()
-
-        self.assertTrue(a["nav"].empty)
-        self.assertTrue(a["drawdown"].empty)
-        self.assertTrue(a["volatility"].empty)
+        print(a)
+        self.assertFalse(a["nav"])
+        self.assertFalse(a["drawdown"])
+        self.assertFalse(a["volatility"])
 
     def test_with_dates(self):
         a = pd.Series({pd.Timestamp("2010-01-05").date(): 2.0,
