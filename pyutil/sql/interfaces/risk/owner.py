@@ -166,7 +166,7 @@ class Owners(Products):
 
     @property
     def returns(self):
-        return pd.DataFrame({owner.get_reference("Name") : owner.returns for owner in self})
+        return pd.DataFrame({owner.get_reference("Name") : owner.returns for owner in self}).dropna(axis=1, how="all")
 
     @property
     def positions(self):
@@ -177,6 +177,6 @@ class Owners(Products):
 
     @property
     def volatility(self):
-        return pd.DataFrame({o.get_reference("Name"): o.volatility for o in self}).transpose()
+        return pd.DataFrame({o.get_reference("Name"): o.volatility for o in self}).transpose().dropna(axis=0, how="all")
 
 

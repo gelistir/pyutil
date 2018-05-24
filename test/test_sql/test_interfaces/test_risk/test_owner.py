@@ -37,6 +37,8 @@ class TestOwner(unittest.TestCase):
         o = Owner(name="Peter", currency=Currency(name="USD"))
         # we have no position (yet)!
         self.assertIsNone(o.current_position)
+        self.assertTrue(o.nav.empty)
+
 
     def test_str(self):
         o = Owner(name="Peter", currency=Currency(name="USD"))
@@ -142,6 +144,7 @@ class TestOwner(unittest.TestCase):
     def test_owners(self):
         o1 = Owner(name='100', currency=Currency(name="USD"))
         o2 = Owner(name='1300', currency=Currency(name="USD"))
+        s1 = Security(name="123")
 
         o = Owners([o1,o2])
         self.assertEqual(str(o), "       100   Owner(100: None)\n      1300   Owner(1300: None)")
@@ -153,24 +156,48 @@ class TestOwner(unittest.TestCase):
         #print(o.to_html_dict())
         self.assertDictEqual(o.to_html_dict(), {'columns': ['Entity ID', 'Name'], 'data': [OrderedDict([('Entity ID', '100'), ('Name', 'Peter')]), OrderedDict([('Entity ID', '1300'), ('Name', 'Maffay')])]})
 
-        #assert False
+        o1.returns_upsert(ts={t1: 0.1, t2: 0.4})
+
+        pdt.assert_frame_equal(o.returns, pd.DataFrame(index=[t1,t2], columns=["Peter"], data=[[0.1],[0.4]]), check_names=False)
+
+        # update the position in security s1
+        o1.position_upsert(security=s1, ts={t1: 0.1, t2: 0.4})
+        o1.volatility_upsert(ts={t1: 0.1, t2: 0.4})
+
+        index = pd.MultiIndex.from_tuples(tuples=[("Peter","123", date2str(t1)), ("Peter", "123", date2str(t2))], names=("Owner","Asset","Date"))
+        frame = pd.DataFrame(index=index, columns=["Weight"], data=[[0.1],[0.4]])
+        pdt.assert_frame_equal(o.positions, frame)
+
+        frame = pd.DataFrame(index=["Peter"], columns=[t1, t2], data=[[0.1, 0.4]])
+        pdt.assert_frame_equal(o.volatility, frame, check_names=False)
 
 
     def test_kiid(self):
         o = Owner(name='100', currency=Currency(name="USD"))
+        o.reference[NAME] = "Peter"
 
         # create a security
         s1 = Security(name="123")
+        s1.reference[NAME] = "Maffay"
         s1.reference[KIID] = 5
 
         # update the position in security s1
         o.position_upsert(security=s1, ts={t1: 0.1, t2: 0.4})
 
         pdt.assert_series_equal(o.kiid, pd.Series(index=["123"], data=[5]))
-
         pdt.assert_frame_equal(o.kiid_weighted(sum=False), pd.DataFrame(index=["123"], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.5, 2.0]]), check_names=False)
-
         pdt.assert_frame_equal(o.kiid_weighted(sum=True), pd.DataFrame(index=["123", "Sum"], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.5, 2.0], [0.5,2.0]]), check_names=False)
 
-        #print(o.reference_securities)
+        frame = pd.DataFrame(index=["Maffay"], columns=[date2str(t1), date2str(t2)], data=[[0.5, 2.0]])
+        pdt.assert_frame_equal(o.kiid_weighted_by(index_col="Name"), frame, check_names=False)
+
+
+    def test_html_do_dict(self):
+        o = Owner(name='100', currency=Currency(name="USD"))
+        o.returns_upsert(ts={t1: 0.1, t2: 0.4})
+        o.reference[NAME] = "Peter"
+
+        self.assertDictEqual(o.to_html_dict(), {'nav': [[279936000000, 1.0], [280022400000, 1.1], [280195200000, 1.54]],
+                                                'drawdown': [[279936000000, 0.0], [280022400000, 0.0], [280195200000, 0.0]],
+                                                'volatility': [], 'name': 'Peter', 'weights': {'columns': ['Asset'], 'data': []}})
 
