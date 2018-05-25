@@ -67,8 +67,12 @@ class Owner(ProductInterface):
     def volatility(self):
         return self.get_timeseries("volatility")
 
-    def position(self, sum=False):
+    def position(self, sum=False, tail=None):
         frame = self.frame(name="position", rename=True)
+
+        if tail:
+            frame=frame.tail(n=tail)
+
         frame = frame.rename(index=lambda t: date2str(t)).transpose()
         frame.index.names = ["Asset"]
         if sum:
@@ -77,26 +81,26 @@ class Owner(ProductInterface):
         return frame
 
 
-    def position_by(self, index_col=None, sum=False):
-        return self.__weighted_by(f = self.position, index_col=index_col, sum=sum)
+    def position_by(self, index_col=None, sum=False, tail=None):
+        return self.__weighted_by(f = self.position, index_col=index_col, sum=sum, tail=tail)
 
-    def __weighted_by(self, f, index_col=None, sum=False):
+    def __weighted_by(self, f, index_col=None, sum=False, tail=None):
         if index_col:
-            a = pd.concat((f(sum=False), self.reference_securities[index_col]), axis=1)
+            a = pd.concat((f(sum=False, tail=tail), self.reference_securities[index_col]), axis=1)
             a = a.groupby(by=index_col).sum()
             if sum:
                 a.loc["Sum"] = a.sum(axis=0)
             return a
 
-        return pd.concat((f(sum=sum), self.reference_securities), axis=1)
+        return pd.concat((f(sum=sum, tail=tail), self.reference_securities), axis=1)
 
     @property
     def vola_securities(self):
         x = pd.DataFrame({security.name: security.volatility[self.currency] for security in self.securities})
         return x.rename(index=lambda t: date2str(t)).transpose()
 
-    def vola_weighted(self, sum=False):
-        x = self.position(sum=False).multiply(self.vola_securities).dropna(axis=0, how="all").dropna(axis=1, how="all")
+    def vola_weighted(self, sum=False, tail=None):
+        x = self.position(sum=False, tail=tail).multiply(self.vola_securities).dropna(axis=0, how="all").dropna(axis=1, how="all")
         if sum:
             x.loc["Sum"] = x.sum(axis=0)
 
@@ -123,14 +127,14 @@ class Owner(ProductInterface):
     def kiid(self):
         return pd.Series({security.name: security.kiid for security in self.securities})
 
-    def kiid_weighted(self, sum=False):
-        x = self.position(sum=False).apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
+    def kiid_weighted(self, sum=False, tail=None):
+        x = self.position(sum=False, tail=tail).apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
         if sum:
             x.loc["Sum"] = x.sum(axis=0)
         return x
 
-    def kiid_weighted_by(self, index_col=None, sum=False):
-        return self.__weighted_by(f = self.kiid_weighted, index_col=index_col, sum=sum)
+    def kiid_weighted_by(self, index_col=None, sum=False, tail=None):
+        return self.__weighted_by(f = self.kiid_weighted, index_col=index_col, sum=sum, tail=tail)
 
 
     @property

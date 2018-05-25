@@ -95,24 +95,29 @@ class TestOwner(unittest.TestCase):
                                pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123"],
                                             data=[[0.1, 0.4]]), check_names=False)
 
-        pdt.assert_frame_equal(o.position(sum=True),
-                               pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123", "Sum"],
-                                            data=[[0.1, 0.4],[0.1, 0.4]]), check_names=False)
+        pdt.assert_frame_equal(o.position(sum=False, tail=1),
+                               pd.DataFrame(columns=pd.Index([date2str(t2)]), index=["123"],
+                                            data=[[0.4]]), check_names=False)
+
+
+        pdt.assert_frame_equal(o.position(sum=True, tail=1),
+                               pd.DataFrame(columns=pd.Index([date2str(t2)]), index=["123", "Sum"],
+                                            data=[[0.4],[0.4]]), check_names=False)
 
         pdt.assert_series_equal(o.current_position, pd.Series({"123": 0.4}), check_names=False)
 
         print(o.position_by())
-        pdt.assert_frame_equal(o.position_by(), pd.DataFrame(index=["123"], columns=[date2str(t1), date2str(t2), "KIID"],
-                                                              data=[[0.1, 0.4, 5]]), check_dtype=False, check_names=False)
+        pdt.assert_frame_equal(o.position_by(tail=1), pd.DataFrame(index=["123"], columns=[date2str(t2), "KIID"],
+                                                              data=[[0.4, 5]]), check_dtype=False, check_names=False)
 
         print(o.position_by(index_col="KIID"))
 
-        pdt.assert_frame_equal(o.position_by(index_col="KIID"), pd.DataFrame(index=[5], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.1, 0.4]]), check_names=False)
+        pdt.assert_frame_equal(o.position_by(index_col="KIID", tail=1), pd.DataFrame(index=[5], columns=pd.Index([date2str(t2)]), data=[[0.4]]), check_names=False)
 
         pdt.assert_frame_equal(o.position_by(sum=True), pd.DataFrame(index=["123", "Sum"], columns=[date2str(t1), date2str(t2), "KIID"],
                                                              data=[[0.1, 0.4, 5],[0.1,0.4,None]]), check_dtype=False, check_names=False)
 
-        pdt.assert_frame_equal(o.position_by(index_col="KIID", sum=True), pd.DataFrame(index=[5, "Sum"], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.1, 0.4], [0.1, 0.4]]), check_names=False)
+        pdt.assert_frame_equal(o.position_by(index_col="KIID", sum=True, tail=1), pd.DataFrame(index=[5, "Sum"], columns=pd.Index([date2str(t2)]), data=[[0.4], [0.4]]), check_names=False)
 
 
 
