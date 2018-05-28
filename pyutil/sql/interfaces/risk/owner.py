@@ -99,12 +99,14 @@ class Owner(ProductInterface):
 
     def __weighted_by(self, f, index_col=None, sum=False, tail=None):
         if index_col:
-            a = pd.concat((f(sum=False, tail=tail), self.reference_securities[index_col]), axis=1)
-            print(a)
-            a = a.groupby(by=index_col).sum()
-            if sum:
-                a.loc["Sum"] = a.sum(axis=0)
-            return a
+            if index_col in self.reference_securities.keys():
+                a = pd.concat((f(sum=False, tail=tail), self.reference_securities[index_col]), axis=1)
+                a = a.groupby(by=index_col).sum()
+                if sum:
+                    a.loc["Sum"] = a.sum(axis=0)
+                return a
+            else:
+                return pd.DataFrame({})
 
         return pd.concat((f(sum=sum, tail=tail), self.reference_securities), axis=1)
 
