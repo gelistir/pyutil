@@ -67,19 +67,32 @@ class Owner(ProductInterface):
     def volatility(self):
         return self.get_timeseries("volatility")
 
-    def position(self, sum=False, tail=None):
-        frame = self.frame(name="position", rename=True)
+    def position(self, sum=False, tail=None, rename=True):
+        frame = self.frame(name="position", rename=rename)
 
         if tail:
             frame=frame.tail(n=tail)
 
         frame = frame.rename(index=lambda t: date2str(t)).transpose()
         frame.index.names = ["Asset"]
+
         if sum:
             frame.loc["Sum"] = frame.sum(axis=0)
 
         return frame
 
+    # def position2(self, tail=None):
+    #     frame = self.frame(name="position", rename=False)
+    #
+    #     if tail:
+    #         frame=frame.tail(n=tail)
+    #
+    #     frame = frame.rename(columns=lambda t: t.get_reference("Name"))
+    #     frame = frame.rename(index=lambda t: date2str(t)).transpose()
+    #     frame.index.names = ["Asset"]
+    #
+    #     frame.loc["Sum"] = frame.sum(axis=0)
+    #     return frame
 
     def position_by(self, index_col=None, sum=False, tail=None):
         return self.__weighted_by(f = self.position, index_col=index_col, sum=sum, tail=tail)
@@ -87,6 +100,7 @@ class Owner(ProductInterface):
     def __weighted_by(self, f, index_col=None, sum=False, tail=None):
         if index_col:
             a = pd.concat((f(sum=False, tail=tail), self.reference_securities[index_col]), axis=1)
+            print(a)
             a = a.groupby(by=index_col).sum()
             if sum:
                 a.loc["Sum"] = a.sum(axis=0)
@@ -109,7 +123,6 @@ class Owner(ProductInterface):
 
     def vola_weighted_by(self, index_col=None, sum=False):
         return self.__weighted_by(f = self.vola_weighted, index_col=index_col, sum=sum)
-
 
     @property
     def reference_securities(self):
