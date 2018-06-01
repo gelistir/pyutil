@@ -4,7 +4,7 @@ services:
      build:
        context: .
        dockerfile: Dockerfile
-       target: builder
+       target: test
      volumes:
         - ./pyutil:/pyutil/pyutil
         - ./sandbox:/pyutil/sandbox
@@ -15,4 +15,9 @@ services:
        - .env
      volumes:
         -  /etc/localtime:/etc/localtime:ro
-     command: /bin/bash
+     command: ["/pyutil/wait-for-postgres.sh", "test-postgresql"]
+
+  test-postgresql:
+    image: postgres:9.6
+    environment:
+      POSTGRES_PASSWORD: "test"
