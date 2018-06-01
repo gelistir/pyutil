@@ -15,6 +15,9 @@ from datetime import date as datetype
 
 
 # time series data for a product
+from pyutil.sql.util import from_pandas, to_pandas
+
+
 class Timeseries(Base):
     __tablename__ = "ts_name"
     id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
@@ -83,21 +86,16 @@ class Timeseries(Base):
             assert x.index.is_monotonic_increasing, "Index is not increasing"
             assert not x.index.has_duplicates, "Index has duplicates"
 
-        self._jdata = x.to_json().encode()
+        self._jdata = from_pandas(x)
         return self
 
     @property
     def series_fast(self):
-
-        x = pd.read_json(BytesIO(self._jdata).read().decode(), typ="series")
+        x = to_pandas(self._jdata)
         if not x.empty:
             return x.apply(float).sort_index()
         else:
             return pd.Series({})
-
-    @property
-    def last_valid(self):
-        return self.series_fast.last_valid_index()
 
     @property
     def key(self):
