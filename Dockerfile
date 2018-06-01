@@ -9,6 +9,9 @@ RUN pip install --upgrade pip && \
     pip install --no-cache-dir  -r requirements.txt && rm requirements.txt && \
     conda clean -y --all
 
+# install the postgresql client...
+RUN apt-get update && apt-get install -y postgresql-client
+
 # copy only the package
 COPY ./pyutil /pyutil/pyutil
 

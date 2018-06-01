@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-docker build --file Dockerfile --target test --tag pyutil:test .
+docker build --file Dockerfile --no-cache --target test --tag pyutil:test .
 
 # delete all files in html-coverage
 rm -rf $(pwd)/html-coverage/*
