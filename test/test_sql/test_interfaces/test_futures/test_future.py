@@ -14,7 +14,7 @@ import pandas.util.testing as pdt
 
 def future():
     # define an exchange
-    e = Exchange(name="Chicago Mercantile Exchange", exch_code="CME")
+    e = Exchange(name="Chicago Mercantile Exchange")
     # define a category
     c = FuturesCategory(name="Equity Index")
     # define the future
