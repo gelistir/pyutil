@@ -14,7 +14,7 @@ docker run --link test-postgresql pyutil:test /pyutil/wait-for-postgres.sh test-
 
 
 # run all tests, seems to be slow on teamcity
-docker run --rm -v $(pwd)/html-coverage:/html-coverage  -v $(pwd)/html-report:/html-report pyutil:test
+docker run --link test-postgresql --rm -v $(pwd)/html-coverage:/html-coverage  -v $(pwd)/html-report:/html-report pyutil:test
 
 ret=$?
 
