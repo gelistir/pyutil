@@ -30,27 +30,13 @@ def session(server=None, db=None, user=None, password=None, echo=False):
     return sessionmaker(bind=engine)()
 
 
-def session_test(meta, file=None, echo=False, views=None):
-    if file:
-        engine = create_engine("sqlite:///{file}".format(file=file), echo=echo)
-    else:
-        engine = create_engine("sqlite://", echo=echo)
+def session_test(meta, echo=False):
+    engine = create_engine("sqlite://", echo=echo)
 
     # make the tables...
     meta.drop_all(engine)
     meta.create_all(engine)
 
-    connection = engine.connect()
-    views = views or []
-
-    for a in views:
-        connection.execute(a)
-
-    return sessionmaker(bind=engine)()
-
-
-def session_file(file, echo=False):
-    engine = create_engine("sqlite:///{file}".format(file=file), echo=echo)
     return sessionmaker(bind=engine)()
 
 
