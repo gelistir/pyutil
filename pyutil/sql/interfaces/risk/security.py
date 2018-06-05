@@ -1,4 +1,3 @@
-import pandas as pd
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyutil.performance.summary import fromNav
@@ -52,28 +51,28 @@ class Security(ProductInterface):
         return fromNav(ts=self.price, adjust=False).to_dictionary(name=self.get_reference("Name"))
 
 
-class Securities(Products):
-    def __init__(self, securities):
-        super().__init__(securities, cls=Security, attribute="name", f=lambda x: int(x))
+# class Securities(Products):
+#     def __init__(self, securities):
+#         super().__init__(securities, cls=Security, attribute="name", f=lambda x: int(x))
+#
+#     def __repr__(self):
+#         d = {key: product for key, product in self.to_dict().items()}
+#         seq = ["{key:10d}   {product}".format(key=key, product=d[key]) for key in sorted(d)]
+#         return "\n".join(seq)
+#
+#     def to_html_dict(self, index_name="Entity ID"):
+#         return self.to_html(index_name=index_name)
 
-    def __repr__(self):
-        d = {key: product for key, product in self.to_dict().items()}
-        seq = ["{key:10d}   {product}".format(key=key, product=d[key]) for key in sorted(d)]
-        return "\n".join(seq)
+    #@property
+    #def prices(self):
+    #    f = pd.DataFrame({sec.name : sec.get_timeseries("price") for sec in self}).transpose()
+    #    f = f.stack(level=0).dropna().to_frame(name="Price").sort_index(level=1, ascending=False)
+    #    f.index.names=["Owned ID","Date"]
+    #    return f
 
-    def to_html_dict(self, index_name="Entity ID"):
-        return self.to_html(index_name=index_name)
-
-    @property
-    def prices(self):
-        f = pd.DataFrame({sec.name : sec.get_timeseries("price") for sec in self}).transpose()
-        f = f.stack(level=0).dropna().to_frame(name="Price").sort_index(level=1, ascending=False)
-        f.index.names=["Owned ID","Date"]
-        return f
-
-    @property
-    def volatilities(self):
-        frame = pd.concat({sec.name: sec.frame("volatility", rename=True).stack() for sec in self}, axis=0)
-        frame = frame.to_frame(name="Volatility")
-        frame.index.names = ["Security", "Date", "Currency"]
-        return frame
+    #@property
+    #def volatilities(self):
+    #    frame = pd.concat({sec.name: sec.frame("volatility", rename=True).stack() for sec in self}, axis=0)
+    #    frame = frame.to_frame(name="Volatility")
+    #    frame.index.names = ["Security", "Date", "Currency"]
+    #    return frame

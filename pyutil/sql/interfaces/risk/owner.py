@@ -81,19 +81,6 @@ class Owner(ProductInterface):
 
         return frame
 
-    # def position2(self, tail=None):
-    #     frame = self.frame(name="position", rename=False)
-    #
-    #     if tail:
-    #         frame=frame.tail(n=tail)
-    #
-    #     frame = frame.rename(columns=lambda t: t.get_reference("Name"))
-    #     frame = frame.rename(index=lambda t: date2str(t)).transpose()
-    #     frame.index.names = ["Asset"]
-    #
-    #     frame.loc["Sum"] = frame.sum(axis=0)
-    #     return frame
-
     def position_by(self, index_col=None, sum=False, tail=None):
         return self.__weighted_by(f = self.position, index_col=index_col, sum=sum, tail=tail)
 
@@ -171,31 +158,31 @@ class Owner(ProductInterface):
         return fromNav(ts=self.nav, adjust=False).to_dictionary(name=self.get_reference("Name"), weights=frame2dict(w))
 
 
-class Owners(Products):
-    def __init__(self, owners):
-        super().__init__(owners, cls=Owner, attribute="name", f=lambda x: int(x))
+# class Owners(Products):
+#     def __init__(self, owners):
+#         super().__init__(owners, cls=Owner, attribute="name", f=lambda x: int(x))
+#
+#     def __repr__(self):
+#         d = {key: product for key, product in self.to_dict().items()}
+#         seq = ["{key:10d}   {product}".format(key=key, product=d[key]) for key in sorted(d)]
+#         return "\n".join(seq)
+#
+#     def to_html_dict(self, index_name="Entity ID"):
+#         return self.to_html(index_name=index_name)
 
-    def __repr__(self):
-        d = {key: product for key, product in self.to_dict().items()}
-        seq = ["{key:10d}   {product}".format(key=key, product=d[key]) for key in sorted(d)]
-        return "\n".join(seq)
+    #@property
+    #def returns(self):
+    #    return pd.DataFrame({owner.get_reference("Name") : owner.returns for owner in self}).dropna(axis=1, how="all")
 
-    def to_html_dict(self, index_name="Entity ID"):
-        return self.to_html(index_name=index_name)
+    #@property
+    #def positions(self):
+    #    frame = pd.concat({o.get_reference("Name"): o.position().stack() for o in self}, axis=0)
+    #    frame = frame.to_frame(name="Weight")
+    #    frame.index.names = ["Owner", "Asset", "Date"]
+    #    return frame
 
-    @property
-    def returns(self):
-        return pd.DataFrame({owner.get_reference("Name") : owner.returns for owner in self}).dropna(axis=1, how="all")
-
-    @property
-    def positions(self):
-        frame = pd.concat({o.get_reference("Name"): o.position().stack() for o in self}, axis=0)
-        frame = frame.to_frame(name="Weight")
-        frame.index.names = ["Owner", "Asset", "Date"]
-        return frame
-
-    @property
-    def volatility(self):
-        return pd.DataFrame({o.get_reference("Name"): o.volatility for o in self}).transpose().dropna(axis=0, how="all")
+    #@property
+    #def volatility(self):
+    #    return pd.DataFrame({o.get_reference("Name"): o.volatility for o in self}).transpose().dropna(axis=0, how="all")
 
 
