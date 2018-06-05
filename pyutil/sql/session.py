@@ -1,3 +1,5 @@
+import random
+import string
 from contextlib import contextmanager
 
 import os
@@ -60,12 +62,13 @@ def get_one_or_none(session, model, **kwargs):
     except NoResultFound:
         return None
 
-def test_postgresql_db(name, echo=False):
+def test_postgresql_db(name=None, echo=False):
     # session object
     engine = create_engine("postgresql+psycopg2://postgres:test@test-postgresql/postgres")
     conn = engine.connect()
     conn.execute("commit")
 
+    name = name or "".join(random.choices(string.ascii_lowercase, k=10))
     # String interpolation here!? Please avoid
     conn.execute("""DROP DATABASE IF EXISTS {name}""".format(name=name))
     conn.execute("commit")
