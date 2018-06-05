@@ -72,12 +72,12 @@ class Portfolio(ProductInterface):
         return self.timeseries["leverage"]
 
     def sector(self, total=False):
-        map = {asset: asset.group.name for asset in self.symbols}
-        return self.portfolio.sector_weights(symbolmap=map, total=total)
-
+         map = {asset: asset.group.name for asset in self.symbols}
+         return self.portfolio.sector_weights(symbolmap=map, total=total)
+    #
     def sector_tail(self, total=False):
-        w = self.sector(total=total)
-        return w.loc[w.index[-1]].rename(None)
+         w = self.sector(total=total)
+         return w.loc[w.index[-1]].rename(None)
 
     @property
     def state(self):
@@ -144,7 +144,7 @@ class Portfolios(Products):
         return frame.transpose()
 
     def sector(self, total=False):
-        print(self.to_dict())
+    #    print(self.to_dict())
         frame = pd.DataFrame({name: portfolio.sector_tail(total=total) for name, portfolio in self.to_dict().items()})
         return frame.transpose()
 
@@ -152,6 +152,6 @@ class Portfolios(Products):
         return {"recent": self.recent(),
                 "ytd": self.ytd,
                 "mtd": self.mtd,
-                "sector": self.sector(total=total),
+                #"sector": self.sector(total=total),
                 "periods": self.period_returns,
                 "performance": self.performance}

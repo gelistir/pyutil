@@ -51,8 +51,8 @@ class TestContainer(TestCase):
     def test_state(self):
         print(self.portfolios["Peter"].state)
 
-    def test_sector(self):
-        self.assertAlmostEqual(self.portfolios.sector(total=True)["equities"]["Peter"], 0.135671, places=5)
+    # def test_sector(self):
+    #     self.assertAlmostEqual(self.portfolios.sector(total=True)["equities"]["Peter"], 0.135671, places=5)
 
     def test_frames(self):
-        self.assertSetEqual(set(self.portfolios.frames().keys()), {"recent","ytd","mtd","sector","periods","performance"})
+        self.assertSetEqual(set(self.portfolios.frames().keys()), {"recent","ytd","mtd","periods","performance"})

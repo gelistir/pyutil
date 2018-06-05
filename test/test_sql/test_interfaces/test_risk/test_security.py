@@ -13,7 +13,7 @@ from pyutil.sql.db_risk import Database
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.interfaces.risk.security import FIELDS as FIELDSSECURITY
-from pyutil.sql.session import session, test_postgresql_db
+from pyutil.sql.session import test_postgresql_db
 from test.config import resource
 
 t1 = pd.Timestamp("1978-11-16")
@@ -26,7 +26,7 @@ TICKER = FIELDSSECURITY["Lobnek Ticker Symbol Bloomberg"]
 class TestSecurity(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = test_postgresql_db("addepar") #session(server="test-postgresql", password="test", user="postgres", db="addepar", echo=False)
+        cls.session = test_postgresql_db()
 
         Base.metadata.create_all(cls.session.bind)
 

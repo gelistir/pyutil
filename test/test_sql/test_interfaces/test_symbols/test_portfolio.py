@@ -46,24 +46,24 @@ class TestPortfolio(TestCase):
     def test_portfolio(self):
         self.assertListEqual(self.s1.portfolio, [self.p])
 
-    def test_sector(self):
-        print(self.p.sector(total=True))
-
-        prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
-                              data=[[10.0], [11.0]])
-        weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
-                               data=[[0.5], [0.5]])
-        p = _Portfolio(prices=prices, weights=weights)
-
-        self.p.upsert_portfolio(portfolio=p)
-        #print(self.p.sector())
-        #print(self.p.sector_tail())
-        pp = Portfolios([self.p])
-        print(pp.sector(total=False))
-
-        for x in pp:
-            print(x)
-        # todo: fill up
+    # def test_sector(self):
+    #     print(self.p.sector(total=True))
+    #
+    #     prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
+    #                           data=[[10.0], [11.0]])
+    #     weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
+    #                            data=[[0.5], [0.5]])
+    #     p = _Portfolio(prices=prices, weights=weights)
+    #
+    #     self.p.upsert_portfolio(portfolio=p)
+    #     #print(self.p.sector())
+    #     #print(self.p.sector_tail())
+    #     pp = Portfolios([self.p])
+    #     print(pp.sector(total=False))
+    #
+    #     for x in pp:
+    #         print(x)
+    #     # todo: fill up
 
     def test_lt(self):
         p1 = Portfolio(name="A")
