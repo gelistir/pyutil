@@ -1,6 +1,7 @@
 from contextlib import contextmanager
 
 import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
@@ -58,6 +59,22 @@ def get_one_or_none(session, model, **kwargs):
         return session.query(model).filter_by(**kwargs).one()
     except NoResultFound:
         return None
+
+def test_postgresql_db(name, echo=False):
+    # session object
+    engine = create_engine("postgresql+psycopg2://postgres:test@test-postgresql/postgres")
+    conn = engine.connect()
+    conn.execute("commit")
+
+    # String interpolation here!? Please avoid
+    conn.execute("""DROP DATABASE IF EXISTS {name}""".format(name=name))
+    conn.execute("commit")
+
+    conn.execute("""CREATE DATABASE {name}""".format(name=name))
+    conn.close()
+
+    return session(server="test-postgresql", password="test", user="postgres", db=name, echo=echo)
+
 
 
 
