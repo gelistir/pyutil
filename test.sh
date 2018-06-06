@@ -6,6 +6,8 @@ rm -rf $(pwd)/html-coverage/*
 
 # step 1: create a postgresql server running on server "test-postgresql" with user "postgres"
 #         and database "postgres", password is "test"
+docker rm -f test-postgresql
+
 docker run --name test-postgresql -e POSTGRES_PASSWORD=test -d postgres:9.6
 
 # step 2: wait for postgres to be up and running...
