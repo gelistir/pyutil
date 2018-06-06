@@ -1,12 +1,10 @@
 import enum as _enum
-import pandas as pd
 
 import sqlalchemy as sq
-from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.types import Enum as _Enum
 
-from pyutil.sql.interfaces.products import ProductInterface, Products
 from pyutil.performance.summary import fromNav
+from pyutil.sql.interfaces.products import ProductInterface
 
 
 class SymbolType(_enum.Enum):
@@ -29,24 +27,3 @@ class Symbol(ProductInterface):
 
     def to_html_dict(self, ts="PX_LAST", **kwargs):
         return fromNav(ts=self.get_timeseries(name=ts), adjust=False).to_dictionary(name=self.name, **kwargs)
-
-
-class Symbols(Products):
-    def __init__(self, symbols):
-        super().__init__(symbols, cls=Symbol, attribute="name")
-
-    @hybrid_property
-    def internal(self):
-        return {asset.name: asset.internal for asset in self}
-
-    @hybrid_property
-    def group(self):
-        return {asset.name: asset.group.name for asset in self}
-
-    @property
-    def group_internal(self):
-        # todo: fillna not working?
-        return pd.DataFrame({"Group": pd.Series(self.group), "Internal": pd.Series(self.internal)})
-
-    def to_html_dict(self):
-        return self.to_html(index_name="Product")

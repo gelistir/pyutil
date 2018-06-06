@@ -21,7 +21,9 @@ class DataType(enum.Enum):
     float = ("float", lambda x: float(x))
     date = ("date", lambda x: pd.to_datetime(int(x)*1e6).date())
     datetime = ("datetime", lambda x: pd.to_datetime(int(x)*1e6))
-    percentage = ("percentage", lambda x: float(x))
+
+    # need to check whether we can still sort in tables...
+    percentage = ("percentage", lambda x: "{0:.2f}%".format(float(x)))
 
     def __init__(self, value, fct):
         self.__v = value
@@ -42,9 +44,9 @@ class Field(Base):
     id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
     __name = sq.Column("name", sq.String(50), unique=True)
     __type = sq.Column("type", Enum(FieldType))
-    __result = sq.Column("result", Enum(DataType))
+    __result = sq.Column("result", Enum(DataType), nullable=False)
 
-    def __init__(self, name, result=None, type=None):
+    def __init__(self, name, result, type=None):
         self.__name = name
         self.__result = result
         self.__type = type
@@ -84,16 +86,10 @@ class _ReferenceData(Base):
     product_id = sq.Column("product_id", sq.Integer, sq.ForeignKey("productinterface.id"), primary_key=True, index=True)
     product = relationship("ProductInterface", foreign_keys=[product_id], back_populates="_refdata")
 
-    sq.UniqueConstraint("field_id", "product_id")
-
     @property
     def value(self):
-        if self.field.result:
-            return self.field.result(self.content)
-        else:
-            return self.content
+        return self.field.result(self.content)
 
     @value.setter
     def value(self, value):
-        assert isinstance(value, str)
-        self.content = value
+        self.content = str(value)

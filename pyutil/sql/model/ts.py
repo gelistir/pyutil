@@ -27,6 +27,9 @@ class Timeseries(Base):
     secondary_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), nullable=True)
     secondary = relationship("ProductInterface", foreign_keys=[secondary_id])
 
+    tertiary_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), nullable=True)
+    tertiary = relationship("ProductInterface", foreign_keys=[tertiary_id])
+
     _jdata = sq.Column("jdata", sq.LargeBinary, nullable=True)
     sq.UniqueConstraint('product', 'name', 'secondary_id')
 
@@ -40,7 +43,6 @@ class Timeseries(Base):
         self.__name = name
         self.product = product
 
-        #if data is not None:
         self.upsert(data)
 
     @hybrid_property

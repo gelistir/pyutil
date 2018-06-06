@@ -12,20 +12,27 @@ class TestTimeseries(TestCase):
     def setUpClass(cls):
         cls.p1 = Product(name="A")
         cls.p2 = Product(name="B")
+        cls.p3 = Product(name="C")
 
     def test_timeseries(self):
         ts1 = Timeseries(name="x", product=self.p1, data={pd.Timestamp("12-11-1978"): 10.1}, secondary=self.p2)
         ts2 = Timeseries(name="y", product=self.p1, data={pd.Timestamp("13-11-1978"): 11.1})
         ts3 = Timeseries(name="z", product=self.p1)
+        ts4 = Timeseries(name="a", product=self.p1, secondary=self.p2, tertiary=self.p3, data={pd.Timestamp("13-11-1978"): 11.1})
 
         self.assertIsNotNone(ts1.secondary)
         self.assertIsNone(ts2.secondary)
+        self.assertIsNone(ts2.tertiary)
+        self.assertIsNotNone(ts4.tertiary)
 
+        pdt.assert_series_equal(ts4.series_fast, pd.Series({pd.Timestamp("13-11-1978"): 11.1}))
         pdt.assert_series_equal(ts2.series_fast, pd.Series({pd.Timestamp("13-11-1978"): 11.1}))
         pdt.assert_series_equal(ts1.series_fast, pd.Series({pd.Timestamp("12-11-1978"): 10.1}))
 
+
         self.assertEqual(ts1.key, ("x", self.p2))
         self.assertEqual(ts2.key, "y")
+        self.assertEqual(ts4.key, ("a", self.p2, self.p3))
 
         pdt.assert_frame_equal(self.p1.frame("x"),
                                pd.DataFrame(index=[pd.Timestamp("12-11-1978")], columns=[self.p2], data=[[10.1]]))
@@ -73,4 +80,7 @@ class TestTimeseries(TestCase):
         ts1 = Timeseries(name="peter", product=self.p1)
         pdt.assert_series_equal(ts1.series_fast, pd.Series({}))
 
+    def test_wrong_index(self):
+        with self.assertRaises(AssertionError):
+            Timeseries(name="peter", product=self.p1, data={"A": 2.0})
 

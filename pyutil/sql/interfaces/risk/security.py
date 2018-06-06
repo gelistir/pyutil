@@ -1,7 +1,7 @@
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyutil.performance.summary import fromNav
-from pyutil.sql.interfaces.products import ProductInterface, Products
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.model.ref import Field, DataType, FieldType
 
 

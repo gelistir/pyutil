@@ -112,3 +112,6 @@ class TestPortfolio(TestCase):
         pdt.assert_frame_equal(x["periods"], self.db.period_returns)
 
         self.assertEqual(len(x), 6)
+
+    def test_state(self):
+        print(self.db.state(name="Peter"))

@@ -125,6 +125,7 @@ class ProductInterface(MyMixin, Base):
     def __hash__(self):
         return hash(self.name)
 
+
 class Products(object):
     def __init__(self, products, cls, attribute="name", f=lambda x: x):
         for p in products:

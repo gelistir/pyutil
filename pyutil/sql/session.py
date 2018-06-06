@@ -62,6 +62,7 @@ def get_one_or_none(session, model, **kwargs):
     except NoResultFound:
         return None
 
+
 def test_postgresql_db(name=None, echo=False):
     # session object
     engine = create_engine("postgresql+psycopg2://postgres:test@test-postgresql/postgres")

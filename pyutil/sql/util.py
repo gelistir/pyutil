@@ -18,6 +18,8 @@ __p = {"string": lambda x: x,
        "date": lambda x: pd.Timestamp(1e6*int(x))}
 
 def parse(x, type="string"):
+    if not x:
+        return None
     return __p[type](x)
 
 

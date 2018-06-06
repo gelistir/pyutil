@@ -65,26 +65,30 @@ class Database(object):
                 "periods": self.period_returns,
                 "performance": self.performance}
 
-    #@property
-    #def assets(self):
-    #    frame = pd.read_sql_query("SELECT * FROM v_assets", con=self.__session.bind, index_col=["name", "group", "internal", "field"])["value"]
-    #    print(frame)
-    #    assert False
-
     def portfolio(self, name):
         x = pd.read_sql_query("SELECT * FROM v_portfolio_2 where name=%(name)s", params={"name": name}, con=self.__session.bind, index_col=["timeseries", "symbol"])["data"]
         x = x.apply(to_pandas)
         portfolio = PP(prices=x.loc["price"].transpose(), weights=x.loc["weight"].transpose())
         return portfolio
 
-    #def state(self, name):
-    #    portfolio = self.portfolio(name=name)
-    #    assets = self.assets
+    def state(self, name):
+        portfolio = self.portfolio(name=name)
+        reference = pd.read_sql_query(sql="SELECT * FROM v_symbols_state", con=self.__session.bind, index_col=["symbol"])
+
+        frame = pd.concat([portfolio.state, reference.loc[portfolio.assets]], axis=1)
+
+        sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
+        frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
+        frame["Relative Sector"] = 100 * frame["Extrapolated"] / frame["Sector Weight"]
+        frame["Asset"] = frame.index
+        return frame
 
 
     @property
     def reference_symbols(self):
         reference = pd.read_sql_query(sql="SELECT * FROM v_reference_symbols", con=self.__session.bind, index_col=["symbol", "field"])
+        if reference.empty:
+            return pd.DataFrame({})
         reference = reference[reference["type"]=="symbol"]
         reference["value"] = reference[['content', 'result']].apply(lambda x: parse(x[0], x[1]), axis=1)
         reference.drop(columns=["content", "result", "type"], inplace=True)
