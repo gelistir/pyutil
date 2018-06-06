@@ -95,6 +95,11 @@ class TestPortfolio(TestCase):
         pdt.assert_series_equal(test_portfolio().nav, self.db.nav.loc["Peter"], check_names=False)
         self.assertAlmostEqual(self.db.performance["Peter"]["Calmar Ratio (3Y)"], 0.07615829203518315, places=5)
 
+    def test_sector(self):
+        pdt.assert_series_equal(self.db.sector.loc["Peter"][pd.Timestamp("2015-04-22")], pd.Series(index=["equities","fixed_income"], data=[0.135671, 0.173303]), check_names=False)
+
+
+
 
 
 
