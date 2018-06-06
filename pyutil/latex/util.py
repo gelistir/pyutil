@@ -8,7 +8,7 @@ def trend(series, width=20):
     return t % {'series': x, 'width': str(width)}
 
 def percentage(x):
-    return "{0:.2f}%".format(x*100)
+    return "{0:.2f}\%".format(x*100)
 
 if __name__ == '__main__':
     x = pd.Series(data=[0.0, 0.4, 0.8, 1.0])
