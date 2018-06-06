@@ -44,6 +44,10 @@ class TestDatabaseSymbols(TestCase):
     def test_prices_symbols(self):
         pdt.assert_frame_equal(self.db.prices(), pd.DataFrame(index=[pd.Timestamp("2010-10-30")], columns=["Test Symbol"], data=[[10.1]]), check_names=False)
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.session.close()
+
 
 class TestPortfolio(TestCase):
     @classmethod

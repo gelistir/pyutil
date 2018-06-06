@@ -36,3 +36,7 @@ class TestDatabaseFutures(TestCase):
     def test_futures(self):
         pdt.assert_frame_equal(self.db.futures.reference,
                                pd.DataFrame(index=["ES1 Index"], columns=["Field A"], data=[[100]]), check_names=False)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.session.close()

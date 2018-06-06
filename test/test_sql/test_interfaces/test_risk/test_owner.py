@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 import pandas as pd
 
+from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.security import Security, FIELDS as FIELDSSECURITY
 from pyutil.sql.interfaces.risk.owner import Owner, FIELDS as FIELDSOWNER
 import pandas.util.testing as pdt
@@ -83,13 +84,14 @@ class TestOwner(unittest.TestCase):
 
     def test_position(self):
         o = Owner(name="100", currency=Currency(name="USD"))
+        c = Custodian(name="UBS")
 
         # create a security
         s1 = Security(name="123")
         s1.reference[KIID] = 5
 
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
-        o.position_upsert(security=s1, ts={t1: 0.1, t2: 0.4})
+        o.position_upsert(security=s1, custodian=c, ts={t1: 0.1, t2: 0.4})
 
         pdt.assert_frame_equal(o.position(sum=False),
                                pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123"],
@@ -123,13 +125,13 @@ class TestOwner(unittest.TestCase):
 
     def test_volatility(self):
         o = Owner(name=100, currency=Currency(name="USD"))
-
+        c = Custodian(name="UBS")
         # create a security
         s1 = Security(name=123)
         s1.reference[KIID] = 5
 
         # update the position in security s1
-        o.position_upsert(security=s1, ts={t1: 0.1, t2: 0.4})
+        o.position_upsert(security=s1, custodian=c, ts={t1: 0.1, t2: 0.4})
 
         # update the volatility, note that you can update the volatility even after the security has been added to the owner
         s1.volatility_upsert(currency=o.currency, ts={t1: 2.5, t2: 2.5})
@@ -150,7 +152,7 @@ class TestOwner(unittest.TestCase):
         o1 = Owner(name='100', currency=Currency(name="USD"))
         o2 = Owner(name='1300', currency=Currency(name="USD"))
         s1 = Security(name="123")
-
+        c = Custodian(name="UBS")
         o1.reference[NAME] = "Peter"
         o2.reference[NAME] = "Maffay"
         #pdt.assert_frame_equal(pd.DataFrame(index=['100', '1300'], columns=["Name"], data=[["Peter"],["Maffay"]]), o.reference, check_names=False)
@@ -163,7 +165,7 @@ class TestOwner(unittest.TestCase):
         #pdt.assert_frame_equal(o.returns, pd.DataFrame(index=[t1,t2], columns=["Peter"], data=[[0.1],[0.4]]), check_names=False)
 
         # update the position in security s1
-        o1.position_upsert(security=s1, ts={t1: 0.1, t2: 0.4})
+        o1.position_upsert(security=s1, custodian=c, ts={t1: 0.1, t2: 0.4})
         o1.volatility_upsert(ts={t1: 0.1, t2: 0.4})
 
         #index = pd.MultiIndex.from_tuples(tuples=[("Peter","123", date2str(t1)), ("Peter", "123", date2str(t2))], names=("Owner","Asset","Date"))
@@ -177,14 +179,14 @@ class TestOwner(unittest.TestCase):
     def test_kiid(self):
         o = Owner(name='100', currency=Currency(name="USD"))
         o.reference[NAME] = "Peter"
-
+        c = Custodian(name="UBS")
         # create a security
         s1 = Security(name="123")
         s1.reference[NAME] = "Maffay"
         s1.reference[KIID] = 5
 
         # update the position in security s1
-        o.position_upsert(security=s1, ts={t1: 0.1, t2: 0.4})
+        o.position_upsert(security=s1, custodian=c, ts={t1: 0.1, t2: 0.4})
 
         pdt.assert_series_equal(o.kiid, pd.Series(index=["123"], data=[5]))
         pdt.assert_frame_equal(o.kiid_weighted(sum=False), pd.DataFrame(index=["123"], columns=pd.Index([date2str(t1), date2str(t2)]), data=[[0.5, 2.0]]), check_names=False)

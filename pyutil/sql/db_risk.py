@@ -19,12 +19,14 @@ class Database(object):
     #    return Securities(self.__session.query(Security))
 
     def owner(self, name):
-        name = str(name)
+        pd.read_sql_query(sql="SELECT * FROM v_prices WHERE ")
         return self.__session.query(Owner).filter_by(name=name).one()
 
     def security(self, name):
-        name = str(name)
-        return self.__session.query(Security).filter_by(name=name).one()
+        #x = pd.read_sql_query(sql="SELECT * FROM v_prices WHERE security=%(name)s", params={"name": name}, con=)
+        #print(x)
+        #assert False
+        return self.__session.query(Security).filter_by(name=str(name)).one()
 
     @property
     def prices(self):

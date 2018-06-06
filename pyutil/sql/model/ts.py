@@ -1,5 +1,3 @@
-from io import BytesIO
-
 import pandas as pd
 import numpy as np
 
@@ -35,8 +33,10 @@ class Timeseries(Base):
     _data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'),
                          cascade="all, delete-orphan", backref="ts")
 
-    def __init__(self, name=None, product=None, data=None, secondary=None):
+    def __init__(self, name=None, product=None, data=None, secondary=None, tertiary=None):
         self.secondary = secondary
+        self.tertiary = tertiary
+
         self.__name = name
         self.product = product
 
@@ -99,6 +99,10 @@ class Timeseries(Base):
 
     @property
     def key(self):
+        if self.tertiary:
+            assert self.secondary
+            return self.name, self.secondary, self.tertiary
+
         if self.secondary:
             return self.name, self.secondary
         else:

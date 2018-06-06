@@ -1,11 +1,13 @@
 import pandas as pd
+import numpy as np
 import sqlalchemy as _sq
+
 from pandasweb.frames import frame2dict
 
 from pyutil.performance.summary import NavSeries as _NavSeries, fromNav
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
-from pyutil.sql.interfaces.products import ProductInterface, association_table, Products
+from pyutil.sql.interfaces.products import ProductInterface, association_table
 from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
@@ -54,11 +56,11 @@ class Owner(ProductInterface):
     def returns_upsert(self, ts):
         self.upsert_ts(name="return", data=ts)
 
-    def position_upsert(self, security, ts):
+    def position_upsert(self, security, custodian, ts):
         if security not in self.__securities:
             self.__securities.append(security)
 
-        self.upsert_ts("position", data=ts, secondary=security)
+        self.upsert_ts("position", data=ts, secondary=security, tertiary=custodian)
 
     def volatility_upsert(self, ts):
         self.upsert_ts(name="volatility", data=ts)
@@ -154,7 +156,6 @@ class Owner(ProductInterface):
             return "{0:.2f}%".format(float(100.0 * x)).replace("nan%", "")
 
         w = self.position(sum=False).applymap(double2percent).reset_index()
-        #w["Asset"] = w["Asset"].apply(str)
         return fromNav(ts=self.nav, adjust=False).to_dictionary(name=self.get_reference("Name"), weights=frame2dict(w))
 
 

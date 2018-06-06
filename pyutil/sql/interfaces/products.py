@@ -83,20 +83,24 @@ class ProductInterface(MyMixin, Base):
         else:
             return default
 
-    def upsert_ts(self, name, data=None, secondary=None):
+    def upsert_ts(self, name, data=None, secondary=None, tertiary=None):
         """ upsert a timeseries, get Timeseries object """
 
-        def key(name, secondary=None):
+        def key(name, secondary=None, tertiary=None):
+            if tertiary:
+                assert secondary
+                return name, secondary, tertiary
+
             if secondary:
                 return name, secondary
-            else:
-                return name
 
-        k = key(name, secondary)
+            return name
+
+        k = key(name, secondary, tertiary)
 
         # do we need a new timeseries object?
         if k not in self._timeseries.keys():
-            self._timeseries[k] = Timeseries(name=name, product=self, secondary=secondary)
+            self._timeseries[k] = Timeseries(name=name, product=self, secondary=secondary, tertiary=tertiary)
 
         # now update the timeseries object
         return self._timeseries[k].upsert(data)
