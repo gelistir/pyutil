@@ -1,29 +1,21 @@
 import pandas as pd
 
 from pyutil.performance.summary import fromNav
-from pyutil.sql.interfaces.symbols.portfolio import Portfolio, Portfolios
-from pyutil.sql.interfaces.symbols.symbol import Symbol, Symbols
+from pyutil.portfolio.portfolio import Portfolio as PP
+from pyutil.sql.interfaces.symbols.portfolio import Portfolio
+from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.session import session as sss
 from pyutil.sql.util import to_pandas, parse
-from pyutil.portfolio.portfolio import Portfolio as PP
 
 
 class Database(object):
     def __init__(self, session=None):
         self.__session = session or sss(db="symbols")
 
-    #@property
-    #def symbols(self):
-    #    return Symbols(self.__session.query(Symbol))
-
-    #@property
-    #def portfolios(self):
-    #    return Portfolios(self.__session.query(Portfolio))
-
     @property
     def nav(self):
         x = pd.read_sql_query("SELECT * FROM v_portfolio_nav", con=self.__session.bind, index_col="name")["data"]
-        return x.apply(lambda x: fromNav(to_pandas(x)))
+        return x.apply(to_pandas)
 
     @property
     def sector(self, total=False):
@@ -42,7 +34,11 @@ class Database(object):
 
     @property
     def ytd(self):
+        #print(self.nav)
         frame = self.nav.apply(lambda x: fromNav(x).ytd_series, axis=1)
+        #print(frame)
+        #assert False
+
         frame = frame.rename(columns=lambda x: x.strftime("%b"))
         frame["total"] = (frame + 1).prod(axis=1) - 1
         return frame
@@ -60,7 +56,7 @@ class Database(object):
 
     @property
     def performance(self):
-        return self.nav.apply(lambda x: fromNav(x).summary(), axis=1)
+        return self.nav.apply(lambda x: fromNav(x).summary(), axis=1).transpose()
 
     def frames(self, total=False, n=15):
         return {"recent": self.recent(n=n),
@@ -70,38 +66,40 @@ class Database(object):
                 "periods": self.period_returns,
                 "performance": self.performance}
 
-    @property
-    def assets(self):
-        frame = pd.read_sql_query("SELECT * FROM v_assets", con=self.__session.bind, index_col=["name", "group", "internal", "field"])["value"]
-        print(frame)
-        assert False
+    #@property
+    #def assets(self):
+    #    frame = pd.read_sql_query("SELECT * FROM v_assets", con=self.__session.bind, index_col=["name", "group", "internal", "field"])["value"]
+    #    print(frame)
+    #    assert False
 
     def portfolio(self, name):
         x = pd.read_sql_query("SELECT * FROM v_portfolio_2 where name=%(name)s", params={"name": name}, con=self.__session.bind, index_col=["timeseries", "symbol"])["data"]
         x = x.apply(to_pandas)
-        return PP(prices=x.loc["price"].transpose(), weights=x.loc["weight"].transpose())
+        portfolio = PP(prices=x.loc["price"].transpose(), weights=x.loc["weight"].transpose())
+        return portfolio
 
-    def state(self, name):
-        portfolio = self.portfolio(name=name)
-        assets = self.assets
+    #def state(self, name):
+    #    portfolio = self.portfolio(name=name)
+    #    assets = self.assets
 
 
     @property
     def reference_symbols(self):
-        reference = pd.read_sql_query(sql="SELECT * FROM v_reference_symbols", con=self.__session.bind,
-                                      index_col=["symbol", "field"])
+        reference = pd.read_sql_query(sql="SELECT * FROM v_reference_symbols", con=self.__session.bind, index_col=["symbol", "field"])
+        reference = reference[reference["type"]=="symbol"]
         reference["value"] = reference[['content', 'result']].apply(lambda x: parse(x[0], x[1]), axis=1)
-        return reference.unstack()
+        reference.drop(columns=["content", "result", "type"], inplace=True)
+        return reference.unstack()["value"]
 
-    @property
-    def prices(self):
-        prices = pd.read_sql_query(sql="SELECT * FROM v_symbols", con=self.__session.bind, index_col="name")["data"]
-        prices = prices.apply(to_pandas).transpose()
+    def prices(self, name="PX_LAST"):
+        prices = pd.read_sql_query(sql="SELECT * FROM v_symbols", con=self.__session.bind, index_col="name")
+        prices = prices[prices["timeseries"] == name]
+        prices = prices["data"].apply(to_pandas).transpose()
         prices.index.names = ["Date"]
         return prices
 
     def symbol(self, name):
         return self.__session.query(Symbol).filter_by(name=name).one()
 
-    def portfolio(self, name):
-        return self.__session.query(Portfolio).filter_by(name=name).one()
+    #def portfolio(self, name):
+    #    return self.__session.query(Portfolio).filter_by(name=name).one()

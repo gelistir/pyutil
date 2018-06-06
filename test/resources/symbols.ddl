@@ -9,20 +9,23 @@ SELECT ts_name.name,
 
 create or replace view v_symbols as
 SELECT productinterface.name,
-    ts_name.jdata AS data
-   FROM (productinterface
-     LEFT JOIN ts_name ON ((productinterface.id = ts_name.product_id)))
-  WHERE (((productinterface.discriminator)::text = 'symbol'::text) AND (((ts_name.name)::text = 'PX_LAST'::text) OR (ts_name.name IS NULL)));
+    ts_name.jdata AS data,
+    ts_name.name  AS timeseries
+  FROM ((productinterface
+    LEFT JOIN ts_name ON ((productinterface.id = ts_name.product_id)))
+    JOIN symbol ON ((productinterface.id = symbol.id)));
 
 create or replace view v_reference_symbols as
 SELECT productinterface.name AS symbol,
     reference_data.content,
     reference_field.result,
-    reference_field.name AS field
+    reference_field.name AS field,
+    productinterface.discriminator AS type
    FROM ((productinterface
      JOIN reference_data ON ((reference_data.product_id = productinterface.id)))
      JOIN reference_field ON ((reference_field.id = reference_data.field_id)))
   ORDER BY productinterface.name;
+
 
 create or replace view v_portfolio_nav as
 SELECT portfolio.id,

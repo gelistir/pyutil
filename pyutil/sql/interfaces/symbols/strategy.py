@@ -60,8 +60,6 @@ class Strategy(ProductInterface):
             self._portfolio.upsert_portfolio(portfolio=portfolio, assets=assets)
 
         return self.portfolio
-        # todo: make strategy a ProductInterface
-        # todo: update nav right here...
 
     @property
     def portfolio(self):
