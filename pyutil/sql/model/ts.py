@@ -111,8 +111,6 @@ class _TimeseriesData(Base):
     value = sq.Column(sq.Float)
     ts_id = sq.Column("ts_id", sq.Integer, sq.ForeignKey(Timeseries.id), primary_key=True, index=True)
 
-    sq.UniqueConstraint('data', 'ts_id')
-
     def __init__(self, date, value, ts):
         assert isinstance(date, datetype)
         self.date = date
