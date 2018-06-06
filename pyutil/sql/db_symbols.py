@@ -101,7 +101,7 @@ class Database(object):
         return prices
 
     def symbol(self, name):
-        # TODO
+        return self.__session.query(Symbol).filter_by(name=name).one()
 
     def portfolio(self, name):
-        # TODO
+        return self.__session.query(Portfolio).filter_by(name=name).one()

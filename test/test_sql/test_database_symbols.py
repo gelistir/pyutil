@@ -29,8 +29,8 @@ class TestDatabaseSymbols(TestCase):
         cls.session.add_all([cls.s1, cls.p1])
         cls.db = Database(session=cls.session)
 
-    def test_symbols(self):
-        pdt.assert_frame_equal(self.db.symbols.reference, pd.DataFrame(index=["AA"], columns=["Field A"], data=[[100]]), check_names=False)
+    #def test_symbols(self):
+    #    pdt.assert_frame_equal(self.db.symbols.reference, pd.DataFrame(index=["AA"], columns=["Field A"], data=[[100]]), check_names=False)
 
-    def test_portfolios(self):
-        pdt.assert_frame_equal(self.db.portfolios.reference, pd.DataFrame(index=["Peter"], columns=["Field A"], data=[[200]]), check_names=False)
+    #def test_portfolios(self):
+    #    pdt.assert_frame_equal(self.db.portfolios.reference, pd.DataFrame(index=["Peter"], columns=["Field A"], data=[[200]]), check_names=False)
