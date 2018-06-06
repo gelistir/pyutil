@@ -10,22 +10,10 @@ class Database(object):
     def __init__(self, session=None):
         self.__session = session or _session(db="addepar2")
 
-    #@property
-    #def owners(self):
-    #    return Owners(self.__session.query(Owner))
-
-    #@property
-    #def securities(self):
-    #    return Securities(self.__session.query(Security))
-
     def owner(self, name):
-        pd.read_sql_query(sql="SELECT * FROM v_prices WHERE ")
         return self.__session.query(Owner).filter_by(name=name).one()
 
     def security(self, name):
-        #x = pd.read_sql_query(sql="SELECT * FROM v_prices WHERE security=%(name)s", params={"name": name}, con=)
-        #print(x)
-        #assert False
         return self.__session.query(Security).filter_by(name=str(name)).one()
 
     @property
