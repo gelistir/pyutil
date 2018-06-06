@@ -98,6 +98,18 @@ class TestPortfolio(TestCase):
     def test_sector(self):
         pdt.assert_series_equal(self.db.sector.loc["Peter"][pd.Timestamp("2015-04-22")], pd.Series(index=["equities","fixed_income"], data=[0.135671, 0.173303]), check_names=False)
 
+    def test_frames(self):
+        x = self.db.frames()
+        pdt.assert_frame_equal(x["performance"], self.db.performance)
+        pdt.assert_frame_equal(x["recent"], self.db.recent())
+        pdt.assert_frame_equal(x["sector"], self.db.sector())
+        pdt.assert_frame_equal(x["mtd"], self.db.mtd)
+        pdt.assert_frame_equal(x["ytd"], self.db.ytd)
+        pdt.assert_frame_equal(x["periods"], self.db.period_returns)
+
+        self.assertEqual(len(x), 6)
+
+
 
 
 

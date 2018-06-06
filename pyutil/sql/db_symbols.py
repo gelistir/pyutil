@@ -17,7 +17,6 @@ class Database(object):
         x = pd.read_sql_query("SELECT * FROM v_portfolio_nav", con=self.__session.bind, index_col="name")["data"]
         return x.apply(to_pandas)
 
-    @property
     def sector(self, total=False):
         frame = pd.read_sql_query("SELECT * FROM v_portfolio_sector", con=self.__session.bind, index_col=["name", "symbol", "group"])["data"]
         frame = frame.apply(to_pandas).groupby(level=["name", "group"], axis=0).sum().ffill(axis=1)
