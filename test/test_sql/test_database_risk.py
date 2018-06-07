@@ -36,25 +36,21 @@ class TestDatabaseRisk(TestCase):
         cls.cus1 = Custodian(name="UBS Geneva")
         cls.cur1 = Currency(name="USD")
 
-        s1 = Security(name=123)
-        s2 = Security(name=1000)
+        cls.s1 = Security(name=123)
+        cls.s2 = Security(name=1000)
 
-        s1.reference[KIID] = 5
-        s1.price_upsert(ts={t1: 11.1, t2: 12.1})
-        s1.volatility_upsert(ts={t1: 11.1, t2: 12.1}, currency=cls.cur1)
+        cls.s1.reference[KIID] = 5
+        cls.s1.price_upsert(ts={t1: 11.1, t2: 12.1})
+        cls.s1.volatility_upsert(ts={t1: 11.1, t2: 12.1}, currency=cls.cur1)
 
-        cls.session.add_all([s1, s2])
+        cls.session.add_all([cls.s1, cls.s2])
 
         # Don't forget to commit the data
         cls.session.commit()
 
-        #cls.db = Database(cls.session)
-
-
-
         cls.o1 = Owner(name=100, currency=cls.cur1)
         cls.o1.reference[NAME] = "Peter Maffay"
-        cls.o1.position_upsert(security=s1, custodian=cls.cus1, ts={t1: 0.4, t2: 0.5})
+        cls.o1.position_upsert(security=cls.s1, custodian=cls.cus1, ts={t1: 0.4, t2: 0.5})
         cls.o1.volatility_upsert(ts={t1: 0.3, t2: 0.3})
 
         cls.session.commit()
@@ -73,8 +69,11 @@ class TestDatabaseRisk(TestCase):
 
     def test_security(self):
         s = self.session.query(Security).filter_by(name="123").one()
+        self.assertEqual(s, self.s1)
         self.assertIsNotNone(s)
         self.assertEqual(s.get_reference("KIID"), 5)
+        self.assertEqual(s.kiid, 5)
+        self.assertIsNone(s.bloomberg_ticker)
 
     def test_reference_securities(self):
         pdt.assert_frame_equal(self.db.reference_securities, pd.DataFrame(index=[123], columns=["KIID"], data=[[5]]), check_names=False)
@@ -85,15 +84,19 @@ class TestDatabaseRisk(TestCase):
     def test_reference_owner_securities(self):
         pdt.assert_frame_equal(self.db.reference_owner_securities.loc[100], self.db.reference_securities)
 
-    def test_security(self):
+    def test_security_db(self):
         self.assertEqual(self.db.security(name="123"), self.session.query(Security).filter_by(name="123").one())
         self.assertEqual(self.db.security(name=123), self.session.query(Security).filter_by(name="123").one())
 
     def test_prices(self):
         pdt.assert_series_equal(self.db.prices.loc[123], pd.Series({t1: 11.1, t2: 12.1}), check_names=False)
+        pdt.assert_series_equal(self.s1.price, pd.Series({t1: 11.1, t2: 12.1}))
+        pdt.assert_series_equal(self.s1.price, self.db.prices.loc[123], check_names=False)
 
     def test_volatility_owner(self):
         pdt.assert_series_equal(self.db.volatility_owner.loc[100], pd.Series({t1: 0.3, t2: 0.3}), check_names=False)
+        pdt.assert_series_equal(self.o1.volatility,pd.Series({t1: 0.3, t2: 0.3}), check_names=False)
+        pdt.assert_series_equal(self.o1.volatility, self.db.volatility_owner.loc[100], check_names=False)
 
     def test_volatility_security(self):
         pdt.assert_series_equal(self.db.volatility_security.loc["USD"].loc[123], pd.Series({t1: 11.1, t2: 12.1}), check_names=False)

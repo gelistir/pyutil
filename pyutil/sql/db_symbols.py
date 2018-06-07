@@ -3,6 +3,7 @@ import pandas as pd
 from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio as PP
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
+from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.session import session as sss
 from pyutil.sql.util import to_pandas, parse
@@ -103,6 +104,14 @@ class Database(object):
 
     def symbol(self, name):
         return self.__session.query(Symbol).filter_by(name=name).one()
+
+    def strategies(self):
+        for s in self.__session.query(Strategy):
+            yield s
+
+    def portfolios(self):
+        for p in self.__session.query(Portfolio):
+            yield p
 
     #def portfolio(self, name):
     #    return self.__session.query(Portfolio).filter_by(name=name).one()

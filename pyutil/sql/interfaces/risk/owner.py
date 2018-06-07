@@ -52,8 +52,13 @@ class Owner(ProductInterface):
 
     def returns_upsert(self, ts):
         self.upsert_ts(name="return", data=ts)
-        # upsert nav!!!!!
-
+        try:
+            x = self.returns
+            x = pd.concat((pd.Series({(x.index[0] - pd.DateOffset(days=1)).date(): 0.0}), x))
+            # ts = x.loc[_pd.notnull(x.index)]
+            return self.upsert_ts(name="nav", data = (x + 1.0).cumprod())
+        except:
+            return self.upsert_ts(name="nav", data= pd.Series({}))
 
     def position_upsert(self, security, custodian, ts):
         if security not in self.__securities:
@@ -142,13 +147,7 @@ class Owner(ProductInterface):
 
     @property
     def nav(self):
-        try:
-            x = self.returns
-            x = pd.concat((pd.Series({(x.index[0] - pd.DateOffset(days=1)).date(): 0.0}), x))
-            # ts = x.loc[_pd.notnull(x.index)]
-            return _NavSeries((x + 1.0).cumprod())
-        except:
-            return _NavSeries(pd.Series({}))
+        return _NavSeries(self.get_timeseries("nav"))
 
     #def to_html_dict(self):
     #    def double2percent(x):
