@@ -84,6 +84,10 @@ class Database(object):
         frame["Asset"] = frame.index
         return frame
 
+    @property
+    def states(self):
+        for portfolio in self.portfolios:
+            yield self.state(name=portfolio.name)
 
     @property
     def reference_symbols(self):
@@ -105,10 +109,12 @@ class Database(object):
     def symbol(self, name):
         return self.__session.query(Symbol).filter_by(name=name).one()
 
+    @property
     def strategies(self):
         for s in self.__session.query(Strategy):
             yield s
 
+    @property
     def portfolios(self):
         for p in self.__session.query(Portfolio):
             yield p
