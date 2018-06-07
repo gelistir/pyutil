@@ -86,8 +86,7 @@ class Database(object):
 
     @property
     def states(self):
-        for portfolio in self.portfolios:
-            yield portfolio.name, self.state(name=portfolio.name)
+        return {portfolio.name: self.state(name=portfolio.name) for portfolio in self.portfolios}
 
     @property
     def reference_symbols(self):
