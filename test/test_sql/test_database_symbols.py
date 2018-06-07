@@ -5,7 +5,7 @@ import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
 from pyutil.sql.db_symbols import Database
-from pyutil.sql.interfaces.products import Products2
+from pyutil.sql.interfaces.products import Products
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.sql.model.ref import Field, DataType, FieldType
@@ -75,6 +75,8 @@ class TestPortfolio(TestCase):
         assetsB = {asset: Symbol(name=asset, group=SymbolType.fixed_income) for asset in ["D","E","F","G"]}
         assets = {**assetsA, **assetsB}
 
+        #for name, asset in assets:
+        #    assets.reference[]
         cls.session.add_all(assets.values())
 
         # store the portfolio we have just computed in there...
@@ -118,7 +120,16 @@ class TestPortfolio(TestCase):
         print(self.db.state(name="Peter"))
 
     def test_products(self):
-        p=Products2(session=self.session, type="symbol")
-        print(p.x)
-        print(p.reference())
+        p=Products(session=self.session)
+        print(p.products("symbol"))
+        a = p.reference("symbol")
+        self.assertListEqual(["product", "field"], a.index.names)
+        self.assertTrue(a.empty)
+        self.assertIsInstance(a, pd.DataFrame)
+
+
+
+        #, type="symbol")
+        #print(p.x)
+        #print(p.reference())
         #assert False

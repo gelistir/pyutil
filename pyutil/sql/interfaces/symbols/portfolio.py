@@ -78,6 +78,6 @@ class Portfolio(ProductInterface):
          w = self.sector(total=total)
          return w.loc[w.index[-1]].rename(None)
 
-    def to_html_dict(self, **kwargs):
-        return fromNav(ts=self.nav, adjust=False).to_dictionary(name=self.name, **kwargs)
+    #def to_html_dict(self, **kwargs):
+    #    return fromNav(ts=self.nav, adjust=False).to_dictionary(name=self.name, **kwargs)
 

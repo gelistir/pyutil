@@ -72,7 +72,3 @@ class Contract(ProductInterface):
         else:
             return y + 1900
 
-
-# class Contracts(Products):
-#     def __init__(self, futures):
-#         super().__init__(futures, cls=Contract, attribute="name")

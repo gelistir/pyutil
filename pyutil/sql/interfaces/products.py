@@ -11,6 +11,7 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from pyutil.sql.base import Base
 from pyutil.sql.model.ref import _ReferenceData, Field
 from pyutil.sql.model.ts import Timeseries
+from pyutil.sql.util import parse
 
 
 def association_table(left, right, name="association"):
@@ -125,23 +126,28 @@ class ProductInterface(MyMixin, Base):
         return hash(self.name)
 
 
-class Products2(object):
-    def __init__(self, session, type=None):
+class Products(object):
+    def __init__(self, session):
         self.session = session
-        x = pd.read_sql_query("SELECT * FROM productinterface WHERE discriminator = %(name)s", params={"name": type}, con=self.session.bind, index_col=["id"])
-        #if type:
-        #    x = x[x["discriminator"]==type]
 
-        self.__x = x
+    def products(self, type):
+        query = "SELECT * FROM productinterface " \
+                "WHERE discriminator = %(name)s"
+        return pd.read_sql_query(query, params={"name": type}, con=self.session.bind, index_col=["id"])["name"]
 
-    def reference(self):
-        x = """
-        SELECT * FROM reference_data r WHERE r.product_id in %(indices)s
-        
-        """
+    def reference(self, type):
+        query = "SELECT p.name as product, r.content, rf.name as field, rf.result " \
+                "FROM reference_data r " \
+                "JOIN reference_field rf on (rf.id = r.field_id) " \
+                "JOIN productinterface p ON (p.id = r.product_id) " \
+                "WHERE p.discriminator = %(name)s"
 
-        y = pd.read_sql_query(x, params={"indices": tuple(self.__x.index)}, con=self.session.bind)
-        return y
+        frame = pd.read_sql_query(query, params={"name": type}, con=self.session.bind, index_col=["product", "field"])
+        if frame.empty:
+            return pd.DataFrame(index=frame.index, columns=["value"])
+
+        frame["value"] = frame[['result', 'content']].apply(lambda x: parse(x[1], x[0]), axis=1)
+        return frame["value"].unstack()
 
     def timeseries(self, name):
         pass

@@ -24,18 +24,27 @@ class Database(object):
     @property
     def reference_owner(self):
         frame = pd.read_sql_query("SELECT * FROM v_reference_owner", con=self.__session.bind, index_col=["owner", "field"])
+        if frame.empty:
+            return pd.DataFrame(index=frame.index, columns=["value"])
+
         frame["value"] = frame[['result', 'content']].apply(lambda x: parse(x[1], x[0]), axis=1)
         return frame["value"].unstack()
 
     @property
     def reference_securities(self):
         frame = pd.read_sql_query("SELECT * FROM v_reference_securities", con=self.__session.bind, index_col=["security", "field"])
+        if frame.empty:
+            return pd.DataFrame(index=frame.index, columns=["value"])
+
         frame["value"] = frame[['result', 'content']].apply(lambda x: parse(x[1], x[0]), axis=1)
         return frame["value"].unstack()
 
     @property
     def reference_owner_securities(self):
         frame = pd.read_sql_query("SELECT * FROM v_reference_owner_securities", con=self.__session.bind, index_col=["owner", "security", "field"])
+        if frame.empty:
+            return pd.DataFrame(index=frame.index, columns=["value"])
+
         frame["value"] = frame[['result', 'content']].apply(lambda x: parse(x[1], x[0]), axis=1)
         return frame["value"].unstack()
 

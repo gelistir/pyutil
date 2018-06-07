@@ -196,12 +196,12 @@ class TestOwner(unittest.TestCase):
         pdt.assert_frame_equal(o.kiid_weighted_by(index_col="Name"), frame, check_names=False)
 
 
-    def test_html_do_dict(self):
-        o = Owner(name='100', currency=Currency(name="USD"))
-        o.returns_upsert(ts={t1: 0.1, t2: 0.4})
-        o.reference[NAME] = "Peter"
+    #def test_html_do_dict(self):
+    #    o = Owner(name='100', currency=Currency(name="USD"))
+    #    o.returns_upsert(ts={t1: 0.1, t2: 0.4})
+    #    o.reference[NAME] = "Peter"
 
-        self.assertDictEqual(o.to_html_dict(), {'nav': [[279936000000, 1.0], [280022400000, 1.1], [280195200000, 1.54]],
-                                                'drawdown': [[279936000000, 0.0], [280022400000, 0.0], [280195200000, 0.0]],
-                                                'volatility': [], 'name': 'Peter', 'weights': {'columns': ['Asset'], 'data': []}})
+        #self.assertDictEqual(o.to_html_dict(), {'nav': [[279936000000, 1.0], [280022400000, 1.1], [280195200000, 1.54]],
+        #                                        'drawdown': [[279936000000, 0.0], [280022400000, 0.0], [280195200000, 0.0]],
+        #                                        'volatility': [], 'name': 'Peter', 'weights': {'columns': ['Asset'], 'data': []}})
 

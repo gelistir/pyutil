@@ -59,11 +59,6 @@ class Future(ProductInterface):
         return _Rollmap(pd.Series(m))
 
 
-# class Futures(Products):
-#     def __init__(self, futures):
-#         super().__init__(futures, cls=Future, attribute="name")
-
-
 class _Rollmap(pd.Series):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

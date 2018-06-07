@@ -19,8 +19,7 @@ create or replace view v_reference_symbols as
 SELECT productinterface.name AS symbol,
     reference_data.content,
     reference_field.result,
-    reference_field.name AS field,
-    productinterface.discriminator AS type
+    reference_field.name AS field
    FROM ((productinterface
      JOIN symbol ON ((productinterface.id = symbol.id))
      LEFT JOIN reference_data ON ((reference_data.product_id = productinterface.id))

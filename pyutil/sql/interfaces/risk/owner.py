@@ -1,10 +1,9 @@
 import pandas as pd
 import sqlalchemy as _sq
-from pandasweb.frames import frame2dict
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 
-from pyutil.performance.summary import NavSeries as _NavSeries, fromNav
+from pyutil.performance.summary import NavSeries as _NavSeries
 from pyutil.sql.interfaces.products import ProductInterface, association_table
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
@@ -53,6 +52,8 @@ class Owner(ProductInterface):
 
     def returns_upsert(self, ts):
         self.upsert_ts(name="return", data=ts)
+        # upsert nav!!!!!
+
 
     def position_upsert(self, security, custodian, ts):
         if security not in self.__securities:
@@ -149,12 +150,12 @@ class Owner(ProductInterface):
         except:
             return _NavSeries(pd.Series({}))
 
-    def to_html_dict(self):
-        def double2percent(x):
-            return "{0:.2f}%".format(float(100.0 * x)).replace("nan%", "")
+    #def to_html_dict(self):
+    #    def double2percent(x):
+    #        return "{0:.2f}%".format(float(100.0 * x)).replace("nan%", "")
 
-        w = self.position(sum=False).applymap(double2percent).reset_index()
-        return fromNav(ts=self.nav, adjust=False).to_dictionary(name=self.get_reference("Name"), weights=frame2dict(w))
+    #    w = self.position(sum=False).applymap(double2percent).reset_index()
+    #    return fromNav(ts=self.nav, adjust=False).to_dictionary(name=self.get_reference("Name"), weights=frame2dict(w))
 
 
 # class Owners(Products):

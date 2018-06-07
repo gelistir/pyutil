@@ -87,11 +87,11 @@ class Database(object):
     @property
     def reference_symbols(self):
         reference = pd.read_sql_query(sql="SELECT * FROM v_reference_symbols", con=self.__session.bind, index_col=["symbol", "field"])
+
         if reference.empty:
-            return pd.DataFrame({})
-        reference = reference[reference["type"]=="symbol"]
+            return pd.DataFrame(index=reference.index, columns=["value"])
+
         reference["value"] = reference[['content', 'result']].apply(lambda x: parse(x[0], x[1]), axis=1)
-        reference.drop(columns=["content", "result", "type"], inplace=True)
         return reference.unstack()["value"]
 
     def prices(self, name="PX_LAST"):
