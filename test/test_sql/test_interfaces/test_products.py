@@ -1,10 +1,8 @@
 from unittest import TestCase
 
 import pandas as pd
-import numpy as np
 import pandas.util.testing as pdt
 
-from pyutil.sql.interfaces.products import Products
 from pyutil.sql.model.ref import Field, FieldType, DataType
 from test.test_sql.product import Product
 
@@ -20,7 +18,7 @@ class TestProductInterface(TestCase):
 
     def test_name_invariant(self):
         with self.assertRaises(AttributeError):
-            self.p1.name="AA"
+            self.p1.name = "AA"
 
     def test_timeseries(self):
         self.p1.upsert_ts(name="correlation", data={pd.Timestamp("12-11-1978"): 0.5}, secondary=self.p2)
@@ -76,55 +74,54 @@ class TestProductInterface(TestCase):
         x = self.p1.get_timeseries(name="Never seen before")
         pdt.assert_series_equal(x, pd.Series({}))
 
-
-
-class TestProducts(TestCase):
-    def test_products(self):
-        p1 = Product(name="A")
-        p2 = Product(name="B")
-
-        x = Products(products=[p1, p2], cls=Product, attribute="name")
-        self.assertDictEqual(x.to_dict(), {"A": p1, "B": p2})
-
-        for product in x:
-            self.assertIsInstance(product, Product)
-
-        self.assertEqual(x["A"], p1)
-        self.assertEqual(str(x), "A   Test-Product(A)\nB   Test-Product(B)")
-
-    def test_reference(self):
-        p1 = Product(name="A")
-        p2 = Product(name="B")
-
-        field = Field(name="Field 1", result=DataType.string)
-
-        x = Products(products=[p1, p2], cls=Product, attribute="name")
-        self.assertTrue(x.reference.empty)
-
-        p1.reference[field] = "X"
-        p2.reference[field] = "Y"
-
-        pdt.assert_frame_equal(x.reference, pd.DataFrame(index=["A", "B"], columns=["Field 1"], data=[["X"], ["Y"]]),
-                               check_names=False)
-
-
-    def test_timeseries(self):
-        p1 = Product(name="A")
-        p2 = Product(name="B")
-
-        x = Products(products=[p1, p2], cls=Product, attribute="name")
-
-        self.assertTrue(x.history(field="price").empty)
-
-        p1.upsert_ts(name="price", data={pd.Timestamp("2017-01-01"): 20.0})
-
-        pdt.assert_frame_equal(x.history(field="price", rename=True), pd.DataFrame(index=pd.DatetimeIndex([pd.Timestamp("2017-01-01").date()]), columns=["A","B"], data=[[20.0, np.nan]]), check_names=False)
-
-    def test_wrong_product(self):
-        p1 = Product(name="A")
-        p2 = Product(name="B")
-
-        with self.assertRaises(AssertionError):
-            Products(products=[p1, p2, 3], cls=Product, attribute="name")
-
-
+#
+#
+# class TestProducts(TestCase):
+#     def test_products(self):
+#         p1 = Product(name="A")
+#         p2 = Product(name="B")
+#
+#         x = Products(products=[p1, p2], cls=Product, attribute="name")
+#         self.assertDictEqual(x.to_dict(), {"A": p1, "B": p2})
+#
+#         for product in x:
+#             self.assertIsInstance(product, Product)
+#
+#         self.assertEqual(x["A"], p1)
+#         self.assertEqual(str(x), "A   Test-Product(A)\nB   Test-Product(B)")
+#
+#     def test_reference(self):
+#         p1 = Product(name="A")
+#         p2 = Product(name="B")
+#
+#         field = Field(name="Field 1", result=DataType.string)
+#
+#         x = Products(products=[p1, p2], cls=Product, attribute="name")
+#         self.assertTrue(x.reference.empty)
+#
+#         p1.reference[field] = "X"
+#         p2.reference[field] = "Y"
+#
+#         pdt.assert_frame_equal(x.reference, pd.DataFrame(index=["A", "B"], columns=["Field 1"], data=[["X"], ["Y"]]),
+#                                check_names=False)
+#
+#
+#     def test_timeseries(self):
+#         p1 = Product(name="A")
+#         p2 = Product(name="B")
+#
+#         x = Products(products=[p1, p2], cls=Product, attribute="name")
+#
+#         self.assertTrue(x.history(field="price").empty)
+#
+#         p1.upsert_ts(name="price", data={pd.Timestamp("2017-01-01"): 20.0})
+#
+#         pdt.assert_frame_equal(x.history(field="price", rename=True), pd.DataFrame(index=pd.DatetimeIndex([pd.Timestamp("2017-01-01").date()]), columns=["A","B"], data=[[20.0, np.nan]]), check_names=False)
+#
+#     def test_wrong_product(self):
+#         p1 = Product(name="A")
+#         p2 = Product(name="B")
+#
+#         with self.assertRaises(AssertionError):
+#             Products(products=[p1, p2, 3], cls=Product, attribute="name")
+#

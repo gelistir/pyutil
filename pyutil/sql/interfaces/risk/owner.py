@@ -1,16 +1,14 @@
 import pandas as pd
-import numpy as np
 import sqlalchemy as _sq
-
 from pandasweb.frames import frame2dict
-
-from pyutil.performance.summary import NavSeries as _NavSeries, fromNav
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
+
+from pyutil.performance.summary import NavSeries as _NavSeries, fromNav
 from pyutil.sql.interfaces.products import ProductInterface, association_table
-from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
+from pyutil.sql.model.ref import Field, DataType, FieldType
 
 _association_table = association_table(left="security", right="owner", name="security_owner")
 

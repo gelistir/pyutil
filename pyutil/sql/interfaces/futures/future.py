@@ -7,7 +7,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
-from pyutil.sql.interfaces.products import ProductInterface, Products
+from pyutil.sql.interfaces.products import ProductInterface
 from sqlalchemy.orm import relationship
 
 
@@ -59,9 +59,9 @@ class Future(ProductInterface):
         return _Rollmap(pd.Series(m))
 
 
-class Futures(Products):
-    def __init__(self, futures):
-        super().__init__(futures, cls=Future, attribute="name")
+# class Futures(Products):
+#     def __init__(self, futures):
+#         super().__init__(futures, cls=Future, attribute="name")
 
 
 class _Rollmap(pd.Series):

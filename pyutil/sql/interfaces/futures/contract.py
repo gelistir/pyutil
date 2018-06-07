@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 import sqlalchemy as sq
 import pandas as _pd
 
-from pyutil.sql.interfaces.products import ProductInterface, Products
+from pyutil.sql.interfaces.products import ProductInterface
 
 
 class Contract(ProductInterface):
@@ -73,6 +73,6 @@ class Contract(ProductInterface):
             return y + 1900
 
 
-class Contracts(Products):
-    def __init__(self, futures):
-        super().__init__(futures, cls=Contract, attribute="name")
+# class Contracts(Products):
+#     def __init__(self, futures):
+#         super().__init__(futures, cls=Contract, attribute="name")

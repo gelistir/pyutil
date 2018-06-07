@@ -5,6 +5,7 @@ import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
 from pyutil.sql.db_symbols import Database
+from pyutil.sql.interfaces.products import Products2
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.sql.model.ref import Field, DataType, FieldType
@@ -115,3 +116,9 @@ class TestPortfolio(TestCase):
 
     def test_state(self):
         print(self.db.state(name="Peter"))
+
+    def test_products(self):
+        p=Products2(session=self.session, type="symbol")
+        print(p.x)
+        print(p.reference())
+        #assert False

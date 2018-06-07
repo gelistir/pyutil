@@ -1,10 +1,9 @@
 import pandas as _pd
 import pandas as pd
 import sqlalchemy as sq
-from pandasweb.frames import frame2dict
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.declarative import has_inherited_table
 from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.ext.declarative import has_inherited_table
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
@@ -126,51 +125,77 @@ class ProductInterface(MyMixin, Base):
         return hash(self.name)
 
 
-class Products(object):
-    def __init__(self, products, cls, attribute="name", f=lambda x: x):
-        for p in products:
-            assert isinstance(p, cls)
+class Products2(object):
+    def __init__(self, session, type=None):
+        self.session = session
+        x = pd.read_sql_query("SELECT * FROM productinterface WHERE discriminator = %(name)s", params={"name": type}, con=self.session.bind, index_col=["id"])
+        #if type:
+        #    x = x[x["discriminator"]==type]
 
-        self.__products = {f(getattr(x, attribute)): x for x in products}
+        self.__x = x
 
-    def __getitem__(self, item):
-        return self.__products[str(item)]
+    def reference(self):
+        x = """
+        SELECT * FROM reference_data r WHERE r.product_id in %(indices)s
+        
+        """
 
-    def __iter__(self):
-        for symbol in self.__products.values():
-            yield symbol
+        y = pd.read_sql_query(x, params={"indices": tuple(self.__x.index)}, con=self.session.bind)
+        return y
+
+    def timeseries(self, name):
+        pass
+
+
 
     @property
-    def reference(self):
-        x = pd.DataFrame({str(key): product.reference_series for key, product in self.__products.items()}).transpose()
-        x.index.names = ["Product"]
-        return x.fillna("")
-
-    def history(self, field="PX_LAST", rename=False):
-        # this could be slow
-        x = pd.DataFrame({product: product.get_timeseries(name=field) for product in self})
-        x.index.names = ["Date"]
-        if rename:
-            x = x.rename(columns=lambda x: x.name)
-
-        return x
-
-    def to_dict(self):
-        return self.__products
-
-    def __repr__(self):
-        a = max([len(k) for k in self.__products.keys()])
-        seq = ["{key:{a}.{a}}   {product}".format(key=key, product=product, a=a) for key, product in sorted(self.__products.items())]
-        return "\n".join(seq)
-
-    def to_html(self, index_name):
-        x = self.reference.fillna("")
-
-        # every index has to be string!
-        x.index = [str(a) for a in x.index]
-        x.index.names = [index_name]
-
-        return frame2dict(x.reset_index(drop=False))
+    def x(self):
+        return self.__x
+# class Products(object):
+#     def __init__(self, products, cls, attribute="name", f=lambda x: x):
+#         for p in products:
+#             assert isinstance(p, cls)
+#
+#         self.__products = {f(getattr(x, attribute)): x for x in products}
+#
+#     def __getitem__(self, item):
+#         return self.__products[str(item)]
+#
+#     def __iter__(self):
+#         for symbol in self.__products.values():
+#             yield symbol
+#
+#     @property
+#     def reference(self):
+#         x = pd.DataFrame({str(key): product.reference_series for key, product in self.__products.items()}).transpose()
+#         x.index.names = ["Product"]
+#         return x.fillna("")
+#
+#     def history(self, field="PX_LAST", rename=False):
+#         # this could be slow
+#         x = pd.DataFrame({product: product.get_timeseries(name=field) for product in self})
+#         x.index.names = ["Date"]
+#         if rename:
+#             x = x.rename(columns=lambda x: x.name)
+#
+#         return x
+#
+#     def to_dict(self):
+#         return self.__products
+#
+#     def __repr__(self):
+#         a = max([len(k) for k in self.__products.keys()])
+#         seq = ["{key:{a}.{a}}   {product}".format(key=key, product=product, a=a) for key, product in sorted(self.__products.items())]
+#         return "\n".join(seq)
+#
+#     def to_html(self, index_name):
+#         x = self.reference.fillna("")
+#
+#         # every index has to be string!
+#         x.index = [str(a) for a in x.index]
+#         x.index.names = [index_name]
+#
+#         return frame2dict(x.reset_index(drop=False))
 
 
 
