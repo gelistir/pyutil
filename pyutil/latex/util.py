@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 
 
@@ -10,9 +9,3 @@ def trend(series, width=20):
 
 def percentage(x):
     return "{0:.2f}\%".format(x*100)
-
-
-if __name__ == '__main__':
-    x = pd.Series(data=[0.0, 0.4, 0.8, 1.0])
-    print(trend(x))
-

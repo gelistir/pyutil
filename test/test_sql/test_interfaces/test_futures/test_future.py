@@ -5,7 +5,7 @@ import pandas as pd
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
-from pyutil.sql.interfaces.futures.future import Future, Futures
+from pyutil.sql.interfaces.futures.future import Future
 
 from pyutil.sql.base import Base
 from pyutil.sql.session import session_test
