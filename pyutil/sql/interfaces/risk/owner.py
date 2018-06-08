@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship as _relationship
 from pyutil.performance.summary import NavSeries as _NavSeries
 from pyutil.sql.interfaces.products import ProductInterface, association_table
 from pyutil.sql.interfaces.risk.currency import Currency
+from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.model.ref import Field, DataType, FieldType
 
@@ -30,10 +31,13 @@ class Owner(ProductInterface):
     __securities = _relationship(Security, secondary=_association_table, backref="owner", lazy="joined")
     __currency_id = _sq.Column("currency_id", _sq.Integer, _sq.ForeignKey(Currency.id), nullable=True)
     __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
+    __custodian_id = _sq.Column("custodian_id", _sq.Integer, _sq.ForeignKey(Custodian.id), nullable=True)
+    __custodian = _relationship(Custodian, foreign_keys=[__custodian_id], lazy="joined")
 
-    def __init__(self, name, currency):
+    def __init__(self, name, currency, custodian=None):
         super().__init__(name=name)
         self.__currency = currency
+        self.__custodian = custodian
 
     def __repr__(self):
         return "Owner({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
@@ -41,6 +45,10 @@ class Owner(ProductInterface):
     @hybrid_property
     def currency(self):
         return self.__currency
+
+    @hybrid_property
+    def custodian(self):
+        return self.__custodian
 
     @property
     def securities(self):
