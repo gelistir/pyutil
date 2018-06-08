@@ -21,9 +21,17 @@ class Database(object):
     def sector(self, total=False):
         frame = pd.read_sql_query("SELECT * FROM v_portfolio_sector", con=self.__session.bind, index_col=["name", "symbol", "group"])["data"]
         frame = frame.apply(to_pandas).groupby(level=["name", "group"], axis=0).sum().ffill(axis=1)
+        frame = frame.iloc[:,-1].unstack()
+
         if total:
             frame["total"] = frame.sum(axis=1)
         return frame
+
+
+        #frame = self.__db.sector(total=False).ffill(axis=1).iloc[:,-1].unstack()
+        #if total:
+        #    frame["total"] = frame.sum(axis=1)
+
 
     @property
     def mtd(self):
