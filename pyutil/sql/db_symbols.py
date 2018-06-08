@@ -40,7 +40,7 @@ class Database(object):
         return frame
 
     def recent(self, n=15):
-        frame = self.nav.apply(lambda x: fromNav(x).recent(n=n), axis=1).iloc[:, -n:]
+        frame = self.nav.apply(lambda x: fromNav(x).recent(n=n), axis=1).iloc[:, -n:].sort_index(axis=1, ascending=False)
         frame = frame.rename(columns=lambda x: x.strftime("%b %d"))
         frame["total"] = (frame + 1).prod(axis=1) - 1
         return frame
