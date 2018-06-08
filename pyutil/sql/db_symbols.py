@@ -27,18 +27,14 @@ class Database(object):
 
     @property
     def mtd(self):
-        frame = self.nav.apply(lambda x: fromNav(x).mtd_series, axis=1)
+        frame = self.nav.apply(lambda x: fromNav(x).mtd_series, axis=1).sort_index(axis=1, ascending=False)
         frame = frame.rename(columns=lambda x: x.strftime("%b %d"))
         frame["total"] = (frame + 1).prod(axis=1) - 1
         return frame
 
     @property
     def ytd(self):
-        #print(self.nav)
-        frame = self.nav.apply(lambda x: fromNav(x).ytd_series, axis=1)
-        #print(frame)
-        #assert False
-
+        frame = self.nav.apply(lambda x: fromNav(x).ytd_series, axis=1).sort_index(axis=1, ascending=False)
         frame = frame.rename(columns=lambda x: x.strftime("%b"))
         frame["total"] = (frame + 1).prod(axis=1) - 1
         return frame
