@@ -28,11 +28,19 @@ class TestOwner(unittest.TestCase):
         self.assertEqual(o.currency, Currency(name="USD"))
         self.assertEqual(o.name, "100")
 
-    def test_immutable_currency(self):
+
+    def test_currency(self):
+        o = Owner(name="Peter")
+        currency = Currency(name="CHF")
+        o.currency = currency
+        self.assertEqual(o.currency, currency)
+
+    def test_custodian(self):
+        custodian=Custodian(name="UBS Geneva")
         o = Owner(name="Peter", currency=Currency(name="USD"))
-        with self.assertRaises(AttributeError):
-            # You can not change the currency of an owner (using the ORM)...
-            o.currency = Currency(name="CHF")
+        o.custodian = custodian
+        self.assertEqual(o.custodian, custodian)
+
 
     def test_no_position(self):
         o = Owner(name="Peter", currency=Currency(name="USD"))

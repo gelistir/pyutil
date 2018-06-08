@@ -34,10 +34,10 @@ class Owner(ProductInterface):
     __custodian_id = _sq.Column("custodian_id", _sq.Integer, _sq.ForeignKey(Custodian.id), nullable=True)
     __custodian = _relationship(Custodian, foreign_keys=[__custodian_id], lazy="joined")
 
-    def __init__(self, name, currency, custodian=None):
+    def __init__(self, name, currency=None, custodian=None):
         super().__init__(name=name)
-        self.__currency = currency
-        self.__custodian = custodian
+        self.currency = currency
+        self.custodian = custodian
 
     def __repr__(self):
         return "Owner({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
@@ -46,9 +46,17 @@ class Owner(ProductInterface):
     def currency(self):
         return self.__currency
 
+    @currency.setter
+    def currency(self, value):
+        self.__currency = value
+
     @hybrid_property
     def custodian(self):
         return self.__custodian
+
+    @custodian.setter
+    def custodian(self, value):
+        self.__custodian = value
 
     @property
     def securities(self):
