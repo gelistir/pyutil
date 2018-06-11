@@ -12,6 +12,7 @@ from pyutil.sql.session import session_test
 
 import pandas.util.testing as pdt
 
+
 def future():
     # define an exchange
     e = Exchange(name="Chicago Mercantile Exchange")

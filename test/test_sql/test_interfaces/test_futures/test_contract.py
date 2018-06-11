@@ -7,6 +7,7 @@ from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
 from pyutil.sql.interfaces.futures.future import Future
 
+
 def future():
     # define an exchange
     e = Exchange(name="Chicago Mercantile Exchange", exch_code="CME")

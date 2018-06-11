@@ -25,10 +25,9 @@ class TestTimeseries(TestCase):
         self.assertIsNone(ts2.tertiary)
         self.assertIsNotNone(ts4.tertiary)
 
-        pdt.assert_series_equal(ts4.series_fast, pd.Series({pd.Timestamp("13-11-1978"): 11.1}))
-        pdt.assert_series_equal(ts2.series_fast, pd.Series({pd.Timestamp("13-11-1978"): 11.1}))
-        pdt.assert_series_equal(ts1.series_fast, pd.Series({pd.Timestamp("12-11-1978"): 10.1}))
-
+        pdt.assert_series_equal(ts4.series, pd.Series({pd.Timestamp("13-11-1978"): 11.1}))
+        pdt.assert_series_equal(ts2.series, pd.Series({pd.Timestamp("13-11-1978"): 11.1}))
+        pdt.assert_series_equal(ts1.series, pd.Series({pd.Timestamp("12-11-1978"): 10.1}))
 
         self.assertEqual(ts1.key, ("x", self.p2))
         self.assertEqual(ts2.key, "y")
@@ -37,26 +36,21 @@ class TestTimeseries(TestCase):
         pdt.assert_frame_equal(self.p1.frame("x"),
                                pd.DataFrame(index=[pd.Timestamp("12-11-1978")], columns=[self.p2], data=[[10.1]]))
 
-        #self.assertEqual(ts2.last_valid, pd.Timestamp("13-11-1978"))
-        #self.assertEqual(ts1.last_valid, pd.Timestamp("12-11-1978"))
-        #self.assertIsNone(ts3.last_valid)
-
         x = ts1.upsert(ts={pd.Timestamp("12-11-1978"): 11.1, pd.Timestamp("13-11-1978"): 12.1})
-        pdt.assert_series_equal(x.series_fast,
+        pdt.assert_series_equal(x.series,
                                 pd.Series({pd.Timestamp("12-11-1978"): 11.1, pd.Timestamp("13-11-1978"): 12.1}))
 
     def test_upsert(self):
         ts1 = Timeseries(name="x", product=self.p1)
-        with self.assertRaises(AssertionError):
-            ts1.upsert(ts={2: 1.0})
 
+        # You can use date or not (as you wish), and you can overwrite existing data...
         ts1.upsert(ts={pd.Timestamp("2010-01-01").date(): 1.1})
         ts1.upsert(ts={pd.Timestamp("2010-01-02"): 3.1})
 
         ts1.upsert(ts={pd.Timestamp("2010-01-02").date(): 8.1})
         ts1.upsert(ts={pd.Timestamp("2010-01-01"): 10.1})
 
-        x = ts1.series_fast
+        x = ts1.series
         self.assertIsInstance(x.index[0], pd.Timestamp)
         self.assertFalse(x.index.has_duplicates)
         self.assertTrue(x.index.is_monotonic_increasing)
@@ -67,18 +61,12 @@ class TestTimeseries(TestCase):
         import numpy as np
 
         ts1 = Timeseries(name="x", product=self.p1)
-        ts1.upsert(ts={pd.Timestamp("2010-01-01"): np.nan})
 
-        pdt.assert_series_equal(ts1.series_fast, ts1.series_slow, check_dtype=False, check_index_type=False)
+        ts1.upsert(ts={pd.Timestamp("2010-01-01"): np.nan})
+        pdt.assert_series_equal(ts1.series, pd.Series({}))
 
         ts1.upsert(ts={pd.Timestamp("2010-01-01"): 5.0})
-
-        pdt.assert_series_equal(ts1.series_fast, ts1.series_slow)
-        pdt.assert_series_equal(ts1.series_fast, pd.Series({pd.Timestamp("2010-01-01"): 5.0}))
-
-    def test_series_fast(self):
-        ts1 = Timeseries(name="peter", product=self.p1)
-        pdt.assert_series_equal(ts1.series_fast, pd.Series({}))
+        pdt.assert_series_equal(ts1.series, pd.Series({pd.Timestamp("2010-01-01"): 5.0}))
 
     def test_wrong_index(self):
         with self.assertRaises(AssertionError):

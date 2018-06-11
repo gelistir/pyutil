@@ -27,21 +27,22 @@ class Portfolio(ProductInterface):
 
     def upsert_portfolio(self, portfolio, assets=None):
         assert isinstance(portfolio, _Portfolio)
-        for symbol, data in portfolio.weights.items():
+
+        for symbol in portfolio.assets:
             if assets:
-                symbol = assets[symbol]
+                s = assets[symbol]
+            else:
+                s = symbol
 
-            if symbol not in self.symbols:
-                self.symbols.append(symbol)
+            assert isinstance(s, Symbol), "Please define assets correctly"
 
-            self.upsert_ts(name="weight", secondary=symbol, data=data.dropna())
+            if s not in self.symbols:
+                self._symbols.append(s)
 
-        for symbol, data in portfolio.prices.items():
-            if assets:
-                symbol = assets[symbol]
-            self.upsert_ts(name="price", secondary=symbol, data=data.dropna())
+            self.upsert_ts(name="weight", secondary=s, data=portfolio.weights[symbol].dropna())
+            self.upsert_ts(name="price", secondary=s, data=portfolio.prices[symbol].dropna())
 
-        # recompute here the entire portfolio
+        # it's important to recompute the entire portfolio here...
         p = self.portfolio
 
         # upsert the underlying time series data, this is slow here but later when we access the data we don't need to recompute the nav or the leverage
@@ -49,18 +50,12 @@ class Portfolio(ProductInterface):
         self.upsert_ts("leverage", data=p.leverage)
         return self
 
+
+    # we have fast views to extract data... All the functions below are not required...
     @property
     def portfolio(self):
         # does it work?
-        return _Portfolio(prices=self.price, weights=self.weight)
-
-    @property
-    def weight(self):
-        return self.frame(name="weight")
-
-    @property
-    def price(self):
-        return self.frame(name="price")
+        return _Portfolio(prices=self.frame(name="price"), weights=self.frame(name="weight"))
 
     @property
     def nav(self):
@@ -68,16 +63,12 @@ class Portfolio(ProductInterface):
 
     @property
     def leverage(self):
-        return self.timeseries["leverage"]
+        return self.get_timeseries(name="leverage")
 
     def sector(self, total=False):
-         map = {asset: asset.group.name for asset in self.symbols}
-         return self.portfolio.sector_weights(symbolmap=map, total=total)
+        symbol_map = {asset: asset.group.name for asset in self.symbols}
+        return self.portfolio.sector_weights(symbolmap=symbol_map, total=total)
 
     def sector_tail(self, total=False):
-         w = self.sector(total=total)
-         return w.loc[w.index[-1]].rename(None)
-
-    #def to_html_dict(self, **kwargs):
-    #    return fromNav(ts=self.nav, adjust=False).to_dictionary(name=self.name, **kwargs)
-
+        w = self.sector(total=total)
+        return w.loc[w.index[-1]].rename(None)

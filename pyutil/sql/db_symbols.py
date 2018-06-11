@@ -2,24 +2,35 @@ import pandas as pd
 
 from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio as PP
+from pyutil.sql.db import Database
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
-from pyutil.sql.session import session as sss
-from pyutil.sql.util import to_pandas, parse
+from pyutil.sql.util import to_pandas, reference
 
 
-class Database(object):
+class DatabaseSymbols(Database):
     def __init__(self, session=None):
-        self.__session = session or sss(db="symbols")
+        super().__init__(db="symbols", session=session)
 
     @property
     def nav(self):
-        x = pd.read_sql_query("SELECT * FROM v_portfolio_nav", con=self.__session.bind, index_col="name")["data"]
-        return x.apply(to_pandas)
+        """
+        Extract the Nav for each portfolio
+        :return: frame with Nav for each portfolio (on portfolio per row)
+        """
+        return self._read("SELECT * FROM v_portfolio_nav", index_col="name")["data"].apply(to_pandas)
+
+    @property
+    def leverage(self):
+        """
+        Extract the Nav for each portfolio
+        :return: frame with Nav for each portfolio (on portfolio per row)
+        """
+        return self._read("SELECT * FROM v_portfolio_leverage", index_col="name")["data"].apply(to_pandas)
 
     def sector(self, total=False):
-        frame = pd.read_sql_query("SELECT * FROM v_portfolio_sector", con=self.__session.bind, index_col=["name", "symbol", "group"])["data"]
+        frame = self._read("SELECT * FROM v_portfolio_sector", index_col=["name", "symbol", "group"])["data"]
         frame = frame.apply(to_pandas).groupby(level=["name", "group"], axis=0).sum().ffill(axis=1)
         frame = frame.iloc[:,-1].unstack()
 
@@ -27,36 +38,25 @@ class Database(object):
             frame["total"] = frame.sum(axis=1)
         return frame
 
-
-        #frame = self.__db.sector(total=False).ffill(axis=1).iloc[:,-1].unstack()
-        #if total:
-        #    frame["total"] = frame.sum(axis=1)
-
+    def __last(self, frame, datefmt="%b %d"):
+        frame = frame.sort_index(axis=1, ascending=False).rename(columns=lambda x: x.strftime(datefmt))
+        frame["total"] = (frame + 1).prod(axis=1) - 1
+        return frame
 
     @property
     def mtd(self):
-        frame = self.nav.apply(lambda x: fromNav(x).mtd_series, axis=1).sort_index(axis=1, ascending=False)
-        frame = frame.rename(columns=lambda x: x.strftime("%b %d"))
-        frame["total"] = (frame + 1).prod(axis=1) - 1
-        return frame
+        return self.__last(self.nav.apply(lambda x: fromNav(x).mtd_series, axis=1))
 
     @property
     def ytd(self):
-        frame = self.nav.apply(lambda x: fromNav(x).ytd_series, axis=1).sort_index(axis=1, ascending=False)
-        frame = frame.rename(columns=lambda x: x.strftime("%b"))
-        frame["total"] = (frame + 1).prod(axis=1) - 1
-        return frame
+        return self.__last(self.nav.apply(lambda x: fromNav(x).ytd_series, axis=1), datefmt="%b")
 
     def recent(self, n=15):
-        frame = self.nav.apply(lambda x: fromNav(x).recent(n=n), axis=1).iloc[:, -n:].sort_index(axis=1, ascending=False)
-        frame = frame.rename(columns=lambda x: x.strftime("%b %d"))
-        frame["total"] = (frame + 1).prod(axis=1) - 1
-        return frame
+        return self.__last(self.nav.apply(lambda x: fromNav(x).recent(n=n), axis=1).iloc[:, -n:])\
 
     @property
     def period_returns(self):
         return self.nav.apply(lambda x: fromNav(x).period_returns, axis=1)
-
 
     @property
     def performance(self):
@@ -71,16 +71,15 @@ class Database(object):
                 "performance": self.performance}
 
     def portfolio(self, name):
-        x = pd.read_sql_query("SELECT * FROM v_portfolio_2 where name=%(name)s", params={"name": name}, con=self.__session.bind, index_col=["timeseries", "symbol"])["data"]
-        x = x.apply(to_pandas)
-        portfolio = PP(prices=x.loc["price"].transpose(), weights=x.loc["weight"].transpose())
-        return portfolio
+        x = self._read("SELECT * FROM v_portfolio_2 where name=%(name)s", params={"name": name},
+                       index_col=["timeseries", "symbol"])["data"].apply(to_pandas)
+        return PP(prices=x.loc["price"].transpose(), weights=x.loc["weight"].transpose())
 
     def state(self, name):
         portfolio = self.portfolio(name=name)
-        reference = pd.read_sql_query(sql="SELECT * FROM v_symbols_state", con=self.__session.bind, index_col=["symbol"])
+        ref = self._read(sql="SELECT * FROM v_symbols_state", index_col=["symbol"])
 
-        frame = pd.concat([portfolio.state, reference.loc[portfolio.assets]], axis=1)
+        frame = pd.concat([portfolio.state, ref.loc[portfolio.assets]], axis=1)
 
         sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
         frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
@@ -94,33 +93,21 @@ class Database(object):
 
     @property
     def reference_symbols(self):
-        reference = pd.read_sql_query(sql="SELECT * FROM v_reference_symbols", con=self.__session.bind, index_col=["symbol", "field"])
-
-        if reference.empty:
-            return pd.DataFrame(index=reference.index, columns=["value"])
-
-        reference["value"] = reference[['content', 'result']].apply(lambda x: parse(x[0], x[1]), axis=1)
-        return reference.unstack()["value"]
+        return reference(self._read(sql="SELECT * FROM v_reference_symbols", index_col=["symbol", "field"]))
 
     def prices(self, name="PX_LAST"):
-        prices = pd.read_sql_query(sql="SELECT * FROM v_symbols", con=self.__session.bind, index_col="name")
-        prices = prices[prices["timeseries"] == name]
-        prices = prices["data"].apply(to_pandas).transpose()
-        prices.index.names = ["Date"]
-        return prices
+        prices = self._read(sql="SELECT * FROM v_symbols WHERE timeseries=%(NAME)s", params={"NAME": name}, index_col="name")["data"]
+        return prices.apply(to_pandas).transpose()
 
     def symbol(self, name):
-        return self.__session.query(Symbol).filter_by(name=name).one()
+        return self.session.query(Symbol).filter_by(name=name).one()
 
     @property
     def strategies(self):
-        for s in self.__session.query(Strategy):
+        for s in self.session.query(Strategy):
             yield s
 
     @property
     def portfolios(self):
-        for p in self.__session.query(Portfolio):
+        for p in self.session.query(Portfolio):
             yield p
-
-    #def portfolio(self, name):
-    #    return self.__session.query(Portfolio).filter_by(name=name).one()

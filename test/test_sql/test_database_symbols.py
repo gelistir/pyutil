@@ -4,7 +4,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
-from pyutil.sql.db_symbols import Database
+from pyutil.sql.db_symbols import DatabaseSymbols
 from pyutil.sql.interfaces.products import Products
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
@@ -33,8 +33,7 @@ class TestDatabaseSymbols(TestCase):
         cls.s1.reference[cls.f1] = "100"
         cls.session.add(cls.s1)
         cls.session.commit()
-        cls.db = Database(session=cls.session)
-
+        cls.db = DatabaseSymbols(session=cls.session)
 
     def test_symbol(self):
         self.assertEqual(self.db.symbol(name="Test Symbol"), self.s1)
@@ -75,16 +74,19 @@ class TestPortfolio(TestCase):
         assetsB = {asset: Symbol(name=asset, group=SymbolType.fixed_income) for asset in ["D","E","F","G"]}
         assets = {**assetsA, **assetsB}
 
-        #for name, asset in assets:
-        #    assets.reference[]
         cls.session.add_all(assets.values())
 
         # store the portfolio we have just computed in there...
+        # Not that upserting the portfolio does not update the prices for the underlying assets!
         s.upsert(portfolio, assets=assets)
 
         cls.session.add(s)
         cls.session.commit()
-        cls.db = Database(session=cls.session)
+        cls.db = DatabaseSymbols(session=cls.session)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.session.close()
 
     def test_mtd(self):
         self.assertAlmostEqual(self.db.mtd["Apr 02"]["Peter"], 0.0008949612999999967, places=5)
@@ -118,6 +120,7 @@ class TestPortfolio(TestCase):
 
     def test_state(self):
         print(self.db.state(name="Peter"))
+        # todo: finish test
 
     def test_products(self):
         p=Products(session=self.session)
@@ -127,9 +130,9 @@ class TestPortfolio(TestCase):
         self.assertTrue(a.empty)
         self.assertIsInstance(a, pd.DataFrame)
 
+    def test_reference_symbols(self):
+        self.assertTrue(self.db.reference_symbols.empty)
 
+    def test_prices(self):
+        self.assertTrue(self.db.prices().empty)
 
-        #, type="symbol")
-        #print(p.x)
-        #print(p.reference())
-        #assert False

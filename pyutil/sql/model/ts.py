@@ -50,7 +50,7 @@ class Timeseries(Base):
         return self.__name
 
     @property
-    def series_slow(self):
+    def __series_slow(self):
         x = _pd.Series({date: x.value for date, x in self._data.items()})
         if not x.empty:
             # we read date from database!
@@ -61,6 +61,7 @@ class Timeseries(Base):
 
     def upsert(self, ts=None):
         if ts is not None:
+            # ts might be a dict!
             for date, value in ts.items():
                 if np.isfinite(value):
                     if isinstance(date, pd.Timestamp):
@@ -81,18 +82,11 @@ class Timeseries(Base):
                         self._data[d].value = value
 
         # update data
-        x = _pd.Series({date: x.value for date, x in self._data.items()}).dropna()
-        if not x.empty:
-            # we read date from database!
-            x = x.rename(index=lambda a: _pd.Timestamp(a)).sort_index()
-            assert x.index.is_monotonic_increasing, "Index is not increasing"
-            assert not x.index.has_duplicates, "Index has duplicates"
-
-        self._jdata = from_pandas(x)
+        self._jdata = from_pandas(self.__series_slow)
         return self
 
     @property
-    def series_fast(self):
+    def series(self):
         x = to_pandas(self._jdata)
         if not x.empty:
             return x.apply(float).sort_index()

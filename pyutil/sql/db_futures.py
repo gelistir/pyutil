@@ -1,7 +1,8 @@
-from pyutil.sql.session import session as sss
-from pyutil.sql.interfaces.futures.future import Future
+from pyutil.sql.db import Database
 
 
-class Database(object):
+class DatabaseFutures(Database):
     def __init__(self, session=None):
-        self.__session = session or sss(db="futures")
+        super().__init__(db="futures", session=session)
+
+

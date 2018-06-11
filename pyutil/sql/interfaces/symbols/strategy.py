@@ -43,19 +43,15 @@ class Strategy(ProductInterface):
     def configuration(self, reader=None):
         # Configuration only needs a reader to access the symbols...
         # Reader is a function taking the name of an asset as a parameter
-        module = self.__module()
-        config = module.Configuration(reader=reader)
-        return config
+        return self.__module().Configuration(reader=reader)
 
     def upsert(self, portfolio, days=0, assets=None):
 
         assert isinstance(portfolio, _Portfolio)
 
         if not self._portfolio.empty:
-
             p = portfolio.truncate(before=self.portfolio.last_valid_index() - pd.DateOffset(days=days))
             self._portfolio.upsert_portfolio(portfolio=p, assets=assets)
-
         else:
             self._portfolio.upsert_portfolio(portfolio=portfolio, assets=assets)
 

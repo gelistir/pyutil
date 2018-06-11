@@ -18,78 +18,47 @@ class TestPortfolio(TestCase):
         cls.s2.upsert_ts(name="price", data={pd.Timestamp("2012-05-05"): 12.0})
 
         cls.p = Portfolio(name="test")
-        cls.p.symbols.append(cls.s1)
-        cls.p.symbols.append(cls.s2)
 
-    def test_symbols(self):
-        self.assertListEqual(self.p.symbols, [self.s1, self.s2])
+        prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[cls.s1],
+                              data=[[10.0], [11.0]])
 
-    def test_name(self):
-        self.assertEqual(self.p.name, "test")
+        weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[cls.s1],
+                               data=[[0.5], [0.5]])
+
+        p = _Portfolio(prices=prices, weights=weights)
+
+        cls.p.upsert_portfolio(portfolio=p)
 
     def test_empty(self):
         # you always have to give the prices again through the portfolio interface!
-        self.assertTrue(self.p.empty)
+        self.assertFalse(self.p.empty)
 
-        prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
-                              data=[[10.0], [11.0]])
-        weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
-                               data=[[0.5], [0.5]])
-        p = _Portfolio(prices=prices, weights=weights)
-
-        self.p.upsert_portfolio(portfolio=p)
-        pdt.assert_series_equal(self.p.nav,
-                                pd.Series({pd.Timestamp("2012-05-05"): 1.0, pd.Timestamp("2012-05-07"): 1.05}))
-
-    def test_portfolio(self):
-        self.assertListEqual(self.s1.portfolio, [self.p])
-
-    # def test_sector(self):
-    #     print(self.p.sector(total=True))
-    #
-    #     prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
-    #                           data=[[10.0], [11.0]])
-    #     weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
-    #                            data=[[0.5], [0.5]])
-    #     p = _Portfolio(prices=prices, weights=weights)
-    #
-    #     self.p.upsert_portfolio(portfolio=p)
-    #     #print(self.p.sector())
-    #     #print(self.p.sector_tail())
-    #     pp = Portfolios([self.p])
-    #     print(pp.sector(total=False))
-    #
-    #     for x in pp:
-    #         print(x)
-    #     # todo: fill up
-
-    def test_lt(self):
-        p1 = Portfolio(name="A")
-        p2 = Portfolio(name="B")
-        self.assertTrue(p1 < p2)
+    def test_nav(self):
+        pdt.assert_series_equal(self.p.nav, pd.Series({pd.Timestamp("2012-05-05"): 1.0, pd.Timestamp("2012-05-07"): 1.05}))
 
     def test_leverage(self):
-        prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
+        pdt.assert_series_equal(self.p.leverage, pd.Series({pd.Timestamp("2012-05-05"): 0.5, pd.Timestamp("2012-05-07"): 0.5}))
+
+    def test_portfolio_link(self):
+        self.assertListEqual(self.s1.portfolio, [self.p])
+
+    def test_sector(self):
+        pdt.assert_series_equal(self.p.sector_tail(total=True), pd.Series({"fixed_income": 0.5, "total": 0.5}))
+
+    def test_upsert(self):
+        prices = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=["A"],
                               data=[[10.0], [11.0]])
-        weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=[self.s1],
+
+        weights = pd.DataFrame(index=[pd.Timestamp("2012-05-05"), pd.Timestamp("2012-05-07")], columns=["A"],
                                data=[[0.5], [0.5]])
+
         p = _Portfolio(prices=prices, weights=weights)
-        pdt.assert_series_equal(p.leverage,
-                                pd.Series({pd.Timestamp("2012-05-05"): 0.5, pd.Timestamp("2012-05-07"): 0.5}))
 
+        x = Portfolio(name="Peter")
 
-# class TestPortfolioBig(TestCase):
-#     @classmethod
-#     def setUpClass(cls):
-#         cls.p = Portfolio(name="test")
-#         cls.test_portfolio = test_portfolio()
-#
-#         assets = {asset: Symbol(name=asset) for asset in cls.test_portfolio.assets}
-#
-#         cls.p.upsert_portfolio(portfolio=cls.test_portfolio, assets=assets)
-#
-#     def test_load(self):
-#
-#         pdt.assert_frame_equal(self.p.weight.rename(columns=lambda x: x.name), self.test_portfolio.weights)
-#         pdt.assert_frame_equal(self.p.price.rename(columns=lambda x: x.name), self.test_portfolio.prices)
+        # if the portfolio is not based on Symbol objects, you need to give them explicitly
+        with self.assertRaises(AssertionError):
+            x.upsert_portfolio(portfolio=p)
 
+        # you can avoid the problem by using
+        x.upsert_portfolio(portfolio=p, assets={"A": Symbol(name="A")})

@@ -1,15 +1,11 @@
 from unittest import TestCase
 
-import pandas as pd
-
 from pyutil.sql.base import Base
-from pyutil.sql.db_futures import Database
+from pyutil.sql.db_futures import DatabaseFutures
 from pyutil.sql.interfaces.futures.future import Future, FuturesCategory, Exchange
-
 from pyutil.sql.model.ref import Field, DataType, FieldType
-from pyutil.sql.session import session_test
-
-import pandas.util.testing as pdt
+from pyutil.sql.session import test_postgresql_db
+from test.config import resource
 
 
 def future():
@@ -24,14 +20,26 @@ def future():
 class TestDatabaseFutures(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = session_test(meta=Base.metadata, echo=False)
+        cls.session = test_postgresql_db(echo=True)
+
+        Base.metadata.create_all(cls.session.bind)
+
+        # add views to database
+        file = resource("futures.ddl")
+
+        with open(file) as file:
+            cls.session.bind.execute(file.read())
+
+        #cls.session = session_test(meta=Base.metadata, echo=False)
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
 
         cls.fut1 = future()
         cls.fut1.reference[cls.f1] = "100"
 
         cls.session.add_all([cls.fut1])
-        cls.db = Database(session=cls.session)
+        cls.session.commit()
+
+        cls.db = DatabaseFutures(session=cls.session)
 
     @classmethod
     def tearDownClass(cls):

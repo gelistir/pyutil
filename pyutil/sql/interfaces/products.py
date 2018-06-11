@@ -11,7 +11,7 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from pyutil.sql.base import Base
 from pyutil.sql.model.ref import _ReferenceData, Field
 from pyutil.sql.model.ts import Timeseries
-from pyutil.sql.util import parse
+from pyutil.sql.util import reference
 
 
 def association_table(left, right, name="association"):
@@ -79,7 +79,7 @@ class ProductInterface(MyMixin, Base):
     def get_timeseries(self, name, default=_pd.Series({})):
         # todo: is this efficient? maybe remove the timeseries proxy and only rely on get_timeseries?
         if name in self._timeseries.keys():
-            return self._timeseries[name].series_fast
+            return self._timeseries[name].series
         else:
             return default
 
@@ -107,7 +107,7 @@ class ProductInterface(MyMixin, Base):
 
     def frame(self, name, rename=False):
 
-        x = _pd.DataFrame({x.secondary: x.series_fast for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
+        x = _pd.DataFrame({x.secondary: x.series for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
         if rename:
             return x.rename(columns=lambda x: x.name)
 
@@ -143,11 +143,7 @@ class Products(object):
                 "WHERE p.discriminator = %(name)s"
 
         frame = pd.read_sql_query(query, params={"name": type}, con=self.session.bind, index_col=["product", "field"])
-        if frame.empty:
-            return pd.DataFrame(index=frame.index, columns=["value"])
-
-        frame["value"] = frame[['result', 'content']].apply(lambda x: parse(x[1], x[0]), axis=1)
-        return frame["value"].unstack()
+        return reference(frame)
 
     def timeseries(self, name):
         pass

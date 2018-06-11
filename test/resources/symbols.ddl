@@ -22,8 +22,8 @@ SELECT productinterface.name AS symbol,
     reference_field.name AS field
    FROM ((productinterface
      JOIN symbol ON ((productinterface.id = symbol.id))
-     LEFT JOIN reference_data ON ((reference_data.product_id = productinterface.id))
-     LEFT JOIN reference_field ON ((reference_field.id = reference_data.field_id))))
+     JOIN reference_data ON ((reference_data.product_id = productinterface.id))
+     JOIN reference_field ON ((reference_field.id = reference_data.field_id))))
   ORDER BY productinterface.name;
 
 
@@ -45,6 +45,17 @@ SELECT portfolio.id,
      JOIN productinterface ON ((productinterface.id = portfolio.id)))
      JOIN ts_name ON ((ts_name.product_id = portfolio.id)))
   WHERE ((ts_name.name)::text = 'nav'::text);
+
+create or replace view v_portfolio_leverage as
+SELECT portfolio.id,
+    productinterface.name,
+    ts_name.name AS timeseries,
+    ts_name.jdata AS data
+   FROM ((portfolio
+     JOIN productinterface ON ((productinterface.id = portfolio.id)))
+     JOIN ts_name ON ((ts_name.product_id = portfolio.id)))
+  WHERE ((ts_name.name)::text = 'leverage'::text);
+
 
 create or replace view v_portfolio_2 as
 SELECT portfolio.id,
