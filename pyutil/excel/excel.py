@@ -13,7 +13,6 @@ class Excel(object):
         self.__format_percent = self.add_format({'num_format': '#.##%'})
         self.__format_number = self.add_format({'num_format': '#.##'})
 
-
     @property
     def book(self):
         return self.__writer.book
