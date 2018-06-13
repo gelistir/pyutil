@@ -23,13 +23,14 @@ class Security(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Security"}
 
     def __repr__(self):
-        return "Security({id}: {name})".format(id=self.name, name=self.get_reference(field=FIELDS["name"]))
+        return "Security({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
 
     @property
     def price(self):
         return fromNav(self.get_timeseries(name="price"), adjust=False)
 
-    def price_upsert(self, ts):
+    # prices may depend on custodian
+    def price_upsert(self, ts, custodian=None):
         self.upsert_ts(name="price", data=ts)
 
     def volatility_upsert(self, ts, currency):

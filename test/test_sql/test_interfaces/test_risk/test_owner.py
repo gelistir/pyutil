@@ -27,6 +27,10 @@ class TestOwner(unittest.TestCase):
         self.assertEqual(o.currency, Currency(name="USD"))
         self.assertEqual(o.name, "100")
 
+    def test_security(self):
+        s = Security(name=120)
+        self.assertEqual(str(s), "Security(120: None)")
+
     def test_currency(self):
         o = Owner(name="Peter")
         currency = Currency(name="CHF")
