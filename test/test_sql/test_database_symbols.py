@@ -6,6 +6,7 @@ import pandas.util.testing as pdt
 from pyutil.sql.base import Base
 from pyutil.sql.db_symbols import DatabaseSymbols
 from pyutil.sql.interfaces.products import Products
+from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.sql.model.ref import Field, DataType, FieldType
@@ -16,13 +17,7 @@ from test.config import resource, test_portfolio
 class TestDatabaseSymbols(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = postgresql_db_test(base=Base, echo=True)
-
-        # add views to database
-        file = resource("symbols.ddl")
-
-        with open(file) as file:
-            cls.session.bind.execute(file.read())
+        cls.session = postgresql_db_test(base=Base, echo=True, views=resource("symbols.ddl"))
 
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
         cls.s1 = Symbol(name="Test Symbol", group=SymbolType.equities)
@@ -33,6 +28,13 @@ class TestDatabaseSymbols(TestCase):
         cls.session.commit()
         cls.db = DatabaseSymbols(session=cls.session)
 
+        cls.frame = pd.DataFrame(index=["A"], columns=["A"], data=[[1]])
+        cls.frame.index.names = ["Assets"]
+
+        cls.fr = Frame(name="Peter", frame=cls.frame)
+        cls.session.add(cls.fr)
+        cls.session.commit()
+
     def test_symbol(self):
         self.assertEqual(self.db.symbol(name="Test Symbol"), self.s1)
 
@@ -41,6 +43,9 @@ class TestDatabaseSymbols(TestCase):
 
     def test_prices_symbols(self):
         pdt.assert_frame_equal(self.db.prices(), pd.DataFrame(index=[pd.Timestamp("2010-10-30")], columns=["Test Symbol"], data=[[10.1]]), check_names=False)
+
+    def test_frame(self):
+        pdt.assert_frame_equal(self.db.frame(name="Peter"), self.frame)
 
     @classmethod
     def tearDownClass(cls):
@@ -148,5 +153,9 @@ class TestPortfolio(TestCase):
     def test_upsert_strategy(self):
         strategy = self.db.strategy(name="Peter")
         strategy.upsert(test_portfolio().tail(5), days=2, assets=strategy.assets)
+
+    def test_symbols(self):
+        x = [symbol for symbol in self.db.symbols]
+        self.assertEqual(len(x), 7)
 
 
