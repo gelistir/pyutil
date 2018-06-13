@@ -1,3 +1,5 @@
+import logging
+
 from pyutil.sql.db import Database
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
@@ -48,3 +50,18 @@ class DatabaseRisk(Database):
     def volatility_owner_securities(self):
         vola = self._read(sql="SELECT * FROM v_volatility_owner_security", index_col=["owner", "security"])["data"]
         return vola.apply(to_pandas)
+
+
+class Runner(object):
+    def __init__(self, session, logger=None):
+        self.__db = DatabaseRisk(session)
+        self.__logger = logger or logging.getLogger(__name__)
+
+    @property
+    def database(self):
+        return self.__db
+
+    @property
+    def logger(self):
+        return self.__logger
+
