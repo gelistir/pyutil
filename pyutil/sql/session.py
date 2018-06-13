@@ -32,11 +32,9 @@ def session_scope(session):
     try:
         yield session
         session.commit()
-    except (SQLAlchemyError, DatabaseError, IntegrityError) as e:
+    except Exception as e:
         session.rollback()
         raise e
-    except Exception:
-        pass
     finally:
         session.close()
 
