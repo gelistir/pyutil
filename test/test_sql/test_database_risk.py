@@ -23,13 +23,7 @@ NAME = FIELDS["name"]
 class TestDatabaseRisk(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = postgresql_db_test(base=Base, echo=True)
-
-        # add views to database
-        file = resource("addepar.ddl")
-
-        with open(file) as file:
-            cls.session.bind.execute(file.read())
+        cls.session = postgresql_db_test(base=Base, echo=True, views=resource("addepar.ddl"))
 
         cls.cus1 = Custodian(name="UBS Geneva")
         cls.cur1 = Currency(name="USD")

@@ -20,13 +20,13 @@ def future():
 class TestDatabaseFutures(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = postgresql_db_test(base=Base, echo=True)
+        cls.session = postgresql_db_test(base=Base, echo=True, views=resource("futures.dll"))
 
         # add views to database
-        file = resource("futures.ddl")
+        #file = resource("futures.ddl")
 
-        with open(file) as file:
-            cls.session.bind.execute(file.read())
+        #with open(file) as file:
+        #    cls.session.bind.execute(file.read())
 
         #cls.session = session_test(meta=Base.metadata, echo=False)
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)

@@ -50,13 +50,7 @@ class TestDatabaseSymbols(TestCase):
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = postgresql_db_test(base=Base, echo=False)
-
-        # add views to database
-        file = resource("symbols.ddl")
-
-        with open(file) as file:
-            cls.session.bind.execute(file.read())
+        cls.session = postgresql_db_test(base=Base, echo=False, views=resource("symbols.ddl"))
 
         with open(resource("source.py"), "r") as f:
             s = Strategy(name="Peter", source=f.read(), active=True)

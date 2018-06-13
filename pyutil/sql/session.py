@@ -80,7 +80,7 @@ def get_one_or_none(session, model, **kwargs):
         return None
 
 
-def postgresql_db_test(base, name=None, echo=False):
+def postgresql_db_test(base, name=None, echo=False, views=None):
     # session object
     engine = create_engine("postgresql+psycopg2://postgres:test@test-postgresql/postgres")
     conn = engine.connect()
@@ -102,6 +102,10 @@ def postgresql_db_test(base, name=None, echo=False):
 
     # create some tables
     base.metadata.create_all(s.bind)
+
+    if views:
+        with open(views) as file:
+            s.bind.execute(file.read())
 
     return s
 
