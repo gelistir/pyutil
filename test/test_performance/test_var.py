@@ -3,6 +3,7 @@ from test.config import read_series
 
 from pyutil.performance.var import value_at_risk, conditional_value_at_risk
 
+
 class TestVar(TestCase):
     def test_var(self):
         s = read_series("ts.csv", parse_dates=True)

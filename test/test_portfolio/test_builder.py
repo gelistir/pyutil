@@ -18,6 +18,9 @@ class TestPortfolioBuilder(TestCase):
         self.assertEqual(portfolio.weights["A"][1], 0.5)
         self.assertEqual(portfolio.cash[2], 0.0)
 
+        self.assertEqual(portfolio.last_valid_index, 2)
+        self.assertEqual(str(portfolio), "Portfolio with assets: ['B', 'A']")
+
     def test_forward(self):
         prices = pd.DataFrame(columns=["A", "B"], index=[1,2,3], data=[[100,120],[110, 110],[130,120]])
 
@@ -31,3 +34,7 @@ class TestPortfolioBuilder(TestCase):
 
         self.assertAlmostEqual(portfolio.weights["A"][3], 0.56521739130434789, places=5)
 
+    def test_empty(self):
+        portfolio = Portfolio(prices = pd.DataFrame({}))
+        self.assertIsNone(portfolio.last_valid_index)
+        self.assertTrue(portfolio.empty)

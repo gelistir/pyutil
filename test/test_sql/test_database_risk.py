@@ -8,7 +8,7 @@ from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security, FIELDS
 from pyutil.sql.model.ref import Field, DataType
-from pyutil.sql.session import test_postgresql_db
+from pyutil.sql.session import postgresql_db_test
 from test.config import resource
 
 import pandas.util.testing as pdt
@@ -23,9 +23,7 @@ NAME = FIELDS["name"]
 class TestDatabaseRisk(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = test_postgresql_db(echo=True)
-
-        Base.metadata.create_all(cls.session.bind)
+        cls.session = postgresql_db_test(base=Base, echo=True)
 
         # add views to database
         file = resource("addepar.ddl")

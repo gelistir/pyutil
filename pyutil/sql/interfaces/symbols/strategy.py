@@ -50,7 +50,7 @@ class Strategy(ProductInterface):
         assert isinstance(portfolio, _Portfolio)
 
         if not self._portfolio.empty:
-            p = portfolio.truncate(before=self.portfolio.last_valid_index() - pd.DateOffset(days=days))
+            p = portfolio.truncate(before=self.portfolio.last_valid_index - pd.DateOffset(days=days))
             self._portfolio.upsert_portfolio(portfolio=p, assets=assets)
         else:
             self._portfolio.upsert_portfolio(portfolio=portfolio, assets=assets)
@@ -60,6 +60,11 @@ class Strategy(ProductInterface):
     @property
     def portfolio(self):
         return self._portfolio.portfolio
+
+
+    @property
+    def assets(self):
+        return self._portfolio.symbols
 
 
 Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio", primaryjoin="Portfolio.id == Strategy._portfolio_id")

@@ -23,7 +23,7 @@ class Portfolio(ProductInterface):
 
     @property
     def symbols(self):
-        return self._symbols
+        return {symbol.name : symbol for symbol in self._symbols}
 
     def upsert_portfolio(self, portfolio, assets=None):
         assert isinstance(portfolio, _Portfolio)
@@ -66,7 +66,7 @@ class Portfolio(ProductInterface):
         return self.get_timeseries(name="leverage")
 
     def sector(self, total=False):
-        symbol_map = {asset: asset.group.name for asset in self.symbols}
+        symbol_map = {asset: asset.group.name for asset in self._symbols}
         return self.portfolio.sector_weights(symbolmap=symbol_map, total=total)
 
     def sector_tail(self, total=False):

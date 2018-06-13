@@ -102,6 +102,9 @@ class DatabaseSymbols(Database):
     def symbol(self, name):
         return self.session.query(Symbol).filter_by(name=name).one()
 
+    def strategy(self, name):
+        return self.session.query(Strategy).filter_by(name=name).one()
+
     @property
     def strategies(self):
         for s in self.session.query(Strategy):

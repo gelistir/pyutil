@@ -23,3 +23,5 @@ class TestUtil(TestCase):
         x = pd.Series({pd.Timestamp("2010-04-23"): 23.0})
         pdt.assert_series_equal(to_pandas(from_pandas(x)).apply(float), x)
 
+    def test_none(self):
+        self.assertIsNone(parse(x=None))

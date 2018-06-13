@@ -14,14 +14,18 @@ class TestDrawdown(TestCase):
 
     def test_periods(self):
         x = drawdown_periods(ts)
-        print(x)
         self.assertEqual(x[pd.Timestamp("2014-03-07")], pd.Timedelta(days=66))
 
     def test_empty(self):
         x = pd.Series({})
-        print(drawdown(x))
+        pdt.assert_series_equal(drawdown(x), pd.Series({}))
 
     def test_negative_price(self):
         x = pd.Series({0: 3, 1: 2, 2: -2})
+        with self.assertRaises(AssertionError):
+            drawdown(x)
+
+    def test_wrong_index_order(self):
+        x = pd.Series(index=[0, 2, 1], data=[1, 1, 1])
         with self.assertRaises(AssertionError):
             drawdown(x)

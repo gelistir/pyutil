@@ -1,11 +1,13 @@
+
 from unittest import TestCase
 
 from sqlalchemy import Column, Integer, String
+from psycopg2 import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.exc import NoResultFound
 
 from pyutil.sql.base import Base
-from pyutil.sql.session import session_test, get_one_or_create, get_one_or_none, session, session_scope
+from pyutil.sql.session import session_test, get_one_or_create, get_one_or_none, session, postgresql_db_test, session_scope
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.interfaces.risk.currency import Currency
 
@@ -46,22 +48,22 @@ class TestSession(TestCase):
         class User(Base):
             __tablename__ = "user"
             id = Column(Integer, primary_key=True)
-            name = Column(String)
+            name = Column(String, unique=True)
 
             def __init__(self, name):
                 self.name = name
 
-        with session_scope(server="test-postgresql", db="postgres", password="test", user="postgres", echo=True) as session:
-            # drop all tables (even if there are none)
-            Base.metadata.drop_all(session.bind)
-            # create some tables
-            Base.metadata.create_all(session.bind)
-
+        s = postgresql_db_test(base=Base)
+        with session_scope(session=s) as session:
             session.add(User(name="Peter Maffay"))
-            session.add(User(name="Hans Dampf"))
-
             u = session.query(User).filter_by(name="Peter Maffay").one()
             self.assertIsNotNone(u)
 
             with self.assertRaises(NoResultFound):
                 session.query(User).filter_by(name="Wurst").one()
+
+        s = postgresql_db_test(base=Base)
+        with session_scope(session=s) as session:
+            with self.assertRaises(IntegrityError):
+                session.add(User(name="Peter Maffay"))
+                session.add(User(name="Peter Maffay"))

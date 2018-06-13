@@ -9,16 +9,14 @@ from pyutil.sql.interfaces.products import Products
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.sql.model.ref import Field, DataType, FieldType
-from pyutil.sql.session import test_postgresql_db
+from pyutil.sql.session import postgresql_db_test
 from test.config import resource, test_portfolio
 
 
 class TestDatabaseSymbols(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = test_postgresql_db(echo=True)
-
-        Base.metadata.create_all(cls.session.bind)
+        cls.session = postgresql_db_test(base=Base, echo=True)
 
         # add views to database
         file = resource("symbols.ddl")
@@ -52,9 +50,7 @@ class TestDatabaseSymbols(TestCase):
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = test_postgresql_db(echo=False)
-
-        Base.metadata.create_all(cls.session.bind)
+        cls.session = postgresql_db_test(base=Base, echo=False)
 
         # add views to database
         file = resource("symbols.ddl")
@@ -104,8 +100,19 @@ class TestPortfolio(TestCase):
         pdt.assert_series_equal(test_portfolio().nav, self.db.nav.loc["Peter"], check_names=False)
         self.assertAlmostEqual(self.db.performance["Peter"]["Calmar Ratio (3Y)"], 0.07615829203518315, places=5)
 
+    def test_leverage(self):
+        pdt.assert_series_equal(test_portfolio().leverage, self.db.leverage.loc["Peter"], check_names=False)
+
     def test_sector(self):
         pdt.assert_series_equal(self.db.sector().loc["Peter"], pd.Series(index=["equities","fixed_income"], data=[0.135671, 0.173303]), check_names=False)
+        pdt.assert_series_equal(self.db.sector(total=True).loc["Peter"],
+                                pd.Series(index=["equities", "fixed_income", "total"], data=[0.135671, 0.173303, 0.3089738755]),
+                                check_names=False)
+
+    def test_states(self):
+        pdt.assert_frame_equal(self.db.states["Peter"].drop(columns=["internal"]),
+                               pd.read_csv(resource("state.csv"), index_col=0).drop(columns=["internal"]),
+                               check_exact=False)
 
     def test_frames(self):
         x = self.db.frames()
@@ -135,4 +142,17 @@ class TestPortfolio(TestCase):
 
     def test_prices(self):
         self.assertTrue(self.db.prices().empty)
+
+    def test_portfolios(self):
+        for portfolio in self.db.portfolios:
+            self.assertEqual(portfolio.name, "Peter")
+
+    def test_strategies(self):
+        for strategy in self.db.strategies:
+            self.assertEqual(strategy.name, "Peter")
+
+    def test_upsert_strategy(self):
+        strategy = self.db.strategy(name="Peter")
+        strategy.upsert(test_portfolio().tail(5), days=2, assets=strategy.assets)
+
 

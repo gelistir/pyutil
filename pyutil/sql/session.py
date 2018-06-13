@@ -5,22 +5,40 @@ from contextlib import contextmanager
 import os
 
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError, DatabaseError, IntegrityError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 
 
+# @contextmanager
+# def session_scope(server=None, db=None, user=None, password=None, echo=False):
+#     """Provide a transactional scope around a series of operations."""
+#     ses = session(server=server, db=db, user=user, password=password, echo=echo)
+#     try:
+#         yield ses
+#         ses.commit()
+#     except SQLAlchemyError as e:
+#         ses.rollback()
+#         raise e
+#     except Exception as e:
+#         pass
+#     finally:
+#         ses.close()
+
+
 @contextmanager
-def session_scope(server=None, db=None, user=None, password=None, echo=False):
+def session_scope(session):
     """Provide a transactional scope around a series of operations."""
-    ses = session(server=server, db=db, user=user, password=password, echo=echo)
     try:
-        yield ses
-        ses.commit()
-    except:
-        ses.rollback()
-        raise
+        yield session
+        session.commit()
+    except (SQLAlchemyError, DatabaseError, IntegrityError) as e:
+        session.rollback()
+        raise e
+    except Exception:
+        pass
     finally:
-        ses.close()
+        session.close()
 
 
 def session(server=None, db=None, user=None, password=None, echo=False):
@@ -43,6 +61,7 @@ def session_test(meta, echo=False):
     return sessionmaker(bind=engine)()
 
 
+
 def get_one_or_create(session, model, **kwargs):
     #  see http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/
 
@@ -63,7 +82,7 @@ def get_one_or_none(session, model, **kwargs):
         return None
 
 
-def test_postgresql_db(name=None, echo=False):
+def postgresql_db_test(base, name=None, echo=False):
     # session object
     engine = create_engine("postgresql+psycopg2://postgres:test@test-postgresql/postgres")
     conn = engine.connect()
@@ -77,8 +96,14 @@ def test_postgresql_db(name=None, echo=False):
     conn.execute("""CREATE DATABASE {name}""".format(name=name))
     conn.close()
 
-    return session(server="test-postgresql", password="test", user="postgres", db=name, echo=echo)
+    s = session(server="test-postgresql", password="test", user="postgres", db=name, echo=echo)
 
 
+    # drop all tables (even if there are none)
+    base.metadata.drop_all(s.bind)
 
+    # create some tables
+    base.metadata.create_all(s.bind)
+
+    return s
 

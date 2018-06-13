@@ -4,7 +4,7 @@ from pyutil.sql.base import Base
 from pyutil.sql.db_futures import DatabaseFutures
 from pyutil.sql.interfaces.futures.future import Future, FuturesCategory, Exchange
 from pyutil.sql.model.ref import Field, DataType, FieldType
-from pyutil.sql.session import test_postgresql_db
+from pyutil.sql.session import postgresql_db_test
 from test.config import resource
 
 
@@ -20,9 +20,7 @@ def future():
 class TestDatabaseFutures(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = test_postgresql_db(echo=True)
-
-        Base.metadata.create_all(cls.session.bind)
+        cls.session = postgresql_db_test(base=Base, echo=True)
 
         # add views to database
         file = resource("futures.ddl")
