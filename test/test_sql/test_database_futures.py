@@ -20,15 +20,8 @@ def future():
 class TestDatabaseFutures(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = postgresql_db_test(base=Base, echo=True, views=resource("futures.dll"))
+        cls.session = postgresql_db_test(base=Base, echo=True, views=resource("futures.ddl"))
 
-        # add views to database
-        #file = resource("futures.ddl")
-
-        #with open(file) as file:
-        #    cls.session.bind.execute(file.read())
-
-        #cls.session = session_test(meta=Base.metadata, echo=False)
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
 
         cls.fut1 = future()
@@ -38,6 +31,10 @@ class TestDatabaseFutures(TestCase):
         cls.session.commit()
 
         cls.db = DatabaseFutures(session=cls.session)
+
+    def test_future(self):
+        f = self.session.query(Future).filter_by(name="ES1 Index").one()
+        self.assertIsNotNone(f)
 
     @classmethod
     def tearDownClass(cls):

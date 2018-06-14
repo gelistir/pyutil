@@ -130,7 +130,6 @@ class TestPortfolio(TestCase):
 
     def test_products(self):
         p=Products(session=self.session)
-        print(p.products("symbol"))
         a = p.reference("symbol")
         self.assertListEqual(["product", "field"], a.index.names)
         self.assertTrue(a.empty)
