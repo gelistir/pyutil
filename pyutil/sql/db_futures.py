@@ -1,5 +1,3 @@
-import logging
-
 from pyutil.sql.db import Database
 
 
