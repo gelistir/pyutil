@@ -39,7 +39,13 @@ class TestPortfolio(TestCase):
         x = portfolio.sector_weights(symbolmap=pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
                                                 "E": "C", "F": "C", "G": "C"}), total=True)
 
-        pdt.assert_frame_equal(x.head(10), read_frame("sector_weights.csv", parse_dates=True))
+        pdt.assert_frame_equal(x.tail(10), read_frame("sector_weights.csv", parse_dates=True))
+
+        x = portfolio.sector_weights_final(symbolmap=pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
+                                                "E": "C", "F": "C", "G": "C"}), total=True)
+
+        pdt.assert_series_equal(x, read_frame("sector_weights.csv", parse_dates=True).iloc[-1])
+
 
     def test_position(self):
         x = 1e6 * portfolio.position

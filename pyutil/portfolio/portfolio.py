@@ -227,8 +227,7 @@ class Portfolio(object):
         return frame
 
     def sector_weights_final(self, symbolmap, total=False):
-        frame = self.sector_weights(symbolmap=symbolmap, total=total)#self.weights.ffill().tail(1).groupby(by=symbolmap, axis=1).sum()
-        return frame.loc[frame.index[-1]]
+        return self.sector_weights(symbolmap=symbolmap, total=total).iloc[-1]
 
     def snapshot(self, n=5):
         """
@@ -258,7 +257,7 @@ class Portfolio(object):
 
     def tail(self, n=10):
         w = self.weights.tail(n)
-        return Portfolio(self.prices.loc[w.index], w)
+        return Portfolio(prices=self.prices.loc[w.index], weights=w)
 
     @property
     def position(self):
@@ -268,7 +267,7 @@ class Portfolio(object):
         return Portfolio(prices=self.prices[assets], weights=self.weights[assets])
 
     def __mul__(self, other):
-        return Portfolio(self.prices, other * self.weights)
+        return Portfolio(prices=self.prices, weights=other * self.weights)
 
     def __rmul__(self, other):
         return self.__mul__(other)

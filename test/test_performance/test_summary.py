@@ -2,7 +2,6 @@ from unittest import TestCase
 import pandas as pd
 
 from pyutil.performance.summary import NavSeries, performance, fromNav
-from pyutil.timeseries.timeseries import adjust
 from test.config import read_series
 
 import pandas.util.testing as pdt
@@ -110,3 +109,8 @@ class TestSummary(TestCase):
         # we made 100% in Feb
         self.assertEqual(n.mtd, 1.0)
         self.assertEqual(n.ytd, 1.0)
+
+    def test_adjust(self):
+        n = NavSeries(pd.Series({}))
+        self.assertTrue(n.adjust().empty)
+
