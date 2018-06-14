@@ -68,11 +68,13 @@ class NavSeries(pd.Series):
 
     @property
     def returns_monthly(self):
-        return self.resample("M").last().pct_change().dropna()
+        return self.monthly.pct_change().dropna()
 
     @property
     def returns_annual(self):
-        return self.resample("A").last().pct_change().dropna()
+        x = self.annual.pct_change().dropna()
+        x.index = [a.year for a in x.index]
+        return x
 
     @property
     def positive_events(self):
@@ -255,11 +257,11 @@ class NavSeries(pd.Series):
     def drawdown_periods(self):
         return dp(self)
 
-    @property
-    def annual_returns(self):
-        x = self.annual.pct_change().dropna()
-        x.index = [a.year for a in x.index]
-        return x
+    #@property
+    #def annual_returns(self):
+    #    x = self.annual.pct_change().dropna()
+    #    x.index = [a.year for a in x.index]
+    #    return x
 
     def __res(self, rule="M"):
         ### refactor NAV at the end but keep the first element. Important for return computations!

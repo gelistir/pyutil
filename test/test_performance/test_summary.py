@@ -64,11 +64,9 @@ class TestSummary(TestCase):
         # self.assertEqual(len(s.daily.index), 477)
 
     def test_annual_returns(self):
-        aaa = adjust(s)
-        # print(aaa.truncate(after=pd.Timestamp("2015-01-01")))
-
-        xx = s.annual_returns
-        print(xx)
+        x = s.returns_annual
+        self.assertAlmostEqual(x[2014], -0.009859283137393149)
+        self.assertAlmostEqual(x[2015],  0.021718996734564122)
 
     def test_truncate(self):
         x = s.truncate(before="2015-01-01")
@@ -105,9 +103,9 @@ class TestSummary(TestCase):
                        })
 
         n = NavSeries(a)
-        pdt.assert_series_equal(n.mtd_series,
-                                pd.Series({pd.Timestamp("2012-02-13"): 0.5, pd.Timestamp("2012-02-14"): 1.0 / 3.0}))
-        pdt.assert_series_equal(n.ytd_series, pd.Series({pd.Timestamp("2012-02-29"): 1.0}))
+
+        pdt.assert_series_equal(n.mtd_series, pd.Series({pd.Timestamp("2012-02-13"): 0.5, pd.Timestamp("2012-02-14"): 1.0 / 3.0}))
+        pdt.assert_series_equal(n.ytd_series, pd.Series({pd.Timestamp("2012-02-14"): 1.0}))
 
         # we made 100% in Feb
         self.assertEqual(n.mtd, 1.0)

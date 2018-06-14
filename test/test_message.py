@@ -8,7 +8,7 @@ from pyutil.message import Mail
 import httpretty
 
 
-class TestDecorator(TestCase):
+class TestMessage(TestCase):
     @httpretty.activate
     def test_warning(self):
         httpretty.register_uri(
@@ -31,7 +31,7 @@ class TestDecorator(TestCase):
             self.assertEqual(m.toAdr, "David Hasselhoff")
             self.assertEqual(m.subject, "From Peter with love")
 
-            m.send()
+            m.send(html=True)
 
             x = m.files
             self.assertEqual(len(x), 4)

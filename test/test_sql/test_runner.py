@@ -14,7 +14,3 @@ class TestRunner(TestCase):
 
         self.assertIsNotNone(r.database)
         self.assertIsNotNone(r.logger)
-
-
-
-
