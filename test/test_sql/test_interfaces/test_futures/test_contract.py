@@ -34,6 +34,8 @@ class TestContract(TestCase):
         self.assertEqual(c.year, 2000)
         self.assertEqual(str(c), "Contract(B3BB5)")
 
+
+
         c = Contract(figi="B3BB5", notice=pd.Timestamp("1960-01-01").date(), bloomberg_symbol="AAA", fut_month_yr="MAR 60")
         self.assertEqual(c.year, 1960)
 

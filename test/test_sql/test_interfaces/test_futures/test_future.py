@@ -43,8 +43,8 @@ class TestFuture(TestCase):
         session = session_test(Base.metadata, echo=True)
         f = future()
 
-        c1 = Contract(figi="BB1", notice=pd.Timestamp("2010-01-01").date())
-        c2 = Contract(figi="BB2", notice=pd.Timestamp("2009-03-01").date())
+        c1 = Contract(figi="BB1", notice=pd.Timestamp("2010-01-01").date(), fut_month_yr="JAN 10")
+        c2 = Contract(figi="BB2", notice=pd.Timestamp("2009-03-01").date(), fut_month_yr="MAR 09")
 
         f.contracts.append(c1)
         f.contracts.append(c2)
@@ -62,6 +62,8 @@ class TestFuture(TestCase):
 
         self.assertEqual(f.max_notice, pd.Timestamp("2010-01-01").date())
         self.assertListEqual(f.figis, ["BB2", "BB1"])
+        self.assertEqual(f.contracts[0].quandl, "CME/ESH2009")
+        self.assertTrue(f.contracts[0] < f.contracts[1])
 
     def test_rollmap(self):
         f = future()
@@ -79,7 +81,11 @@ class TestFuture(TestCase):
         # use an abritrary order here...
         f.contracts.extend([c4, c2, c3, c1])
 
-        x = f.roll_builder(offset_days=5).truncate(before=pd.Timestamp("2014-12-11"))
+        x = f.roll_builder(offset_days=5).trunc(before=pd.Timestamp("2014-12-11"))
 
         pdt.assert_series_equal(x, pd.Series(index=pd.DatetimeIndex([pd.Timestamp("2014-12-11").date(), pd.Timestamp("2014-12-27").date(), pd.Timestamp("2015-12-27").date()]), data=[c2,c3,c4]))
 
+
+        x = f.roll_builder(offset_days=5).trunc(before=pd.Timestamp("2013-12-27"))
+
+        pdt.assert_series_equal(x, pd.Series(index=pd.DatetimeIndex([pd.Timestamp("2013-12-27").date(), pd.Timestamp("2014-12-27").date(), pd.Timestamp("2015-12-27").date()]), data=[c2, c3, c4]))

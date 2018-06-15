@@ -64,17 +64,18 @@ class _Rollmap(pd.Series):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def truncate(self, before=None, after=None, **kwargs):
+    def trunc(self, before=None, after=None, **kwargs):
         after = after or self.index[-1]
         before = before or self.index[0]
 
-        assert before >= self.index[0]
-        assert after <= self.index[-1]
+        #if before < self.index[0]:
+        before = max(self.index[0], before)
+        after = min(self.index[-1], after)
 
         if before in self.index:
             return self.truncate(before=before, after=after)
         else:
-            x = self
+            #x = self
             # can be done better
-            x.loc[before] = np.nan
-            return x.sort_index().ffill().truncate(before=before, after=after)
+            self.loc[before] = np.nan
+            return self.sort_index().ffill().truncate(before=before, after=after)
