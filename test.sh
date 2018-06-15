@@ -11,7 +11,7 @@ docker rm -f test-postgresql
 docker run --name test-postgresql -e POSTGRES_PASSWORD=test -d postgres:9.6
 
 # step 2: wait for postgres to be up and running...
-docker run --link test-postgresql pyutil:test /pyutil/wait-for-postgres.sh test-postgresql
+# docker run --link test-postgresql pyutil:test /pyutil/wait-for-postgres.sh test-postgresql
 
 
 
@@ -25,5 +25,6 @@ docker run --rm -v $(pwd)/source:/pyutil/source:ro -v $(pwd)/build:/pyutil/build
 
 # delete the images used...
 docker rmi -f pyutil:test
+docker rm -f test-postgresql
 
 exit $ret

@@ -15,7 +15,7 @@ services:
        - .env
      volumes:
         -  /etc/localtime:/etc/localtime:ro
-     command: ["/pyutil/wait-for-postgres.sh", "test-postgresql"]
+     #command: ["/pyutil/wait-for-postgres.sh", "test-postgresql"]
      links:
        - test-postgresql
 

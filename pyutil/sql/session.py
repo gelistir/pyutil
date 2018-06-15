@@ -1,29 +1,13 @@
+import os
 import random
 import string
 from contextlib import contextmanager
-
-import os
+from time import sleep
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError, DatabaseError, IntegrityError
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
-
-
-# @contextmanager
-# def session_scope(server=None, db=None, user=None, password=None, echo=False):
-#     """Provide a transactional scope around a series of operations."""
-#     ses = session(server=server, db=db, user=user, password=password, echo=echo)
-#     try:
-#         yield ses
-#         ses.commit()
-#     except SQLAlchemyError as e:
-#         ses.rollback()
-#         raise e
-#     except Exception as e:
-#         pass
-#     finally:
-#         ses.close()
 
 
 @contextmanager
@@ -82,9 +66,17 @@ def get_one_or_none(session, model, **kwargs):
 
 def postgresql_db_test(base, name=None, echo=False, views=None):
     # session object
-    engine = create_engine("postgresql+psycopg2://postgres:test@test-postgresql/postgres")
-    conn = engine.connect()
-    conn.execute("commit")
+    awake = False
+    while not awake:
+        try:
+            engine = create_engine("postgresql+psycopg2://postgres:test@test-postgresql/postgres")
+            conn = engine.connect()
+            conn.execute("commit")
+            awake = True
+        except OperationalError:
+            print("Database not awake yet...")
+            sleep(1)
+            pass
 
     name = name or "".join(random.choices(string.ascii_lowercase, k=10))
     # String interpolation here!? Please avoid
