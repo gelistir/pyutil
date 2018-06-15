@@ -16,3 +16,10 @@ class Database(object):
     @property
     def _read(self):
         return functools.partial(pd.read_sql_query, con=self.__session.bind)
+
+    def _iter(self, cls):
+        for s in self.session.query(cls):
+            yield s
+
+    def _filter(self, cls, name):
+        return self.session.query(cls).filter_by(name=name).one()

@@ -55,11 +55,11 @@ class Strategy(ProductInterface):
         else:
             self._portfolio.upsert_portfolio(portfolio=portfolio, assets=assets)
 
-        return self.portfolio
+        return self._portfolio
 
     @property
     def portfolio(self):
-        return self._portfolio.portfolio
+        return self._portfolio.portfolio()
 
 
     @property

@@ -43,7 +43,7 @@ class Portfolio(ProductInterface):
             self.upsert_ts(name="price", secondary=s, data=portfolio.prices[symbol].dropna())
 
         # it's important to recompute the entire portfolio here...
-        p = self.portfolio
+        p = self.portfolio()
 
         # upsert the underlying time series data, this is slow here but later when we access the data we don't need to recompute the nav or the leverage
         self.upsert_ts("nav", data=p.nav)
@@ -52,10 +52,18 @@ class Portfolio(ProductInterface):
 
 
     # we have fast views to extract data... All the functions below are not required...
-    @property
-    def portfolio(self):
+    #@property
+    def portfolio(self, rename=False):
         # does it work?
-        return _Portfolio(prices=self.frame(name="price"), weights=self.frame(name="weight"))
+        prices = self.frame("price")
+        weights = self.frame("weight")
+
+        if rename:
+            prices.rename(columns=lambda x: x.name, inplace=True)
+            weights.rename(columns=lambda x: x.name, inplace=True)
+
+
+        return _Portfolio(prices=prices, weights=weights)
 
     @property
     def nav(self):
@@ -67,8 +75,15 @@ class Portfolio(ProductInterface):
 
     def sector(self, total=False):
         symbol_map = {asset: asset.group.name for asset in self._symbols}
-        return self.portfolio.sector_weights(symbolmap=symbol_map, total=total)
+        return self.portfolio().sector_weights(symbolmap=symbol_map, total=total)
 
     def sector_tail(self, total=False):
         w = self.sector(total=total)
         return w.loc[w.index[-1]].rename(None)
+
+    @property
+    def state(self):
+        return self.portfolio().state
+
+    #def rename(self):
+

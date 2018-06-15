@@ -1,9 +1,7 @@
-import logging
-
 import pandas as pd
 
 from pyutil.performance.summary import fromNav
-from pyutil.portfolio.portfolio import Portfolio as PP
+
 from pyutil.sql.db import Database
 from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
@@ -74,12 +72,13 @@ class DatabaseSymbols(Database):
                 "performance": self.performance}
 
     def portfolio(self, name):
-        x = self._read("SELECT * FROM v_portfolio_2 where name=%(name)s", params={"name": name},
-                       index_col=["timeseries", "symbol"])["data"].apply(to_pandas)
-        return PP(prices=x.loc["price"].transpose(), weights=x.loc["weight"].transpose())
+        return self._filter(Portfolio, name=name)
+        #x = self._read("SELECT * FROM v_portfolio_2 where name=%(name)s", params={"name": name},
+        #               index_col=["timeseries", "symbol"])["data"].apply(to_pandas)
+        #return PP(prices=x.loc["price"].transpose(), weights=x.loc["weight"].transpose())
 
     def state(self, name):
-        portfolio = self.portfolio(name=name)
+        portfolio = self.portfolio(name=name).portfolio(rename=True)
         ref = self._read(sql="SELECT * FROM v_symbols_state", index_col=["symbol"])
 
         frame = pd.concat([portfolio.state, ref.loc[portfolio.assets]], axis=1)
@@ -103,27 +102,24 @@ class DatabaseSymbols(Database):
         return prices.apply(to_pandas).transpose()
 
     def symbol(self, name):
-        return self.session.query(Symbol).filter_by(name=name).one()
+        return self._filter(Symbol, name=name)
 
     def strategy(self, name):
-        return self.session.query(Strategy).filter_by(name=name).one()
+        return self._filter(Strategy, name=name)
+
+    def frame(self, name: str):
+        return self._filter(Frame, name=name).frame
 
     @property
     def strategies(self):
-        for s in self.session.query(Strategy):
-            yield s
+        return self._iter(Strategy)
 
     @property
     def portfolios(self):
-        for p in self.session.query(Portfolio):
-            yield p
+        return self._iter(Portfolio)
 
     @property
     def symbols(self):
-        for s in self.session.query(Symbol):
-            yield s
-
-    def frame(self, name: str):
-        return self.session.query(Frame).filter_by(name=name).one().frame
+        return self._iter(Symbol)
 
 

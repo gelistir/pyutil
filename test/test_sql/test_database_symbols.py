@@ -90,7 +90,10 @@ class TestPortfolio(TestCase):
         self.assertAlmostEqual(self.db.period_returns["Two weeks"]["Peter"], 0.008663804539365882, places=5)
 
     def test_portfolio(self):
-        x = self.db.portfolio(name="Peter")
+        x = self.db.portfolio(name="Peter").portfolio(rename=True)
+        #print(x)
+        #print(x.prices)
+
         columns = x.prices.keys()
         pdt.assert_frame_equal(x.prices[columns], test_portfolio().prices[columns], check_names=False)
         pdt.assert_frame_equal(x.weights[columns], test_portfolio().weights[columns], check_names=False)
@@ -111,7 +114,7 @@ class TestPortfolio(TestCase):
     def test_states(self):
         pdt.assert_frame_equal(self.db.states["Peter"].drop(columns=["internal"]),
                                pd.read_csv(resource("state.csv"), index_col=0).drop(columns=["internal"]),
-                               check_exact=False)
+                               check_exact=False, check_names=False)
 
     def test_frames(self):
         x = self.db.frames()
