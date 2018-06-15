@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
-docker-compose up --build --remove-orphans pyutil
+docker-compose build --no-cache pyutil
+
 

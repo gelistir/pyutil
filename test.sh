@@ -10,11 +10,6 @@ docker rm -f test-postgresql
 
 docker run --name test-postgresql -e POSTGRES_PASSWORD=test -d postgres:9.6
 
-# step 2: wait for postgres to be up and running...
-# docker run --link test-postgresql pyutil:test /pyutil/wait-for-postgres.sh test-postgresql
-
-
-
 # run all tests, seems to be slow on teamcity
 docker run --link test-postgresql --rm -v $(pwd)/html-coverage:/html-coverage  -v $(pwd)/html-report:/html-report pyutil:test
 
