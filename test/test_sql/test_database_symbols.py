@@ -5,7 +5,6 @@ import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
 from pyutil.sql.db_symbols import DatabaseSymbols
-from pyutil.sql.interfaces.products import Products
 from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
@@ -130,13 +129,6 @@ class TestPortfolio(TestCase):
     def test_state(self):
         print(self.db.state(name="Peter"))
         # todo: finish test
-
-    def test_products(self):
-        p=Products(session=self.session)
-        a = p.reference("symbol")
-        self.assertListEqual(["product", "field"], a.index.names)
-        self.assertTrue(a.empty)
-        self.assertIsInstance(a, pd.DataFrame)
 
     def test_reference_symbols(self):
         self.assertTrue(self.db.reference_symbols.empty)

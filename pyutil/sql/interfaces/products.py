@@ -126,33 +126,7 @@ class ProductInterface(MyMixin, Base):
         return hash(self.name)
 
 
-class Products(object):
-    def __init__(self, session):
-        self.session = session
 
-    def products(self, type):
-        query = "SELECT * FROM productinterface " \
-                "WHERE discriminator = %(name)s"
-        return pd.read_sql_query(query, params={"name": type}, con=self.session.bind, index_col=["id"])["name"]
-
-    def reference(self, type):
-        query = "SELECT p.name as product, r.content, rf.name as field, rf.result " \
-                "FROM reference_data r " \
-                "JOIN reference_field rf on (rf.id = r.field_id) " \
-                "JOIN productinterface p ON (p.id = r.product_id) " \
-                "WHERE p.discriminator = %(name)s"
-
-        frame = pd.read_sql_query(query, params={"name": type}, con=self.session.bind, index_col=["product", "field"])
-        return reference(frame)
-
-    def timeseries(self, name):
-        pass
-
-
-
-    @property
-    def x(self):
-        return self.__x
 # class Products(object):
 #     def __init__(self, products, cls, attribute="name", f=lambda x: x):
 #         for p in products:

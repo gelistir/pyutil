@@ -81,9 +81,5 @@ class Portfolio(ProductInterface):
         w = self.sector(total=total)
         return w.loc[w.index[-1]].rename(None)
 
-    @property
-    def state(self):
-        return self.portfolio().state
-
     #def rename(self):
 

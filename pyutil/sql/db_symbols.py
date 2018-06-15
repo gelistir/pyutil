@@ -12,7 +12,7 @@ from pyutil.sql.util import to_pandas, reference
 
 class DatabaseSymbols(Database):
     def __init__(self, session=None):
-        super().__init__(db="symbols", session=session)
+        super().__init__(session=session, db="symbols")
 
     @property
     def nav(self):

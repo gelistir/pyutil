@@ -1,5 +1,3 @@
-import logging
-
 from pyutil.sql.db import Database
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
@@ -8,7 +6,7 @@ from pyutil.sql.util import to_pandas, reference
 
 class DatabaseRisk(Database):
     def __init__(self, session=None):
-        super().__init__(db="addepar2", session=session)
+        super().__init__(session=session, db="addepar2")
 
     def owner(self, name):
         return self.session.query(Owner).filter_by(name=str(name)).one()
