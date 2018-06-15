@@ -59,6 +59,9 @@ class TestOwner(unittest.TestCase):
 
     def test_return(self):
         o = Owner(name=100, currency=Currency(name="USD"))
+        # Should be possible to update without data...
+        o.returns_upsert(ts={})
+
         o.returns_upsert(ts={t1: 0.1, t2: 0.2})
         pdt.assert_series_equal(o.returns, pd.Series({t1: 0.1, t2: 0.2}))
         # Note that for the Nav we introduce a new point in time on the fly!?
@@ -135,6 +138,8 @@ class TestOwner(unittest.TestCase):
                                pd.DataFrame(index=[5, "Sum"], columns=pd.Index([date2str(t2)]), data=[[0.4], [0.4]]),
                                check_names=False)
 
+        self.assertTrue(o.position_by(index_col="MAFFAY").empty)
+
     def test_volatility(self):
         o = Owner(name=100, currency=Currency(name="USD"))
         c = Custodian(name="UBS")
@@ -152,9 +157,9 @@ class TestOwner(unittest.TestCase):
                                pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123"],
                                             data=[[2.5, 2.5]]))
 
-        pdt.assert_frame_equal(o.vola_weighted(sum=False),
-                               pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123"],
-                                            data=[[0.25, 1.0]]), check_names=False)
+        pdt.assert_frame_equal(o.vola_weighted(sum=True),
+                               pd.DataFrame(columns=pd.Index([date2str(t1), date2str(t2)]), index=["123", "Sum"],
+                                            data=[[0.25, 1.0],[0.25, 1.0]]), check_names=False)
 
         pdt.assert_frame_equal(o.vola_weighted_by(),
                                pd.DataFrame(index=["123"], columns=[date2str(t1), date2str(t2), "KIID"],
