@@ -64,7 +64,7 @@ class TestDatabaseRisk(TestCase):
 
         x.set_index(keys=["owner", "security", "custodian"], inplace=True)
 
-        pdt.assert_series_equal(x.iloc[0], pd.Series({t1: 0.4, t2: 0.5}), check_names=False)
+        pdt.assert_series_equal(self.db.position.iloc[0], pd.Series({t1: 0.4, t2: 0.5}), check_names=False)
 
 
         #pdt.assert_frame_equal(x, self.db.position)
