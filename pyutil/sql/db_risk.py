@@ -35,7 +35,7 @@ class DatabaseRisk(Database):
     @property
     def position(self):
         # read all positions at once. This is fast!
-        return self._read(sql="SELECT * FROM v_position", index_col=["owner", "security"])["data"].apply(to_pandas)
+        return self._read(sql="SELECT * FROM v_position", index_col=["owner", "security", "custodian"])["data"].apply(to_pandas)
 
     @property
     def volatility_owner(self):

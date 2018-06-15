@@ -27,7 +27,8 @@ SELECT p1.name AS product,
     ts_name.jdata AS data,
     ts_name.name,
     p1.discriminator,
-    ts_name.secondary_id
+    ts_name.secondary_id,
+    ts_name.tertiary_id
    FROM (ts_name
      JOIN productinterface p1 ON ((p1.id = ts_name.product_id)));
 
@@ -56,12 +57,14 @@ SELECT (vp.product)::integer AS security,
 
 create or replace view v_position as
 SELECT (vp.product)::integer AS owner,
-    (p.name)::integer AS security,
+    (p1.name)::integer AS security,
+    (p2.name) AS custodian,
     vp.data
    FROM (vx_product vp
-     JOIN productinterface p ON ((p.id = vp.secondary_id)))
-  WHERE (((vp.name)::text = 'position'::text) AND ((vp.discriminator)::text = 'Owner'::text) AND ((p.discriminator)::text = 'Security'::text))
-  ORDER BY (vp.product)::integer, (p.name)::integer;
+     JOIN productinterface p1 ON ((p1.id = vp.secondary_id))
+     JOIN productinterface p2 on ((p2.id = vp.tertiary_id)))
+   WHERE (((vp.name)::text = 'position'::text) AND ((vp.discriminator)::text = 'Owner'::text) AND ((p1.discriminator)::text = 'Security'::text))
+  ORDER BY (vp.product)::integer, (p1.name)::integer, (p2.name);
 
 create or replace view v_reference_securities as
 SELECT (productinterface.name)::integer AS security,

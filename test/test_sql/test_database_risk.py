@@ -45,6 +45,7 @@ class TestDatabaseRisk(TestCase):
         cls.o1.position_upsert(security=cls.s1, custodian=cls.cus1, ts={t1: 0.4, t2: 0.5})
         cls.o1.volatility_upsert(ts={t1: 0.3, t2: 0.3})
 
+        cls.session.add(cls.o1)
         cls.session.commit()
         cls.db = DatabaseRisk(cls.session)
 
@@ -52,6 +53,22 @@ class TestDatabaseRisk(TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.session.close()
+
+    def test_owner(self):
+        self.assertEqual(self.o1, self.db.owner(name="100"))
+
+    def test_position(self):
+        x = pd.DataFrame(index=[0],
+                         columns=["owner", "security", "custodian", t1, t2],
+                         data=[[100, 123, "UBS Geneva", 0.4, 0.5]])
+
+        x.set_index(keys=["owner", "security", "custodian"], inplace=True)
+
+        pdt.assert_series_equal(x.iloc[0], pd.Series({t1: 0.4, t2: 0.5}), check_names=False)
+
+
+        #pdt.assert_frame_equal(x, self.db.position)
+
 
     #def test_fields(self):
     #    f = self.session.query(Field).filter_by(name="KIID").one()
