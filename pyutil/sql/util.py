@@ -31,6 +31,6 @@ def reference(frame):
         return pd.DataFrame(index=frame.index, columns=["value"])
 
     frame["value"] = frame[['result', 'content']].apply(lambda x: parse(x[1], x[0]), axis=1)
-    return frame["value"].unstack()
+    return frame["value"].dropna().unstack()
 
 
