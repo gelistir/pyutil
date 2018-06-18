@@ -106,7 +106,12 @@ class NavSeries(pd.Series):
 
     def sortino_ratio(self, periods=None, r_f=0):
         periods = periods or self.__periods_per_year
-        return self.mean_r(periods, r_f=r_f) / self.drawdown.max()
+        # cover the unrealistic case of 0 drawdown
+        m = self.drawdown.max()
+        if m == 0:
+            return np.inf
+        else:
+            return self.mean_r(periods, r_f=r_f) / m
 
     def calmar_ratio(self, periods=None, r_f=0):
         periods = periods or self.__periods_per_year

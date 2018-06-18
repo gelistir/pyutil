@@ -71,13 +71,13 @@ class DatabaseSymbols(Database):
                 "periods": self.period_returns,
                 "performance": self.performance}
 
-    def portfolio(self, name):
+    def portfolio(self, name: str):
         return self._filter(Portfolio, name=name)
         #x = self._read("SELECT * FROM v_portfolio_2 where name=%(name)s", params={"name": name},
         #               index_col=["timeseries", "symbol"])["data"].apply(to_pandas)
         #return PP(prices=x.loc["price"].transpose(), weights=x.loc["weight"].transpose())
 
-    def state(self, name):
+    def state(self, name: str):
         portfolio = self.portfolio(name=name).portfolio(rename=True)
         ref = self._read(sql="SELECT * FROM v_symbols_state", index_col=["symbol"])
 
@@ -101,10 +101,10 @@ class DatabaseSymbols(Database):
         prices = self._read(sql="SELECT * FROM v_symbols WHERE timeseries=%(NAME)s", params={"NAME": name}, index_col="name")["data"]
         return prices.apply(to_pandas).transpose()
 
-    def symbol(self, name):
+    def symbol(self, name: str):
         return self._filter(Symbol, name=name)
 
-    def strategy(self, name):
+    def strategy(self, name: str):
         return self._filter(Strategy, name=name)
 
     def frame(self, name: str):

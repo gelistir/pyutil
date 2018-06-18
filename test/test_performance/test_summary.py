@@ -1,5 +1,6 @@
 from unittest import TestCase
 import pandas as pd
+import numpy as np
 
 from pyutil.performance.summary import NavSeries, performance, fromNav
 from test.config import read_series
@@ -113,4 +114,11 @@ class TestSummary(TestCase):
     def test_adjust(self):
         n = NavSeries(pd.Series({}))
         self.assertTrue(n.adjust().empty)
+
+
+    def test_sortino_ratio_no_drawdown(self):
+        x = pd.Series(pd.Series({pd.Timestamp("2012-02-13"): 1.0, pd.Timestamp("2012-02-14"): 1.0}))
+        n = NavSeries(x)
+
+        self.assertEqual(n.sortino_ratio(), np.inf)
 
