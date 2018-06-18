@@ -3,7 +3,6 @@ from datetime import date
 
 import pandas as pd
 import numpy as np
-from pandasweb.highcharts import series2array
 
 from pyutil.timeseries.timeseries import mtd, ytd
 from .month import monthlytable
@@ -276,9 +275,9 @@ class NavSeries(pd.Series):
         a.index = a.index[:-1].append(pd.DatetimeIndex([self.index[-1]]))
         return a
 
-    def to_dictionary(self, **kwargs):
-        return {**{"nav": series2array(self),
-                   "drawdown": series2array(self.drawdown),
-                   "volatility": series2array(self.ewm_volatility())}, **kwargs}
+    #def to_dictionary(self, **kwargs):
+    #    return {**{"nav": series2array(self),
+    #               "drawdown": series2array(self.drawdown),
+    #               "volatility": series2array(self.ewm_volatility())}, **kwargs}
 
 
