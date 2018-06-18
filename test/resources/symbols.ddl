@@ -1,13 +1,3 @@
-create or replace view v_ts_data as
-SELECT ts_name.name,
-    ts_name.product_id,
-    ts_name.secondary_id,
-    ts_data.date,
-    ts_data.value
-   FROM (ts_name
-     JOIN ts_data ON ((ts_name.id = ts_data.ts_id)));
-
-
 create or replace view v_symbols as
 SELECT productinterface.name,
     ts_name.jdata AS data,
@@ -65,10 +55,13 @@ SELECT portfolio.id,
     p1.name,
     p2.name AS symbol,
     s."group",
-    ts_name.jdata AS data
+    ts_name.jdata AS data,
+    s.internal
    FROM ((((portfolio
      JOIN productinterface p1 ON ((p1.id = portfolio.id)))
      JOIN ts_name ON ((ts_name.product_id = portfolio.id)))
      JOIN productinterface p2 ON ((p2.id = ts_name.secondary_id)))
      JOIN symbol s ON ((p2.id = s.id)))
   WHERE ((ts_name.name)::text = 'weight'::text);
+
+

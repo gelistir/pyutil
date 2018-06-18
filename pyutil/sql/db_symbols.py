@@ -31,7 +31,7 @@ class DatabaseSymbols(Database):
         return self._read("SELECT * FROM v_portfolio_leverage", index_col="name")["data"].apply(to_pandas)
 
     def sector(self, total=False):
-        frame = self._read("SELECT * FROM v_portfolio_sector", index_col=["name", "symbol", "group"])["data"]
+        frame = self._read("SELECT * FROM v_portfolio_sector", index_col=["name", "symbol", "group", "internal"])["data"]
         frame = frame.apply(to_pandas).groupby(level=["name", "group"], axis=0).sum().ffill(axis=1)
         frame = frame.iloc[:,-1].unstack()
 
@@ -82,6 +82,9 @@ class DatabaseSymbols(Database):
         ref = self._read(sql="SELECT * FROM v_symbols_state", index_col=["symbol"])
 
         frame = pd.concat([portfolio.state, ref.loc[portfolio.assets]], axis=1)
+
+        #frame = self.sector(total=False)
+        #print(frame)
 
         sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
         frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
