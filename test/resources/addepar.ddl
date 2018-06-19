@@ -98,3 +98,9 @@ SELECT (productinterface.name)::integer AS owner,
      JOIN reference_field ON ((reference_data.field_id = reference_field.id)))
   ORDER BY (productinterface.name)::integer;
 
+create view v_returns as
+  SELECT (vp.product)::integer AS owner,
+    vp.data
+   FROM vx_product vp
+  WHERE (((vp.name)::text = 'return'::text) AND ((vp.discriminator)::text = 'Owner'::text))
+  ORDER BY (vp.product)::integer;

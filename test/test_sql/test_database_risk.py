@@ -44,6 +44,7 @@ class TestDatabaseRisk(TestCase):
         cls.o1.reference[NAME] = "Peter Maffay"
         cls.o1.position_upsert(security=cls.s1, custodian=cls.cus1, ts={t1: 0.4, t2: 0.5})
         cls.o1.volatility_upsert(ts={t1: 0.3, t2: 0.3})
+        cls.o1.returns_upsert(ts={t1: 0.2, t2: 0.1})
 
         cls.session.add(cls.o1)
         cls.session.commit()
@@ -69,6 +70,10 @@ class TestDatabaseRisk(TestCase):
 
         #pdt.assert_frame_equal(x, self.db.position)
 
+    def test_returns(self):
+        pdt.assert_series_equal(self.db.returns.loc[100], pd.Series({t1: 0.2, t2: 0.1}), check_names=False)
+
+        #assert False
 
     #def test_fields(self):
     #    f = self.session.query(Field).filter_by(name="KIID").one()

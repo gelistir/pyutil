@@ -19,6 +19,10 @@ class DatabaseRisk(Database):
         return self._read(sql="SELECT * FROM v_prices", index_col=["security"])["data"].apply(to_pandas)
 
     @property
+    def returns(self):
+        return self._read(sql="SELECT * FROM v_returns", index_col=["owner"])["data"].apply(to_pandas)
+
+    @property
     def reference_owner(self):
         return reference(self._read("SELECT * FROM v_reference_owner", index_col=["owner", "field"]))
 
