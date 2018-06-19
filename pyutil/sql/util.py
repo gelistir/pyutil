@@ -30,7 +30,13 @@ def reference(frame):
     if frame.empty:
         return pd.DataFrame(index=frame.index, columns=["value"])
 
-    frame["value"] = frame[['result', 'content']].apply(lambda x: parse(x[1], x[0]), axis=1)
-    return frame["value"].dropna().unstack()
+    frame = frame[["content", "result"]].unstack(level=-1).swaplevel(axis=1)
+
+    d = dict()
+    for p in set(frame.columns.get_level_values(level=0)):
+        d[p] = frame[p].apply(lambda x: parse(x[0],x[1]), axis=1)
+
+    return pd.DataFrame(d)
+
 
 

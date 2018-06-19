@@ -14,7 +14,7 @@ class TestProductInterface(TestCase):
         cls.p2 = Product(name="B")
 
         cls.f1 = Field(name="x", type=FieldType.dynamic, result=DataType.integer)
-        cls.f2 = Field(name="y", type=FieldType.dynamic, result=DataType.integer)
+        cls.f2 = Field(name="y", type=FieldType.dynamic, result=DataType.string)
 
     def test_name(self):
         self.assertEqual(self.p1.name, "A")
@@ -58,7 +58,7 @@ class TestProductInterface(TestCase):
         # self.assertDictEqual({self.f1: 120, self.f2: 11}, self.p1.reference)
         print(type(self.p1.reference))
         print(dict(self.p1.reference))
-        self.assertDictEqual({self.f1: 120, self.f2: 11}, dict(self.p1.reference))
+        self.assertDictEqual({self.f1: 120, self.f2: "11"}, dict(self.p1.reference))
 
     def test_timeseries_created(self):
         with self.assertRaises(AttributeError):
@@ -75,3 +75,4 @@ class TestProductInterface(TestCase):
     def test_with_unknown_ts(self):
         x = self.p1.get_timeseries(name="Never seen before")
         pdt.assert_series_equal(x, pd.Series({}))
+
