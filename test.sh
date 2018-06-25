@@ -10,8 +10,10 @@ docker rm -f test-postgresql
 
 docker run --name test-postgresql -e POSTGRES_PASSWORD=test -d postgres:9.6
 
+docker run --name test-influxdb -d influxdb
+
 # run all tests, seems to be slow on teamcity
-docker run --link test-postgresql --rm -v $(pwd)/html-coverage:/html-coverage  -v $(pwd)/html-report:/html-report pyutil:test
+docker run --link test-postgresql --link test-influxdb --rm -v $(pwd)/html-coverage:/html-coverage  -v $(pwd)/html-report:/html-report pyutil:test
 
 ret=$?
 
@@ -21,5 +23,6 @@ docker run --rm -v $(pwd)/source:/pyutil/source:ro -v $(pwd)/build:/pyutil/build
 # delete the images used...
 docker rmi -f pyutil:test
 docker rm -f test-postgresql
+docker rm -f test-influxdb
 
 exit $ret
