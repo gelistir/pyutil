@@ -39,22 +39,26 @@ class Client(DataFrameClient):
         c = self.query('SHOW TAG KEYS FROM "{m}"'.format(m=measurement))
         return [x["tagKey"] for x in c.get_points()]
 
-    def helper(self, tags, fields, series_name):
+    def helper(self, tags, fields, series_name, bulk_size=5, autocommit=True):
         class MySeriesHelper(SeriesHelper):
             """Instantiate SeriesHelper to write points to the backend."""
 
             class Meta:
                 """Meta class stores time series helper configuration."""
+                pass
+
                 # Defines the number of data points to store prior to writing
                 # on the wire.
-                bulk_size = 5
+                #bulk_size = bulk_size
 
                 # autocommit must be set to True when using bulk_size
-                autocommit = True
+                #autocommit = autocommit
 
         MySeriesHelper.Meta.fields = fields
         MySeriesHelper.Meta.tags = tags
         MySeriesHelper.Meta.client = self.influxclient
         MySeriesHelper.Meta.series_name = series_name
+        MySeriesHelper.Meta.bulk_size = bulk_size
+        MySeriesHelper.Meta.autocommit = autocommit
 
         return MySeriesHelper
