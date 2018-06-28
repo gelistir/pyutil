@@ -1,8 +1,11 @@
 from influxdb import DataFrameClient, SeriesHelper
 
 class Client(DataFrameClient):
-    def __init__(self, host, port=8086):
+    def __init__(self, host, port=8086, database=None):
         super().__init__(host, port)
+        if database:
+            self.create_database(dbname=database)
+            self.switch_database(database=database)
 
     @property
     def influxclient(self):

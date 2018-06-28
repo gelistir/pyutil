@@ -53,11 +53,7 @@ json_body = [
             "dura": 229,
             "weight": 20
         }
-    }
-]
-
-
-json_body2 = [
+    },
     {
         "measurement": "port",
         "tags": {
@@ -77,16 +73,8 @@ json_body2 = [
 class TestInfluxDB(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.client = Client(host='test-influxdb')
-
-        for db in cls.client.databases:
-            cls.client.drop_database(db)
-
-        cls.client.create_database('testexample')
-        cls.client.switch_database('testexample')
-
+        cls.client = Client(host='test-influxdb', database="testexample")
         cls.client.influxclient.write_points(json_body)
-        cls.client.influxclient.write_points(json_body2)
 
     @classmethod
     def tearDownClass(cls):

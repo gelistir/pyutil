@@ -11,12 +11,7 @@ dbname = 'mydb'
 class TestInput(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.client = Client(host='test-influxdb')
-        for db in cls.client.databases:
-            cls.client.drop_database(dbname=db)
-
-        cls.client.create_database(dbname)
-        cls.client.switch_database(dbname)
+        cls.client = Client(host='test-influxdb', database="dbname")
 
     @classmethod
     def tearDownClass(cls):
