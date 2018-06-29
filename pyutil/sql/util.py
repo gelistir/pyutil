@@ -13,8 +13,7 @@ def from_pandas(x):
     return x.to_json().encode()
 
 
-def parse(x, type="string"):
-
+def parse(x, typ="string"):
     __p = {"string": lambda x: x,
            "float": lambda x: float(x),
            "integer": lambda x: int(float(x)),
@@ -23,7 +22,8 @@ def parse(x, type="string"):
 
     if not x:
         return None
-    return __p[type](x)
+
+    return __p[typ](x)
 
 
 def reference(frame):
@@ -31,14 +31,7 @@ def reference(frame):
         return pd.DataFrame(index=frame.index, columns=["value"])
 
     frame = frame.dropna(axis=1, how="all")
-
-    frame = frame[["content", "result"]].unstack(level=-1).swaplevel(axis=1)
-
-    d = dict()
-    for p in set(frame.columns.get_level_values(level=0)):
-        d[p] = frame[p].apply(lambda x: parse(x[0],x[1]), axis=1)
-
-    return pd.DataFrame(d)
+    return frame[["content", "result"]].apply(lambda x: parse(x[0], x[1]), axis=1).unstack(level=-1)
 
 
 
