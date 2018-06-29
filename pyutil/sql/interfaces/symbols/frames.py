@@ -21,4 +21,5 @@ class Frame(ProductInterface):
 
     @frame.setter
     def frame(self, value):
+        assert isinstance(value, pd.DataFrame), "Value has to be a DataFrame. It is currently {t}".format(t=type(value))
         self.__data = value.to_json(orient="table", date_format="iso").encode()
