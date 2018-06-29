@@ -30,6 +30,8 @@ def reference(frame):
     if frame.empty:
         return pd.DataFrame(index=frame.index, columns=["value"])
 
+    frame = frame.dropna(axis=1, how="all")
+
     frame = frame[["content", "result"]].unstack(level=-1).swaplevel(axis=1)
 
     d = dict()
