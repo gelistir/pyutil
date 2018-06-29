@@ -1,3 +1,5 @@
+import pandas as pd
+
 from influxdb import DataFrameClient, SeriesHelper
 
 class Client(DataFrameClient):
@@ -73,5 +75,10 @@ class Client(DataFrameClient):
         return a[measurement].set_index(keys=tags, append=True).unstack(level=-1)[field]
 
     def series(self, field, conditions, measurement):
+        """ test empty !!!! """
         ccc = ", ".join([""""{tag}"='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
-        return self.query("""SELECT {f}::field FROM {m} WHERE {c}""".format(f=field, m=measurement, c=ccc))[measurement][field]
+        xxx = self.query("""SELECT {f}::field FROM {m} WHERE {c}""".format(f=field, m=measurement, c=ccc))
+        try:
+            return xxx[measurement][field]
+        except KeyError:
+            return pd.Series({})

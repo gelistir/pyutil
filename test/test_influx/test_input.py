@@ -2,6 +2,8 @@ import pandas as pd
 from unittest import TestCase
 from pyutil.influx.client import Client
 
+import pandas.util.testing as pdt
+
 # InfluxDB connections settings
 host = 'test-influxdb'
 port = 8086
@@ -37,4 +39,7 @@ class TestInput(TestCase):
         print(self.client.frame(field="nav", tags=["name"], measurement="portfolio"))
         print(self.client.query("""SELECT "nav"::field, "name"::tag FROM portfolio""")["portfolio"].set_index(keys=["name"], append=True).unstack(level=-1)["nav"])
         print(self.client.series(field="nav", measurement="portfolio", conditions=[("name","east-1")]))
+
+
+        pdt.assert_series_equal(self.client.series(field="nav", measurement="portfolio", conditions=[("name","east-2")]), pd.Series({}))
 
