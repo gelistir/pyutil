@@ -1,7 +1,5 @@
-import pandas as pd
 from unittest import TestCase
 
-from influxdb import InfluxDBClient, DataFrameClient
 from pyutil.influx.client import Client
 
 json_body = [
@@ -109,6 +107,9 @@ class TestInfluxDB(TestCase):
 
         a = self.client.query("""SELECT dura::field FROM brushEvents WHERE "user"='Carol'""")["brushEvents"]
         print(a["dura"])
+
+        print(self.client.frame(field="dura", tags=["user"], measurement="brushEvents"))
+        print(self.client.series(field="dura", conditions=[("user", "Carol")], measurement="brushEvents"))
 
     def test_find_tags(self):
         print(self.client.tags(measurement="brushEvents",key="user"))

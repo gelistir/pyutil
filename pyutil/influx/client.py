@@ -65,3 +65,13 @@ class Client(DataFrameClient):
         MySeriesHelper.Meta.autocommit = autocommit
 
         return MySeriesHelper
+
+    def frame(self, field, tags, measurement):
+        ttt = ", ".join(['"{t}"::tag'.format(t=t) for t in tags])
+
+        a = self.query("""SELECT {f}::field, {t} FROM {m}""".format(f=field, t=ttt, m=measurement))
+        return a[measurement].set_index(keys=tags, append=True).unstack(level=-1)[field]
+
+    def series(self, field, conditions, measurement):
+        ccc = ", ".join([""""{tag}"='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
+        return self.query("""SELECT {f}::field FROM {m} WHERE {c}""".format(f=field, m=measurement, c=ccc))[measurement][field]

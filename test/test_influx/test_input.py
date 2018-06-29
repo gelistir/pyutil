@@ -34,6 +34,7 @@ class TestInput(TestCase):
 
         print(self.client.databases)
         print(self.client.measurements)
+        print(self.client.frame(field="nav", tags=["name"], measurement="portfolio"))
         print(self.client.query("""SELECT "nav"::field, "name"::tag FROM portfolio""")["portfolio"].set_index(keys=["name"], append=True).unstack(level=-1)["nav"])
-
+        print(self.client.series(field="nav", measurement="portfolio", conditions=[("name","east-1")]))
 
