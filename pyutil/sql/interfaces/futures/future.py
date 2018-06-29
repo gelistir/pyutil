@@ -57,20 +57,20 @@ class Future(ProductInterface):
         # make sure also the first contract is included
         m[pd.Timestamp("1900-01-01")] = contracts[0]
 
-        return _Rollmap(pd.Series(m))
+        return _Rollmap(pd.Series(m).sort_index())
 
 
 class _Rollmap(pd.Series):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def trunc(self, before=None, after=None, **kwargs):
+    def trunc(self, before=None, after=None):
         after = after or self.index[-1]
         before = before or self.index[0]
 
         #if before < self.index[0]:
-        before = max(self.index[0], before)
-        after = min(self.index[-1], after)
+        before = max(min(self.index), before)
+        after = min(max(self.index), after)
 
         if before in self.index:
             return self.truncate(before=before, after=after)

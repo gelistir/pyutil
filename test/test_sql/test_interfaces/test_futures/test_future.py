@@ -80,10 +80,11 @@ class TestFuture(TestCase):
 
         # use an abritrary order here...
         f.contracts.extend([c4, c2, c3, c1])
+        t0 = pd.Timestamp("2014-12-11")
 
-        x = f.roll_builder(offset_days=5).trunc(before=pd.Timestamp("2014-12-11"))
+        x = f.roll_builder(offset_days=5).trunc(before=t0)
 
-        pdt.assert_series_equal(x, pd.Series(index=pd.DatetimeIndex([pd.Timestamp("2014-12-11").date(), pd.Timestamp("2014-12-27").date(), pd.Timestamp("2015-12-27").date()]), data=[c2,c3,c4]))
+        pdt.assert_series_equal(x, pd.Series(index=pd.DatetimeIndex([t0.date(), pd.Timestamp("2014-12-27").date(), pd.Timestamp("2015-12-27").date()]), data=[c2,c3,c4]))
 
 
         x = f.roll_builder(offset_days=5).trunc(before=pd.Timestamp("2013-12-27"))

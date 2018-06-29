@@ -15,30 +15,32 @@ class TestTimeseries(TestCase):
         cls.p3 = Product(name="C")
 
     def test_timeseries(self):
-        ts1 = Timeseries(name="x", product=self.p1, data={pd.Timestamp("12-11-1978"): 10.1}, secondary=self.p2)
-        ts2 = Timeseries(name="y", product=self.p1, data={pd.Timestamp("13-11-1978"): 11.1})
+        t0 = pd.Timestamp("1978-11-12")
+        t1 = pd.Timestamp("1978-11-13")
+
+        ts1 = Timeseries(name="x", product=self.p1, data={t0: 10.1}, secondary=self.p2)
+        ts2 = Timeseries(name="y", product=self.p1, data={t1: 11.1})
         ts3 = Timeseries(name="z", product=self.p1)
-        ts4 = Timeseries(name="a", product=self.p1, secondary=self.p2, tertiary=self.p3, data={pd.Timestamp("13-11-1978"): 11.1})
+        ts4 = Timeseries(name="a", product=self.p1, secondary=self.p2, tertiary=self.p3, data={t1: 11.1})
 
         self.assertIsNotNone(ts1.secondary)
         self.assertIsNone(ts2.secondary)
         self.assertIsNone(ts2.tertiary)
         self.assertIsNotNone(ts4.tertiary)
 
-        pdt.assert_series_equal(ts4.series, pd.Series({pd.Timestamp("13-11-1978"): 11.1}))
-        pdt.assert_series_equal(ts2.series, pd.Series({pd.Timestamp("13-11-1978"): 11.1}))
-        pdt.assert_series_equal(ts1.series, pd.Series({pd.Timestamp("12-11-1978"): 10.1}))
+        pdt.assert_series_equal(ts4.series, pd.Series({t1: 11.1}))
+        pdt.assert_series_equal(ts2.series, pd.Series({t1: 11.1}))
+        pdt.assert_series_equal(ts1.series, pd.Series({t0: 10.1}))
 
         self.assertEqual(ts1.key, ("x", self.p2))
         self.assertEqual(ts2.key, "y")
         self.assertEqual(ts4.key, ("a", self.p2, self.p3))
 
         pdt.assert_frame_equal(self.p1.frame("x"),
-                               pd.DataFrame(index=[pd.Timestamp("12-11-1978")], columns=[self.p2], data=[[10.1]]))
+                               pd.DataFrame(index=[t0], columns=[self.p2], data=[[10.1]]))
 
-        x = ts1.upsert(ts={pd.Timestamp("12-11-1978"): 11.1, pd.Timestamp("13-11-1978"): 12.1})
-        pdt.assert_series_equal(x.series,
-                                pd.Series({pd.Timestamp("12-11-1978"): 11.1, pd.Timestamp("13-11-1978"): 12.1}))
+        x = ts1.upsert(ts={t0: 11.1, t1: 12.1})
+        pdt.assert_series_equal(x.series, pd.Series({t0: 11.1, t1: 12.1}))
 
     def test_upsert(self):
         ts1 = Timeseries(name="x", product=self.p1)
