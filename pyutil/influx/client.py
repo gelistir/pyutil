@@ -68,10 +68,17 @@ class Client(DataFrameClient):
 
         return MySeriesHelper
 
-    def frame(self, field, tags, measurement, date=False):
+    def frame(self, field, tags, measurement, conditions=None, date=False):
         ttt = ", ".join(['"{t}"::tag'.format(t=t) for t in tags])
+        query = """SELECT {f}::field, {t} FROM {m}""".format(f=field, t=ttt, m=measurement)
 
-        a = self.query("""SELECT {f}::field, {t} FROM {m}""".format(f=field, t=ttt, m=measurement))
+        if conditions:
+            ccc = " AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
+            query = "{q} WHERE {c}".format(q=query, c=ccc)
+
+        print(query)
+        a = self.query(query)
+
         if measurement in a:
             x = a[measurement]
             if date:
@@ -81,19 +88,21 @@ class Client(DataFrameClient):
         else:
             return pd.DataFrame({})
 
-    def series(self, field, conditions, measurement, date=False):
+    def series(self, field, measurement, conditions=None, date=False):
         """ test empty !!!! """
-        ccc = " AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
         try:
-            #print(ccc)
-            #print("""SELECT {f}::field FROM {m} WHERE {c}""".format(f=field, m=measurement, c=ccc))
+            query="""SELECT {f}::field FROM {m}""".format(f=field, m=measurement)
+            if conditions:
+                ccc = " AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
+                query = "{q} WHERE {c}".format(q=query, c=ccc)
 
-            xxx = self.query("""SELECT {f}::field FROM {m} WHERE {c}""".format(f=field, m=measurement, c=ccc))
-            #print(xxx)
+            result = self.query(query)
 
-            a = xxx[measurement][field]
+            a = result[measurement][field]
+
             if date:
                 a.index = a.index.date
             return a
+
         except:
             return pd.Series({})

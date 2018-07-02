@@ -177,7 +177,7 @@ class TestOwner(unittest.TestCase):
 
         #print(o.vola_securities(client=self.client))
         #print(o.securities)
-        print(s1.volatility(client=self.client, currency=o.currency.name))
+        #print(s1.volatility(client=self.client, currency=o.currency.name))
 
         pdt.assert_frame_equal(o.vola_securities(client=self.client),
                                pd.DataFrame(columns=pd.Index([t1.date(), t2.date()]), index=["123"],

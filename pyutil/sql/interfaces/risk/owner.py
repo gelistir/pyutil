@@ -120,20 +120,23 @@ class Owner(ProductInterface):
 
         #return self.__weighted_by(client, f = self.position, index_col=index_col, sum=sum, tail=tail)
 
-    def __weighted_by(self, client, f, index_col=None, sum=False, tail=None):
-        if index_col:
-            if index_col in self.reference_securities.keys():
-                a = pd.concat((f(client, sum=False, tail=tail), self.reference_securities[index_col]), axis=1)
-                a = a.groupby(by=index_col).sum()
-                if sum:
-                    a.loc["Sum"] = a.sum(axis=0)
-                return a
-            else:
-                return pd.DataFrame({})
-
-        return pd.concat((f(sum=sum, tail=tail), self.reference_securities), axis=1)
+    # def __weighted_by(self, client, f, index_col=None, sum=False, tail=None):
+    #     if index_col:
+    #         if index_col in self.reference_securities.keys():
+    #             a = pd.concat((f(client, sum=False, tail=tail), self.reference_securities[index_col]), axis=1)
+    #             a = a.groupby(by=index_col).sum()
+    #             if sum:
+    #                 a.loc["Sum"] = a.sum(axis=0)
+    #             return a
+    #         else:
+    #             return pd.DataFrame({})
+    #
+    #     return pd.concat((f(sum=sum, tail=tail), self.reference_securities), axis=1)
 
     def vola_securities(self, client):
+        f = client.frame(field="volatility", measurement="securities", tags=["security"], conditions=[("currency",self.currency.name)])
+        print(f)
+
         x = pd.DataFrame({security.name: security.volatility(client=client, currency=self.currency.name) for security in self.securities})
         return x.transpose()
 
