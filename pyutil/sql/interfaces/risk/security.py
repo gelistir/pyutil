@@ -1,6 +1,4 @@
 from sqlalchemy.ext.hybrid import hybrid_property
-
-from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.model.ref import Field, DataType, FieldType
 
@@ -22,23 +20,22 @@ FIELDS = {
 class Security(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Security"}
 
+    def __init__(self, name, kiid=None, ticker=None):
+        super().__init__(name)
+        if kiid:
+            self.reference[FIELDS["Lobnek KIID"]] = kiid
+
+        if ticker:
+            self.reference[FIELDS["Lobnek Ticker Symbol Bloomberg"]] = ticker
+
     def __repr__(self):
         return "Security({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
 
-    @property
-    def price(self):
-        return fromNav(self.get_timeseries(name="price"), adjust=False)
+    def price(self, client):
+        return client.series(field="price", measurement="security", conditions=[("security", self.name)], date=True)
 
-    # prices may depend on custodian
-    def price_upsert(self, ts, custodian=None):
-        self.upsert_ts(name="price", data=ts)
-
-    def volatility_upsert(self, ts, currency):
-        self.upsert_ts(name="volatility", data=ts, secondary=currency)
-
-    @property
-    def volatility(self):
-        return self.frame("volatility")
+    def volatility(self, client, currency):
+        return client.series(field="volatility", measurement="security", conditions=[("security", self.name), ("currency", currency)], date=True)
 
     @hybrid_property
     def kiid(self):
@@ -47,3 +44,21 @@ class Security(ProductInterface):
     @property
     def bloomberg_ticker(self):
         return self.get_reference("Bloomberg Ticker")
+
+    def upsert_volatility(self, client, currency, ts):
+        if len(ts) > 0:
+            helper = client.helper(tags=["security", "currency"], fields=["volatility"], series_name='security', autocommit=True, bulk_size=10)
+
+            for date, value in ts.items():
+                helper(security=self.name, volatility=float(value), currency=currency, time=date)
+
+            helper.commit()
+
+    def upsert_price(self, client, ts):
+        if len(ts) > 0:
+            helper = client.helper(tags=["security"], fields=["price"], series_name='security', autocommit=True, bulk_size=10)
+
+            for date, value in ts.items():
+                helper(security=self.name, price=float(value), time=date)
+
+            helper.commit()

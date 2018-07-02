@@ -32,8 +32,8 @@ class TestDatabaseRisk(TestCase):
         cls.s2 = Security(name=1000)
 
         cls.s1.reference[KIID] = 5
-        cls.s1.price_upsert(ts={t1: 11.1, t2: 12.1})
-        cls.s1.volatility_upsert(ts={t1: 11.1, t2: 12.1}, currency=cls.cur1)
+        #cls.s1.price_upsert(ts={t1: 11.1, t2: 12.1})
+        #cls.s1.volatility_upsert(ts={t1: 11.1, t2: 12.1}, currency=cls.cur1)
 
         cls.session.add_all([cls.s1, cls.s2])
 
@@ -42,9 +42,9 @@ class TestDatabaseRisk(TestCase):
 
         cls.o1 = Owner(name=100, currency=cls.cur1)
         cls.o1.reference[NAME] = "Peter Maffay"
-        cls.o1.position_upsert(security=cls.s1, custodian=cls.cus1, ts={t1: 0.4, t2: 0.5})
-        cls.o1.volatility_upsert(ts={t1: 0.3, t2: 0.3})
-        cls.o1.returns_upsert(ts={t1: 0.2, t2: 0.1})
+        #cls.o1.position_upsert(security=cls.s1, custodian=cls.cus1, ts={t1: 0.4, t2: 0.5})
+        #cls.o1.volatility_upsert(ts={t1: 0.3, t2: 0.3})
+        #cls.o1.returns_upsert(ts={t1: 0.2, t2: 0.1})
 
         cls.session.add(cls.o1)
         cls.session.commit()

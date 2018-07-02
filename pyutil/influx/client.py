@@ -68,20 +68,32 @@ class Client(DataFrameClient):
 
         return MySeriesHelper
 
-    def frame(self, field, tags, measurement):
+    def frame(self, field, tags, measurement, date=False):
         ttt = ", ".join(['"{t}"::tag'.format(t=t) for t in tags])
 
         a = self.query("""SELECT {f}::field, {t} FROM {m}""".format(f=field, t=ttt, m=measurement))
         if measurement in a:
-            return a[measurement].set_index(keys=tags, append=True).unstack(level=-1)[field]
+            x = a[measurement]
+            if date:
+                x.index = x.index.date
+            x = x.set_index(keys=tags, append=True).unstack(level=-1)[field]
+            return x
         else:
             return pd.DataFrame({})
 
-    def series(self, field, conditions, measurement):
+    def series(self, field, conditions, measurement, date=False):
         """ test empty !!!! """
-        ccc = ", ".join([""""{tag}"='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
-        xxx = self.query("""SELECT {f}::field FROM {m} WHERE {c}""".format(f=field, m=measurement, c=ccc))
+        ccc = " AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
         try:
-            return xxx[measurement][field]
-        except KeyError:
+            #print(ccc)
+            #print("""SELECT {f}::field FROM {m} WHERE {c}""".format(f=field, m=measurement, c=ccc))
+
+            xxx = self.query("""SELECT {f}::field FROM {m} WHERE {c}""".format(f=field, m=measurement, c=ccc))
+            #print(xxx)
+
+            a = xxx[measurement][field]
+            if date:
+                a.index = a.index.date
+            return a
+        except:
             return pd.Series({})
