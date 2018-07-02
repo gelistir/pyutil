@@ -43,3 +43,4 @@ class TestInput(TestCase):
 
         pdt.assert_series_equal(self.client.series(field="nav", measurement="portfolio", conditions=[("name","east-2")]), pd.Series({}))
 
+        pdt.assert_frame_equal(self.client.frame(field="nav2", tags=["name"], measurement="portfolio"), pd.DataFrame({}))

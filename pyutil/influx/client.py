@@ -72,7 +72,10 @@ class Client(DataFrameClient):
         ttt = ", ".join(['"{t}"::tag'.format(t=t) for t in tags])
 
         a = self.query("""SELECT {f}::field, {t} FROM {m}""".format(f=field, t=ttt, m=measurement))
-        return a[measurement].set_index(keys=tags, append=True).unstack(level=-1)[field]
+        if measurement in a:
+            return a[measurement].set_index(keys=tags, append=True).unstack(level=-1)[field]
+        else:
+            return pd.DataFrame({})
 
     def series(self, field, conditions, measurement):
         """ test empty !!!! """
