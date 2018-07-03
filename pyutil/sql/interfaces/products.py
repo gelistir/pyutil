@@ -79,7 +79,7 @@ class ProductInterface(MyMixin, Base):
     def get_timeseries(self, name, default=_pd.Series({})):
         # todo: is this efficient? maybe remove the timeseries proxy and only rely on get_timeseries?
         if name in self._timeseries.keys():
-            return self._timeseries[name].series
+            return self._timeseries[name].series.dropna()
         else:
             return default
 

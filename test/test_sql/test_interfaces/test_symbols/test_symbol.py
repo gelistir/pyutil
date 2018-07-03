@@ -31,3 +31,4 @@ class TestSymbol(TestCase):
         s.ts_upsert(client=self.client, field="px_last", ts={t0: 100.0, t1: 100.5})
         pdt.assert_series_equal(s.ts(client=self.client, field="px_last"), pd.Series({t0.date(): 100.0, t1.date(): 100.5}, name="px_last"))
 
+        self.assertEqual(s.last(client=self.client), t1.date())

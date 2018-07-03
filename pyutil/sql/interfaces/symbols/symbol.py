@@ -31,3 +31,8 @@ class Symbol(ProductInterface):
     def ts_upsert(self, client, ts, field="px_last"):
         super()._ts_upsert(client=client, field=field, series_name="symbols", tags={"name": self.name}, ts=ts)
 
+
+    def last(self, client):
+        return client.query("""SELECT LAST(px_last) FROM "symbols" where "name"='{n}'""".format(n=self.name))[
+    "symbols"].index[0].date()
+
