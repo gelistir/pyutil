@@ -129,7 +129,12 @@ class ProductInterface(MyMixin, Base):
         if len(ts) > 0:
             helper = client.helper(tags=list(tags.keys()), fields=[field], series_name=series_name, autocommit=True, bulk_size=10)
             for t, x in ts.items():
-                print({**{field: x, "time": pd.Timestamp(t)}, **tags})
                 helper(**{**{field: x, "time": pd.Timestamp(t)}, **tags})
 
             helper.commit()
+
+    #def last(self, client, series_name, field="px_last"):
+    #    try:
+    #        return client.query("""SELECT LAST({f}) FROM "symbols" where "name"='{n}'""".format(n=self.name, f=field))["symbols"].index[0].date()
+    #    except KeyError:
+    #        return None
