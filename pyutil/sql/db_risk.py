@@ -38,28 +38,21 @@ class DatabaseRisk(Database):
     @property
     def position(self):
         # read all positions at once. This is fast!
-        return self.__client.frame(measurement="owner", field="weight", tags=["owner", "security"], date=True)
-
-        #return self._read(sql="SELECT * FROM v_position", index_col=["owner", "security", "custodian"])["data"].apply(to_pandas)
+        return self.__client.frame(measurement="owner", field="weight", tags=["owner", "custodian", "security"], date=True).stack()
 
     @property
     def volatility_owner(self):
         return self.__client.frame(measurement="owner", field="volatility", tags=["owner"], date=True)
 
-        #return self._read(sql="SELECT * FROM v_volatility_owner", index_col=["owner"])["data"].apply(to_pandas).sort_index()
-
     @property
     def volatility_security(self):
-        return self.__client.frame(measurement="security", field="volatility", tags=["currency", "security"], date=True)
+        return self.__client.frame(measurement="security", field="volatility", tags=["currency", "security"], date=True).swaplevel()
 
-        #vola = self._read(sql="SELECT * FROM v_volatility_security", index_col=["currency", "security"])["data"]
-        #return vola.apply(to_pandas)
-
-    @property
-    def volatility_owner_securities(self):
-        return self.__client.frame(measurement="")
-        vola = self._read(sql="SELECT * FROM v_volatility_owner_security", index_col=["owner", "security"])["data"]
-        return vola.apply(to_pandas)
+    #@property
+    #def volatility_owner_securities(self):
+    #    return self.__client.frame(measurement="")
+    #    vola = self._read(sql="SELECT * FROM v_volatility_owner_security", index_col=["owner", "security"])["data"]
+    #    return vola.apply(to_pandas)
 
 
 
