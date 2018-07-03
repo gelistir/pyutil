@@ -24,11 +24,14 @@ class TestSymbol(TestCase):
         self.assertEqual(s.group, SymbolType.equities)
         self.assertEqual(s.discriminator, "symbol")
 
-    def test_ts(self):
+    def test_empty_ts(self):
         s = Symbol(name="AAAAA US Equity", group=SymbolType.equities, internal="Peter Maffay")
         pdt.assert_series_equal(s.ts(client=self.client, field="px_last"), pd.Series({}))
+        self.assertIsNone(s.last(client=self.client))
 
+    def test_ts(self):
+        s = Symbol(name="AAAAA US Equity", group=SymbolType.equities, internal="Peter Maffay")
         s.ts_upsert(client=self.client, field="px_last", ts={t0: 100.0, t1: 100.5})
-        pdt.assert_series_equal(s.ts(client=self.client, field="px_last"), pd.Series({t0.date(): 100.0, t1.date(): 100.5}, name="px_last"))
 
+        pdt.assert_series_equal(s.ts(client=self.client, field="px_last"), pd.Series({t0.date(): 100.0, t1.date(): 100.5}, name="px_last"))
         self.assertEqual(s.last(client=self.client), t1.date())

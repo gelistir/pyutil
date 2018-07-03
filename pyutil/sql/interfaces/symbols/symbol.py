@@ -33,6 +33,7 @@ class Symbol(ProductInterface):
 
 
     def last(self, client, field="px_last"):
-        return client.query("""SELECT LAST({f}) FROM "symbols" where "name"='{n}'""".format(n=self.name, f=field))[
-    "symbols"].index[0].date()
-
+        try:
+            return client.query("""SELECT LAST({f}) FROM "symbols" where "name"='{n}'""".format(n=self.name, f=field))["symbols"].index[0].date()
+        except KeyError:
+            return None
