@@ -139,12 +139,15 @@ class Owner(ProductInterface):
         self._ts_upsert(client=client, ts=ts, tags={"owner": self.name}, field="returns", series_name='owner')
 
     def upsert_position(self, client, security, custodian, ts):
-        self._ts_upsert(client=client, ts=ts, tags={"owner": self.name, "security": security.name, "custodian": custodian},
+        assert isinstance(security, Security)
+        assert isinstance(custodian, Custodian)
+
+        self._ts_upsert(client=client, ts=ts, tags={"owner": self.name, "security": security.name, "custodian": custodian.name},
                         field="weight", series_name="owner")
 
-        if len(ts) > 0:
-            if security not in self.__securities:
-                self.__securities.append(security)
+        #if len(ts) > 0:
+        if security not in self.__securities:
+            self.__securities.append(security)
 
     def upsert_volatility(self, client, ts):
         self._ts_upsert(client=client, ts=ts, tags={"owner": self.name}, field="volatility", series_name='owner')

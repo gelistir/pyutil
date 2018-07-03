@@ -67,7 +67,7 @@ class TestOwner(unittest.TestCase):
         s1.reference[KIID] = 5
 
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
-        o.upsert_position(client=self.client, security=s1, custodian=o.custodian.name, ts={t1: 0.1, t2: 0.4})
+        o.upsert_position(client=self.client, security=s1, custodian=o.custodian, ts={t1: 0.1, t2: 0.4})
 
 
         pdt.assert_frame_equal(o.position(client=self.client),
