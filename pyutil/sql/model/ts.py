@@ -16,6 +16,7 @@ from datetime import date as datetype
 from pyutil.sql.util import from_pandas, to_pandas
 
 
+
 class Timeseries(Base):
     __tablename__ = "ts_name"
     id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
@@ -35,6 +36,8 @@ class Timeseries(Base):
 
     _data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'),
                          cascade="all, delete-orphan", backref="ts")
+
+    _tags = relationship("Tags", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan", backref="tags")
 
     def __init__(self, name=None, product=None, data=None, secondary=None, tertiary=None):
         self.secondary = secondary
@@ -98,7 +101,6 @@ class Timeseries(Base):
         if self.tertiary:
             assert self.secondary
             return self.name, self.secondary, self.tertiary
-
         if self.secondary:
             return self.name, self.secondary
         else:
@@ -116,3 +118,12 @@ class _TimeseriesData(Base):
         self.date = date
         self.value = value
         self.ts = ts
+
+
+class Tags(Base):
+    __tablename__ = "ts_tags"
+    id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
+    ts_id = sq.Column("ts_id", sq.Integer, sq.ForeignKey(Timeseries.id), index=True)
+    name = sq.Column("name", sq.String(100), nullable=False)
+    value = sq.Column("value", sq.String(100), nullable=True)
+

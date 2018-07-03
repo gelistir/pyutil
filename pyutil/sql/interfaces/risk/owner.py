@@ -22,9 +22,6 @@ FIELDS = {
     "Inception Date": Field(name="Inception Date", result=DataType.string, type=FieldType.other)  # don't use date here...
 }
 
-def date2str(x):
-    return x.strftime("%Y-%m-%d")
-
 
 class Owner(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Owner"}
@@ -81,7 +78,6 @@ class Owner(ProductInterface):
 
         return f
 
-
     def position_by(self, client, sum=False, tail=None, index_col=None):
         if index_col:
             pos = self.position(client=client, sum=False, tail=tail)
@@ -134,9 +130,6 @@ class Owner(ProductInterface):
     #     return pd.concat((f(sum=sum, tail=tail), self.reference_securities), axis=1)
 
     def vola_securities(self, client):
-        f = client.frame(field="volatility", measurement="securities", tags=["security"], conditions=[("currency",self.currency.name)])
-        print(f)
-
         x = pd.DataFrame({security.name: security.volatility(client=client, currency=self.currency.name) for security in self.securities})
         return x.transpose()
 
@@ -146,7 +139,6 @@ class Owner(ProductInterface):
             x.loc["Sum"] = x.sum(axis=0)
 
         return x
-
 
     def vola_weighted_by(self, client, index_col=None, sum=False, tail=None):
         if index_col:
@@ -169,14 +161,6 @@ class Owner(ProductInterface):
     @property
     def reference_securities(self):
         return pd.DataFrame({security.name: security.reference_series.sort_index() for security in self.securities}).sort_index().transpose()
-
-    #@property
-    #def current_position(self):
-    #    p = self.position(sum=False).transpose().ffill()
-    #    if len(p.index) >= 1:
-    #        return p.loc[p.index[-1]].rename(None)
-    #    else:
-    #        return None
 
     @property
     def kiid(self):
@@ -204,15 +188,7 @@ class Owner(ProductInterface):
         else:
             kiid = self.kiid_weighted(client=client, sum=sum, tail=tail)
             ref = self.reference_securities
-            return pd.concat((kiid, ref), axis=1, sort=True)
-
-
-        #return self.__weighted_by(f = self.kiid_weighted, index_col=index_col, sum=sum, tail=tail)
-    #
-    #
-    # @property
-    # def nav(self):
-    #     return _NavSeries(self.get_timeseries("nav"))
+            return pd.concat((kiid, ref), axis=1)
 
     def upsert_return(self, client, ts):
         # client is the influx client
@@ -223,7 +199,6 @@ class Owner(ProductInterface):
                 helper(owner=self.name, returns=value, time=date)
 
             helper.commit()
-
 
     def upsert_position(self, client, security, custodian, ts):
         if len(ts) > 0:
@@ -237,7 +212,6 @@ class Owner(ProductInterface):
                 helper(owner=self.name, security=security.name, custodian=custodian, time=date, weight=value)
 
             helper.commit()
-
 
     def upsert_volatility(self, client, ts):
         if len(ts) > 0:
