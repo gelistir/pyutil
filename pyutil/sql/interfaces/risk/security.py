@@ -32,10 +32,10 @@ class Security(ProductInterface):
         return "Security({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
 
     def price(self, client):
-        return client.series(field="price", measurement="security", conditions=[("security", self.name)], date=True)
+        return client.series(field="price", measurement="security", conditions=[("security", self.name)])
 
     def volatility(self, client, currency):
-        return client.series(field="volatility", measurement="security", conditions=[("security", self.name), ("currency", currency)], date=True)
+        return client.series(field="volatility", measurement="security", conditions=[("security", self.name), ("currency", currency)])
 
     @hybrid_property
     def kiid(self):
@@ -46,19 +46,8 @@ class Security(ProductInterface):
         return self.get_reference("Bloomberg Ticker")
 
     def upsert_volatility(self, client, currency, ts):
-        if len(ts) > 0:
-            helper = client.helper(tags=["security", "currency"], fields=["volatility"], series_name='security', autocommit=True, bulk_size=10)
-
-            for date, value in ts.items():
-                helper(security=self.name, volatility=float(value), currency=currency, time=date)
-
-            helper.commit()
+        self._ts_upsert(client=client, ts=ts, tags={"security": self.name, "currency": currency}, field="volatility", series_name="security")
 
     def upsert_price(self, client, ts):
-        if len(ts) > 0:
-            helper = client.helper(tags=["security"], fields=["price"], series_name='security', autocommit=True, bulk_size=10)
+        self._ts_upsert(client=client, ts=ts, tags={"security": self.name}, field="price", series_name="security")
 
-            for date, value in ts.items():
-                helper(security=self.name, price=float(value), time=date)
-
-            helper.commit()

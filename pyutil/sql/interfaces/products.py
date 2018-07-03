@@ -129,6 +129,7 @@ class ProductInterface(MyMixin, Base):
         if len(ts) > 0:
             helper = client.helper(tags=list(tags.keys()), fields=[field], series_name=series_name, autocommit=True, bulk_size=10)
             for t, x in ts.items():
-                helper(**{**{field: x, "time": pd.Timestamp(t), "name": self.name}, **tags})
+                print({**{field: x, "time": pd.Timestamp(t)}, **tags})
+                helper(**{**{field: x, "time": pd.Timestamp(t)}, **tags})
 
             helper.commit()

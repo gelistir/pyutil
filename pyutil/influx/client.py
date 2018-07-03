@@ -61,7 +61,7 @@ class Client(DataFrameClient):
 
         return MySeriesHelper
 
-    def frame(self, field, tags, measurement, conditions=None, date=False):
+    def frame(self, field, tags, measurement, conditions=None):
         ttt = ", ".join(['"{t}"::tag'.format(t=t) for t in tags])
         query = """SELECT {f}::field, {t} FROM {m}""".format(f=field, t=ttt, m=measurement)
 
@@ -69,19 +69,21 @@ class Client(DataFrameClient):
             ccc = " AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
             query = "{q} WHERE {c}".format(q=query, c=ccc)
 
-        print(query)
         a = self.query(query)
 
         if measurement in a:
             x = a[measurement]
-            if date:
-                x.index = x.index.date
-            x = x.set_index(keys=tags, append=True).unstack(level=-1)[field]
-            return x
+            print(tags)
+            print(x.set_index(keys=tags, append=True))
+            x = x.tz_localize(None)
+            return x.set_index(keys=tags, append=True).unstack(level=-1)[field]
+            #x = x.tz_convert(None)
+            #x.index = x.index.to_datetime
+            #return x
         else:
             return pd.DataFrame({})
 
-    def series(self, field, measurement, conditions=None, date=False):
+    def series(self, field, measurement, conditions=None):
         """ test empty !!!! """
         try:
             query="""SELECT {f}::field FROM {m}""".format(f=field, m=measurement)
@@ -91,11 +93,7 @@ class Client(DataFrameClient):
 
             result = self.query(query)
 
-            a = result[measurement][field]
-
-            if date:
-                a.index = a.index.date
-            return a
+            return result[measurement][field].tz_convert(None)
 
         except:
             return pd.Series({})

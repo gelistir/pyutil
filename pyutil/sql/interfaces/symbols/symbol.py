@@ -25,8 +25,8 @@ class Symbol(ProductInterface):
         self.group = group
         self.internal = internal
 
-    def ts(self, client, field="px_last", date=True):
-        return client.series(field=field, measurement="symbols", conditions=[("name", self.name)], date=date)
+    def ts(self, client, field="px_last"):
+        return client.series(field=field, measurement="symbols", conditions=[("name", self.name)])
 
     def ts_upsert(self, client, ts, field="px_last"):
         super()._ts_upsert(client=client, field=field, series_name="symbols", tags={"name": self.name}, ts=ts)

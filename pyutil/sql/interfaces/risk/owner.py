@@ -60,13 +60,14 @@ class Owner(ProductInterface):
         return self.__securities
 
     def returns(self, client):
-        return client.series(field="returns", measurement="owner", conditions=[("owner", self.name)], date=True)
+        return client.series(field="returns", measurement="owner", conditions=[("owner", self.name)])
 
     def volatility(self, client):
-        return client.series(field="volatility", measurement="owner", conditions=[("owner", self.name)], date=True)
+        return client.series(field="volatility", measurement="owner", conditions=[("owner", self.name)])
 
     def position(self, client, sum=False, tail=None):
-        f = client.frame(field="weight", tags=["security"], measurement="owner", date=True)
+        f = client.frame(field="weight", tags=["security"], measurement="owner", conditions=[("owner", self.name)])
+        print(f)
 
         if tail:
             f = f.tail(tail)
@@ -78,85 +79,43 @@ class Owner(ProductInterface):
 
         return f
 
-    def position_by(self, client, sum=False, tail=None, index_col=None):
-        if index_col:
-            pos = self.position(client=client, sum=False, tail=tail)
-            try:
-                ref = self.reference_securities[index_col]
-                f = pd.concat((pos, ref), axis=1)
-                a = f.groupby(by=index_col).sum()
-                if sum:
-                    a.loc["Sum"] = a.sum(axis=0)
-                return a
+    def position_by(self, client, index_col, sum=False, tail=None):
+        #if index_col:
+        pos = self.position(client=client, sum=False, tail=tail)
+        return self.__weighted_by(x=pos, index_col=index_col, sum=sum)
 
-            except KeyError:
-                return pd.DataFrame({})
-        else:
-            pos = self.position(client=client, sum=sum, tail=tail)
-            ref = self.reference_securities
-            return pd.concat((pos, ref), axis=1, sort=True)
-
-
-    #def position_by(self, client, index_col=None, sum=False, tail=None):
-    #    if index_col:
-    #        try:
-    #            ref = self.reference_securities[index_col]
-    #        except KeyError:
-    #            ref = pd.DataFrame({})
-    #    else:
-    #        ref = self.reference_securities
-
-    #    x = pd.concat((self.position(client), ref), axis=1)
-
-
-
-        #x = pd.concat((self.position(client, sum=sum), self.reference_securities), axis=1)
-
-    #    return x
-
-        #return self.__weighted_by(client, f = self.position, index_col=index_col, sum=sum, tail=tail)
-
-    # def __weighted_by(self, client, f, index_col=None, sum=False, tail=None):
-    #     if index_col:
-    #         if index_col in self.reference_securities.keys():
-    #             a = pd.concat((f(client, sum=False, tail=tail), self.reference_securities[index_col]), axis=1)
-    #             a = a.groupby(by=index_col).sum()
-    #             if sum:
-    #                 a.loc["Sum"] = a.sum(axis=0)
-    #             return a
-    #         else:
-    #             return pd.DataFrame({})
-    #
-    #     return pd.concat((f(sum=sum, tail=tail), self.reference_securities), axis=1)
+    def __weighted_by(self, x, index_col, sum=False):
+        try:
+            ref = self.reference_securities[index_col]
+            a = pd.concat((x, ref), axis=1).groupby(by=index_col).sum()
+            if sum:
+                a.loc["Sum"] = a.sum(axis=0)
+            return pd.DataFrame(index=a.index, data=a.values, columns=pd.DatetimeIndex([b for b in a.keys()]))
+        except KeyError:
+            return pd.DataFrame({})
 
     def vola_securities(self, client):
-        x = pd.DataFrame({security.name: security.volatility(client=client, currency=self.currency.name) for security in self.securities})
+        x = pd.DataFrame({security.name: security.volatility(client=client, currency=self.currency.name).tz_localize(None) for security in self.securities})
         return x.transpose()
 
     def vola_weighted(self, client, sum=False, tail=None):
-        x = self.position(client, sum=False, tail=tail).multiply(self.vola_securities(client=client)).dropna(axis=0, how="all").dropna(axis=1, how="all")
+        w = self.position(client, sum=False, tail=tail)
+        v = self.vola_securities(client=client)
+        print("WWWWWWWWeights")
+        print(w)
+        print("VVVVVVolatitiliy")
+        print(v)
+
+        x = w.multiply(v).dropna(axis=0, how="all").dropna(axis=1, how="all")
+
         if sum:
             x.loc["Sum"] = x.sum(axis=0)
 
         return x
 
-    def vola_weighted_by(self, client, index_col=None, sum=False, tail=None):
-        if index_col:
-            vola = self.vola_weighted(client=client, sum=False, tail=tail)
-            try:
-                ref = self.reference_securities[index_col]
-                f = pd.concat((vola, ref), axis=1)
-                a = f.groupby(by=index_col).sum()
-                if sum:
-                    a.loc["Sum"] = a.sum(axis=0)
-                return a
-
-            except KeyError:
-                return pd.DataFrame({})
-        else:
-            vola = self.vola_weighted(client=client, sum=sum, tail=tail)
-            ref = self.reference_securities
-            return pd.concat((vola, ref), axis=1, sort=True)
+    def vola_weighted_by(self, client, index_col, sum=False, tail=None):
+        vola = self.vola_weighted(client=client, sum=False, tail=tail)
+        return self.__weighted_by(x=vola, index_col=index_col, sum=sum)
 
     @property
     def reference_securities(self):
@@ -172,53 +131,20 @@ class Owner(ProductInterface):
             x.loc["Sum"] = x.sum(axis=0)
         return x
 
-    def kiid_weighted_by(self, client, index_col=None, sum=False, tail=None):
-        if index_col:
-            kiid = self.kiid_weighted(client=client, sum=False, tail=tail)
-            try:
-                ref = self.reference_securities[index_col]
-                f = pd.concat((kiid, ref), axis=1)
-                a = f.groupby(by=index_col).sum()
-                if sum:
-                    a.loc["Sum"] = a.sum(axis=0)
-                return a
-
-            except KeyError:
-                return pd.DataFrame({})
-        else:
-            kiid = self.kiid_weighted(client=client, sum=sum, tail=tail)
-            ref = self.reference_securities
-            return pd.concat((kiid, ref), axis=1)
+    def kiid_weighted_by(self, client, index_col, sum=False, tail=None):
+        kiid = self.kiid_weighted(client=client, sum=False, tail=tail)
+        return self.__weighted_by(x=kiid, index_col=index_col, sum=sum)
 
     def upsert_return(self, client, ts):
-        # client is the influx client
-        if len(ts) > 0:
-            helper = client.helper(tags=["owner"], fields=["returns"], series_name='owner', autocommit=True, bulk_size=10)
-
-            for date, value in ts.items():
-                helper(owner=self.name, returns=value, time=date)
-
-            helper.commit()
+        self._ts_upsert(client=client, ts=ts, tags={"owner": self.name}, field="returns", series_name='owner')
 
     def upsert_position(self, client, security, custodian, ts):
+        self._ts_upsert(client=client, ts=ts, tags={"owner": self.name, "security": security.name, "custodian": custodian},
+                        field="weight", series_name="owner")
+
         if len(ts) > 0:
             if security not in self.__securities:
                 self.__securities.append(security)
 
-            helper = client.helper(tags=["owner", "security", "custodian"], fields=["weight"], series_name='owner',
-                          autocommit=True, bulk_size=10)
-
-            for date, value in ts.items():
-                helper(owner=self.name, security=security.name, custodian=custodian, time=date, weight=value)
-
-            helper.commit()
-
     def upsert_volatility(self, client, ts):
-        if len(ts) > 0:
-            helper = client.helper(tags=["owner"], fields=["volatility"], series_name='owner', autocommit=True, bulk_size=10)
-
-            for date, value in ts.items():
-                helper(owner=self.name, volatility=value, time=date)
-
-            helper.commit()
-
+        self._ts_upsert(client=client, ts=ts, tags={"owner": self.name}, field="volatility", series_name='owner')

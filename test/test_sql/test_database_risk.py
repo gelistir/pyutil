@@ -61,7 +61,7 @@ class TestDatabaseRisk(TestCase):
         self.assertEqual(self.o1, self.db.owner(name="100"))
 
     def test_position(self):
-        x = pd.DataFrame(index=[t1.date(), t2.date()],
+        x = pd.DataFrame(index=[t1, t2],
                          columns=["owner", "custodian", "security", "weight"],
                          data=[["100", "UBS Geneva", "123", 0.4],["100", "UBS Geneva", "123", 0.5]])
 
@@ -70,7 +70,7 @@ class TestDatabaseRisk(TestCase):
         pdt.assert_series_equal(self.db.position, x["weight"], check_names=False)
 
     def test_returns(self):
-        pdt.assert_series_equal(self.db.returns["100"], pd.Series({t1.date(): 0.2, t2.date(): 0.1}), check_names=False)
+        pdt.assert_series_equal(self.db.returns["100"], pd.Series({t1: 0.2, t2: 0.1}), check_names=False)
 
     def test_reference_securities(self):
         pdt.assert_frame_equal(self.db.reference_securities, pd.DataFrame(index=[123], columns=["KIID"], data=[[5]]), check_names=False)
@@ -86,13 +86,13 @@ class TestDatabaseRisk(TestCase):
         self.assertEqual(self.db.security(name=123), self.session.query(Security).filter_by(name="123").one())
 
     def test_prices(self):
-        pdt.assert_series_equal(self.db.prices["123"], pd.Series({t1.date(): 11.1, t2.date(): 12.1}), check_names=False)
+        pdt.assert_series_equal(self.db.prices["123"], pd.Series({t1: 11.1, t2: 12.1}), check_names=False)
 
     def test_volatility_owner(self):
-        pdt.assert_series_equal(self.db.volatility_owner["100"], pd.Series({t1.date(): 0.3, t2.date(): 0.3}), check_names=False)
+        pdt.assert_series_equal(self.db.volatility_owner["100"], pd.Series({t1: 0.3, t2: 0.3}), check_names=False)
 
     def test_volatility_security(self):
-        pdt.assert_series_equal(self.db.volatility_security["123"].loc["USD"], pd.Series({t1.date(): 11.1, t2.date(): 12.1}), check_names=False)
+        pdt.assert_series_equal(self.db.volatility_security["123"].loc["USD"], pd.Series({t1: 11.1, t2: 12.1}), check_names=False)
 
     # def test_volatility_owner_securities(self):
     #     print(self.db.volatility_owner)
