@@ -48,6 +48,11 @@ class Portfolio(ProductInterface):
         # upsert the underlying time series data, this is slow here but later when we access the data we don't need to recompute the nav or the leverage
         self.upsert_ts("nav", data=p.nav)
         self.upsert_ts("leverage", data=p.leverage)
+
+        # upsert the database
+        # self._ts_upsert(client, ts=p.nav, tags={"portfolio": self.name}, field="nav", series_name="portfolio")
+        # self._ts_upsert(client, ts=p.leverage, tags={"portfolio": self.name}, field="leverage", series_name="portfolio")
+
         return self
 
 

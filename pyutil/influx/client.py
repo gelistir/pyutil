@@ -52,13 +52,6 @@ class Client(DataFrameClient):
                 """Meta class stores time series helper configuration."""
                 pass
 
-                # Defines the number of data points to store prior to writing
-                # on the wire.
-                #bulk_size = bulk_size
-
-                # autocommit must be set to True when using bulk_size
-                #autocommit = autocommit
-
         MySeriesHelper.Meta.fields = fields
         MySeriesHelper.Meta.tags = tags
         MySeriesHelper.Meta.client = self.influxclient

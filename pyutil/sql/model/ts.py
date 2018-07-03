@@ -37,7 +37,7 @@ class Timeseries(Base):
     _data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'),
                          cascade="all, delete-orphan", backref="ts")
 
-    _tags = relationship("Tags", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan", backref="tags")
+    #_tags = relationship("Tags", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan", backref="tags")
 
     def __init__(self, name=None, product=None, data=None, secondary=None, tertiary=None):
         self.secondary = secondary
@@ -107,6 +107,9 @@ class Timeseries(Base):
             return self.name
 
 
+    #def export(self, client, series_name, tags):
+    #    helper = client.helper(tags=tags, fields=[self.name], series_name=series_name, autocommit=True, bulk_size=10)
+
 class _TimeseriesData(Base):
     __tablename__ = 'ts_data'
     date = sq.Column(sq.Date, primary_key=True)
@@ -120,10 +123,10 @@ class _TimeseriesData(Base):
         self.ts = ts
 
 
-class Tags(Base):
-    __tablename__ = "ts_tags"
-    id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
-    ts_id = sq.Column("ts_id", sq.Integer, sq.ForeignKey(Timeseries.id), index=True)
-    name = sq.Column("name", sq.String(100), nullable=False)
-    value = sq.Column("value", sq.String(100), nullable=True)
+#class Tags(Base):
+#    __tablename__ = "ts_tags"
+#    id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
+#    ts_id = sq.Column("ts_id", sq.Integer, sq.ForeignKey(Timeseries.id), index=True)
+#    name = sq.Column("name", sq.String(100), nullable=False)
+#    value = sq.Column("value", sq.String(100), nullable=True)
 

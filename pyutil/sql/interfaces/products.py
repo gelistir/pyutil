@@ -125,54 +125,10 @@ class ProductInterface(MyMixin, Base):
     def __hash__(self):
         return hash(self.name)
 
+    def _ts_upsert(self, client, ts, tags, field, series_name):
+        if len(ts) > 0:
+            helper = client.helper(tags=list(tags.keys()), fields=[field], series_name=series_name, autocommit=True, bulk_size=10)
+            for t, x in ts.items():
+                helper(**{**{field: x, "time": pd.Timestamp(t), "name": self.name}, **tags})
 
-
-# class Products(object):
-#     def __init__(self, products, cls, attribute="name", f=lambda x: x):
-#         for p in products:
-#             assert isinstance(p, cls)
-#
-#         self.__products = {f(getattr(x, attribute)): x for x in products}
-#
-#     def __getitem__(self, item):
-#         return self.__products[str(item)]
-#
-#     def __iter__(self):
-#         for symbol in self.__products.values():
-#             yield symbol
-#
-#     @property
-#     def reference(self):
-#         x = pd.DataFrame({str(key): product.reference_series for key, product in self.__products.items()}).transpose()
-#         x.index.names = ["Product"]
-#         return x.fillna("")
-#
-#     def history(self, field="PX_LAST", rename=False):
-#         # this could be slow
-#         x = pd.DataFrame({product: product.get_timeseries(name=field) for product in self})
-#         x.index.names = ["Date"]
-#         if rename:
-#             x = x.rename(columns=lambda x: x.name)
-#
-#         return x
-#
-#     def to_dict(self):
-#         return self.__products
-#
-#     def __repr__(self):
-#         a = max([len(k) for k in self.__products.keys()])
-#         seq = ["{key:{a}.{a}}   {product}".format(key=key, product=product, a=a) for key, product in sorted(self.__products.items())]
-#         return "\n".join(seq)
-#
-#     def to_html(self, index_name):
-#         x = self.reference.fillna("")
-#
-#         # every index has to be string!
-#         x.index = [str(a) for a in x.index]
-#         x.index.names = [index_name]
-#
-#         return frame2dict(x.reset_index(drop=False))
-
-
-
-
+            helper.commit()
