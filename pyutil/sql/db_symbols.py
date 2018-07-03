@@ -73,18 +73,12 @@ class DatabaseSymbols(Database):
 
     def portfolio(self, name: str):
         return self._filter(Portfolio, name=name)
-        #x = self._read("SELECT * FROM v_portfolio_2 where name=%(name)s", params={"name": name},
-        #               index_col=["timeseries", "symbol"])["data"].apply(to_pandas)
-        #return PP(prices=x.loc["price"].transpose(), weights=x.loc["weight"].transpose())
 
     def state(self, name: str):
         portfolio = self.portfolio(name=name).portfolio(rename=True)
         ref = self._read(sql="SELECT * FROM v_symbols_state", index_col=["symbol"])
 
-        frame = pd.concat([portfolio.state, ref.loc[portfolio.assets]], axis=1)
-
-        #frame = self.sector(total=False)
-        #print(frame)
+        frame = pd.concat([portfolio.state, ref.loc[portfolio.assets]], axis=1, sort=True)
 
         sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
         frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
