@@ -61,39 +61,38 @@ class Client(DataFrameClient):
 
         return MySeriesHelper
 
-    def frame(self, field, tags, measurement, conditions=None):
-        ttt = ", ".join(['"{t}"::tag'.format(t=t) for t in tags])
-        query = """SELECT {f}::field, {t} FROM {m}""".format(f=field, t=ttt, m=measurement)
+    def __cond(self, conditions=None):
+        return " AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
+
+    def __query(self, field, measurement, tags=None, conditions=None):
+        query = """SELECT {f}::field""".format(f=field)
+
+        if tags:
+            query += ", {t}".format(t=", ".join(['"{t}"::tag'.format(t=t) for t in tags]))
+
+        query += " FROM {m}".format(m=measurement)
 
         if conditions:
-            ccc = " AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
-            query = "{q} WHERE {c}".format(q=query, c=ccc)
+            query += " WHERE {c}".format(c=" AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions]))
 
-        a = self.query(query)
+        return query
 
-        if measurement in a:
-            x = a[measurement]
-            print(tags)
-            print(x.set_index(keys=tags, append=True))
-            x = x.tz_localize(None)
+    def frame(self, field, tags, measurement, conditions=None):
+        query = self.__query(field=field, tags=tags, measurement=measurement, conditions=conditions)
+        result = self.query(query)
+
+        if measurement in result:
+            x = result[measurement].tz_localize(None)
             return x.set_index(keys=tags, append=True).unstack(level=-1)[field]
-            #x = x.tz_convert(None)
-            #x.index = x.index.to_datetime
-            #return x
         else:
             return pd.DataFrame({})
 
     def series(self, field, measurement, conditions=None):
         """ test empty !!!! """
-        try:
-            query="""SELECT {f}::field FROM {m}""".format(f=field, m=measurement)
-            if conditions:
-                ccc = " AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
-                query = "{q} WHERE {c}".format(q=query, c=ccc)
+        query = self.__query(field=field, measurement=measurement, conditions=conditions)
+        result = self.query(query)
 
-            result = self.query(query)
-
-            return result[measurement][field].tz_convert(None)
-
-        except:
+        if measurement in result:
+            return result[measurement][field].tz_localize(None)
+        else:
             return pd.Series({})

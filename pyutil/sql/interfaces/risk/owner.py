@@ -67,7 +67,6 @@ class Owner(ProductInterface):
 
     def position(self, client, sum=False, tail=None):
         f = client.frame(field="weight", tags=["security"], measurement="owner", conditions=[("owner", self.name)])
-        print(f)
 
         if tail:
             f = f.tail(tail)
@@ -80,7 +79,6 @@ class Owner(ProductInterface):
         return f
 
     def position_by(self, client, index_col, sum=False, tail=None):
-        #if index_col:
         pos = self.position(client=client, sum=False, tail=tail)
         return self.__weighted_by(x=pos, index_col=index_col, sum=sum)
 
@@ -90,12 +88,13 @@ class Owner(ProductInterface):
             a = pd.concat((x, ref), axis=1).groupby(by=index_col).sum()
             if sum:
                 a.loc["Sum"] = a.sum(axis=0)
+            # this is a very weird construction but it seems it can not be avoided
             return pd.DataFrame(index=a.index, data=a.values, columns=pd.DatetimeIndex([b for b in a.keys()]))
         except KeyError:
             return pd.DataFrame({})
 
     def vola_securities(self, client):
-        x = pd.DataFrame({security.name: security.volatility(client=client, currency=self.currency.name).tz_localize(None) for security in self.securities})
+        x = pd.DataFrame({security.name: security.volatility(client=client, currency=self.currency) for security in self.securities})
         return x.transpose()
 
     def vola_weighted(self, client, sum=False, tail=None):
@@ -145,7 +144,6 @@ class Owner(ProductInterface):
         self._ts_upsert(client=client, ts=ts, tags={"owner": self.name, "security": security.name, "custodian": custodian.name},
                         field="weight", series_name="owner")
 
-        #if len(ts) > 0:
         if security not in self.__securities:
             self.__securities.append(security)
 

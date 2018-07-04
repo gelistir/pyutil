@@ -150,7 +150,7 @@ class TestOwner(unittest.TestCase):
         o.upsert_position(client=self.client, security=s1, custodian=o.custodian, ts={t1: 0.1, t2: 0.4})
 
         # update the volatility, note that you can update the volatility even after the security has been added to the owner
-        s1.upsert_volatility(client=self.client, currency=o.currency.name, ts={t1: 2.5, t2: 3.5})
+        s1.upsert_volatility(client=self.client, currency=o.currency, ts={t1: 2.5, t2: 3.5})
 
         pdt.assert_frame_equal(o.vola_securities(client=self.client),
                                pd.DataFrame(columns=pd.Index([t1, t2]), index=["123"],

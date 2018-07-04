@@ -34,7 +34,7 @@ class TestDatabaseRisk(TestCase):
         cls.s1.reference[KIID] = 5
 
         cls.s1.upsert_price(client=cls.client, ts={t1: 11.1, t2: 12.1})
-        cls.s1.upsert_volatility(client=cls.client, ts={t1: 11.1, t2: 12.1}, currency=cls.cur1.name)
+        cls.s1.upsert_volatility(client=cls.client, ts={t1: 11.1, t2: 12.1}, currency=cls.cur1)
 
         cls.session.add_all([cls.s1, cls.s2])
 

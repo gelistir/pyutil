@@ -1,5 +1,6 @@
 from sqlalchemy.ext.hybrid import hybrid_property
 from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.model.ref import Field, DataType, FieldType
 
 
@@ -35,7 +36,8 @@ class Security(ProductInterface):
         return client.series(field="price", measurement="security", conditions=[("security", self.name)])
 
     def volatility(self, client, currency):
-        return client.series(field="volatility", measurement="security", conditions=[("security", self.name), ("currency", currency)])
+        assert isinstance(currency, Currency)
+        return client.series(field="volatility", measurement="security", conditions=[("security", self.name), ("currency", currency.name)])
 
     @hybrid_property
     def kiid(self):
@@ -46,7 +48,8 @@ class Security(ProductInterface):
         return self.get_reference("Bloomberg Ticker")
 
     def upsert_volatility(self, client, currency, ts):
-        self._ts_upsert(client=client, ts=ts, tags={"security": self.name, "currency": currency}, field="volatility", series_name="security")
+        assert isinstance(currency, Currency)
+        self._ts_upsert(client=client, ts=ts, tags={"security": self.name, "currency": currency.name}, field="volatility", series_name="security")
 
     def upsert_price(self, client, ts):
         self._ts_upsert(client=client, ts=ts, tags={"security": self.name}, field="price", series_name="security")

@@ -4,6 +4,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.influx.client import Client
+from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
 
 t0 = pd.Timestamp("1978-11-15")
@@ -22,11 +23,11 @@ class TestSecurity(unittest.TestCase):
 
     def test_name(self):
         s = Security(name=100, kiid=5, ticker="AAAAA US Equity")
-        #s.reference[KIID] = 5
+        c = Currency(name="USD")
         self.assertEqual(s.name, "100")
 
         pdt.assert_series_equal(s.price(client=self.client), pd.Series({}))
-        pdt.assert_series_equal(s.volatility(client=self.client, currency="USD"), pd.Series({}))
+        pdt.assert_series_equal(s.volatility(client=self.client, currency=c), pd.Series({}))
 
         self.assertEqual(s.discriminator, "Security")
         self.assertEqual(s.kiid, 5)
@@ -40,7 +41,8 @@ class TestSecurity(unittest.TestCase):
 
     def test_volatility(self):
         s = Security(name=100)
-        s.upsert_volatility(client=self.client, currency="USD", ts={t0: 11.0, t1: 12.1})
+        c = Currency(name="USD")
+        s.upsert_volatility(client=self.client, currency=c, ts={t0: 11.0, t1: 12.1})
         print(self.client.query("SELECT * FROM security"))
 
-        pdt.assert_series_equal(s.volatility(client=self.client, currency='USD'), pd.Series(index=[t0, t1], data=[11.0, 12.1], name="volatility"))
+        pdt.assert_series_equal(s.volatility(client=self.client, currency=c), pd.Series(index=[t0, t1], data=[11.0, 12.1], name="volatility"))
