@@ -144,6 +144,7 @@ class Owner(ProductInterface):
         self._ts_upsert(client=client, ts=ts, tags={"owner": self.name, "security": security.name, "custodian": custodian.name},
                         field="weight", series_name="owner")
 
+        # do we really need this link?
         if security not in self.__securities:
             self.__securities.append(security)
 
