@@ -49,8 +49,8 @@ class Security(ProductInterface):
 
     def upsert_volatility(self, client, currency, ts):
         assert isinstance(currency, Currency)
-        self._ts_upsert(client=client, ts=ts, tags={"security": self.name, "currency": currency.name}, field="volatility", series_name="security")
+        client.series_upsert(ts=ts, tags={"security": self.name, "currency": currency.name}, field="volatility", series_name="security")
 
     def upsert_price(self, client, ts):
-        self._ts_upsert(client=client, ts=ts, tags={"security": self.name}, field="price", series_name="security")
+        client.series_upsert(ts=ts, tags={"security": self.name}, field="price", series_name="security")
 

@@ -29,8 +29,7 @@ class Symbol(ProductInterface):
         return client.series(field=field, measurement="symbols", conditions=[("name", self.name)])
 
     def ts_upsert(self, client, ts, field="px_last"):
-        super()._ts_upsert(client=client, field=field, series_name="symbols", tags={"name": self.name}, ts=ts)
-
+        client.series_upsert(field=field, series_name="symbols", tags={"name": self.name}, ts=ts)
 
     def last(self, client, field="px_last"):
         try:
