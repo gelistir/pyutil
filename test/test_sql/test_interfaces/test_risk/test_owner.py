@@ -66,6 +66,7 @@ class TestOwner(unittest.TestCase):
         s1 = Security(name="123")
         s1.reference[KIID] = 5
 
+        o.securities.append(s1)
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
         o.upsert_position(client=self.client, security=s1, custodian=o.custodian, ts={t1: 0.1, t2: 0.4})
 
@@ -103,6 +104,7 @@ class TestOwner(unittest.TestCase):
         self.assertTrue(o.reference_securities.empty)
         self.assertListEqual(o.securities, [])
 
+        o.securities.append(s1)
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
         o.upsert_position(client=self.client, security=s1, custodian=o.custodian, ts={t1: 0.1, t2: 0.4})
 
@@ -125,6 +127,7 @@ class TestOwner(unittest.TestCase):
         s1.reference[NAME] = "Maffay"
         s1.reference[KIID] = 5
 
+        o.securities.append(s1)
         # update the position in security s1
         o.upsert_position(client=self.client, security=s1, custodian=o.custodian, ts={t1: 0.1, t2: 0.4})
 
@@ -147,6 +150,7 @@ class TestOwner(unittest.TestCase):
         s1.reference[KIID] = 5
 
         # update the position in security s1
+        o.securities.append(s1)
         o.upsert_position(client=self.client, security=s1, custodian=o.custodian, ts={t1: 0.1, t2: 0.4})
 
         # update the volatility, note that you can update the volatility even after the security has been added to the owner

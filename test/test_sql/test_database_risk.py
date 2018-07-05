@@ -43,6 +43,8 @@ class TestDatabaseRisk(TestCase):
 
         cls.o1 = Owner(name=100, currency=cls.cur1)
         cls.o1.reference[NAME] = "Peter Maffay"
+        # append the security
+        cls.o1.securities.append(cls.s1)
         cls.o1.upsert_position(client=cls.client, security=cls.s1, custodian=cls.cus1, ts={t1: 0.4, t2: 0.5})
         cls.o1.upsert_volatility(client=cls.client, ts={t1: 0.3, t2: 0.3})
         cls.o1.upsert_return(client=cls.client, ts={t1: 0.2, t2: 0.1})
