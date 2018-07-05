@@ -66,7 +66,23 @@ class Owner(ProductInterface):
         return client.series(field="volatility", measurement="owner", conditions=[("owner", self.name)])
 
     def position(self, client, sum=False, tail=None):
-        f = client.frame(field="weight", tags=["security"], measurement="owner", conditions=[("owner", self.name)])
+        f = client.query("""SELECT weight::field, security::tag FROM owner WHERE "owner"='{name}'""".format(name=self.name))
+        f = f["owner"].set_index(keys=["security"], append=True).groupby(level=[0, 1]).sum()
+        # print(f).sum()
+        # assert False
+        f = f.unstack(level=-1).tz_localize(None)["weight"]  #.tail(1).transpose()
+        #print(f)
+
+
+        #f = client.query("""SELECT weight::field, security::tag FROM owner WHERE "owner"='{name}'""".format(name=self.name))
+        #if measurement in f:
+        #f = f["weight"].tz_localize(None)
+        #f.set_index(keys=["security"], append=True)
+        #f.groupby()
+        #print(f).sum()
+
+
+        #f = client.frame(field="weight", tags=["security"], measurement="owner", conditions=[("owner", self.name)])
 
         if tail:
             f = f.tail(tail)
@@ -85,7 +101,7 @@ class Owner(ProductInterface):
     def __weighted_by(self, x, index_col, sum=False):
         try:
             ref = self.reference_securities[index_col]
-            a = pd.concat((x, ref), axis=1).groupby(by=index_col).sum()
+            a = pd.concat((x, ref), axis=1, sort=True).groupby(by=index_col).sum()
             if sum:
                 a.loc["Sum"] = a.sum(axis=0)
             # this is a very weird construction but it seems it can not be avoided

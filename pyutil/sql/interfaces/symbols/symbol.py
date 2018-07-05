@@ -36,3 +36,8 @@ class Symbol(ProductInterface):
             return client.query("""SELECT LAST({f}) FROM "symbols" where "name"='{n}'""".format(n=self.name, f=field))["symbols"].index[0].date()
         except KeyError:
             return None
+
+if __name__ == '__main__':
+    a = "Alternatives"
+    s = SymbolType(a)
+    print(s)
