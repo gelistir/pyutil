@@ -153,12 +153,18 @@ class Owner(ProductInterface):
     def upsert_return(self, client, ts):
         client.series_upsert(ts=ts, tags={"owner": self.name}, field="returns", series_name='owner')
 
-    def upsert_position(self, client, security, custodian, ts):
-        assert isinstance(security, Security)
-        assert isinstance(custodian, Custodian)
-        assert security in self.__securities, "The security {s} is not known to owner {o}".format(s=security.name, o=self.name)
+    # def upsert_position(self, client, security, custodian, ts):
+    #     assert isinstance(security, Security)
+    #     assert isinstance(custodian, Custodian)
+    #     assert security in self.__securities, "The security {s} is not known to owner {o}".format(s=security.name, o=self.name)
+    #
+    #     client.series_upsert(ts=ts, tags={"owner": self.name, "security": security.name, "custodian": custodian.name}, field="weight", series_name="owner")
 
-        client.series_upsert(ts=ts, tags={"owner": self.name, "security": security.name, "custodian": custodian.name}, field="weight", series_name="owner")
+    def upsert_position(self, client, security, ts):
+        assert isinstance(security, Security)
+
+        client.series_upsert(ts=ts, tags={"owner": self.name, "security": security.name}, field="weight", series_name="owner")
+
 
     def upsert_volatility(self, client, ts):
         client.series_upsert(ts=ts, tags={"owner": self.name}, field="volatility", series_name='owner')

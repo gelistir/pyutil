@@ -41,7 +41,7 @@ class DatabaseRisk(Database):
     @property
     def position(self):
         # read all positions at once. This is fast!
-        return self.__client.frame(measurement="owner", field="weight", tags=["owner", "custodian", "security"]).stack()
+        return self.__client.frame(measurement="owner", field="weight", tags=["owner", "security"]).stack()
 
     # apply int
     @property

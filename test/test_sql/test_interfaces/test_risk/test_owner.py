@@ -68,7 +68,7 @@ class TestOwner(unittest.TestCase):
 
         o.securities.append(s1)
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
-        o.upsert_position(client=self.client, security=s1, custodian=o.custodian, ts={t1: 0.1, t2: 0.4})
+        o.upsert_position(client=self.client, security=s1, ts={t1: 0.1, t2: 0.4})
 
 
         pdt.assert_frame_equal(o.position(client=self.client),
@@ -106,7 +106,7 @@ class TestOwner(unittest.TestCase):
 
         o.securities.append(s1)
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
-        o.upsert_position(client=self.client, security=s1, custodian=o.custodian, ts={t1: 0.1, t2: 0.4})
+        o.upsert_position(client=self.client, security=s1, ts={t1: 0.1, t2: 0.4})
 
         self.assertListEqual(o.securities, [s1])
 
@@ -129,7 +129,7 @@ class TestOwner(unittest.TestCase):
 
         o.securities.append(s1)
         # update the position in security s1
-        o.upsert_position(client=self.client, security=s1, custodian=o.custodian, ts={t1: 0.1, t2: 0.4})
+        o.upsert_position(client=self.client, security=s1, ts={t1: 0.1, t2: 0.4})
 
         pdt.assert_series_equal(o.kiid, pd.Series(index=["123"], data=[5]))
         pdt.assert_frame_equal(o.kiid_weighted(client=self.client, sum=False),
@@ -151,7 +151,7 @@ class TestOwner(unittest.TestCase):
 
         # update the position in security s1
         o.securities.append(s1)
-        o.upsert_position(client=self.client, security=s1, custodian=o.custodian, ts={t1: 0.1, t2: 0.4})
+        o.upsert_position(client=self.client, security=s1, ts={t1: 0.1, t2: 0.4})
 
         # update the volatility, note that you can update the volatility even after the security has been added to the owner
         s1.upsert_volatility(client=self.client, currency=o.currency, ts={t1: 2.5, t2: 3.5})
