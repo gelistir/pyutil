@@ -15,17 +15,21 @@ class Portfolio(ProductInterface):
         except KeyError:
             return None
 
-    def upsert_influx(self, client, portfolio):
+    def upsert_influx(self, client, portfolio, autocommit=True, bulk_size=2000):
         assert isinstance(portfolio, _Portfolio)
 
         for symbol in portfolio.assets:
-            client.series_upsert(ts=portfolio.weights[symbol].dropna(), field="weight", tags={"portfolio": self.name, "asset": symbol}, series_name="portfolio")
-            client.series_upsert(ts=portfolio.prices[symbol].dropna(), field="price", tags={"portfolio": self.name, "asset": symbol}, series_name="portfolio")
+            client.series_upsert(ts=portfolio.weights[symbol].dropna(), field="weight", tags={"portfolio": self.name, "asset": symbol}, series_name="portfolio", autocommit=autocommit, bulk_size=bulk_size)
+            client.series_upsert(ts=portfolio.prices[symbol].dropna(), field="price", tags={"portfolio": self.name, "asset": symbol}, series_name="portfolio", autocommit=autocommit, bulk_size=bulk_size)
 
         # it's important to recompute the entire portfolio here...
         p = self.portfolio_influx(client=client)
-        client.series_upsert(ts=p.nav, field="nav", tags={"portfolio": self.name}, series_name="nav", autocommit=False)
-        client.series_upsert(ts=p.leverage, field="leverage", tags={"portfolio": self.name}, series_name="leverage", autocommit=False)
+
+        client.query("DROP SERIES FROM nav WHERE portfolio='{name}'".format(name=self.name))
+        client.series_upsert(ts=p.nav.dropna(), field="nav", tags={"portfolio": self.name}, series_name="nav", autocommit=autocommit, bulk_size=bulk_size)
+
+        client.query("DROP SERIES FROM leverage WHERE portfolio='{name}'".format(name=self.name))
+        client.series_upsert(ts=p.leverage.dropna(), field="leverage", tags={"portfolio": self.name}, series_name="leverage", autocommit=autocommit, bulk_size=bulk_size)
 
     def portfolio_influx(self, client):
         w = client.frame(field="weight", measurement="portfolio", tags=["portfolio", "asset"], conditions=[("portfolio", self.name)])

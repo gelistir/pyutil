@@ -183,7 +183,7 @@ class Portfolio(object):
         leverage (sum of weights)
         :return:
         """
-        return self.weights.sum(axis=1).dropna()
+        return self.weights.sum(axis=1).dropna().apply(float)
 
     def truncate(self, before=None, after=None):
         """
