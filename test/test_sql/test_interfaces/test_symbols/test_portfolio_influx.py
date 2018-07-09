@@ -15,7 +15,7 @@ class TestPortfolio(TestCase):
         cls.client = Client(host='test-influxdb', database="test-portfolio")
         #cls.assertIsNone(cls, cls.p.last(client=cls.client))
 
-        cls.p.upsert_influx(client=cls.client, portfolio=test_portfolio())
+        cls.p.upsert_influx(client=cls.client, portfolio=test_portfolio(), drop=True)
 
     @classmethod
     def tearDownClass(cls):

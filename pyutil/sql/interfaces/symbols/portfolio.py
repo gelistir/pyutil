@@ -15,20 +15,24 @@ class Portfolio(ProductInterface):
         except KeyError:
             return None
 
-    def upsert_influx(self, client, portfolio, autocommit=True, bulk_size=2000):
+    def upsert_influx(self, client, portfolio, autocommit=True, bulk_size=2000, drop=False):
         assert isinstance(portfolio, _Portfolio)
 
         for symbol in portfolio.assets:
+            if drop:
+                client.query("DROP SERIES FROM portfolio WHERE portfolio='{name}' and asset='{asset}'".format(name=self.name, asset=symbol))
             client.series_upsert(ts=portfolio.weights[symbol].dropna(), field="weight", tags={"portfolio": self.name, "asset": symbol}, series_name="portfolio", autocommit=autocommit, bulk_size=bulk_size)
             client.series_upsert(ts=portfolio.prices[symbol].dropna(), field="price", tags={"portfolio": self.name, "asset": symbol}, series_name="portfolio", autocommit=autocommit, bulk_size=bulk_size)
 
         # it's important to recompute the entire portfolio here...
         p = self.portfolio_influx(client=client)
 
-        client.query("DROP SERIES FROM nav WHERE portfolio='{name}'".format(name=self.name))
+        if drop:
+            client.query("DROP SERIES FROM nav WHERE portfolio='{name}'".format(name=self.name))
         client.series_upsert(ts=p.nav.dropna(), field="nav", tags={"portfolio": self.name}, series_name="nav", autocommit=autocommit, bulk_size=bulk_size)
 
-        client.query("DROP SERIES FROM leverage WHERE portfolio='{name}'".format(name=self.name))
+        if drop:
+            client.query("DROP SERIES FROM leverage WHERE portfolio='{name}'".format(name=self.name))
         client.series_upsert(ts=p.leverage.dropna(), field="leverage", tags={"portfolio": self.name}, series_name="leverage", autocommit=autocommit, bulk_size=bulk_size)
 
     def portfolio_influx(self, client):
