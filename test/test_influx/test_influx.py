@@ -1,3 +1,4 @@
+import pandas as pd
 from unittest import TestCase
 
 from pyutil.influx.client import Client
@@ -114,3 +115,15 @@ class TestInfluxDB(TestCase):
     def test_find_tags(self):
         print(self.client.tags(measurement="brushEvents",key="user"))
         self.assertSetEqual(self.client.tags(measurement="brushEvents",key="user"), {"Peter","Carol"})
+
+    def test_write(self):
+        x = pd.DatetimeIndex(start=pd.Timestamp("2010-01-01"), periods=10000, freq="D")
+        y = pd.DataFrame(index=x, data=pd.np.random.randn(10000, 10), columns=["A","B","C","D","E","F","G","H","I","J"])
+
+        for key, data in y.items():
+            self.client.series_upsert(ts=data, tags={"Interpret": "Peter Maffay", "name": key}, field="heartbeat", measurement="song")
+
+        #assert False
+
+
+

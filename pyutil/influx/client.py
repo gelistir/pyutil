@@ -1,8 +1,9 @@
 import os
+from time import time
 
 import pandas as pd
 
-from influxdb import DataFrameClient, SeriesHelper
+from influxdb import DataFrameClient
 
 class Client(DataFrameClient):
     def __init__(self, host=None, port=8086, database=None):
@@ -53,23 +54,6 @@ class Client(DataFrameClient):
         c = self.query('SHOW TAG KEYS FROM "{m}"'.format(m=measurement))
         return [x["tagKey"] for x in c.get_points()]
 
-    def helper(self, tags, fields, series_name, bulk_size=5, autocommit=True):
-        class MySeriesHelper(SeriesHelper):
-            """Instantiate SeriesHelper to write points to the backend."""
-
-            class Meta:
-                """Meta class stores time series helper configuration."""
-                pass
-
-        MySeriesHelper.Meta.fields = fields
-        MySeriesHelper.Meta.tags = tags
-        MySeriesHelper.Meta.client = self.influxclient
-        MySeriesHelper.Meta.series_name = series_name
-        MySeriesHelper.Meta.bulk_size = bulk_size
-        MySeriesHelper.Meta.autocommit = autocommit
-
-        return MySeriesHelper
-
     def __cond(self, conditions=None):
         return " AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
 
@@ -106,10 +90,9 @@ class Client(DataFrameClient):
         else:
             return pd.Series({})
 
-    def series_upsert(self, ts, tags, field, series_name, bulk_size=2000, autocommit=True):
+    def series_upsert(self, ts, tags, field, measurement):
         if len(ts) > 0:
-            helper = self.helper(tags=list(tags.keys()), fields=[field], series_name=series_name, autocommit=autocommit, bulk_size=bulk_size)
-            for t, x in ts.items():
-                helper(**{**{field: float(x), "time": pd.Timestamp(t).replace(second=0, microsecond=0, nanosecond=0)}, **tags})
-
-            helper.commit()
+            print(time())
+            json_body = [{'measurement': measurement,'time': t, 'fields': {field: float(x)}} for t,x in ts.items()]
+            print(time())
+            self.influxclient.write_points(json_body, time_precision="s", tags=tags, batch_size=5000)

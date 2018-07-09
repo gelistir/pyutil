@@ -24,7 +24,7 @@ class TestDatabaseSymbols(TestCase):
 
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
         cls.s1 = Symbol(name="Test Symbol", group=SymbolType.equities)
-        cls.s1.ts_upsert(client=cls.client, field="PX_LAST", ts={pd.Timestamp("2010-10-30").date(): 10.1})
+        cls.s1.ts_upsert(client=cls.client, field="PX_LAST", ts={pd.Timestamp("2010-10-30"): 10.1})
 
         cls.s1.reference[cls.f1] = "100"
         cls.session.add(cls.s1)

@@ -29,7 +29,7 @@ class Symbol(ProductInterface):
 
     def ts_upsert(self, client, ts, field="px_last"):
         """ update a series for a field """
-        client.series_upsert(field=field, series_name="symbols", tags={"name": self.name}, ts=ts)
+        client.series_upsert(field=field, measurement="symbols", tags={"name": self.name}, ts=ts)
 
     def last(self, client, field="px_last"):
         try:
