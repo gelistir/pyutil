@@ -27,11 +27,12 @@ class Portfolio(ProductInterface):
         # it's important to recompute the entire portfolio here...
         p = self.portfolio_influx(client=client)
 
+        # update the nav
         if drop:
             client.query("DROP SERIES FROM nav WHERE portfolio='{name}'".format(name=self.name))
-
         client.series_upsert(ts=p.nav.dropna(), field="nav", tags={"portfolio": self.name}, measurement="nav")
 
+        # update the leverage
         if drop:
             client.query("DROP SERIES FROM leverage WHERE portfolio='{name}'".format(name=self.name))
         client.series_upsert(ts=p.leverage.dropna(), field="leverage", tags={"portfolio": self.name}, measurement="leverage")

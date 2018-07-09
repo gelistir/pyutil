@@ -92,7 +92,16 @@ class Client(DataFrameClient):
 
     def series_upsert(self, ts, tags, field, measurement):
         if len(ts) > 0:
-            print(time())
             json_body = [{'measurement': measurement,'time': t, 'fields': {field: float(x)}} for t,x in ts.items()]
-            print(time())
-            self.influxclient.write_points(json_body, time_precision="s", tags=tags, batch_size=5000)
+            self.influxclient.write_points(json_body, time_precision="s", tags=tags, batch_size=10000)
+
+    def frame_upsert(self, frame, tags, field, measurement):
+        frame = frame.stack()
+        print(frame)
+        frame.index.names = ["Time", "Asset"]
+
+        frame = frame.reset_index()
+        frame = frame.set_index("Time")
+        print(frame)
+
+        self.write_points(dataframe=frame, time_precision="s",tags=tags, tag_columns=["Asset"], measurement=measurement)

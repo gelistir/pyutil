@@ -123,7 +123,8 @@ class TestInfluxDB(TestCase):
         for key, data in y.items():
             self.client.series_upsert(ts=data, tags={"Interpret": "Peter Maffay", "name": key}, field="heartbeat", measurement="song")
 
-        #assert False
+        #self.client.frame_upsert(y, tags={"Interpret": "Peter Maffay"}, field="heartbeat", measurement="song2")
+
 
 
 
