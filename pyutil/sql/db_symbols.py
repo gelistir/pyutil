@@ -38,8 +38,7 @@ class DatabaseSymbols(Database):
             symbolmap = {symbol : __group(symbol) for symbol in p.symbols_influx(client=self.client)}
             return p.portfolio_influx(client=self.client).sector_weights_final(symbolmap=symbolmap, total=total)
 
-        sss = {p.name : __sector(p) for p in self.session.query(Portfolio)}
-        return pd.DataFrame(sss).transpose()
+        return pd.DataFrame({p.name : __sector(p) for p in self.session.query(Portfolio)}).transpose()
 
     def __last(self, frame, datefmt="%b %d"):
         frame = frame.sort_index(axis=1, ascending=False).rename(columns=lambda x: x.strftime(datefmt))

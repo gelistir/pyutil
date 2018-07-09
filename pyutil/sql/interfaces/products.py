@@ -11,7 +11,6 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from pyutil.sql.base import Base
 from pyutil.sql.model.ref import _ReferenceData, Field
 from pyutil.sql.model.ts import Timeseries
-from pyutil.sql.util import reference
 
 
 def association_table(left, right, name="association"):
@@ -83,24 +82,20 @@ class ProductInterface(MyMixin, Base):
         else:
             return default
 
-    def upsert_ts(self, name, data=None, secondary=None, tertiary=None):
+    def upsert_ts(self, name, data=None, secondary=None):
         """ upsert a timeseries, get Timeseries object """
 
-        def key(name, secondary=None, tertiary=None):
-            if tertiary:
-                assert secondary
-                return name, secondary, tertiary
-
+        def key(name, secondary=None):
             if secondary:
                 return name, secondary
 
             return name
 
-        k = key(name, secondary, tertiary)
+        k = key(name, secondary)
 
         # do we need a new timeseries object?
         if k not in self._timeseries.keys():
-            self._timeseries[k] = Timeseries(name=name, product=self, secondary=secondary, tertiary=tertiary)
+            self._timeseries[k] = Timeseries(name=name, product=self, secondary=secondary)
 
         # now update the timeseries object
         return self._timeseries[k].upsert(data)
