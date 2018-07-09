@@ -1,19 +1,17 @@
 import pandas as pd
 
 from pyutil.performance.summary import fromNav
-
 from pyutil.sql.db import Database
 from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
-from pyutil.sql.util import to_pandas, reference
+from pyutil.sql.util import reference
 
 
 class DatabaseSymbols(Database):
-    def __init__(self, session=None, client=None):
-        super().__init__(session=session, db="symbols")
-        self.__client = client
+    def __init__(self, client, session=None):
+        super().__init__(client=client, session=session, db="symbols")
 
     @property
     def nav(self):
@@ -21,7 +19,7 @@ class DatabaseSymbols(Database):
         Extract the Nav for each portfolio
         :return: frame with Nav for each portfolio (on portfolio per column)
         """
-        return self.__client.frame(field="nav", measurement="portfolio", tags=["portfolio"])
+        return self.client.frame(field="nav", measurement="portfolio", tags=["portfolio"])
 
     @property
     def leverage(self):
@@ -29,8 +27,7 @@ class DatabaseSymbols(Database):
         Extract the Nav for each portfolio
         :return: frame with Nav for each portfolio (on portfolio per column)
         """
-        return self.__client.frame(field="leverage", measurement="portfolio", tags=["portfolio"])
-
+        return self.client.frame(field="leverage", measurement="portfolio", tags=["portfolio"])
 
     def sector(self, total=False):
         def __group(symbol):
@@ -38,12 +35,11 @@ class DatabaseSymbols(Database):
             return s.group.name
 
         def __sector(p):
-            symbolmap = {symbol : __group(symbol) for symbol in p.symbols_influx(client=self.__client)}
-            return p.portfolio_influx(client=self.__client).sector_weights_final(symbolmap=symbolmap, total=total)
+            symbolmap = {symbol : __group(symbol) for symbol in p.symbols_influx(client=self.client)}
+            return p.portfolio_influx(client=self.client).sector_weights_final(symbolmap=symbolmap, total=total)
 
         sss = {p.name : __sector(p) for p in self.session.query(Portfolio)}
         return pd.DataFrame(sss).transpose()
-
 
     def __last(self, frame, datefmt="%b %d"):
         frame = frame.sort_index(axis=1, ascending=False).rename(columns=lambda x: x.strftime(datefmt))
@@ -78,7 +74,7 @@ class DatabaseSymbols(Database):
                 "performance": self.performance}
 
     def portfolio(self, name: str):
-        return self._filter(Portfolio, name=name).portfolio_influx(client=self.__client)
+        return self._filter(Portfolio, name=name).portfolio_influx(client=self.client)
 
     def state(self, name: str):
         portfolio = self.portfolio(name=name)
@@ -101,10 +97,7 @@ class DatabaseSymbols(Database):
         return reference(self._read(sql="SELECT * FROM v_reference_symbols", index_col=["symbol", "field"]))
 
     def prices(self, name="PX_LAST"):
-        return self.__client.frame(field=name, measurement="symbols", tags=["name"])
-
-        #prices = self._read(sql="SELECT * FROM v_symbols WHERE timeseries=%(NAME)s", params={"NAME": name}, index_col="name")["data"]
-        #return prices.apply(to_pandas).transpose()
+        return self.client.frame(field=name, measurement="symbols", tags=["name"])
 
     def symbol(self, name: str):
         return self._filter(Symbol, name=name)

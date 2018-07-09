@@ -6,8 +6,7 @@ from pyutil.sql.util import to_pandas, reference
 
 class DatabaseRisk(Database):
     def __init__(self, client, session=None):
-        super().__init__(session=session, db="addepar2")
-        self.__client = client
+        super().__init__(client=client, session=session, db="addepar2")
 
     def owner(self, name):
         return self.session.query(Owner).filter_by(name=str(name)).one()
@@ -18,12 +17,12 @@ class DatabaseRisk(Database):
     # rename the columns apply int!!!!
     @property
     def prices(self):
-        return self.__client.frame(measurement="security", field="price", tags=["security"])
+        return self.client.frame(measurement="security", field="price", tags=["security"])
 
     # same
     @property
     def returns(self):
-        return self.__client.frame(measurement="owner", field="returns", tags=["owner"])
+        return self.client.frame(measurement="owner", field="returns", tags=["owner"])
 
     @property
     def reference_owner(self):
@@ -41,17 +40,17 @@ class DatabaseRisk(Database):
     @property
     def position(self):
         # read all positions at once. This is fast!
-        return self.__client.frame(measurement="owner", field="weight", tags=["owner", "security"]).stack()
+        return self.client.frame(measurement="owner", field="weight", tags=["owner", "security"]).stack()
 
     # apply int
     @property
     def volatility_owner(self):
-        return self.__client.frame(measurement="owner", field="volatility", tags=["owner"])
+        return self.client.frame(measurement="owner", field="volatility", tags=["owner"])
 
     # apply int
     @property
     def volatility_security(self):
-        return self.__client.frame(measurement="security", field="volatility", tags=["currency", "security"]).swaplevel()
+        return self.client.frame(measurement="security", field="volatility", tags=["currency", "security"]).swaplevel()
 
     #@property
     #def volatility_owner_securities(self):

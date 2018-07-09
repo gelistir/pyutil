@@ -6,8 +6,9 @@ from pyutil.sql.session import session as sss
 
 
 class Database(object):
-    def __init__(self, session=None, db=None):
+    def __init__(self, client, session=None, db=None):
         self.__session = session or sss(db=db)
+        self.__client = client
 
     @property
     def session(self):
@@ -23,3 +24,7 @@ class Database(object):
 
     def _filter(self, cls, name):
         return self.session.query(cls).filter_by(name=name).one()
+
+    @property
+    def client(self):
+        return self.__client

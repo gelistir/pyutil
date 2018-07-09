@@ -12,9 +12,9 @@ class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.p = Portfolio(name="Maffay")
-
         cls.client = Client(host='test-influxdb', database="test-portfolio")
-        cls.assertIsNone(cls, cls.p.last(client=cls.client))
+        #cls.assertIsNone(cls, cls.p.last(client=cls.client))
+
         cls.p.upsert_influx(client=cls.client, portfolio=test_portfolio())
 
     @classmethod
