@@ -11,33 +11,39 @@ from pyutil.sql.util import to_pandas, reference
 
 
 class DatabaseSymbols(Database):
-    def __init__(self, session=None):
+    def __init__(self, session=None, client=None):
         super().__init__(session=session, db="symbols")
+        self.__client = client
 
     @property
     def nav(self):
         """
         Extract the Nav for each portfolio
-        :return: frame with Nav for each portfolio (on portfolio per row)
+        :return: frame with Nav for each portfolio (on portfolio per column)
         """
-        return self._read("SELECT * FROM v_portfolio_nav", index_col="name")["data"].apply(to_pandas)
+        return self.__client.frame(field="nav", measurement="portfolio", tags=["portfolio"])
 
     @property
     def leverage(self):
         """
         Extract the Nav for each portfolio
-        :return: frame with Nav for each portfolio (on portfolio per row)
+        :return: frame with Nav for each portfolio (on portfolio per column)
         """
-        return self._read("SELECT * FROM v_portfolio_leverage", index_col="name")["data"].apply(to_pandas)
+        return self.__client.frame(field="leverage", measurement="portfolio", tags=["portfolio"])
+
 
     def sector(self, total=False):
-        frame = self._read("SELECT * FROM v_portfolio_sector", index_col=["name", "symbol", "group", "internal"])["data"]
-        frame = frame.apply(to_pandas).groupby(level=["name", "group"], axis=0).sum().ffill(axis=1)
-        frame = frame.iloc[:,-1].unstack()
+        def __group(symbol):
+            s = self.session.query(Symbol).filter_by(name=symbol).one()
+            return s.group.name
 
-        if total:
-            frame["total"] = frame.sum(axis=1)
-        return frame
+        def __sector(p):
+            symbolmap = {symbol : __group(symbol) for symbol in p.symbols_influx(client=self.__client)}
+            return p.portfolio_influx(client=self.__client).sector_weights_final(symbolmap=symbolmap, total=total)
+
+        sss = {p.name : __sector(p) for p in self.session.query(Portfolio)}
+        return pd.DataFrame(sss).transpose()
+
 
     def __last(self, frame, datefmt="%b %d"):
         frame = frame.sort_index(axis=1, ascending=False).rename(columns=lambda x: x.strftime(datefmt))
@@ -46,22 +52,22 @@ class DatabaseSymbols(Database):
 
     @property
     def mtd(self):
-        return self.__last(self.nav.apply(lambda x: fromNav(x).mtd_series, axis=1))
+        return self.__last(self.nav.transpose().apply(lambda x: fromNav(x).mtd_series, axis=1))
 
     @property
     def ytd(self):
-        return self.__last(self.nav.apply(lambda x: fromNav(x).ytd_series, axis=1), datefmt="%b")
+        return self.__last(self.nav.transpose().apply(lambda x: fromNav(x).ytd_series, axis=1), datefmt="%b")
 
     def recent(self, n=15):
-        return self.__last(self.nav.apply(lambda x: fromNav(x).recent(n=n), axis=1).iloc[:, -n:])\
+        return self.__last(self.nav.transpose().apply(lambda x: fromNav(x).recent(n=n), axis=1).iloc[:, -n:])\
 
     @property
     def period_returns(self):
-        return self.nav.apply(lambda x: fromNav(x).period_returns, axis=1)
+        return self.nav.transpose().apply(lambda x: fromNav(x).period_returns, axis=1)
 
     @property
     def performance(self):
-        return self.nav.apply(lambda x: fromNav(x).summary(), axis=1).transpose()
+        return self.nav.transpose().apply(lambda x: fromNav(x).summary(), axis=1).transpose()
 
     def frames(self, total=False, n=15):
         return {"recent": self.recent(n=n),
@@ -72,10 +78,10 @@ class DatabaseSymbols(Database):
                 "performance": self.performance}
 
     def portfolio(self, name: str):
-        return self._filter(Portfolio, name=name)
+        return self._filter(Portfolio, name=name).portfolio_influx(client=self.__client)
 
     def state(self, name: str):
-        portfolio = self.portfolio(name=name).portfolio(rename=True)
+        portfolio = self.portfolio(name=name)
         ref = self._read(sql="SELECT * FROM v_symbols_state", index_col=["symbol"])
 
         frame = pd.concat([portfolio.state, ref.loc[portfolio.assets]], axis=1, sort=True)
@@ -95,8 +101,10 @@ class DatabaseSymbols(Database):
         return reference(self._read(sql="SELECT * FROM v_reference_symbols", index_col=["symbol", "field"]))
 
     def prices(self, name="PX_LAST"):
-        prices = self._read(sql="SELECT * FROM v_symbols WHERE timeseries=%(NAME)s", params={"NAME": name}, index_col="name")["data"]
-        return prices.apply(to_pandas).transpose()
+        return self.__client.frame(field=name, measurement="symbols", tags=["name"])
+
+        #prices = self._read(sql="SELECT * FROM v_symbols WHERE timeseries=%(NAME)s", params={"NAME": name}, index_col="name")["data"]
+        #return prices.apply(to_pandas).transpose()
 
     def symbol(self, name: str):
         return self._filter(Symbol, name=name)

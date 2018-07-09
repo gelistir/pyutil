@@ -26,7 +26,7 @@ class Client(DataFrameClient):
         """ get set of measurements for a given database """
         return set([a["name"] for a in self.get_list_measurements()])
 
-    def tags(self, measurement, key):
+    def tags(self, measurement, key, conditions=None):
         """
         Values for a key
 
@@ -34,8 +34,14 @@ class Client(DataFrameClient):
         :param key:
         :return:
         """
-        x = self.query('SHOW TAG VALUES FROM {m} WITH KEY="{key}"'.format(m=measurement, key=key))
-        return set([a["value"] for a in x.get_points()])
+        query = 'SHOW TAG VALUES FROM {m} WITH KEY="{key}"'.format(m=measurement, key=key)
+
+        if conditions:
+            query += " WHERE {c}".format(
+                c=" AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions]))
+
+
+        return set([a["value"] for a in self.query(query).get_points()])
 
     def keys(self, measurement):
         """

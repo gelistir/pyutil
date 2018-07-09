@@ -1,65 +1,48 @@
-from sqlalchemy.orm import relationship as _relationship
-
 from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
-from pyutil.sql.interfaces.products import ProductInterface, association_table
-from pyutil.sql.interfaces.symbols.symbol import Symbol
-
-_association_table = association_table(left="symbol", right="portfolio")
-
-Symbol.portfolio = _relationship("Portfolio", secondary=_association_table, back_populates="_symbols")
+from pyutil.sql.interfaces.products import ProductInterface
 
 
 class Portfolio(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "portfolio"}
-    _symbols = _relationship(Symbol, secondary=_association_table, back_populates="portfolio", lazy="joined")
 
     def __init__(self, name):
         super().__init__(name)
 
-    @property
-    def empty(self):
-        return self.frame(name="price").empty and self.frame(name="weight").empty
+    def last(self, client):
+        try:
+            return client.query("""SELECT LAST({f}) FROM "portfolio" where "portfolio"='{n}'""".format(n=self.name, f="weight"))["portfolio"].index[0].date()
+        except KeyError:
+            return None
 
-    @property
-    def symbols(self):
-        return {symbol.name : symbol for symbol in self._symbols}
-
-    def upsert_portfolio(self, portfolio, assets=None):
+    def upsert_influx(self, client, portfolio):
         assert isinstance(portfolio, _Portfolio)
 
         for symbol in portfolio.assets:
-            if assets:
-                s = assets[symbol]
-            else:
-                s = symbol
-
-            assert isinstance(s, Symbol), "Please define assets correctly"
-
-            if s not in self.symbols:
-                self._symbols.append(s)
-
-            self.upsert_ts(name="weight", secondary=s, data=portfolio.weights[symbol].dropna())
-            self.upsert_ts(name="price", secondary=s, data=portfolio.prices[symbol].dropna())
+            client.series_upsert(ts=portfolio.weights[symbol].dropna(), field="weight", tags={"portfolio": self.name, "asset": symbol}, series_name="portfolio")
+            client.series_upsert(ts=portfolio.prices[symbol].dropna(), field="price", tags={"portfolio": self.name, "asset": symbol}, series_name="portfolio")
 
         # it's important to recompute the entire portfolio here...
-        p = self.portfolio()
+        p = self.portfolio_influx(client=client)
+        client.series_upsert(ts=p.nav, field="nav", tags={"portfolio": self.name}, series_name="portfolio")
+        client.series_upsert(ts=p.leverage, field="leverage", tags={"portfolio": self.name}, series_name="portfolio")
 
-        # upsert the underlying time series data, this is slow here but later when we access the data we don't need to recompute the nav or the leverage
-        self.upsert_ts("nav", data=p.nav)
-        self.upsert_ts("leverage", data=p.leverage)
+    def portfolio_influx(self, client):
+        w = client.frame(field="weight", measurement="portfolio", tags=["portfolio", "asset"], conditions=[("portfolio", self.name)])
+        w.index = w.index.droplevel("portfolio")
 
-        # upsert the database
-        # self._ts_upsert(client, ts=p.nav, tags={"portfolio": self.name}, field="nav", series_name="portfolio")
-        # self._ts_upsert(client, ts=p.leverage, tags={"portfolio": self.name}, field="leverage", series_name="portfolio")
+        p = client.frame(field="price", measurement="portfolio", tags=["portfolio", "asset"], conditions=[("portfolio", self.name)])
+        p.index = p.index.droplevel("portfolio")
 
-        return self
+        return _Portfolio(prices=p, weights=w)
 
+    def symbols_influx(self, client):
+        return client.tags(measurement="portfolio", key="asset", conditions=[("portfolio", self.name)])
 
     # we have fast views to extract data... All the functions below are not required...
-    #@property
     def portfolio(self, rename=False):
         # does it work?
+        """ this we need to read the old format """
         prices = self.frame("price")
         weights = self.frame("weight")
 
@@ -67,24 +50,10 @@ class Portfolio(ProductInterface):
             prices.rename(columns=lambda x: x.name, inplace=True)
             weights.rename(columns=lambda x: x.name, inplace=True)
 
-
         return _Portfolio(prices=prices, weights=weights)
 
-    @property
-    def nav(self):
-        return fromNav(self.get_timeseries(name="nav"))
+    def nav(self, client):
+        return fromNav(client.series(field="nav", measurement="portfolio", conditions=[("portfolio", self.name)]))
 
-    @property
-    def leverage(self):
-        return self.get_timeseries(name="leverage")
-
-    def sector(self, total=False):
-        symbol_map = {asset: asset.group.name for asset in self._symbols}
-        return self.portfolio().sector_weights(symbolmap=symbol_map, total=total)
-
-    def sector_tail(self, total=False):
-        w = self.sector(total=total)
-        return w.loc[w.index[-1]].rename(None)
-
-    #def rename(self):
-
+    def leverage(self, client):
+        return client.series(field="leverage", measurement="portfolio", conditions=[("portfolio", self.name)])
