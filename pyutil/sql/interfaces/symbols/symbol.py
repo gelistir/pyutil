@@ -1,5 +1,4 @@
 import enum as _enum
-import pandas as pd
 
 import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
@@ -29,6 +28,7 @@ class Symbol(ProductInterface):
         return client.series(field=field, measurement="symbols", conditions=[("name", self.name)])
 
     def ts_upsert(self, client, ts, field="px_last"):
+        """ update a series for a field """
         client.series_upsert(field=field, series_name="symbols", tags={"name": self.name}, ts=ts)
 
     def last(self, client, field="px_last"):
@@ -36,8 +36,3 @@ class Symbol(ProductInterface):
             return client.query("""SELECT LAST({f}) FROM "symbols" where "name"='{n}'""".format(n=self.name, f=field))["symbols"].index[0].date()
         except KeyError:
             return None
-
-if __name__ == '__main__':
-    a = "Alternatives"
-    s = SymbolType(a)
-    print(s)
