@@ -12,6 +12,7 @@ class Frame(ProductInterface):
     def __init__(self, name, frame=None):
         super().__init__(name)
         if frame is not None:
+            # this calls the setter further below...
             self.frame = frame
 
     @property
