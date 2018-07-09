@@ -106,9 +106,9 @@ class Client(DataFrameClient):
         else:
             return pd.Series({})
 
-    def series_upsert(self, ts, tags, field, series_name):
+    def series_upsert(self, ts, tags, field, series_name, bulk_size=2000, autocommit=True):
         if len(ts) > 0:
-            helper = self.helper(tags=list(tags.keys()), fields=[field], series_name=series_name, autocommit=True, bulk_size=10)
+            helper = self.helper(tags=list(tags.keys()), fields=[field], series_name=series_name, autocommit=autocommit, bulk_size=bulk_size)
             for t, x in ts.items():
                 helper(**{**{field: float(x), "time": pd.Timestamp(t)}, **tags})
 

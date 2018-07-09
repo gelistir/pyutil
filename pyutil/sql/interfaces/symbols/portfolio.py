@@ -24,8 +24,8 @@ class Portfolio(ProductInterface):
 
         # it's important to recompute the entire portfolio here...
         p = self.portfolio_influx(client=client)
-        client.series_upsert(ts=p.nav, field="nav", tags={"portfolio": self.name}, series_name="nav")
-        client.series_upsert(ts=p.leverage, field="leverage", tags={"portfolio": self.name}, series_name="leverage")
+        client.series_upsert(ts=p.nav, field="nav", tags={"portfolio": self.name}, series_name="nav", autocommit=False)
+        client.series_upsert(ts=p.leverage, field="leverage", tags={"portfolio": self.name}, series_name="leverage", autocommit=False)
 
     def portfolio_influx(self, client):
         w = client.frame(field="weight", measurement="portfolio", tags=["portfolio", "asset"], conditions=[("portfolio", self.name)])
