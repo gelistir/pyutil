@@ -110,6 +110,6 @@ class Client(DataFrameClient):
         if len(ts) > 0:
             helper = self.helper(tags=list(tags.keys()), fields=[field], series_name=series_name, autocommit=True, bulk_size=10)
             for t, x in ts.items():
-                helper(**{**{field: x, "time": pd.Timestamp(t)}, **tags})
+                helper(**{**{field: float(x), "time": pd.Timestamp(t)}, **tags})
 
             helper.commit()

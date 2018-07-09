@@ -19,7 +19,7 @@ class DatabaseSymbols(Database):
         Extract the Nav for each portfolio
         :return: frame with Nav for each portfolio (on portfolio per column)
         """
-        return self.client.frame(field="nav", measurement="portfolio", tags=["portfolio"])
+        return self.client.frame(field="nav", measurement="nav", tags=["portfolio"])
 
     @property
     def leverage(self):
@@ -27,7 +27,7 @@ class DatabaseSymbols(Database):
         Extract the Nav for each portfolio
         :return: frame with Nav for each portfolio (on portfolio per column)
         """
-        return self.client.frame(field="leverage", measurement="portfolio", tags=["portfolio"])
+        return self.client.frame(field="leverage", measurement="leverage", tags=["portfolio"])
 
     def sector(self, total=False):
         def __group(symbol):
