@@ -1,20 +1,14 @@
-import pandas as pd
-import numpy as np
+from datetime import date as datetype
 
-import pandas as _pd
+import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.hybrid import hybrid_property
-
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.sql.base import Base
-from datetime import date as datetype
-
-
 # time series data for a product
-from pyutil.sql.util import from_pandas, to_pandas
-
+from pyutil.sql.util import to_pandas
 
 
 class Timeseries(Base):
@@ -28,20 +22,15 @@ class Timeseries(Base):
     secondary_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), nullable=True)
     secondary = relationship("ProductInterface", foreign_keys=[secondary_id])
 
-    #tertiary_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), nullable=True)
-    #tertiary = relationship("ProductInterface", foreign_keys=[tertiary_id])
-
     _jdata = sq.Column("jdata", sq.LargeBinary, nullable=True)
     sq.UniqueConstraint('product', 'name', 'secondary_id')
 
     _data = relationship("_TimeseriesData", collection_class=attribute_mapped_collection('date'),
                          cascade="all, delete-orphan", backref="ts")
 
-    #_tags = relationship("Tags", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan", backref="tags")
-
-    def __init__(self, name=None, product=None, data=None, secondary=None, tertiary=None):
+    def __init__(self, name=None, product=None, data=None, secondary=None):
         self.secondary = secondary
-        self.tertiary = tertiary
+        #self.tertiary = tertiary
 
         self.__name = name
         self.product = product
@@ -51,42 +40,6 @@ class Timeseries(Base):
     @hybrid_property
     def name(self):
         return self.__name
-
-    # @property
-    # def __series_slow(self):
-    #     x = _pd.Series({date: x.value for date, x in self._data.items()})
-    #     if not x.empty:
-    #         # we read date from database!
-    #         x = x.rename(index=lambda a: _pd.Timestamp(a)).sort_index()
-    #         assert x.index.is_monotonic_increasing, "Index is not increasing"
-    #         assert not x.index.has_duplicates, "Index has duplicates"
-    #     return x
-
-    # def upsert(self, ts=None):
-    #     if ts is not None:
-    #         # ts might be a dict!
-    #         for date, value in ts.items():
-    #             if np.isfinite(value):
-    #                 if isinstance(date, pd.Timestamp):
-    #                     assert date.hour == 0
-    #                     assert date.minute == 0
-    #                     assert date.second == 0
-    #                     d = date.date()
-    #
-    #                 elif isinstance(date, datetype):
-    #                     d = date
-    #
-    #                 else:
-    #                     raise AssertionError("The index has to be a datetime or date object")
-    #
-    #                 if d not in self._data.keys():
-    #                     self._data[d] = _TimeseriesData(date=d, value=value, ts=self)
-    #                 else:
-    #                     self._data[d].value = value
-    #
-    #     # update data
-    #     self._jdata = from_pandas(self.__series_slow)
-    #     return self
 
     @property
     def series(self):
@@ -98,17 +51,11 @@ class Timeseries(Base):
 
     @property
     def key(self):
-        if self.tertiary:
-            assert self.secondary
-            return self.name, self.secondary, self.tertiary
         if self.secondary:
             return self.name, self.secondary
         else:
             return self.name
 
-
-    #def export(self, client, series_name, tags):
-    #    helper = client.helper(tags=tags, fields=[self.name], series_name=series_name, autocommit=True, bulk_size=10)
 
 class _TimeseriesData(Base):
     __tablename__ = 'ts_data'
