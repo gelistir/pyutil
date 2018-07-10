@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import pandas as pd
+import numpy as np
 import pandas.util.testing as pdt
 
 from pyutil.influx.client import Client
@@ -8,8 +9,10 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 
 t0 = pd.Timestamp("2000-11-17")
 t1 = pd.Timestamp("2000-11-18")
+t2 = pd.Timestamp("2000-11-19")
 
-series = pd.Series({t0: 100.0, t1: 100.5}, name="px_last")
+series = pd.Series({t0: 100.0, t1: 100.5, t2: np.nan}, name="px_last")
+
 
 class TestSymbol(TestCase):
     @classmethod
@@ -34,7 +37,7 @@ class TestSymbol(TestCase):
     def test_ts(self):
         s = Symbol(name="AAAAA US Equity", group=SymbolType.equities, internal="Peter Maffay")
         s.ts_upsert(client=self.client, field="px_last", ts=series)
-        pdt.assert_series_equal(s.ts(client=self.client, field="px_last"), series)
+        pdt.assert_series_equal(s.ts(client=self.client, field="px_last"), series.dropna())
         self.assertEqual(s.last(client=self.client), t1)
 
 
@@ -55,18 +58,6 @@ class TestSymbols(TestCase):
         s1.ts_upsert(client=self.client, field="px_last", ts=series)
         s2.ts_upsert(client=self.client, field="px_last", ts=series)
 
-        # construct a frame for two symbols
-        #x = pd.DataFrame(index=[pd.Timestamp("2010-01-01")], columns=["A US Equity", "B US Equity"], data=[[10.1, 11.2]])
-
-        # write frame to database
-        #Symbol.write_frame(client=self.client, frame=x, name="px_last")
-
-        # check the symbols
-        #pdt.assert_series_equal(s1.ts(client=self.client), x["A US Equity"])
-        #pdt.assert_series_equal(s2.ts(client=self.client), x["B US Equity"])
-
         # but also check the frame...
-        print(Symbol.read_frame(client=self.client))
-
-        #pdt.assert_frame_equal(Symbol.read_frame(client=self.client), x)
+        print(Symbol.read_frame(client=self.client, field="px_last"))
 

@@ -10,10 +10,7 @@ class Portfolio(ProductInterface):
         super().__init__(name)
 
     def last(self, client):
-        try:
-            return client.query(""" SELECT LAST({f}) FROM "nav" """.format(f=self.name))["nav"].index[0].date()
-        except KeyError:
-            return None
+        return client.last(measurement="nav", field="nav", conditions={"name": self.name})
 
     def upsert_influx(self, client, portfolio):
         assert isinstance(portfolio, _Portfolio)
@@ -21,24 +18,26 @@ class Portfolio(ProductInterface):
 
         # it's important to recompute the entire portfolio here...
         p = self.portfolio_influx(client=client)
-        print(p.nav.index[0])
 
         # update the nav
-        client.write_series(ts=p.nav.dropna(), field=self.name, measurement="nav")
+        client.write_series(ts=p.nav.dropna(), field="nav", tags={"name": self.name}, measurement="nav")
         # update the leverage
-        client.write_series(ts=p.leverage.dropna(), field=self.name, measurement="leverage")
+        client.write_series(ts=p.leverage.dropna(), field="leverage", tags={"name": self.name}, measurement="leverage")
 
     def portfolio_influx(self, client):
         p, w = client.read_portfolio(name=self.name)
+        print(p)
+        print(w)
+        #pp = client.read_series(measurement="portfolio", field="*", conditions={"name": self.name})
+        #print(pp)
         return _Portfolio(prices=p, weights=w)
 
     def symbols_influx(self, client):
-        # todo: change to tag values!
         return self.portfolio_influx(client=client).assets
-        #return client.tag_values(measurement="prices", key="name", conditions=[("portfolio", self.name)])
 
-    # we have fast views to extract data... All the functions below are not required...
     def portfolio(self, rename=False):
+        # todo: export to flat files and delete...
+
         # does it work?
         """ this we need to read the old format """
         prices = self.frame("price")
@@ -51,15 +50,15 @@ class Portfolio(ProductInterface):
         return _Portfolio(prices=prices, weights=weights)
 
     def nav(self, client):
-        return fromNav(client.read_series(field=self.name, measurement="nav"))
+        return fromNav(client.read_series(field="nav", measurement="nav", conditions={"name": self.name}))
 
     def leverage(self, client):
-        return client.read_series(field=self.name, measurement="leverage")
+        return client.read_series(field="leverage", measurement="leverage", conditions={"name": self.name})
 
     @staticmethod
     def nav_all(client):
-        return client.read_frame(measurement="nav")
+        return client.read_series(measurement="nav", field="nav", tags=["name"], unstack=True)
 
     @staticmethod
     def leverage_all(client):
-        return client.read_frame(measurement="leverage")
+        return client.read_series(measurement="leverage", field="leverage", tags=["name"], unstack=True)

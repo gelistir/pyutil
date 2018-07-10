@@ -76,32 +76,15 @@ class ProductInterface(MyMixin, Base):
             return default
 
     def get_timeseries(self, name, default=_pd.Series({})):
+        # todo: extract to flat file and delete!!!!
         # todo: is this efficient? maybe remove the timeseries proxy and only rely on get_timeseries?
         if name in self._timeseries.keys():
             return self._timeseries[name].series.dropna()
         else:
             return default
 
-    # def upsert_ts(self, name, data=None, secondary=None):
-    #     """ upsert a timeseries, get Timeseries object """
-    #
-    #     def key(name, secondary=None):
-    #         if secondary:
-    #             return name, secondary
-    #
-    #         return name
-    #
-    #     k = key(name, secondary)
-    #
-    #     # do we need a new timeseries object?
-    #     if k not in self._timeseries.keys():
-    #         self._timeseries[k] = Timeseries(name=name, product=self, secondary=secondary)
-    #
-    #     # now update the timeseries object
-    #     return self._timeseries[k].upsert(data)
-
     def frame(self, name, rename=False):
-
+        # todo: delete
         x = _pd.DataFrame({x.secondary: x.series for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
         if rename:
             return x.rename(columns=lambda x: x.name)

@@ -46,7 +46,7 @@ class TestPortfolio(TestCase):
         self.assertAlmostEqual(x["2015-04-09"], 1.524054, places=5)
 
     def test_last(self):
-        self.assertEqual(self.p.last(self.client), pd.Timestamp("2015-04-22").date())
+        self.assertEqual(self.p.last(self.client), pd.Timestamp("2015-04-22"))
 
 
 class TestPortfolios(TestCase):

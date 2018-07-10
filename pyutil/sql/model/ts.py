@@ -10,6 +10,7 @@ from pyutil.sql.base import Base
 # time series data for a product
 from pyutil.sql.util import to_pandas
 
+# todo: Delete
 
 class Timeseries(Base):
     __tablename__ = "ts_name"

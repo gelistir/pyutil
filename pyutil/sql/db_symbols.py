@@ -96,7 +96,7 @@ class DatabaseSymbols(Database):
         return reference(self._read(sql="SELECT * FROM v_reference_symbols", index_col=["symbol", "field"]))
 
     def prices(self, name="PX_LAST"):
-        return Symbol.read_frame(client=self.client, name=name)
+        return Symbol.read_frame(client=self.client, field=name)
 
     def symbol(self, name: str):
         return self._filter(Symbol, name=name)

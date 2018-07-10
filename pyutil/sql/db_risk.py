@@ -22,7 +22,7 @@ class DatabaseRisk(Database):
     # same
     @property
     def returns(self):
-        return Owner.returns_all(client=self.client).unstack()["return"]
+        return Owner.returns_all(client=self.client)
 
     @property
     def reference_owner(self):
@@ -51,7 +51,7 @@ class DatabaseRisk(Database):
     # apply int
     @property
     def volatility_security(self):
-        return Security.volatility_all(client=self.client).unstack(level="security")["volatility"].swaplevel()
+        return Security.volatility_all(client=self.client).unstack(level="security").swaplevel()
 
         #return self.client.frame(measurement="security", field="volatility", tags=["currency", "security"]).swaplevel()
 

@@ -49,17 +49,17 @@ class Security(ProductInterface):
         client.write_series(ts=ts, tags={"security": self.name}, field="price", measurement="PriceSecurity")
 
     def price(self, client):
-        return client.read_series(field="price", measurement="PriceSecurity", conditions=[("security", self.name)])
+        return client.read_series(field="price", measurement="PriceSecurity", conditions={"security": self.name})
 
     def volatility(self, client, currency):
         assert isinstance(currency, Currency)
-        return client.read_series(field="volatility", measurement="VolatilitySecurity", conditions=[("security", self.name), ("currency", currency.name)])
+        return client.read_series(field="volatility", measurement="VolatilitySecurity", conditions={"security": self.name, "currency": currency.name})
 
     @staticmethod
     def prices_all(client):
-        return client.read_frame(measurement="PriceSecurity", tags=["security"]).unstack()["price"]
+        return client.read_series(measurement="PriceSecurity", field="price", tags=["security"], unstack=True)
 
     @staticmethod
     def volatility_all(client):
-        return client.read_frame(measurement="VolatilitySecurity", tags=["security", "currency"])
+        return client.read_series(measurement="VolatilitySecurity", field="volatility", tags=["security", "currency"])
 

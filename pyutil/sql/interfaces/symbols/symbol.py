@@ -15,6 +15,7 @@ class SymbolType(_enum.Enum):
 
 MEASUREMENTS = "symbols"
 
+
 class Symbol(ProductInterface):
     group = sq.Column("group", _Enum(SymbolType))
     internal = sq.Column(sq.String, nullable=True)
@@ -27,8 +28,7 @@ class Symbol(ProductInterface):
         self.internal = internal
 
     def ts(self, client, field="px_last"):
-        print(client.query("SELECT * FROM symbols"))
-        return client.read_series(field=field, measurement=MEASUREMENTS, conditions=[("name", self.name)])
+        return client.read_series(field=field, measurement=MEASUREMENTS, conditions={"name": self.name})
 
     def ts_upsert(self, client, ts, field="px_last"):
         """ update a series for a field """
@@ -36,15 +36,8 @@ class Symbol(ProductInterface):
 
     # No, you can't update an entire frame for a single symbol!
     def last(self, client, field="px_last"):
-        # todo: make this a function in the client!
-        try:
-            return client.query("""SELECT LAST({f}) FROM "{measurements}" where "name"='{n}'""".format(measurements=MEASUREMENTS, f=field, n=self.name))["symbols"].index[0].tz_localize(None)
-        except KeyError:
-            return None
+        return client.last(measurement=MEASUREMENTS, field=field, conditions={"name": self.name})
 
     @staticmethod
-    def read_frame(client, name="px_last"):
-        try:
-            return client.read_frame(measurement=MEASUREMENTS, tags=["name"]).unstack()[name]
-        except KeyError:
-            return pd.DataFrame({})
+    def read_frame(client, field="px_last"):
+        return client.read_series(measurement=MEASUREMENTS, field=field, tags=["name"], unstack=True)

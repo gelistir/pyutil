@@ -64,7 +64,7 @@ class TestDatabaseRisk(TestCase):
 
     def test_position(self):
         x = self.db.position.loc[("100","UBS Geneva","123")]
-        pdt.assert_series_equal(x["weight"], pd.Series({t1: 0.4, t2: 0.5}), check_names=False)
+        pdt.assert_series_equal(x, pd.Series({t1: 0.4, t2: 0.5}), check_names=False)
 
     def test_returns(self):
         print(self.db.returns)

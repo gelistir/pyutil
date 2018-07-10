@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from influxdb import DataFrameClient
 
+
 class Client(DataFrameClient):
     def __init__(self, host=None, port=8086, database=None):
         host = host or os.environ["INFLUXDB_HOST"]
@@ -9,10 +10,6 @@ class Client(DataFrameClient):
         if database:
             self.create_database(dbname=database)
             self.switch_database(database=database)
-
-    @property
-    def influxclient(self):
-        return super(DataFrameClient, self)
 
     @property
     def databases(self):
@@ -24,41 +21,38 @@ class Client(DataFrameClient):
         """ get set of measurements for a given database """
         return set([a["name"] for a in self.get_list_measurements()])
 
-    def tag_values(self, measurement, key, conditions=None):
-        """
-        Values for a key
-
-        :param measurement:
-        :param key:
-        :return:
-        """
-        query = 'SHOW TAG VALUES FROM {m} WITH KEY="{key}"'.format(m=measurement, key=key)
-
-        if conditions:
-            query += " WHERE {c}".format(
-                c=" AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions]))
-
-
+    def __tag_values(self, measurement, key, conditions=None):
+        query = 'SHOW TAG VALUES FROM {m} WITH KEY="{key}{conditions}"'.format(m=measurement, key=key, conditions=self.__cond(conditions))
         return set([a["value"] for a in self.query(query).get_points()])
 
-    def tag_keys(self, measurement):
-        """
-        All keys used within a measurement...
+    @property
+    def portfolios(self):
+        return self.__tag_values(measurement="prices", key="name")
 
-        :param measurement:
-        :return:
-        """
-        c = self.query('SHOW TAG KEYS FROM "{m}"'.format(m=measurement))
-        return [x["tagKey"] for x in c.get_points()]
+    @staticmethod
+    def __cond(conditions=None):
+        if conditions:
+            return " WHERE {c}".format(c=" AND ".join(
+                    [""""{tag}"::tag='{value}'""".format(tag=key, value=value) for key, value in conditions.items()]))
+        else:
+            return ""
 
-    def __cond(self, conditions=None):
-        return " AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
+    @staticmethod
+    def __tags(tags=None):
+        if tags:
+            return ", {t}".format(t=", ".join(['"{t}"::tag'.format(t=t) for t in tags]))
+        else:
+            return ""
 
-    def read_series(self, field, measurement, conditions=None):
-        """ test empty !!!! """
+    def read_series(self, field, measurement, tags=None, conditions=None, unstack=False):
         try:
-            a = self.read_frame(measurement=measurement, conditions=conditions)
-            return a[field]
+            a = self.__read_frame(measurement=measurement, tags=tags, conditions=conditions)
+            a = a[field]
+            if unstack:
+                return a.unstack()
+            else:
+                return a
+
         except KeyError:
             return pd.Series({})
 
@@ -66,36 +60,29 @@ class Client(DataFrameClient):
         if len(ts) > 0:
             self.__write_frame(ts.to_frame(name=field), measurement=measurement, tags=tags)
 
+    # todo: move to portfolio class?
     def write_portfolio(self, portfolio, name, batch_size=500, time_precision=None):
-        self.__write_frame(frame=portfolio.prices, measurement="prices", tags={"name": name}, batch_size=batch_size, time_precision=time_precision)
-        self.__write_frame(frame=portfolio.weights, measurement="weights", tags={"name": name}, batch_size=batch_size, time_precision=time_precision)
+        self.__write_frame(frame=portfolio.prices, measurement="prices", tags={"name": name}, batch_size=batch_size,
+                           time_precision=time_precision)
+        self.__write_frame(frame=portfolio.weights, measurement="weights", tags={"name": name}, batch_size=batch_size,
+                           time_precision=time_precision)
 
     def read_portfolio(self, name):
-        p = self.read_frame(measurement="prices", conditions=[("name", name)]).rename(columns=lambda x: x.replace("_", " "))
-        w = self.read_frame(measurement="weights", conditions=[("name", name)]).rename(columns=lambda x: x.replace("_", " "))
-        return p,w
+        #p = self.read_series(field="*", measurement="prices", tags=["name"], conditions={"name": name}, unstack=True).rename(columns=lambda x: x.replace("_", " "))
+        p = self.__read_frame(measurement="prices", conditions={"name": name}).rename(
+            columns=lambda x: x.replace("_", " "))
+        w = self.__read_frame(measurement="weights", conditions={"name": name}).rename(
+            columns=lambda x: x.replace("_", " "))
+        return p, w
 
-    def read_frame(self, measurement, tags=None, conditions=None):
-        query = "SELECT *::field"
-
-        if tags:
-            query += ", {t}".format(t=", ".join(['"{t}"::tag'.format(t=t) for t in tags]))
-
-        query += " from {measurement}""".format(measurement=measurement)
-
-        if conditions:
-            query += " WHERE {c}".format(c=" AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions]))
-
-        x = self.query(query)
-
-        if measurement in x.keys():
-            x = x[measurement].tz_localize(None)
-
+    def __read_frame(self, measurement, field="*", tags=None, conditions=None):
+        q = "SELECT {f}::field {t} from {m}{co}""".format(f=field, t=self.__tags(tags), m=measurement, co=self.__cond(conditions))
+        try:
+            x = self.query(q)[measurement].tz_localize(None)
             if tags:
-                return x.set_index(tags, append=True)
-
+                x = x.set_index(tags, append=True)
             return x
-        else:
+        except:
             return pd.DataFrame({})
 
     def __write_frame(self, frame, measurement, tags=None, batch_size=500, time_precision=None):
@@ -103,3 +90,11 @@ class Client(DataFrameClient):
 
         self.write_points(dataframe=a.applymap(float), measurement=measurement, tags=tags,
                           field_columns=list(a.keys()), batch_size=batch_size, time_precision=time_precision)
+
+    # No, you can't update an entire frame for a single symbol!
+    def last(self, measurement, field, conditions=None):
+        try:
+            query = """SELECT LAST({f}) FROM {m}{c}""".format(f=field, m=measurement, c=self.__cond(conditions))
+            return self.query(query)[measurement].index[0].tz_localize(None)
+        except KeyError:
+            return None

@@ -62,7 +62,7 @@ class Owner(ProductInterface):
 
 
     def position(self, client, sum=False, tail=None):
-        f = client.read_frame(measurement="WeightsOwner", tags=["security"], conditions=[("owner", self.name)]).unstack()["weight"]
+        f = client.read_series(measurement="WeightsOwner", field="weight", tags=["security"], conditions={"owner": self.name}).unstack()
         print(f)
         #assert False
 
@@ -164,19 +164,19 @@ class Owner(ProductInterface):
 
     def returns(self, client):
         # this is fast!
-        return client.read_series(field="return", measurement="ReturnOwner", conditions=[("owner", self.name)])
+        return client.read_series(field="return", measurement="ReturnOwner", conditions={"owner": self.name})
 
     def volatility(self, client):
-        return client.read_series(field="volatility", measurement="VolatilityOwner", conditions=[("owner", self.name)])
+        return client.read_series(field="volatility", measurement="VolatilityOwner", conditions={"owner": self.name})
 
     @staticmethod
     def returns_all(client):
-        return client.read_frame(measurement="ReturnOwner", tags=["owner"])
+        return client.read_series(measurement="ReturnOwner", field="return", tags=["owner"], unstack=True)
 
     @staticmethod
     def volatility_all(client):
-        return client.read_frame(measurement="VolatilityOwner", tags=["owner"]).unstack()["volatility"]
+        return client.read_series(measurement="VolatilityOwner", field="volatility", tags=["owner"], unstack=True)
 
     @staticmethod
     def position_all(client):
-        return client.read_frame(measurement="WeightsOwner", tags=["owner","security","custodian"])
+        return client.read_series(measurement="WeightsOwner", field="weight", tags=["owner", "security", "custodian"])
