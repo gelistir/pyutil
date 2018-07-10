@@ -35,7 +35,7 @@ class TestSymbol(TestCase):
         s = Symbol(name="AAAAA US Equity", group=SymbolType.equities, internal="Peter Maffay")
         s.ts_upsert(client=self.client, field="px_last", ts=series)
         pdt.assert_series_equal(s.ts(client=self.client, field="px_last"), series)
-        self.assertEqual(s.last(client=self.client), t1.date())
+        self.assertEqual(s.last(client=self.client), t1)
 
 
 class TestSymbols(TestCase):

@@ -38,7 +38,7 @@ class Symbol(ProductInterface):
     def last(self, client, field="px_last"):
         # todo: make this a function in the client!
         try:
-            return client.query("""SELECT LAST({f}) FROM "{measurements}" where "name"='{n}'""".format(measurements=MEASUREMENTS, f=field, n=self.name))["symbols"].index[0].date()
+            return client.query("""SELECT LAST({f}) FROM "{measurements}" where "name"='{n}'""".format(measurements=MEASUREMENTS, f=field, n=self.name))["symbols"].index[0].tz_localize(None)
         except KeyError:
             return None
 
