@@ -64,15 +64,15 @@ class Client(DataFrameClient):
 
     def write_series(self, ts, field, measurement, tags=None):
         if len(ts) > 0:
-            self.write_frame(ts.to_frame(name=field.replace(" ", "_")), measurement=measurement, tags=tags)
+            self.__write_frame(ts.to_frame(name=field), measurement=measurement, tags=tags)
 
     def write_portfolio(self, portfolio, name, batch_size=500, time_precision=None):
-        self.write_frame(frame=portfolio.prices, measurement="prices", tags={"name": name}, batch_size=batch_size, time_precision=time_precision)
-        self.write_frame(frame=portfolio.weights, measurement="weights", tags={"name": name}, batch_size=batch_size, time_precision=time_precision)
+        self.__write_frame(frame=portfolio.prices, measurement="prices", tags={"name": name}, batch_size=batch_size, time_precision=time_precision)
+        self.__write_frame(frame=portfolio.weights, measurement="weights", tags={"name": name}, batch_size=batch_size, time_precision=time_precision)
 
     def read_portfolio(self, name):
-        p = self.read_frame(measurement="prices", conditions=[("name", name)])
-        w = self.read_frame(measurement="weights", conditions=[("name", name)])
+        p = self.read_frame(measurement="prices", conditions=[("name", name)]).rename(columns=lambda x: x.replace("_", " "))
+        w = self.read_frame(measurement="weights", conditions=[("name", name)]).rename(columns=lambda x: x.replace("_", " "))
         return p,w
 
     def read_frame(self, measurement, tags=None, conditions=None):
@@ -98,6 +98,8 @@ class Client(DataFrameClient):
         else:
             return pd.DataFrame({})
 
-    def write_frame(self, frame, measurement, tags=None, batch_size=500, time_precision=None):
+    def __write_frame(self, frame, measurement, tags=None, batch_size=500, time_precision=None):
         a = frame.rename(columns=lambda x: x.replace(" ", "_"))
-        self.write_points(dataframe=a.applymap(float), measurement=measurement, tags=tags, field_columns=list(a.keys()), batch_size=batch_size, time_precision=time_precision)
+
+        self.write_points(dataframe=a.applymap(float), measurement=measurement, tags=tags,
+                          field_columns=list(a.keys()), batch_size=batch_size, time_precision=time_precision)
