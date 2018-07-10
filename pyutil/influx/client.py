@@ -1,8 +1,5 @@
 import os
-from time import time
-
 import pandas as pd
-
 from influxdb import DataFrameClient
 
 class Client(DataFrameClient):
@@ -27,7 +24,7 @@ class Client(DataFrameClient):
         """ get set of measurements for a given database """
         return set([a["name"] for a in self.get_list_measurements()])
 
-    def tags(self, measurement, key, conditions=None):
+    def tag_values(self, measurement, key, conditions=None):
         """
         Values for a key
 
@@ -44,7 +41,7 @@ class Client(DataFrameClient):
 
         return set([a["value"] for a in self.query(query).get_points()])
 
-    def keys(self, measurement):
+    def tag_keys(self, measurement):
         """
         All keys used within a measurement...
 
@@ -57,51 +54,50 @@ class Client(DataFrameClient):
     def __cond(self, conditions=None):
         return " AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions])
 
-    def __query(self, field, measurement, tags=None, conditions=None):
-        query = """SELECT {f}::field""".format(f=field)
+    def read_series(self, field, measurement, conditions=None):
+        """ test empty !!!! """
+        try:
+            a = self.read_frame(measurement=measurement, conditions=conditions)[field]
+            #a.name = None
+            return a
+        except KeyError:
+            return pd.Series({})
+
+    def write_series(self, ts, tags, field, measurement):
+        #if isinstance(ts, dict):
+        #    ts = pd.Series(ts)
+
+        if len(ts) > 0:
+            self.write_frame(ts.to_frame(name=field.replace(" ", "_")), measurement=measurement, tags=tags)
+
+    def write_portfolio(self, portfolio, name, batch_size=500, time_precision=None):
+        self.write_frame(frame=portfolio.prices, measurement="prices", tags={"name": name}, batch_size=batch_size, time_precision=time_precision)
+        self.write_frame(frame=portfolio.weights, measurement="weights", tags={"name": name}, batch_size=batch_size, time_precision=time_precision)
+
+    def read_portfolio(self, name):
+        p = self.read_frame(measurement="prices", conditions=[("name", name)])
+        w = self.read_frame(measurement="weights", conditions=[("name", name)])
+        return p,w
+
+    def read_frame(self, measurement, tags=None, conditions=None, index_col=None):
+        query = "SELECT *::field"
 
         if tags:
             query += ", {t}".format(t=", ".join(['"{t}"::tag'.format(t=t) for t in tags]))
 
-        query += " FROM {m}".format(m=measurement)
+        query += " from {measurement}""".format(measurement=measurement)
 
         if conditions:
             query += " WHERE {c}".format(c=" AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions]))
 
-        return query
 
-    def frame(self, field, tags, measurement, conditions=None):
-        query = self.__query(field=field, tags=tags, measurement=measurement, conditions=conditions)
-        result = self.query(query)
+        x = self.query(query)[measurement].tz_localize(None)
 
-        if measurement in result:
-            x = result[measurement].tz_localize(None)
-            return x.set_index(keys=tags, append=True).unstack(level=-1)[field]
-        else:
-            return pd.DataFrame({})
+        if index_col:
+            return x.set_index(index_col, append=True)
 
-    def series(self, field, measurement, conditions=None):
-        """ test empty !!!! """
-        query = self.__query(field=field, measurement=measurement, conditions=conditions)
-        result = self.query(query)
+        return x.rename(columns=lambda x: x.replace("_", " "))
 
-        if measurement in result:
-            return result[measurement][field].tz_localize(None)
-        else:
-            return pd.Series({})
-
-    def series_upsert(self, ts, tags, field, measurement):
-        if len(ts) > 0:
-            json_body = [{'measurement': measurement,'time': t, 'fields': {field: float(x)}} for t,x in ts.items()]
-            self.influxclient.write_points(json_body, time_precision="s", tags=tags, batch_size=10000)
-
-    def frame_upsert(self, frame, tags, field, measurement):
-        frame = frame.stack()
-        print(frame)
-        frame.index.names = ["Time", "Asset"]
-
-        frame = frame.reset_index()
-        frame = frame.set_index("Time")
-        print(frame)
-
-        self.write_points(dataframe=frame, time_precision="s",tags=tags, tag_columns=["Asset"], measurement=measurement)
+    def write_frame(self, frame, measurement, tags, batch_size=500, time_precision=None):
+        a = frame.rename(columns=lambda x: x.replace(" ", "_"))
+        self.write_points(dataframe=a.applymap(float), measurement=measurement, tags=tags, field_columns=list(a.keys()), batch_size=batch_size, time_precision=time_precision)
