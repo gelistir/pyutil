@@ -12,6 +12,7 @@ class SymbolType(_enum.Enum):
     currency = "Currency"
     equities = "Equities"
 
+MEASUREMENTS = "symbols"
 
 class Symbol(ProductInterface):
     group = sq.Column("group", _Enum(SymbolType))
@@ -24,15 +25,26 @@ class Symbol(ProductInterface):
         self.group = group
         self.internal = internal
 
-    def ts(self, client, field="px_last"):
-        return client.series(field=field, measurement="symbols", conditions=[("name", self.name)])
+    def ts(self, client, name="px_last"):
+        return client.read_series(field=self.name, measurement=MEASUREMENTS, conditions=[("name", name)])
 
     def ts_upsert(self, client, ts, field="px_last"):
         """ update a series for a field """
-        client.series_upsert(field=field, measurement="symbols", tags={"name": self.name}, ts=ts)
+        client.write_series(field=self.name, measurement=MEASUREMENTS, tags={"name": field}, ts=ts)
 
+    # No, you can't update an entire frame for a single symbol!
     def last(self, client, field="px_last"):
+        # todo: make this a function in the client!
         try:
-            return client.query("""SELECT LAST({f}) FROM "symbols" where "name"='{n}'""".format(n=self.name, f=field))["symbols"].index[0].date()
+            return client.query("""SELECT LAST({f}) FROM "{measurements}" where "name"='{n}'""".format(measurements=MEASUREMENTS, f=self.name.replace(" ", "_"), n=field))["symbols"].index[0].date()
         except KeyError:
             return None
+
+    @staticmethod
+    def read_frame(client, name="px_last"):
+        return client.read_frame(measurement=MEASUREMENTS, conditions=[("name", name)])
+
+    @staticmethod
+    def write_frame(client, frame, name="px_last"):
+        client.write_frame(frame=frame, measurement=MEASUREMENTS, tags={"name": name})
+
