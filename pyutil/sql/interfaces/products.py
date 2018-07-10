@@ -82,23 +82,23 @@ class ProductInterface(MyMixin, Base):
         else:
             return default
 
-    def upsert_ts(self, name, data=None, secondary=None):
-        """ upsert a timeseries, get Timeseries object """
-
-        def key(name, secondary=None):
-            if secondary:
-                return name, secondary
-
-            return name
-
-        k = key(name, secondary)
-
-        # do we need a new timeseries object?
-        if k not in self._timeseries.keys():
-            self._timeseries[k] = Timeseries(name=name, product=self, secondary=secondary)
-
-        # now update the timeseries object
-        return self._timeseries[k].upsert(data)
+    # def upsert_ts(self, name, data=None, secondary=None):
+    #     """ upsert a timeseries, get Timeseries object """
+    #
+    #     def key(name, secondary=None):
+    #         if secondary:
+    #             return name, secondary
+    #
+    #         return name
+    #
+    #     k = key(name, secondary)
+    #
+    #     # do we need a new timeseries object?
+    #     if k not in self._timeseries.keys():
+    #         self._timeseries[k] = Timeseries(name=name, product=self, secondary=secondary)
+    #
+    #     # now update the timeseries object
+    #     return self._timeseries[k].upsert(data)
 
     def frame(self, name, rename=False):
 

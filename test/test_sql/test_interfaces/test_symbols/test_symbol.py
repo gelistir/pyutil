@@ -9,7 +9,7 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 t0 = pd.Timestamp("2000-11-17")
 t1 = pd.Timestamp("2000-11-18")
 
-series = pd.Series({t0: 100.0, t1: 100.5}, name="AAAAA US Equity")
+series = pd.Series({t0: 100.0, t1: 100.5}, name="px_last")
 
 class TestSymbol(TestCase):
     @classmethod
@@ -28,13 +28,13 @@ class TestSymbol(TestCase):
 
     def test_empty_ts(self):
         s = Symbol(name="AAAAA US Equity", group=SymbolType.equities, internal="Peter Maffay")
-        pdt.assert_series_equal(s.ts(client=self.client, name="px_last"), pd.Series({}))
+        pdt.assert_series_equal(s.ts(client=self.client, field="px_last"), pd.Series({}))
         self.assertIsNone(s.last(client=self.client))
 
     def test_ts(self):
         s = Symbol(name="AAAAA US Equity", group=SymbolType.equities, internal="Peter Maffay")
         s.ts_upsert(client=self.client, field="px_last", ts=series)
-        pdt.assert_series_equal(s.ts(client=self.client, name="px_last"), series)
+        pdt.assert_series_equal(s.ts(client=self.client, field="px_last"), series)
         self.assertEqual(s.last(client=self.client), t1.date())
 
 

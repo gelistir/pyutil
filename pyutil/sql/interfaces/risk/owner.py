@@ -59,22 +59,18 @@ class Owner(ProductInterface):
     def securities(self):
         return self.__securities
 
-    def returns(self, client):
-        return client.read_series(field=self.name, measurement="ReturnOwner")
 
-    def volatility(self, client):
-        return client.read_series(field=self.name, measurement="VolatilityOwner")
 
     def position(self, client, sum=False, tail=None):
-        f = client.read_frame(measurement="WeightsOwner", tags=["owner", "security"], conditions=[("owner", self.name)])
+        f = client.read_frame(measurement="WeightsOwner", tags=["security"], conditions=[("owner", self.name)]).unstack()["weight"]
         print(f)
-        assert False
+        #assert False
 
-        f = client.query("""SELECT weight::field, security::tag FROM owner WHERE "owner"='{name}'""".format(name=self.name))
-        f = f["owner"].set_index(keys=["security"], append=True).groupby(level=[0, 1]).sum()
+        #f = client.query("""SELECT weight::field, security::tag FROM owner WHERE "owner"='{name}'""".format(name=self.name))
+        #f = f["owner"].set_index(keys=["security"], append=True).groupby(level=[0, 1]).sum()
         # print(f).sum()
         # assert False
-        f = f.unstack(level=-1).tz_localize(None)["weight"]  #.tail(1).transpose()
+        #f = f.unstack(level=-1).tz_localize(None)["weight"]  #.tail(1).transpose()
         #print(f)
 
 
@@ -155,20 +151,32 @@ class Owner(ProductInterface):
         return self.__weighted_by(x=kiid, index_col=index_col, sum=sum)
 
     def upsert_return(self, client, ts):
-        client.write_series(ts=ts, field=self.name, measurement='ReturnOwner')
+        client.write_series(ts=ts, field="return", tags={"owner": self.name}, measurement='ReturnOwner')
 
-    # def upsert_position(self, client, security, custodian, ts):
-    #     assert isinstance(security, Security)
-    #     assert isinstance(custodian, Custodian)
-    #     assert security in self.__securities, "The security {s} is not known to owner {o}".format(s=security.name, o=self.name)
-    #
-    #     client.series_upsert(ts=ts, tags={"owner": self.name, "security": security.name, "custodian": custodian.name}, field="weight", series_name="owner")
-
-    def upsert_position(self, client, security, ts):
+    def upsert_position(self, client, security, custodian, ts):
         assert isinstance(security, Security)
+        assert isinstance(custodian, Custodian)
 
-        client.write_series(ts=ts, field="weight", tags={"owner": self.name, "security": security.name}, measurement="WeightsOwner")
-
+        client.write_series(ts=ts, field="weight", tags={"owner": self.name, "security": security.name, "custodian": custodian.name}, measurement="WeightsOwner")
 
     def upsert_volatility(self, client, ts):
-        client.write_series(ts=ts, field=self.name, measurement='VolatilityOwner')
+        client.write_series(ts=ts, field="volatility", tags={"owner": self.name}, measurement='VolatilityOwner')
+
+    def returns(self, client):
+        # this is fast!
+        return client.read_series(field="return", measurement="ReturnOwner", conditions=[("owner", self.name)])
+
+    def volatility(self, client):
+        return client.read_series(field="volatility", measurement="VolatilityOwner", conditions=[("owner", self.name)])
+
+    @staticmethod
+    def returns_all(client):
+        return client.read_frame(measurement="ReturnOwner", tags=["owner"])
+
+    @staticmethod
+    def volatility_all(client):
+        return client.read_frame(measurement="VolatilityOwner", tags=["owner"]).unstack()["volatility"]
+
+    @staticmethod
+    def position_all(client):
+        return client.read_frame(measurement="WeightsOwner", tags=["owner","security","custodian"])

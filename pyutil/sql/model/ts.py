@@ -28,8 +28,8 @@ class Timeseries(Base):
     secondary_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), nullable=True)
     secondary = relationship("ProductInterface", foreign_keys=[secondary_id])
 
-    tertiary_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), nullable=True)
-    tertiary = relationship("ProductInterface", foreign_keys=[tertiary_id])
+    #tertiary_id = sq.Column(sq.Integer, sq.ForeignKey("productinterface.id"), nullable=True)
+    #tertiary = relationship("ProductInterface", foreign_keys=[tertiary_id])
 
     _jdata = sq.Column("jdata", sq.LargeBinary, nullable=True)
     sq.UniqueConstraint('product', 'name', 'secondary_id')
@@ -52,41 +52,41 @@ class Timeseries(Base):
     def name(self):
         return self.__name
 
-    @property
-    def __series_slow(self):
-        x = _pd.Series({date: x.value for date, x in self._data.items()})
-        if not x.empty:
-            # we read date from database!
-            x = x.rename(index=lambda a: _pd.Timestamp(a)).sort_index()
-            assert x.index.is_monotonic_increasing, "Index is not increasing"
-            assert not x.index.has_duplicates, "Index has duplicates"
-        return x
+    # @property
+    # def __series_slow(self):
+    #     x = _pd.Series({date: x.value for date, x in self._data.items()})
+    #     if not x.empty:
+    #         # we read date from database!
+    #         x = x.rename(index=lambda a: _pd.Timestamp(a)).sort_index()
+    #         assert x.index.is_monotonic_increasing, "Index is not increasing"
+    #         assert not x.index.has_duplicates, "Index has duplicates"
+    #     return x
 
-    def upsert(self, ts=None):
-        if ts is not None:
-            # ts might be a dict!
-            for date, value in ts.items():
-                if np.isfinite(value):
-                    if isinstance(date, pd.Timestamp):
-                        assert date.hour == 0
-                        assert date.minute == 0
-                        assert date.second == 0
-                        d = date.date()
-
-                    elif isinstance(date, datetype):
-                        d = date
-
-                    else:
-                        raise AssertionError("The index has to be a datetime or date object")
-
-                    if d not in self._data.keys():
-                        self._data[d] = _TimeseriesData(date=d, value=value, ts=self)
-                    else:
-                        self._data[d].value = value
-
-        # update data
-        self._jdata = from_pandas(self.__series_slow)
-        return self
+    # def upsert(self, ts=None):
+    #     if ts is not None:
+    #         # ts might be a dict!
+    #         for date, value in ts.items():
+    #             if np.isfinite(value):
+    #                 if isinstance(date, pd.Timestamp):
+    #                     assert date.hour == 0
+    #                     assert date.minute == 0
+    #                     assert date.second == 0
+    #                     d = date.date()
+    #
+    #                 elif isinstance(date, datetype):
+    #                     d = date
+    #
+    #                 else:
+    #                     raise AssertionError("The index has to be a datetime or date object")
+    #
+    #                 if d not in self._data.keys():
+    #                     self._data[d] = _TimeseriesData(date=d, value=value, ts=self)
+    #                 else:
+    #                     self._data[d].value = value
+    #
+    #     # update data
+    #     self._jdata = from_pandas(self.__series_slow)
+    #     return self
 
     @property
     def series(self):
@@ -121,12 +121,3 @@ class _TimeseriesData(Base):
         self.date = date
         self.value = value
         self.ts = ts
-
-
-#class Tags(Base):
-#    __tablename__ = "ts_tags"
-#    id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
-#    ts_id = sq.Column("ts_id", sq.Integer, sq.ForeignKey(Timeseries.id), index=True)
-#    name = sq.Column("name", sq.String(100), nullable=False)
-#    value = sq.Column("value", sq.String(100), nullable=True)
-

@@ -45,7 +45,7 @@ class TestDatabaseRisk(TestCase):
         cls.o1.reference[NAME] = "Peter Maffay"
         # append the security
         cls.o1.securities.append(cls.s1)
-        cls.o1.upsert_position(client=cls.client, security=cls.s1, ts=pd.Series({t1: 0.4, t2: 0.5}))
+        cls.o1.upsert_position(client=cls.client, security=cls.s1, custodian=cls.cus1, ts=pd.Series({t1: 0.4, t2: 0.5}))
         cls.o1.upsert_volatility(client=cls.client, ts=pd.Series({t1: 0.3, t2: 0.3}))
         cls.o1.upsert_return(client=cls.client, ts=pd.Series({t1: 0.2, t2: 0.1}))
 
@@ -63,15 +63,11 @@ class TestDatabaseRisk(TestCase):
         self.assertEqual(self.o1, self.db.owner(name="100"))
 
     def test_position(self):
-        x = pd.DataFrame(index=[t1, t2],
-                         columns=["owner", "security", "weight"],
-                         data=[["100", "123", 0.4],["100", "123", 0.5]])
-
-        x.set_index(keys=["owner","security"], inplace=True, append=True)
-
-        pdt.assert_series_equal(self.db.position, x["weight"], check_names=False)
+        x = self.db.position.loc[("100","UBS Geneva","123")]
+        pdt.assert_series_equal(x["weight"], pd.Series({t1: 0.4, t2: 0.5}), check_names=False)
 
     def test_returns(self):
+        print(self.db.returns)
         pdt.assert_series_equal(self.db.returns["100"], pd.Series({t1: 0.2, t2: 0.1}), check_names=False)
 
     def test_reference_securities(self):
@@ -94,6 +90,7 @@ class TestDatabaseRisk(TestCase):
         pdt.assert_series_equal(self.db.volatility_owner["100"], pd.Series({t1: 0.3, t2: 0.3}), check_names=False)
 
     def test_volatility_security(self):
+        print(self.db.volatility_security["123"])
         pdt.assert_series_equal(self.db.volatility_security["123"].loc["USD"], pd.Series({t1: 11.1, t2: 12.1}), check_names=False)
 
     # def test_volatility_owner_securities(self):

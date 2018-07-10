@@ -1,4 +1,5 @@
 import enum as _enum
+import pandas as pd
 
 import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
@@ -25,26 +26,25 @@ class Symbol(ProductInterface):
         self.group = group
         self.internal = internal
 
-    def ts(self, client, name="px_last"):
-        return client.read_series(field=self.name, measurement=MEASUREMENTS, conditions=[("name", name)])
+    def ts(self, client, field="px_last"):
+        print(client.query("SELECT * FROM symbols"))
+        return client.read_series(field=field, measurement=MEASUREMENTS, conditions=[("name", self.name)])
 
     def ts_upsert(self, client, ts, field="px_last"):
         """ update a series for a field """
-        client.write_series(field=self.name, measurement=MEASUREMENTS, tags={"name": field}, ts=ts)
+        client.write_series(field=field, measurement=MEASUREMENTS, tags={"name": self.name}, ts=ts)
 
     # No, you can't update an entire frame for a single symbol!
     def last(self, client, field="px_last"):
         # todo: make this a function in the client!
         try:
-            return client.query("""SELECT LAST({f}) FROM "{measurements}" where "name"='{n}'""".format(measurements=MEASUREMENTS, f=self.name.replace(" ", "_"), n=field))["symbols"].index[0].date()
+            return client.query("""SELECT LAST({f}) FROM "{measurements}" where "name"='{n}'""".format(measurements=MEASUREMENTS, f=field, n=self.name))["symbols"].index[0].date()
         except KeyError:
             return None
 
     @staticmethod
     def read_frame(client, name="px_last"):
-        return client.read_frame(measurement=MEASUREMENTS, conditions=[("name", name)])
-
-    @staticmethod
-    def write_frame(client, frame, name="px_last"):
-        client.write_frame(frame=frame, measurement=MEASUREMENTS, tags={"name": name})
-
+        try:
+            return client.read_frame(measurement=MEASUREMENTS, tags=["name"]).unstack()[name]
+        except KeyError:
+            return pd.DataFrame({})

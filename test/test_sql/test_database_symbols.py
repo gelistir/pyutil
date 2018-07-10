@@ -55,6 +55,7 @@ class TestDatabaseSymbols(TestCase):
         cls.session.close()
         cls.client.drop_database(dbname="test-AAA")
 
+
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):

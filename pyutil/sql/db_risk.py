@@ -17,12 +17,12 @@ class DatabaseRisk(Database):
     # rename the columns apply int!!!!
     @property
     def prices(self):
-        return self.client.frame(measurement="security", field="price", tags=["security"])
+        return Security.prices_all(client=self.client)
 
     # same
     @property
     def returns(self):
-        return self.client.frame(measurement="owner", field="returns", tags=["owner"])
+        return Owner.returns_all(client=self.client).unstack()["return"]
 
     @property
     def reference_owner(self):
@@ -40,17 +40,20 @@ class DatabaseRisk(Database):
     @property
     def position(self):
         # read all positions at once. This is fast!
-        return self.client.frame(measurement="owner", field="weight", tags=["owner", "security"]).stack()
+        return Owner.position_all(client=self.client).swaplevel(i=0,j=-1).swaplevel(i=0,j=1)
 
     # apply int
     @property
     def volatility_owner(self):
-        return self.client.frame(measurement="owner", field="volatility", tags=["owner"])
+        return Owner.volatility_all(client=self.client)
+
 
     # apply int
     @property
     def volatility_security(self):
-        return self.client.frame(measurement="security", field="volatility", tags=["currency", "security"]).swaplevel()
+        return Security.volatility_all(client=self.client).unstack(level="security")["volatility"].swaplevel()
+
+        #return self.client.frame(measurement="security", field="volatility", tags=["currency", "security"]).swaplevel()
 
     #@property
     #def volatility_owner_securities(self):

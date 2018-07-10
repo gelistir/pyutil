@@ -45,7 +45,7 @@ class TestInfluxDB(TestCase):
 
         print(self.client.query("""SELECT *::field FROM prices""")["prices"].tz_localize(None))
 
-        print(self.client.read_frame(measurement="prices", tags=["name"], conditions=[("name","test-a")], index_col=["name"]))
+        print(self.client.read_frame(measurement="prices", tags=["name"], conditions=[("name","test-a")]))
         print(self.client.read_frame(measurement="prices", conditions=[("name","test-a")]))
         print(self.client.read_frame(measurement="prices"))
 

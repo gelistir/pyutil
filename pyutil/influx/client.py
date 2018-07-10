@@ -57,9 +57,8 @@ class Client(DataFrameClient):
     def read_series(self, field, measurement, conditions=None):
         """ test empty !!!! """
         try:
-            a = self.read_frame(measurement=measurement, conditions=conditions)[field]
-            #a.name = None
-            return a
+            a = self.read_frame(measurement=measurement, conditions=conditions)
+            return a[field]
         except KeyError:
             return pd.Series({})
 
@@ -95,7 +94,7 @@ class Client(DataFrameClient):
             if tags:
                 return x.set_index(tags, append=True)
 
-            return x.rename(columns=lambda x: x.replace("_", " "))
+            return x
         else:
             return pd.DataFrame({})
 

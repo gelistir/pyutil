@@ -32,12 +32,6 @@ class Security(ProductInterface):
     def __repr__(self):
         return "Security({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
 
-    def price(self, client):
-        return client.read_series(field="price", measurement="PriceSecurity", conditions=[("security", self.name)])
-
-    def volatility(self, client, currency):
-        assert isinstance(currency, Currency)
-        return client.read_series(field="volatility", measurement="VolatilitySecurity", conditions=[("security", self.name), ("currency", currency.name)])
 
     @hybrid_property
     def kiid(self):
@@ -53,6 +47,13 @@ class Security(ProductInterface):
 
     def upsert_price(self, client, ts):
         client.write_series(ts=ts, tags={"security": self.name}, field="price", measurement="PriceSecurity")
+
+    def price(self, client):
+        return client.read_series(field="price", measurement="PriceSecurity", conditions=[("security", self.name)])
+
+    def volatility(self, client, currency):
+        assert isinstance(currency, Currency)
+        return client.read_series(field="volatility", measurement="VolatilitySecurity", conditions=[("security", self.name), ("currency", currency.name)])
 
     @staticmethod
     def prices_all(client):

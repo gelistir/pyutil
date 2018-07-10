@@ -23,21 +23,21 @@ class TestProductInterface(TestCase):
         with self.assertRaises(AttributeError):
             self.p1.name = "AA"
 
-    def test_timeseries(self):
-        self.p1.upsert_ts(name="correlation", data={pd.Timestamp("12-11-1978"): 0.5}, secondary=self.p2)
-        self.p1.upsert_ts(name="price", data={pd.Timestamp("12-11-1978"): 10.0})
-
-        self.assertTrue("price" in self.p1._timeseries.keys())
-        self.assertTrue(("correlation", self.p2) in self.p1._timeseries.keys())
-
-        pdt.assert_series_equal(self.p1.get_timeseries("price"), pd.Series({pd.Timestamp("12-11-1978"): 10.0}))
-
-        # test the frame
-        self.assertTrue(self.p1.frame("price").empty)
-        pdt.assert_frame_equal(self.p1.frame("correlation"),
-                               pd.DataFrame(index=[pd.Timestamp("12-11-1978")], columns=[self.p2], data=[[0.5]]))
-
-        self.assertTrue(self.p1.frame("NoNoNo").empty)
+    # def test_timeseries(self):
+    #     self.p1.upsert_ts(name="correlation", data={pd.Timestamp("12-11-1978"): 0.5}, secondary=self.p2)
+    #     self.p1.upsert_ts(name="price", data={pd.Timestamp("12-11-1978"): 10.0})
+    #
+    #     self.assertTrue("price" in self.p1._timeseries.keys())
+    #     self.assertTrue(("correlation", self.p2) in self.p1._timeseries.keys())
+    #
+    #     pdt.assert_series_equal(self.p1.get_timeseries("price"), pd.Series({pd.Timestamp("12-11-1978"): 10.0}))
+    #
+    #     # test the frame
+    #     self.assertTrue(self.p1.frame("price").empty)
+    #     pdt.assert_frame_equal(self.p1.frame("correlation"),
+    #                            pd.DataFrame(index=[pd.Timestamp("12-11-1978")], columns=[self.p2], data=[[0.5]]))
+    #
+    #     self.assertTrue(self.p1.frame("NoNoNo").empty)
 
     def test_reference(self):
         self.p1.reference[self.f1] = "100"
