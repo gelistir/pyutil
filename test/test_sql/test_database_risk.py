@@ -33,8 +33,8 @@ class TestDatabaseRisk(TestCase):
 
         cls.s1.reference[KIID] = 5
 
-        cls.s1.upsert_price(client=cls.client, ts={t1: 11.1, t2: 12.1})
-        cls.s1.upsert_volatility(client=cls.client, ts={t1: 11.1, t2: 12.1}, currency=cls.cur1)
+        cls.s1.upsert_price(client=cls.client, ts=pd.Series({t1: 11.1, t2: 12.1}))
+        cls.s1.upsert_volatility(client=cls.client, ts=pd.Series({t1: 11.1, t2: 12.1}), currency=cls.cur1)
 
         cls.session.add_all([cls.s1, cls.s2])
 
@@ -45,9 +45,9 @@ class TestDatabaseRisk(TestCase):
         cls.o1.reference[NAME] = "Peter Maffay"
         # append the security
         cls.o1.securities.append(cls.s1)
-        cls.o1.upsert_position(client=cls.client, security=cls.s1, ts={t1: 0.4, t2: 0.5})
-        cls.o1.upsert_volatility(client=cls.client, ts={t1: 0.3, t2: 0.3})
-        cls.o1.upsert_return(client=cls.client, ts={t1: 0.2, t2: 0.1})
+        cls.o1.upsert_position(client=cls.client, security=cls.s1, ts=pd.Series({t1: 0.4, t2: 0.5}))
+        cls.o1.upsert_volatility(client=cls.client, ts=pd.Series({t1: 0.3, t2: 0.3}))
+        cls.o1.upsert_return(client=cls.client, ts=pd.Series({t1: 0.2, t2: 0.1}))
 
         cls.session.add(cls.o1)
         cls.session.commit()

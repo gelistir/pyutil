@@ -60,12 +60,16 @@ class Owner(ProductInterface):
         return self.__securities
 
     def returns(self, client):
-        return client.series(field="returns", measurement="owner", conditions=[("owner", self.name)])
+        return client.read_series(field=self.name, measurement="ReturnOwner")
 
     def volatility(self, client):
-        return client.series(field="volatility", measurement="owner", conditions=[("owner", self.name)])
+        return client.read_series(field=self.name, measurement="VolatilityOwner")
 
     def position(self, client, sum=False, tail=None):
+        f = client.read_frame(measurement="WeightsOwner", tags=["owner", "security"], conditions=[("owner", self.name)])
+        print(f)
+        assert False
+
         f = client.query("""SELECT weight::field, security::tag FROM owner WHERE "owner"='{name}'""".format(name=self.name))
         f = f["owner"].set_index(keys=["security"], append=True).groupby(level=[0, 1]).sum()
         # print(f).sum()
@@ -151,7 +155,7 @@ class Owner(ProductInterface):
         return self.__weighted_by(x=kiid, index_col=index_col, sum=sum)
 
     def upsert_return(self, client, ts):
-        client.series_upsert(ts=ts, tags={"owner": self.name}, field="returns", measurement='owner')
+        client.write_series(ts=ts, field=self.name, measurement='ReturnOwner')
 
     # def upsert_position(self, client, security, custodian, ts):
     #     assert isinstance(security, Security)
@@ -163,8 +167,8 @@ class Owner(ProductInterface):
     def upsert_position(self, client, security, ts):
         assert isinstance(security, Security)
 
-        client.series_upsert(ts=ts, tags={"owner": self.name, "security": security.name}, field="weight", measurement="owner")
+        client.write_series(ts=ts, field="weight", tags={"owner": self.name, "security": security.name}, measurement="WeightsOwner")
 
 
     def upsert_volatility(self, client, ts):
-        client.series_upsert(ts=ts, tags={"owner": self.name}, field="volatility", measurement='owner')
+        client.write_series(ts=ts, field=self.name, measurement='VolatilityOwner')

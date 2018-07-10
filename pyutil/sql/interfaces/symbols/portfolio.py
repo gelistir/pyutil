@@ -11,43 +11,31 @@ class Portfolio(ProductInterface):
 
     def last(self, client):
         try:
-            return client.query("""SELECT LAST({f}) FROM "portfolio" where "portfolio"='{n}'""".format(n=self.name, f="weight"))["portfolio"].index[0].date()
+            return client.query(""" SELECT LAST({f}) FROM "nav" """.format(f=self.name))["nav"].index[0].date()
         except KeyError:
             return None
 
-    def upsert_influx(self, client, portfolio, drop=False):
+    def upsert_influx(self, client, portfolio):
         assert isinstance(portfolio, _Portfolio)
-
-        for symbol in portfolio.assets:
-            if drop:
-                client.query("DROP SERIES FROM portfolio WHERE portfolio='{name}' and asset='{asset}'".format(name=self.name, asset=symbol))
-            client.series_upsert(ts=portfolio.weights[symbol].dropna(), field="weight", tags={"portfolio": self.name, "asset": symbol}, measurement="portfolio")
-            client.series_upsert(ts=portfolio.prices[symbol].dropna(), field="price", tags={"portfolio": self.name, "asset": symbol}, measurement="portfolio")
+        client.write_portfolio(portfolio=portfolio, name=self.name)
 
         # it's important to recompute the entire portfolio here...
         p = self.portfolio_influx(client=client)
+        print(p.nav.index[0])
 
         # update the nav
-        if drop:
-            client.query("DROP SERIES FROM nav WHERE portfolio='{name}'".format(name=self.name))
-        client.series_upsert(ts=p.nav.dropna(), field="nav", tags={"portfolio": self.name}, measurement="nav")
-
+        client.write_series(ts=p.nav.dropna(), field=self.name, measurement="nav")
         # update the leverage
-        if drop:
-            client.query("DROP SERIES FROM leverage WHERE portfolio='{name}'".format(name=self.name))
-        client.series_upsert(ts=p.leverage.dropna(), field="leverage", tags={"portfolio": self.name}, measurement="leverage")
+        client.write_series(ts=p.leverage.dropna(), field=self.name, measurement="leverage")
 
     def portfolio_influx(self, client):
-        w = client.frame(field="weight", measurement="portfolio", tags=["portfolio", "asset"], conditions=[("portfolio", self.name)])
-        w.index = w.index.droplevel("portfolio")
-
-        p = client.frame(field="price", measurement="portfolio", tags=["portfolio", "asset"], conditions=[("portfolio", self.name)])
-        p.index = p.index.droplevel("portfolio")
-
+        p, w = client.read_portfolio(name=self.name)
         return _Portfolio(prices=p, weights=w)
 
     def symbols_influx(self, client):
-        return client.tags(measurement="portfolio", key="asset", conditions=[("portfolio", self.name)])
+        # todo: change to tag values!
+        return self.portfolio_influx(client=client).assets
+        #return client.tag_values(measurement="prices", key="name", conditions=[("portfolio", self.name)])
 
     # we have fast views to extract data... All the functions below are not required...
     def portfolio(self, rename=False):
@@ -63,7 +51,15 @@ class Portfolio(ProductInterface):
         return _Portfolio(prices=prices, weights=weights)
 
     def nav(self, client):
-        return fromNav(client.series(field="nav", measurement="nav", conditions=[("portfolio", self.name)]))
+        return fromNav(client.read_series(field=self.name, measurement="nav"))
 
     def leverage(self, client):
-        return client.series(field="leverage", measurement="leverage", conditions=[("portfolio", self.name)])
+        return client.read_series(field=self.name, measurement="leverage")
+
+    @staticmethod
+    def nav_all(client):
+        return client.read_frame(measurement="nav")
+
+    @staticmethod
+    def leverage_all(client):
+        return client.read_frame(measurement="leverage")

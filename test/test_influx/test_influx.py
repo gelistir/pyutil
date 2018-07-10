@@ -1,79 +1,15 @@
-import pandas as pd
 from unittest import TestCase
 
-from pyutil.influx.client import Client
+import pandas.util.testing as pdt
 
-json_body = [
-    {
-        "measurement": "brushEvents",
-        "tags": {
-            "user": "Carol",
-            #"brushId": "6c89f539-71c6-490d-a28d-6c5d84c0ee2f"
-        },
-        "time": "2018-03-28T8:01:00Z",
-        "fields": {
-            "dura": 127,
-            "weight": 10
-        }
-    },
-    {
-        "measurement": "brushEvents",
-        "tags": {
-            "user": "Carol",
-            "xxx": "Wurst"
-            #"brushId": "6c89f539-71c6-490d-a28d-6c5d84c0ee2f"
-        },
-        "time": "2018-03-29T8:04:00Z",
-        "fields": {
-            "dura": 132,
-            "weight": 11
-        }
-    },
-    {
-        "measurement": "brushEvents",
-        "tags": {
-            "user": "Carol",
-            #"brushId": "6c89f539-71c6-490d-a28d-6c5d84c0ee2f"
-        },
-        "time": "2018-03-30T8:02:00Z",
-        "fields": {
-            "dura": 129,
-            "weight": 10
-        }
-    },
-    {
-        "measurement": "brushEvents",
-        "tags": {
-            "user": "Peter",
-            #"brushId": "6c89f539-71c6-490d-a28d-6c5d84c0ee2g"
-        },
-        "time": "2018-03-30T8:02:00Z",
-        "fields": {
-            "dura": 229,
-            "weight": 20
-        }
-    },
-    {
-        "measurement": "port",
-        "tags": {
-            "owner": "Hans",
-            "asset": "Asset B",
-            "custodian": "UBS"
-            #"brushId": "6c89f539-71c6-490d-a28d-6c5d84c0ee2f"
-        },
-        "time": "2018-03-28T8:01:00Z",
-        "fields": {
-            "price": 120,
-            "weight": 0.10
-        }
-    }
-]
+from pyutil.influx.client import Client
+from test.config import test_portfolio
+
 
 class TestInfluxDB(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.client = Client(host='test-influxdb', database="testexample")
-        cls.client.influxclient.write_points(json_body)
+        cls.client = Client(host='test-influxdb', database="testexample3")
 
     @classmethod
     def tearDownClass(cls):
@@ -83,48 +19,40 @@ class TestInfluxDB(TestCase):
         databases = self.client.databases
         self.assertTrue("testexample" in databases)
 
-    def test_measurments(self):
-        measurements = self.client.measurements
-        self.assertTrue("brushEvents" in measurements)
-        self.assertTrue("port" in measurements)
-        self.assertTrue(len(measurements), 2)
+    def test_write_portfolio(self):
+        p1 = test_portfolio()
+        self.client.write_portfolio(portfolio=p1, name="test-a")
+        self.client.write_portfolio(portfolio=p1, name="test-b")
 
-    def test_frame(self):
-        print(self.client.keys(measurement="brushEvents"))
-        self.assertSetEqual({"xxx", "user"}, set(self.client.keys(measurement="brushEvents")))
+        p,w = self.client.read_portfolio(name="test-a")
 
-        a = self.client.query("SELECT * FROM brushEvents")["brushEvents"].set_index(keys=["user","xxx"], append=True)
-        print(a)
-        #assert False
+        pdt.assert_frame_equal(p, test_portfolio().prices)
+        pdt.assert_frame_equal(w, test_portfolio().weights)
 
-        # this query doesn' make a lot of sense as no tag is included!
-        a = self.client.query("SELECT dura FROM brushEvents")["brushEvents"]
-        print(a)
-        #assert False
+        self.assertListEqual(self.client.tag_keys(measurement="prices"), ["name"])
 
-        a = self.client.query("""SELECT dura::field, "user"::tag FROM brushEvents""")["brushEvents"].set_index(keys=["user"], append=True)
-        print(a)
-        print(a.unstack(level=-1)["dura"])
+        assert "prices" in self.client.measurements
+        assert "weights" in self.client.measurements
 
-        a = self.client.query("""SELECT dura::field FROM brushEvents WHERE "user"='Carol'""")["brushEvents"]
-        print(a["dura"])
+        for a in self.client.query("""SHOW FIELD KEYS FROM prices""").get_points():
+            print("hello")
+            print(a)
 
-        print(self.client.frame(field="dura", tags=["user"], measurement="brushEvents"))
-        print(self.client.series(field="dura", conditions=[("user", "Carol")], measurement="brushEvents"))
+        for a in self.client.query("""SHOW TAG VALUES FROM prices WITH KEY = "name" """).get_points():
+            print(a)
 
-    def test_find_tags(self):
-        print(self.client.tags(measurement="brushEvents",key="user"))
-        self.assertSetEqual(self.client.tags(measurement="brushEvents",key="user"), {"Peter","Carol"})
+        print(self.client.tag_values(measurement="prices", key="name"))
 
-    def test_write(self):
-        x = pd.DatetimeIndex(start=pd.Timestamp("2010-01-01"), periods=10000, freq="D")
-        y = pd.DataFrame(index=x, data=pd.np.random.randn(10000, 10), columns=["A","B","C","D","E","F","G","H","I","J"])
+        print(self.client.query("""SELECT *::field FROM prices""")["prices"].tz_localize(None))
 
-        for key, data in y.items():
-            self.client.series_upsert(ts=data, tags={"Interpret": "Peter Maffay", "name": key}, field="heartbeat", measurement="song")
+        print(self.client.read_frame(measurement="prices", tags=["name"], conditions=[("name","test-a")], index_col=["name"]))
+        print(self.client.read_frame(measurement="prices", conditions=[("name","test-a")]))
+        print(self.client.read_frame(measurement="prices"))
 
-        #self.client.frame_upsert(y, tags={"Interpret": "Peter Maffay"}, field="heartbeat", measurement="song2")
+    def test_write_series(self):
+        nav = test_portfolio().nav
 
+        #self.client.write_frame(nav.to_frame(name="nav"), measurement="nav", tags={"name": "test-a"})
+        self.client.write_series(ts=nav, tags={"name": "test-a"}, field="nav", measurement="nav")
 
-
-
+        print(self.client.read_series(measurement="nav", field="nav"))

@@ -33,11 +33,11 @@ class Security(ProductInterface):
         return "Security({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
 
     def price(self, client):
-        return client.series(field="price", measurement="security", conditions=[("security", self.name)])
+        return client.read_series(field="price", measurement="PriceSecurity", conditions=[("security", self.name)])
 
     def volatility(self, client, currency):
         assert isinstance(currency, Currency)
-        return client.series(field="volatility", measurement="security", conditions=[("security", self.name), ("currency", currency.name)])
+        return client.read_series(field="volatility", measurement="VolatilitySecurity", conditions=[("security", self.name), ("currency", currency.name)])
 
     @hybrid_property
     def kiid(self):
@@ -49,8 +49,16 @@ class Security(ProductInterface):
 
     def upsert_volatility(self, client, currency, ts):
         assert isinstance(currency, Currency)
-        client.series_upsert(ts=ts, tags={"security": self.name, "currency": currency.name}, field="volatility", measurement="security")
+        client.write_series(ts=ts, tags={"security": self.name, "currency": currency.name}, field="volatility", measurement="VolatilitySecurity")
 
     def upsert_price(self, client, ts):
-        client.series_upsert(ts=ts, tags={"security": self.name}, field="price", measurement="security")
+        client.write_series(ts=ts, tags={"security": self.name}, field="price", measurement="PriceSecurity")
+
+    @staticmethod
+    def prices_all(client):
+        return client.read_frame(measurement="PriceSecurity", tags=["security"]).unstack()["price"]
+
+    @staticmethod
+    def volatility_all(client):
+        return client.read_frame(measurement="VolatilitySecurity", tags=["security", "currency"])
 

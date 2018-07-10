@@ -76,7 +76,7 @@ class Client(DataFrameClient):
         w = self.read_frame(measurement="weights", conditions=[("name", name)])
         return p,w
 
-    def read_frame(self, measurement, tags=None, conditions=None, index_col=None):
+    def read_frame(self, measurement, tags=None, conditions=None):
         query = "SELECT *::field"
 
         if tags:
@@ -87,12 +87,17 @@ class Client(DataFrameClient):
         if conditions:
             query += " WHERE {c}".format(c=" AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions]))
 
-        x = self.query(query)[measurement].tz_localize(None)
+        x = self.query(query)
 
-        if index_col:
-            return x.set_index(index_col, append=True)
+        if measurement in x.keys():
+            x = x[measurement].tz_localize(None)
 
-        return x.rename(columns=lambda x: x.replace("_", " "))
+            if tags:
+                return x.set_index(tags, append=True)
+
+            return x.rename(columns=lambda x: x.replace("_", " "))
+        else:
+            return pd.DataFrame({})
 
     def write_frame(self, frame, measurement, tags=None, batch_size=500, time_precision=None):
         a = frame.rename(columns=lambda x: x.replace(" ", "_"))

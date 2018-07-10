@@ -41,7 +41,6 @@ class TestDatabaseSymbols(TestCase):
     def test_symbol(self):
         self.assertEqual(self.db.symbol(name="Test Symbol"), self.s1)
 
-
     def test_reference_symbols(self):
         pdt.assert_frame_equal(self.db.reference_symbols, pd.DataFrame(index=["Test Symbol"], columns=["Field A"], data=[[100]]), check_names=False)
 
