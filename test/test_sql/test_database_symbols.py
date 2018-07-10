@@ -24,7 +24,7 @@ class TestDatabaseSymbols(TestCase):
 
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
         cls.s1 = Symbol(name="Test Symbol", group=SymbolType.equities)
-        cls.s1.ts_upsert(client=cls.client, field="PX_LAST", ts={pd.Timestamp("2010-10-30"): 10.1})
+        cls.s1.ts_upsert(client=cls.client, field="PX_LAST", ts=pd.Series({pd.Timestamp("2010-10-30"): 10.1}))
 
         cls.s1.reference[cls.f1] = "100"
         cls.session.add(cls.s1)
@@ -63,17 +63,9 @@ class TestPortfolio(TestCase):
         cls.client = Client(host='test-influxdb', database="test-strategy")
 
         s = Strategy(name="Peter")
+
+        # upsert the database with the test portfolio
         s.upsert(client=cls.client, portfolio=test_portfolio())
-
-        #p = Portfolio(name="Maffay")
-        #p.upsert_influx(client=cls.client, portfolio=test_portfolio())
-
-        #with open(resource("source.py"), "r") as f:
-        #    s = Strategy(name="Peter", source=f.read(), active=True)
-
-        # this will just return the test_portfolio
-        #config = s.configuration(reader=None)
-        #portfolio = config.portfolio
 
         # Need the assets in the database for state, etc.
         assetsA = {asset: Symbol(name=asset, group=SymbolType.equities) for asset in ["A", "B", "C"]}
@@ -81,11 +73,6 @@ class TestPortfolio(TestCase):
         assets = {**assetsA, **assetsB}
 
         cls.session.add_all(assets.values())
-
-
-        # store the portfolio we have just computed in there...
-        # Not that upserting the portfolio does not update the prices for the underlying assets!
-        #s.upsert(client=cls.client, portfolio=test_portfolio())
 
         cls.session.add(s)
         cls.session.commit()
@@ -104,11 +91,7 @@ class TestPortfolio(TestCase):
 
     def test_portfolio(self):
         # this should return a portfolio object!
-
-        x = self.db.portfolio(name="Peter")  #.portfolio_influx()
-        #print(x)
-        #print(x.prices)
-
+        x = self.db.portfolio(name="Peter")
         columns = x.prices.keys()
         pdt.assert_frame_equal(x.prices[columns], test_portfolio().prices[columns], check_names=False)
         pdt.assert_frame_equal(x.weights[columns], test_portfolio().weights[columns], check_names=False)
@@ -150,6 +133,7 @@ class TestPortfolio(TestCase):
         self.assertTrue(self.db.reference_symbols.empty)
 
     def test_prices(self):
+        # nobody did define prices
         self.assertTrue(self.db.prices().empty)
 
     def test_portfolios(self):

@@ -63,10 +63,7 @@ class Client(DataFrameClient):
         except KeyError:
             return pd.Series({})
 
-    def write_series(self, ts, tags, field, measurement):
-        #if isinstance(ts, dict):
-        #    ts = pd.Series(ts)
-
+    def write_series(self, ts, field, measurement, tags=None):
         if len(ts) > 0:
             self.write_frame(ts.to_frame(name=field.replace(" ", "_")), measurement=measurement, tags=tags)
 
@@ -90,7 +87,6 @@ class Client(DataFrameClient):
         if conditions:
             query += " WHERE {c}".format(c=" AND ".join([""""{tag}"::tag='{value}'""".format(tag=c[0], value=c[1]) for c in conditions]))
 
-
         x = self.query(query)[measurement].tz_localize(None)
 
         if index_col:
@@ -98,6 +94,6 @@ class Client(DataFrameClient):
 
         return x.rename(columns=lambda x: x.replace("_", " "))
 
-    def write_frame(self, frame, measurement, tags, batch_size=500, time_precision=None):
+    def write_frame(self, frame, measurement, tags=None, batch_size=500, time_precision=None):
         a = frame.rename(columns=lambda x: x.replace(" ", "_"))
         self.write_points(dataframe=a.applymap(float), measurement=measurement, tags=tags, field_columns=list(a.keys()), batch_size=batch_size, time_precision=time_precision)

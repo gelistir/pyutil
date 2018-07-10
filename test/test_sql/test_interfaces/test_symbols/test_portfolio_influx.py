@@ -4,6 +4,7 @@ from unittest import TestCase
 import pandas.util.testing as pdt
 
 from pyutil.influx.client import Client
+from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from test.config import test_portfolio
 
@@ -15,7 +16,7 @@ class TestPortfolio(TestCase):
         cls.client = Client(host='test-influxdb', database="test-portfolio")
         #cls.assertIsNone(cls, cls.p.last(client=cls.client))
 
-        cls.p.upsert_influx(client=cls.client, portfolio=test_portfolio(), drop=True)
+        cls.p.upsert_influx(client=cls.client, portfolio=test_portfolio())
 
     @classmethod
     def tearDownClass(cls):
@@ -28,7 +29,7 @@ class TestPortfolio(TestCase):
 
     def test_symbols(self):
         symbols = self.p.symbols_influx(client=self.client)
-        self.assertSetEqual(symbols, set(test_portfolio().assets))
+        self.assertSetEqual(set(symbols), set(test_portfolio().assets))
 
     def test_nav(self):
         pdt.assert_series_equal(self.p.nav(self.client), test_portfolio().nav, check_names=False)
@@ -48,3 +49,24 @@ class TestPortfolio(TestCase):
         self.assertEqual(self.p.last(self.client), pd.Timestamp("2015-04-22").date())
 
 
+class TestPortfolios(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.p1 = Portfolio(name="Maffay")
+        cls.p2 = Portfolio(name="Falco")
+
+        cls.client = Client(host='test-influxdb', database="test-portfolio3")
+        cls.p1.upsert_influx(client=cls.client, portfolio=test_portfolio())
+        cls.p2.upsert_influx(client=cls.client, portfolio=test_portfolio())
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.client.drop_database(dbname="test-portfolio3")
+
+    def test_nav_all(self):
+        x = Portfolio.nav_all(self.client)
+        pdt.assert_series_equal(fromNav(x["Falco"]), test_portfolio().nav, check_names=False)
+
+    def test_leverage_all(self):
+        x = Portfolio.leverage_all(self.client)
+        pdt.assert_series_equal(x["Falco"], test_portfolio().leverage, check_names=False)
