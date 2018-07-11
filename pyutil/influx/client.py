@@ -1,4 +1,6 @@
 import os
+from datetime import date
+
 import pandas as pd
 from influxdb import DataFrameClient
 
@@ -50,10 +52,12 @@ class Client(DataFrameClient):
 
     def write_series(self, ts, field, measurement, tags=None, batch_size=5000, time_precision="s"):
         if len(ts) > 0:
+            # convert from date to datetime if needed...
+            if isinstance(ts.index[0], date):
+                ts.index = [pd.Timestamp(a) for a in ts.index]
+
             self.write_points(dataframe=ts.to_frame(name=field), measurement=measurement, tags=tags, field_columns=[field],
                               batch_size=batch_size, time_precision=time_precision)
-
-            #self.__write_frame(ts.to_frame(name=field), measurement=measurement, tags=tags)
 
     def __read_frame(self, measurement, field="*", tags=None, conditions=None):
         q = "SELECT {f}::field {t} from {m}{co}""".format(f=field, t=self.__tags(tags), m=measurement, co=self.__cond(conditions))

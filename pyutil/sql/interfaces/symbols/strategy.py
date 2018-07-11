@@ -57,7 +57,7 @@ class Strategy(ProductInterface):
             p1 = portfolio.truncate(before=last - pd.DateOffset(days=days))
             self._portfolio.upsert_influx(client=client, portfolio=p1)
 
-        return self._portfolio
+        return self.portfolio(client=client)
 
     def portfolio(self, client):
         return self._portfolio.portfolio_influx(client=client)

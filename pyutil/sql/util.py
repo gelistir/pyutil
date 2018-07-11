@@ -1,16 +1,4 @@
 import pandas as pd
-from io import BytesIO
-
-
-def to_pandas(x):
-    if x:
-        return pd.read_json(BytesIO(x).read().decode(), typ="series")
-    else:
-        return pd.Series({})
-
-
-def from_pandas(x):
-    return x.to_json().encode()
 
 
 def parse(x, typ="string"):

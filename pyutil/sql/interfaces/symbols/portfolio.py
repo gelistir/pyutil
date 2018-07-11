@@ -33,6 +33,7 @@ class Portfolio(ProductInterface):
         # update the leverage
         client.write_series(ts=portfolio_new.leverage.dropna(), field="leverage", tags={"name": self.name}, measurement="leverage")
 
+        return portfolio_new
 
     def portfolio_influx(self, client):
         p = client.read_series(measurement="xxx2", field="Price", tags=["Asset"], conditions={"Portfolio": self.name}, unstack=True)
@@ -41,20 +42,6 @@ class Portfolio(ProductInterface):
 
     def symbols_influx(self, client):
         return self.portfolio_influx(client=client).assets
-
-    def portfolio(self, rename=False):
-        # todo: export to flat files and delete...
-
-        # does it work?
-        """ this we need to read the old format """
-        prices = self.frame("price")
-        weights = self.frame("weight")
-
-        if rename:
-            prices.rename(columns=lambda x: x.name, inplace=True)
-            weights.rename(columns=lambda x: x.name, inplace=True)
-
-        return _Portfolio(prices=prices, weights=weights)
 
     def nav(self, client):
         return fromNav(client.read_series(field="nav", measurement="nav", conditions={"name": self.name}))
