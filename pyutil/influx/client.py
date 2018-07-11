@@ -21,14 +21,6 @@ class Client(DataFrameClient):
         """ get set of measurements for a given database """
         return set([a["name"] for a in self.get_list_measurements()])
 
-    def __tag_values(self, measurement, key, conditions=None):
-        query = 'SHOW TAG VALUES FROM {m} WITH KEY="{key}{conditions}"'.format(m=measurement, key=key, conditions=self.__cond(conditions))
-        return set([a["value"] for a in self.query(query).get_points()])
-
-    @property
-    def portfolios(self):
-        return self.__tag_values(measurement="prices", key="name")
-
     @staticmethod
     def __cond(conditions=None):
         if conditions:
@@ -56,24 +48,12 @@ class Client(DataFrameClient):
         except KeyError:
             return pd.Series({})
 
-    def write_series(self, ts, field, measurement, tags=None):
+    def write_series(self, ts, field, measurement, tags=None, batch_size=5000, time_precision="s"):
         if len(ts) > 0:
-            self.__write_frame(ts.to_frame(name=field), measurement=measurement, tags=tags)
+            self.write_points(dataframe=ts.to_frame(name=field), measurement=measurement, tags=tags, field_columns=[field],
+                              batch_size=batch_size, time_precision=time_precision)
 
-    # todo: move to portfolio class?
-    def write_portfolio(self, portfolio, name, batch_size=500, time_precision=None):
-        self.__write_frame(frame=portfolio.prices, measurement="prices", tags={"name": name}, batch_size=batch_size,
-                           time_precision=time_precision)
-        self.__write_frame(frame=portfolio.weights, measurement="weights", tags={"name": name}, batch_size=batch_size,
-                           time_precision=time_precision)
-
-    def read_portfolio(self, name):
-        #p = self.read_series(field="*", measurement="prices", tags=["name"], conditions={"name": name}, unstack=True).rename(columns=lambda x: x.replace("_", " "))
-        p = self.__read_frame(measurement="prices", conditions={"name": name}).rename(
-            columns=lambda x: x.replace("_", " "))
-        w = self.__read_frame(measurement="weights", conditions={"name": name}).rename(
-            columns=lambda x: x.replace("_", " "))
-        return p, w
+            #self.__write_frame(ts.to_frame(name=field), measurement=measurement, tags=tags)
 
     def __read_frame(self, measurement, field="*", tags=None, conditions=None):
         q = "SELECT {f}::field {t} from {m}{co}""".format(f=field, t=self.__tags(tags), m=measurement, co=self.__cond(conditions))
@@ -84,12 +64,6 @@ class Client(DataFrameClient):
             return x
         except:
             return pd.DataFrame({})
-
-    def __write_frame(self, frame, measurement, tags=None, batch_size=500, time_precision=None):
-        a = frame.rename(columns=lambda x: x.replace(" ", "_"))
-
-        self.write_points(dataframe=a.applymap(float), measurement=measurement, tags=tags,
-                          field_columns=list(a.keys()), batch_size=batch_size, time_precision=time_precision)
 
     # No, you can't update an entire frame for a single symbol!
     def last(self, measurement, field, conditions=None):

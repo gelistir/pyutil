@@ -49,9 +49,7 @@ class TestPortfolio(TestCase):
         self.assertEqual(self.p.last(self.client), pd.Timestamp("2015-04-22"))
 
     def test_series_portfolio(self):
-        xxx = Portfolio(name="wurst")
-        xxx.upsert_influx2(self.client, portfolio=test_portfolio())
-        yyy = xxx.portfolio_influx2(self.client)
+        yyy = self.p.portfolio_influx(self.client)
         pdt.assert_frame_equal(yyy.prices, test_portfolio().prices, check_names=False)
         pdt.assert_frame_equal(yyy.weights, test_portfolio().weights, check_names=False)
 
