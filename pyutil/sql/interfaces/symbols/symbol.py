@@ -46,5 +46,5 @@ class Symbol(ProductInterface):
         return client.read_series(measurement=MEASUREMENTS, field=field, tags=["name"], unstack=True)
 
     @staticmethod
-    def reference(session):
+    def reference_all(session):
         return pd.DataFrame({symbol.name : symbol.reference_series for symbol in session.query(Symbol)})
