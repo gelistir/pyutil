@@ -10,6 +10,8 @@ class TestInfluxDB(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.client = Client(host='test-influxdb', database="testexample")
+        print(dir(cls.client))
+
 
     @classmethod
     def tearDownClass(cls):

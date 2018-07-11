@@ -1,4 +1,3 @@
-import pandas as _pd
 import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -10,7 +9,6 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.sql.base import Base
 from pyutil.sql.model.ref import _ReferenceData, Field
-from pyutil.sql.model.ts import Timeseries
 
 
 def association_table(left, right, name="association"):
@@ -43,9 +41,6 @@ class ProductInterface(MyMixin, Base):
     _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
                             cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id], lazy="joined")
 
-    _timeseries = relationship(Timeseries, collection_class=attribute_mapped_collection('key'),
-                               cascade="all, delete-orphan", back_populates="product", foreign_keys=[Timeseries.product_id])
-
     reference = association_proxy('_refdata', 'value', creator=lambda k, v: _ReferenceData(field=k, content=v))
 
     sq.UniqueConstraint('discriminator', 'name')
@@ -74,22 +69,6 @@ class ProductInterface(MyMixin, Base):
             return self._refdata[field].value
         else:
             return default
-
-    def get_timeseries(self, name, default=_pd.Series({})):
-        # todo: extract to flat file and delete!!!!
-        # todo: is this efficient? maybe remove the timeseries proxy and only rely on get_timeseries?
-        if name in self._timeseries.keys():
-            return self._timeseries[name].series.dropna()
-        else:
-            return default
-
-    def frame(self, name, rename=False):
-        # todo: delete
-        x = _pd.DataFrame({x.secondary: x.series for x in self._timeseries.values() if x.name == name and x.secondary}).sort_index()
-        if rename:
-            return x.rename(columns=lambda x: x.name)
-
-        return x
 
     def __repr__(self):
         return "{d}({name})".format(d=self.discriminator, name=self.name)
