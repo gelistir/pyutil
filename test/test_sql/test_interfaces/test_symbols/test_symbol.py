@@ -49,6 +49,7 @@ class TestSymbols(TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.client.drop_database(dbname="test-symbol2")
+        cls.client.close()
 
     def test_double(self):
         # construct two symbols
@@ -61,3 +62,4 @@ class TestSymbols(TestCase):
         # but also check the frame...
         print(Symbol.read_frame(client=self.client, field="px_last"))
 
+        #print(Symbol.reference(session=self.session)

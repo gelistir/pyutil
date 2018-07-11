@@ -30,9 +30,12 @@ class Symbol(ProductInterface):
     def ts(self, client, field="px_last"):
         return client.read_series(field=field, measurement=MEASUREMENTS, conditions={"name": self.name})
 
-    def ts_upsert(self, client, ts, field="px_last"):
+    def ts_upsert(self, client, ts, tags=None, field="px_last"):
         """ update a series for a field """
-        client.write_series(field=field, measurement=MEASUREMENTS, tags={"name": self.name}, ts=ts)
+        if not tags:
+            tags = {}
+
+        client.write_series(field=field, measurement=MEASUREMENTS, tags={**{"name": self.name}, **tags}, ts=ts)
 
     # No, you can't update an entire frame for a single symbol!
     def last(self, client, field="px_last"):
@@ -41,3 +44,7 @@ class Symbol(ProductInterface):
     @staticmethod
     def read_frame(client, field="px_last"):
         return client.read_series(measurement=MEASUREMENTS, field=field, tags=["name"], unstack=True)
+
+    @staticmethod
+    def reference(session):
+        return pd.DataFrame({symbol.name : symbol.reference_series for symbol in session.query(Symbol)})

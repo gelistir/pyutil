@@ -1,7 +1,7 @@
 from pyutil.sql.db import Database
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
-from pyutil.sql.util import to_pandas, reference
+from pyutil.sql.util import reference
 
 
 class DatabaseRisk(Database):
