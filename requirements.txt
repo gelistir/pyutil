@@ -1,4 +1,4 @@
 psycopg2-binary
-sqlalchemy
-influxdb
+sqlalchemy==1.2.8
+influxdb==5.1.0
 pika
