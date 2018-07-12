@@ -1,11 +1,10 @@
 import enum as _enum
-import pandas as pd
 
+import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.util import parse
 
 
 class SymbolType(_enum.Enum):
@@ -52,13 +51,15 @@ class Symbol(ProductInterface):
 
     @staticmethod
     def reference_frame(symbols):
-        def __row(symbol):
-            rows = [{"symbol": symbol.name, "field": field.name, "content": value, "result": field.result} for field, value in symbol.reference.items()]
-            return parse(rows, index=["symbol", "field"])
+        d = dict()
 
-        try:
-            return pd.concat([__row(symbol) for symbol in symbols], axis=0).unstack(level=-1)
-        except AttributeError:
-            return pd.DataFrame({})
+        for symbol in symbols:
+            x = {field.name: field.result.parse(value) for field, value in symbol.reference.items()}
+
+            if x:
+                d[symbol.name] = pd.Series(x)
+
+        return pd.DataFrame(d).transpose().fillna("")
+
 
 

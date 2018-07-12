@@ -6,6 +6,7 @@ import pandas.util.testing as pdt
 
 from pyutil.influx.client import Client
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
+from pyutil.sql.model.ref import Field, DataType
 
 t0 = pd.Timestamp("2000-11-17")
 t1 = pd.Timestamp("2000-11-18")
@@ -66,3 +67,16 @@ class TestSymbols(TestCase):
                                pd.DataFrame(index=["A US Equity", "B US Equity"],
                                             columns=["group", "internal"],
                                             data=[["equities", "Peter Maffay"], ["equities", "Falco"]]))
+
+    def test_reference(self):
+        s1 = Symbol(name="A US Equity", group=SymbolType.equities, internal="Peter Maffay")
+        s2 = Symbol(name="B US Equity", group=SymbolType.equities, internal="Falco")
+        s3 = Symbol(name="C US Equity", group=SymbolType.currency, internal="HAHA")
+
+        f1 = Field(name="A", result=DataType.integer)
+        f2 = Field(name="B", result=DataType.integer)
+        s1.reference[f1] = "200"
+        s3.reference[f2] = "500"
+
+        pdt.assert_frame_equal(Symbol.reference_frame(symbols=[s1, s2]), pd.DataFrame(index=["A US Equity"], columns=["A"], data=[200]), check_names=False)
+        pdt.assert_frame_equal(Symbol.reference_frame(symbols=[s1, s3]), pd.DataFrame(index=["A US Equity", "C US Equity"], columns=["A","B"], data=[[200, ""], ["", 500]]), check_names=False)

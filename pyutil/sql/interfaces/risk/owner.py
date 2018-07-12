@@ -9,7 +9,7 @@ from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.model.ref import Field, DataType, FieldType
-from pyutil.sql.util import parse
+
 
 _association_table = association_table(left="security", right="owner", name="security_owner")
 
@@ -186,22 +186,28 @@ class Owner(ProductInterface):
 
     @staticmethod
     def reference_frame(owners):
-        def __row(owner):
-            rows = [{"owner": owner.name, "field": field.name, "content": value, "result": field.result} for field, value in owner.reference.items()]
-            return parse(rows, index=["owner", "field"])
+        d = dict()
+        for owner in owners:
+            x = {field.name: field.result.parse(value) for field, value in owner.reference.items()}
 
-        return pd.concat([__row(owner) for owner in owners], axis=0).unstack(level=-1)
+            if x:
+                d[owner.name] = pd.Series(x)
+
+        return pd.DataFrame(d).transpose().fillna("")
+
 
     @staticmethod
     def reference_frame_securities(owners):
-        def __row(owner):
-            a = Security.reference_frame(owner.securities)
-            a["owner"] = owner.name
-            return a.set_index("owner", append=True).swaplevel(i=0, j=1)#.swaplevel(i=1, j=2)
+        d = dict()
+        for owner in owners:
+            for security in owner.securities:
+                x = {field.name: field.result.parse(value) for field, value in security.reference.items()}
 
-        try:
-            return pd.concat([__row(owner) for owner in owners], axis=0)
-        except AttributeError:
-            return pd.DataFrame({})
+                if x:
+                    d[(owner.name, security.name)] = pd.Series(x) #{field.name: field.result.parse(value) for field, value in security.reference.items()}
+
+            return pd.DataFrame(d).transpose().fillna("")
+
+
 
 

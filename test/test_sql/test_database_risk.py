@@ -76,7 +76,10 @@ class TestDatabaseRisk(TestCase):
         pdt.assert_frame_equal(self.db.reference_owner, pd.DataFrame(index=["100"], columns=["Name"], data=[["Peter Maffay"]]), check_names=False)
 
     def test_reference_owner_securities(self):
-        print(self.db.reference_owner_securities.loc["100"])
+        a = self.db.reference_owner_securities
+        print(a)
+        print(a.index)
+        print(a.keys())
         pdt.assert_frame_equal(self.db.reference_owner_securities.loc["100"], self.db.reference_securities)
 
     def test_security_db(self):
