@@ -19,7 +19,7 @@ from test.config import resource, test_portfolio
 class TestDatabaseSymbols(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = postgresql_db_test(base=Base, echo=True, views=resource("symbols.ddl"))
+        cls.session = postgresql_db_test(base=Base, echo=False)
         cls.client = Client(host='test-influxdb', database="test-AAA")
 
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
@@ -42,7 +42,10 @@ class TestDatabaseSymbols(TestCase):
         self.assertEqual(self.db.symbol(name="Test Symbol"), self.s1)
 
     def test_reference_symbols(self):
-        pdt.assert_frame_equal(self.db.reference_symbols, pd.DataFrame(index=["Test Symbol"], columns=["Field A"], data=[[100]]), check_names=False)
+        #print(self.db.reference_symbols)
+
+        pdt.assert_frame_equal(self.db.reference_symbols,
+                               pd.DataFrame(index=["Test Symbol"], columns=["Field A"], data=[[100]]), check_names=False)
 
     def test_prices_symbols(self):
         pdt.assert_frame_equal(self.db.prices(), pd.DataFrame(index=[pd.Timestamp("2010-10-30")], columns=["Test Symbol"], data=[[10.1]]), check_names=False)
@@ -59,7 +62,7 @@ class TestDatabaseSymbols(TestCase):
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = postgresql_db_test(base=Base, echo=False, views=resource("symbols.ddl"))
+        cls.session = postgresql_db_test(base=Base, echo=False)
         cls.client = Client(host='test-influxdb', database="test-strategy")
 
         s = Strategy(name="Peter")

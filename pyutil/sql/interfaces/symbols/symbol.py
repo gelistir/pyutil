@@ -5,6 +5,7 @@ import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.util import parse
 
 
 class SymbolType(_enum.Enum):
@@ -46,5 +47,18 @@ class Symbol(ProductInterface):
         return client.read_series(measurement=MEASUREMENTS, field=field, tags=["name"], unstack=True)
 
     @staticmethod
-    def reference_all(session):
-        return pd.DataFrame({symbol.name : symbol.reference_series for symbol in session.query(Symbol)})
+    def group_internal(symbols):
+        return pd.DataFrame({symbol.name : {"group": symbol.group.name, "internal": symbol.internal} for symbol in symbols}).transpose()
+
+    @staticmethod
+    def reference_frame(symbols):
+        def __row(symbol):
+            rows = [{"symbol": symbol.name, "field": field.name, "content": value, "result": field.result} for field, value in symbol.reference.items()]
+            return parse(rows, index=["symbol", "field"])
+
+        try:
+            return pd.concat([__row(symbol) for symbol in symbols], axis=0).unstack(level=-1)
+        except AttributeError:
+            return pd.DataFrame({})
+
+

@@ -9,6 +9,7 @@ from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.model.ref import Field, DataType, FieldType
+from pyutil.sql.util import parse
 
 _association_table = association_table(left="security", right="owner", name="security_owner")
 
@@ -21,6 +22,8 @@ FIELDS = {
     "23. LWM - AUM Type": Field(name="AUM Type", result=DataType.string, type=FieldType.other),
     "Inception Date": Field(name="Inception Date", result=DataType.string, type=FieldType.other)  # don't use date here...
 }
+
+
 
 
 class Owner(ProductInterface):
@@ -180,3 +183,25 @@ class Owner(ProductInterface):
     @staticmethod
     def position_all(client):
         return client.read_series(measurement="WeightsOwner", field="weight", tags=["owner", "security", "custodian"])
+
+    @staticmethod
+    def reference_frame(owners):
+        def __row(owner):
+            rows = [{"owner": owner.name, "field": field.name, "content": value, "result": field.result} for field, value in owner.reference.items()]
+            return parse(rows, index=["owner", "field"])
+
+        return pd.concat([__row(owner) for owner in owners], axis=0).unstack(level=-1)
+
+    @staticmethod
+    def reference_frame_securities(owners):
+        def __row(owner):
+            a = Security.reference_frame(owner.securities)
+            a["owner"] = owner.name
+            return a.set_index("owner", append=True).swaplevel(i=0, j=1)#.swaplevel(i=1, j=2)
+
+        try:
+            return pd.concat([__row(owner) for owner in owners], axis=0)
+        except AttributeError:
+            return pd.DataFrame({})
+
+

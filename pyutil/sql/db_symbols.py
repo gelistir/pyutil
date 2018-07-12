@@ -6,7 +6,6 @@ from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
-from pyutil.sql.util import reference
 
 
 class DatabaseSymbols(Database):
@@ -30,15 +29,12 @@ class DatabaseSymbols(Database):
         return Portfolio.leverage_all(client=self.client)
 
     def sector(self, total=False):
-        def __group(symbol):
-            s = self.session.query(Symbol).filter_by(name=symbol).one()
-            return s.group.name
-
         def __sector(p):
-            symbolmap = {symbol : __group(symbol) for symbol in p.symbols_influx(client=self.client)}
-            return p.portfolio_influx(client=self.client).sector_weights_final(symbolmap=symbolmap, total=total)
+            portfolio = p.portfolio_influx(client=self.client)
+            symbolmap = {symbol : self.symbol(name=symbol).group.name for symbol in portfolio.assets}
+            return portfolio.sector_weights_final(symbolmap=symbolmap, total=total)
 
-        return pd.DataFrame({p.name : __sector(p) for p in self.session.query(Portfolio)}).transpose()
+        return pd.DataFrame({p.name : __sector(p) for p in self.portfolios}).transpose()
 
     def __last(self, frame, datefmt="%b %d"):
         frame = frame.sort_index(axis=1, ascending=False).rename(columns=lambda x: x.strftime(datefmt))
@@ -77,9 +73,17 @@ class DatabaseSymbols(Database):
 
     def state(self, name: str):
         portfolio = self.portfolio(name=name)
-        ref = self._read(sql="SELECT * FROM v_symbols_state", index_col=["symbol"])
 
-        frame = pd.concat([portfolio.state, ref.loc[portfolio.assets]], axis=1, sort=True)
+        # extract the assets from the portfolio
+        assets = [self.symbol(name=asset) for asset in portfolio.assets]
+
+        # extract group name and internal for the assets
+        ref = Symbol.group_internal(assets)
+
+        # it's important to have this column in the data otherwise no grouping possible---
+        assert "group" in ref.keys()
+
+        frame = pd.concat([portfolio.state, ref], axis=1, sort=True)
 
         sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
         frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
@@ -93,7 +97,7 @@ class DatabaseSymbols(Database):
 
     @property
     def reference_symbols(self):
-        return reference(self._read(sql="SELECT * FROM v_reference_symbols", index_col=["symbol", "field"]))
+        return Symbol.reference_frame(self.symbols)
 
     def prices(self, name="PX_LAST"):
         return Symbol.read_frame(client=self.client, field=name)

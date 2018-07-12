@@ -21,7 +21,7 @@ def future():
 class TestDatabaseFutures(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = postgresql_db_test(base=Base, echo=True, views=resource("futures.ddl"))
+        cls.session = postgresql_db_test(base=Base, echo=True)
         cls.client = Client(host='test-influxdb', database="test-futures")
 
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)

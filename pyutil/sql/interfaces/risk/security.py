@@ -1,8 +1,10 @@
+import pandas as pd
+
 from sqlalchemy.ext.hybrid import hybrid_property
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.model.ref import Field, DataType, FieldType
-
+from pyutil.sql.util import parse
 
 FIELDS = {
     "Lobnek Ticker Symbol Bloomberg": Field(name="Bloomberg Ticker", result=DataType.string, type=FieldType.other),
@@ -63,3 +65,15 @@ class Security(ProductInterface):
     def volatility_all(client):
         return client.read_series(measurement="VolatilitySecurity", field="volatility", tags=["security", "currency"])
 
+    @staticmethod
+    def reference_frame(securities):
+        def __f(security):
+            rows = [{"security": security.name, "field": field.name, "content": value, "result": field.result} for field, value in security.reference.items()]
+            return parse(rows, index=["security", "field"])
+
+        try:
+            return pd.concat([__f(security) for security in securities], axis=0).unstack(level=-1)
+        except AttributeError:
+            return pd.DataFrame({})
+
+        #return f[["content", "result"]].apply(lambda x: x[1].parse(x[0]), axis=1).unstack(level=-1)

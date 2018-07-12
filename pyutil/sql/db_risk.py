@@ -1,7 +1,6 @@
 from pyutil.sql.db import Database
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
-from pyutil.sql.util import reference
 
 
 class DatabaseRisk(Database):
@@ -9,10 +8,14 @@ class DatabaseRisk(Database):
         super().__init__(client=client, session=session, db="addepar2")
 
     def owner(self, name):
-        return self.session.query(Owner).filter_by(name=str(name)).one()
+        return self._filter(Owner, name=str(name))
+
+        #return self.session.query(Owner).filter_by(name=str(name)).one()
 
     def security(self, name):
-        return self.session.query(Security).filter_by(name=str(name)).one()
+        return self._filter(Security, name=str(name))
+
+        #return self.session.query(Security).filter_by(name=str(name)).one()
 
     # rename the columns apply int!!!!
     @property
@@ -26,15 +29,25 @@ class DatabaseRisk(Database):
 
     @property
     def reference_owner(self):
-        return reference(self._read("SELECT * FROM v_reference_owner", index_col=["owner", "field"]))
+        return Owner.reference_frame(self.session.query(Owner))
+
+
+
+    #@property
+    #def reference_owner(self):
+    #    return reference(self._read("SELECT * FROM v_reference_owner", index_col=["owner", "field"]))
 
     @property
     def reference_securities(self):
-        return reference(self._read("SELECT * FROM v_reference_securities", index_col=["security", "field"]))
+        return Security.reference_frame(self.session.query(Security))
+
+        #return reference(self._read("SELECT * FROM v_reference_securities", index_col=["security", "field"]))
 
     @property
     def reference_owner_securities(self):
-        return reference(self._read("SELECT * FROM v_reference_owner_securities", index_col=["owner", "security", "field"]))
+        return Owner.reference_frame_securities(self.session.query(Owner))
+
+        #return reference(self._read("SELECT * FROM v_reference_owner_securities", index_col=["owner", "security", "field"]))
 
     # apply int
     @property

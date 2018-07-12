@@ -62,4 +62,7 @@ class TestSymbols(TestCase):
         # but also check the frame...
         print(Symbol.read_frame(client=self.client, field="px_last"))
 
-        #print(Symbol.reference(session=self.session)
+        pdt.assert_frame_equal(Symbol.group_internal([s1, s2]),
+                               pd.DataFrame(index=["A US Equity", "B US Equity"],
+                                            columns=["group", "internal"],
+                                            data=[["equities", "Peter Maffay"], ["equities", "Falco"]]))

@@ -23,7 +23,7 @@ NAME = FIELDS["name"]
 class TestDatabaseRisk(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = postgresql_db_test(base=Base, echo=True, views=resource("addepar.ddl"))
+        cls.session = postgresql_db_test(base=Base, echo=False)
         cls.client = Client(host='test-influxdb', database="addepar")
         cls.cus1 = Custodian(name="UBS Geneva")
         cls.cur1 = Currency(name="USD")
@@ -67,17 +67,17 @@ class TestDatabaseRisk(TestCase):
         pdt.assert_series_equal(x, pd.Series({t1: 0.4, t2: 0.5}), check_names=False)
 
     def test_returns(self):
-        print(self.db.returns)
         pdt.assert_series_equal(self.db.returns["100"], pd.Series({t1: 0.2, t2: 0.1}), check_names=False)
 
     def test_reference_securities(self):
-        pdt.assert_frame_equal(self.db.reference_securities, pd.DataFrame(index=[123], columns=["KIID"], data=[[5]]), check_names=False)
+        pdt.assert_frame_equal(self.db.reference_securities, pd.DataFrame(index=["123"], columns=["KIID"], data=[[5]]), check_names=False)
 
     def test_reference_owner(self):
-        pdt.assert_frame_equal(self.db.reference_owner, pd.DataFrame(index=[100], columns=["Name"], data=[["Peter Maffay"]]), check_names=False)
+        pdt.assert_frame_equal(self.db.reference_owner, pd.DataFrame(index=["100"], columns=["Name"], data=[["Peter Maffay"]]), check_names=False)
 
     def test_reference_owner_securities(self):
-        pdt.assert_frame_equal(self.db.reference_owner_securities.loc[100], self.db.reference_securities)
+        print(self.db.reference_owner_securities.loc["100"])
+        pdt.assert_frame_equal(self.db.reference_owner_securities.loc["100"], self.db.reference_securities)
 
     def test_security_db(self):
         self.assertEqual(self.db.security(name="123"), self.session.query(Security).filter_by(name="123").one())
