@@ -84,13 +84,6 @@ class TestPortfolio(TestCase):
         self.assertAlmostEqual(self.db.recent(n=20)["Apr 02"]["Peter"], 0.0008949612999999967, places=5)
         self.assertAlmostEqual(self.db.period_returns["Two weeks"]["Peter"], 0.008663804539365882, places=5)
 
-    def test_portfolio(self):
-        # this should return a portfolio object!
-        x = self.db.portfolio(name="Peter")
-        columns = x.prices.keys()
-        pdt.assert_frame_equal(x.prices[columns], test_portfolio().prices[columns], check_names=False)
-        pdt.assert_frame_equal(x.weights[columns], test_portfolio().weights[columns], check_names=False)
-
     def test_sector(self):
         pdt.assert_series_equal(self.db.sector().loc["Peter"], pd.Series(index=["equities","fixed_income"], data=[0.135671, 0.173303]), check_names=False)
         pdt.assert_series_equal(self.db.sector(total=True).loc["Peter"],
