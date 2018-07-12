@@ -65,8 +65,5 @@ class DatabaseSymbols(Database):
     #def prices(self, name="PX_LAST"):
     #    return Symbol.read_frame(client=self.client, field=name)
 
-    #def symbol(self, name: str):
-    #    return self._filter(Symbol, name=name)
-
-    #def strategy(self, name: str):
-    #    return self._filter(Strategy, name=name)
+    def symbol(self, name: str):
+        return self._filter(Symbol, name=name)
