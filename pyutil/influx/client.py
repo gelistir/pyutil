@@ -1,3 +1,4 @@
+import datetime
 import os
 from datetime import date
 
@@ -53,7 +54,7 @@ class Client(DataFrameClient):
     def write_series(self, ts, field, measurement, tags=None, batch_size=5000, time_precision="s"):
         if len(ts) > 0:
             # convert from date to datetime if needed...
-            if isinstance(ts.index[0], date):
+            if isinstance(ts.index[0], datetime.date):
                 ts.index = [pd.Timestamp(a) for a in ts.index]
 
             self.write_points(dataframe=ts.to_frame(name=field), measurement=measurement, tags=tags, field_columns=[field],
