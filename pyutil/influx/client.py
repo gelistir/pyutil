@@ -1,6 +1,5 @@
 import datetime
 import os
-from datetime import date
 
 import pandas as pd
 from influxdb import DataFrameClient
@@ -77,3 +76,4 @@ class Client(DataFrameClient):
             return self.query(query)[measurement].index[0].tz_localize(None)
         except KeyError:
             return None
+

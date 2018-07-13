@@ -15,6 +15,11 @@ class SymbolType(_enum.Enum):
 
 MEASUREMENTS = "symbols"
 
+
+def symbol(name, field="PX_LAST"):
+    return Symbol.client.read_series(field=field, measurement="symbols", conditions={"name": name})
+
+
 class Symbol(ProductInterface):
     group = sq.Column("group", _Enum(SymbolType))
     internal = sq.Column(sq.String, nullable=True)
