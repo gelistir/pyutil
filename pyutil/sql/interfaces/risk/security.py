@@ -22,6 +22,7 @@ FIELDS = {
 
 class Security(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Security"}
+    client = None
 
     def __init__(self, name, kiid=None, ticker=None):
         super().__init__(name)
@@ -43,27 +44,28 @@ class Security(ProductInterface):
     def bloomberg_ticker(self):
         return self.get_reference("Bloomberg Ticker")
 
-    def upsert_volatility(self, client, currency, ts):
+    def upsert_volatility(self, currency, ts):
         assert isinstance(currency, Currency)
-        client.write_series(ts=ts, tags={"security": self.name, "currency": currency.name}, field="volatility", measurement="VolatilitySecurity")
+        Security.client.write_series(ts=ts, tags={"security": self.name, "currency": currency.name}, field="volatility", measurement="VolatilitySecurity")
 
-    def upsert_price(self, client, ts):
-        client.write_series(ts=ts, tags={"security": self.name}, field="price", measurement="PriceSecurity")
+    def upsert_price(self, ts):
+        Security.client.write_series(ts=ts, tags={"security": self.name}, field="price", measurement="PriceSecurity")
 
-    def price(self, client):
-        return client.read_series(field="price", measurement="PriceSecurity", conditions={"security": self.name})
+    @property
+    def price(self):
+        return Security.client.read_series(field="price", measurement="PriceSecurity", conditions={"security": self.name})
 
-    def volatility(self, client, currency):
+    def volatility(self, currency):
         assert isinstance(currency, Currency)
-        return client.read_series(field="volatility", measurement="VolatilitySecurity", conditions={"security": self.name, "currency": currency.name})
+        return Security.client.read_series(field="volatility", measurement="VolatilitySecurity", conditions={"security": self.name, "currency": currency.name})
 
     @staticmethod
-    def prices_all(client):
-        return client.read_series(measurement="PriceSecurity", field="price", tags=["security"], unstack=True)
+    def prices_all():
+        return Security.client.read_series(measurement="PriceSecurity", field="price", tags=["security"], unstack=True)
 
     @staticmethod
-    def volatility_all(client):
-        return client.read_series(measurement="VolatilitySecurity", field="volatility", tags=["security", "currency"])
+    def volatility_all():
+        return Security.client.read_series(measurement="VolatilitySecurity", field="volatility", tags=["security", "currency"])
 
     @staticmethod
     def reference_frame(securities):
@@ -76,6 +78,3 @@ class Security(ProductInterface):
                 d[security.name] = pd.Series(x)
 
         return pd.DataFrame(d).transpose().fillna("")
-
-
-        #return f[["content", "result"]].apply(lambda x: x[1].parse(x[0]), axis=1).unstack(level=-1)

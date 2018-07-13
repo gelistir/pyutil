@@ -7,6 +7,7 @@ from pyutil.influx.client import Client
 from pyutil.sql.base import Base
 from pyutil.sql.db_symbols import DatabaseSymbols
 from pyutil.sql.interfaces.symbols.frames import Frame
+from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.sql.model.ref import Field, DataType, FieldType
@@ -19,10 +20,11 @@ class TestDatabaseSymbols(TestCase):
     def setUpClass(cls):
         cls.session = postgresql_db_test(base=Base, echo=False)
         cls.client = Client(host='test-influxdb', database="test-AAA")
+        Symbol.client = cls.client
 
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
         cls.s1 = Symbol(name="Test Symbol", group=SymbolType.equities)
-        cls.s1.ts_upsert(client=cls.client, field="PX_LAST", ts=pd.Series({pd.Timestamp("2010-10-30"): 10.1}))
+        cls.s1.ts_upsert(field="PX_LAST", ts=pd.Series({pd.Timestamp("2010-10-30"): 10.1}))
 
         cls.s1.reference[cls.f1] = "100"
         cls.session.add(cls.s1)
@@ -56,11 +58,12 @@ class TestPortfolio(TestCase):
     def setUpClass(cls):
         cls.session = postgresql_db_test(base=Base, echo=False)
         cls.client = Client(host='test-influxdb', database="test-strategy")
+        Portfolio.client = cls.client
 
         s = Strategy(name="Peter")
 
         # upsert the database with the test portfolio
-        s.upsert(client=cls.client, portfolio=test_portfolio())
+        s.upsert(portfolio=test_portfolio())
 
         # Need the assets in the database for state, etc.
         assetsA = {asset: Symbol(name=asset, group=SymbolType.equities) for asset in ["A", "B", "C"]}

@@ -26,6 +26,9 @@ class TestOwner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.client = Client(host='test-influxdb', database="addepar")
+        Security.client = cls.client
+        Owner.client = cls.client
+
         # create an owner
         cls.o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
 
@@ -43,21 +46,21 @@ class TestOwner(unittest.TestCase):
         # new owner!
         o = Owner(name=110, currency=Currency(name="USD"))
 
-        o.upsert_return(client=self.client, ts=pd.Series({}))
-        pdt.assert_series_equal(o.returns(self.client), pd.Series({}))
+        o.upsert_return(ts=pd.Series({}))
+        pdt.assert_series_equal(o.returns(), pd.Series({}))
 
-        o.upsert_return(client=self.client, ts=pd.Series({t1: 0.1, t2: 0.2}))
-        pdt.assert_series_equal(o.returns(self.client), pd.Series({t1: 0.1, t2: 0.2}, name="return"))
+        o.upsert_return(ts=pd.Series({t1: 0.1, t2: 0.2}))
+        pdt.assert_series_equal(o.returns(), pd.Series({t1: 0.1, t2: 0.2}, name="return"))
 
     def test_volatility(self):
         # new owner!
         o = Owner(name="120", currency=Currency(name="USD"))
 
-        o.upsert_volatility(client=self.client, ts=pd.Series({}))
-        pdt.assert_series_equal(o.volatility(self.client), pd.Series({}))
+        o.upsert_volatility(ts=pd.Series({}))
+        pdt.assert_series_equal(o.volatility(), pd.Series({}))
 
-        o.upsert_volatility(client=self.client, ts=pd.Series({t1: 0.1, t2: 0.3}))
-        pdt.assert_series_equal(o.volatility(self.client), pd.Series({t1: 0.1, t2: 0.3}, name="volatility"))
+        o.upsert_volatility(ts=pd.Series({t1: 0.1, t2: 0.3}))
+        pdt.assert_series_equal(o.volatility(), pd.Series({t1: 0.1, t2: 0.3}, name="volatility"))
 
     def test_position(self):
         o = Owner(name="130", currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
@@ -70,30 +73,30 @@ class TestOwner(unittest.TestCase):
 
         o.securities.append(s1)
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
-        o.upsert_position(client=self.client, security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
+        o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
 
 
-        pdt.assert_frame_equal(o.position(client=self.client),
+        pdt.assert_frame_equal(o.position(),
                                pd.DataFrame(columns=[t1, t2], index=["123"],  data=[[0.1, 0.4]]),
                                check_names=False)
 
-        pdt.assert_frame_equal(o.position(client=self.client, sum=False, tail=1),
+        pdt.assert_frame_equal(o.position(sum=False, tail=1),
                                pd.DataFrame(columns=pd.Index([t2]), index=["123"], data=[[0.4]]),
                                check_names=False)
 
-        pdt.assert_frame_equal(o.position(client=self.client, sum=True, tail=1),
+        pdt.assert_frame_equal(o.position(sum=True, tail=1),
                                pd.DataFrame(columns=pd.Index([t2]), index=["123", "Sum"], data=[[0.4], [0.4]]),
                                check_names=False)
 
-        pdt.assert_frame_equal(o.position_by(client=self.client, index_col="KIID", tail=1),
+        pdt.assert_frame_equal(o.position_by(index_col="KIID", tail=1),
                                pd.DataFrame(index=[5], columns=[t2], data=[[0.4]]),
                                check_names=False)
 
-        pdt.assert_frame_equal(o.position_by(client=self.client, index_col="KIID", sum=True, tail=1),
+        pdt.assert_frame_equal(o.position_by(index_col="KIID", sum=True, tail=1),
                                pd.DataFrame(index=[5, "Sum"], columns=pd.Index([t2]), data=[[0.4], [0.4]]),
                                check_names=False)
 
-        self.assertTrue(o.position_by(client=self.client, index_col="MAFFAY").empty)
+        self.assertTrue(o.position_by(index_col="MAFFAY").empty)
 
 
     def test_add_security(self):
@@ -131,19 +134,19 @@ class TestOwner(unittest.TestCase):
 
         o.securities.append(s1)
         # update the position in security s1
-        o.upsert_position(client=self.client, security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
+        o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
 
         pdt.assert_series_equal(o.kiid, pd.Series(index=["123"], data=[5]))
-        pdt.assert_frame_equal(o.kiid_weighted(client=self.client, sum=False),
+        pdt.assert_frame_equal(o.kiid_weighted(sum=False),
                                pd.DataFrame(index=["123"], columns=pd.Index([t1, t2]),
                                             data=[[0.5, 2.0]]), check_names=False)
 
-        pdt.assert_frame_equal(o.kiid_weighted(client=self.client, sum=True),
+        pdt.assert_frame_equal(o.kiid_weighted(sum=True),
                                pd.DataFrame(index=["123", "Sum"], columns=pd.Index([t1, t2]),
                                             data=[[0.5, 2.0], [0.5, 2.0]]), check_names=False)
 
         frame = pd.DataFrame(index=["Maffay"], columns=[t1, t2], data=[[0.5, 2.0]])
-        pdt.assert_frame_equal(o.kiid_weighted_by(client=self.client, index_col="Name"), frame, check_names=False)
+        pdt.assert_frame_equal(o.kiid_weighted_by(index_col="Name"), frame, check_names=False)
 
     def test_volatility_weighted(self):
         o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
@@ -155,20 +158,20 @@ class TestOwner(unittest.TestCase):
 
         # update the position in security s1
         o.securities.append(s1)
-        o.upsert_position(client=self.client, security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
+        o.upsert_position( security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
 
         # update the volatility, note that you can update the volatility even after the security has been added to the owner
-        s1.upsert_volatility(client=self.client, currency=o.currency, ts=pd.Series({t1: 2.5, t2: 3.5}))
+        s1.upsert_volatility(currency=o.currency, ts=pd.Series({t1: 2.5, t2: 3.5}))
 
-        pdt.assert_frame_equal(o.vola_securities(client=self.client),
+        pdt.assert_frame_equal(o.vola_securities(),
                                pd.DataFrame(columns=pd.Index([t1, t2]), index=["123"],
                                             data=[[2.5, 3.5]]))
 
-        pdt.assert_frame_equal(o.vola_weighted(client=self.client, sum=True),
+        pdt.assert_frame_equal(o.vola_weighted(sum=True),
                                pd.DataFrame(columns=pd.Index([t1, t2]), index=["123", "Sum"],
                                             data=[[0.25, 1.4],[0.25, 1.4]]), check_names=False)
 
-        pdt.assert_frame_equal(o.vola_weighted_by(client=self.client, index_col="KIID"),
+        pdt.assert_frame_equal(o.vola_weighted_by(index_col="KIID"),
                                pd.DataFrame(index=[5], columns=[t1, t2],
                                             data=[[0.25, 1.4]]),
                                check_names=False)

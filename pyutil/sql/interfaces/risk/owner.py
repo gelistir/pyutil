@@ -34,6 +34,8 @@ class Owner(ProductInterface):
     __custodian_id = _sq.Column("custodian_id", _sq.Integer, _sq.ForeignKey(Custodian.id), nullable=True)
     __custodian = _relationship(Custodian, foreign_keys=[__custodian_id], lazy="joined")
 
+    client = None
+
     def __init__(self, name, currency=None, custodian=None):
         super().__init__(name=name)
         self.currency = currency
@@ -64,8 +66,8 @@ class Owner(ProductInterface):
 
 
 
-    def position(self, client, sum=False, tail=None):
-        f = client.read_series(measurement="WeightsOwner", field="weight", tags=["security"], conditions={"owner": self.name}).unstack()
+    def position(self, sum=False, tail=None):
+        f = Owner.client.read_series(measurement="WeightsOwner", field="weight", tags=["security"], conditions={"owner": self.name}).unstack()
         print(f)
         #assert False
 
@@ -97,8 +99,8 @@ class Owner(ProductInterface):
 
         return f
 
-    def position_by(self, client, index_col, sum=False, tail=None):
-        pos = self.position(client=client, sum=False, tail=tail)
+    def position_by(self, index_col, sum=False, tail=None):
+        pos = self.position(sum=False, tail=tail)
         return self.__weighted_by(x=pos, index_col=index_col, sum=sum)
 
     def __weighted_by(self, x, index_col, sum=False):
@@ -112,13 +114,13 @@ class Owner(ProductInterface):
         except KeyError:
             return pd.DataFrame({})
 
-    def vola_securities(self, client):
-        x = pd.DataFrame({security.name: security.volatility(client=client, currency=self.currency) for security in self.securities})
+    def vola_securities(self):
+        x = pd.DataFrame({security.name: security.volatility(currency=self.currency) for security in self.securities})
         return x.transpose()
 
-    def vola_weighted(self, client, sum=False, tail=None):
-        w = self.position(client, sum=False, tail=tail)
-        v = self.vola_securities(client=client)
+    def vola_weighted(self, sum=False, tail=None):
+        w = self.position(sum=False, tail=tail)
+        v = self.vola_securities()
         print("WWWWWWWWeights")
         print(w)
         print("VVVVVVolatitiliy")
@@ -131,8 +133,8 @@ class Owner(ProductInterface):
 
         return x
 
-    def vola_weighted_by(self, client, index_col, sum=False, tail=None):
-        vola = self.vola_weighted(client=client, sum=False, tail=tail)
+    def vola_weighted_by(self, index_col, sum=False, tail=None):
+        vola = self.vola_weighted(sum=False, tail=tail)
         return self.__weighted_by(x=vola, index_col=index_col, sum=sum)
 
     @property
@@ -143,46 +145,46 @@ class Owner(ProductInterface):
     def kiid(self):
         return pd.Series({security.name: security.kiid for security in self.securities})
 
-    def kiid_weighted(self, client, sum=False, tail=None):
-        x = self.position(client=client, sum=False, tail=tail).apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
+    def kiid_weighted(self, sum=False, tail=None):
+        x = self.position(sum=False, tail=tail).apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
         if sum:
             x.loc["Sum"] = x.sum(axis=0)
         return x
 
-    def kiid_weighted_by(self, client, index_col, sum=False, tail=None):
-        kiid = self.kiid_weighted(client=client, sum=False, tail=tail)
+    def kiid_weighted_by(self, index_col, sum=False, tail=None):
+        kiid = self.kiid_weighted(sum=False, tail=tail)
         return self.__weighted_by(x=kiid, index_col=index_col, sum=sum)
 
-    def upsert_return(self, client, ts):
-        client.write_series(ts=ts, field="return", tags={"owner": self.name}, measurement='ReturnOwner')
+    def upsert_return(self, ts):
+        Owner.client.write_series(ts=ts, field="return", tags={"owner": self.name}, measurement='ReturnOwner')
 
-    def upsert_position(self, client, security, custodian, ts):
+    def upsert_position(self,security, custodian, ts):
         assert isinstance(security, Security)
         assert isinstance(custodian, Custodian)
 
-        client.write_series(ts=ts, field="weight", tags={"owner": self.name, "security": security.name, "custodian": custodian.name}, measurement="WeightsOwner")
+        Owner.client.write_series(ts=ts, field="weight", tags={"owner": self.name, "security": security.name, "custodian": custodian.name}, measurement="WeightsOwner")
 
-    def upsert_volatility(self, client, ts):
-        client.write_series(ts=ts, field="volatility", tags={"owner": self.name}, measurement='VolatilityOwner')
+    def upsert_volatility(self, ts):
+        Owner.client.write_series(ts=ts, field="volatility", tags={"owner": self.name}, measurement='VolatilityOwner')
 
-    def returns(self, client):
+    def returns(self):
         # this is fast!
-        return client.read_series(field="return", measurement="ReturnOwner", conditions={"owner": self.name})
+        return Owner.client.read_series(field="return", measurement="ReturnOwner", conditions={"owner": self.name})
 
-    def volatility(self, client):
-        return client.read_series(field="volatility", measurement="VolatilityOwner", conditions={"owner": self.name})
-
-    @staticmethod
-    def returns_all(client):
-        return client.read_series(measurement="ReturnOwner", field="return", tags=["owner"], unstack=True)
+    def volatility(self):
+        return Owner.client.read_series(field="volatility", measurement="VolatilityOwner", conditions={"owner": self.name})
 
     @staticmethod
-    def volatility_all(client):
-        return client.read_series(measurement="VolatilityOwner", field="volatility", tags=["owner"], unstack=True)
+    def returns_all():
+        return Owner.client.read_series(measurement="ReturnOwner", field="return", tags=["owner"], unstack=True)
 
     @staticmethod
-    def position_all(client):
-        return client.read_series(measurement="WeightsOwner", field="weight", tags=["owner", "security", "custodian"])
+    def volatility_all():
+        return Owner.client.read_series(measurement="VolatilityOwner", field="volatility", tags=["owner"], unstack=True)
+
+    @staticmethod
+    def position_all():
+        return Owner.client.read_series(measurement="WeightsOwner", field="weight", tags=["owner", "security", "custodian"])
 
     @staticmethod
     def reference_frame(owners):

@@ -43,7 +43,6 @@ def session_test(meta, echo=False):
     return sessionmaker(bind=engine)()
 
 
-
 def get_one_or_create(session, model, **kwargs):
     #  see http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/
 

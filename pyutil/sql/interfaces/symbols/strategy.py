@@ -45,22 +45,23 @@ class Strategy(ProductInterface):
         # Reader is a function taking the name of an asset as a parameter
         return self.__module().Configuration(reader=reader)
 
-    def upsert(self, client, portfolio, days=0):
+    def upsert(self, portfolio, days=0):
         assert isinstance(portfolio, _Portfolio)
 
         # find the last stamp of weights...
-        last = self._portfolio.last(client=client)
+        last = self._portfolio.last()
 
         if not last:
-            self._portfolio.upsert_influx(client=client, portfolio=portfolio)
+            self._portfolio.upsert_influx(portfolio=portfolio)
         else:
             p1 = portfolio.truncate(before=last - pd.DateOffset(days=days))
-            self._portfolio.upsert_influx(client=client, portfolio=p1)
+            self._portfolio.upsert_influx(portfolio=p1)
 
-        return self.portfolio(client=client)
+        return self.portfolio
 
-    def portfolio(self, client):
-        return self._portfolio.portfolio_influx(client=client)
+    @property
+    def portfolio(self):
+        return self._portfolio.portfolio_influx
 
 
 Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio", primaryjoin="Portfolio.id == Strategy._portfolio_id")

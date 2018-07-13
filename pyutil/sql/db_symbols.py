@@ -1,14 +1,17 @@
 import pandas as pd
 
 from pyutil.performance.summary import fromNav
-from pyutil.sql.db import Database
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 
-class DatabaseSymbols(Database):
-    def __init__(self, client, session=None):
-        super().__init__(client=client, session=session, db="symbols")
+class DatabaseSymbols(object):
+    def __init__(self, client, session):
+        Portfolio.client = client
+        Symbol.client = client
+
+        #self.client = client
+        self.session = session
 
     @property
     def nav(self):
@@ -16,39 +19,37 @@ class DatabaseSymbols(Database):
         Extract the Nav for each portfolio
         :return: frame with Nav for each portfolio (on portfolio per column)
         """
-        return Portfolio.nav_all(client=self.client)
+        return Portfolio.nav_all()
 
     def sector(self, total=False):
-        def __sector(p):
-            portfolio = p.portfolio_influx(client=self.client)
-            symbolmap = {symbol : self.symbol(name=symbol).group.name for symbol in portfolio.assets}
-            return portfolio.sector_weights_final(symbolmap=symbolmap, total=total)
-
-        return pd.DataFrame({p.name : __sector(p) for p in self.session.query(Portfolio)}).transpose()
+        return pd.DataFrame({p.name: p.sector(session=self.session, total=total).iloc[-1] for p in self.session.query(Portfolio)}).transpose()
 
     def __last(self, frame, datefmt="%b %d"):
         frame = frame.sort_index(axis=1, ascending=False).rename(columns=lambda x: x.strftime(datefmt))
         frame["total"] = (frame + 1).prod(axis=1) - 1
         return frame
 
+    def __trans_nav(self, f):
+        return Portfolio.nav_all().apply(f).transpose()
+
     @property
     def mtd(self):
-        return self.__last(self.nav.transpose().apply(lambda x: fromNav(x).mtd_series, axis=1))
+        return self.__last(self.__trans_nav(lambda x: fromNav(x).mtd_series))
 
     @property
     def ytd(self):
-        return self.__last(self.nav.transpose().apply(lambda x: fromNav(x).ytd_series, axis=1), datefmt="%b")
+        return self.__last(self.__trans_nav(lambda x: fromNav(x).ytd_series), datefmt="%b")
 
     def recent(self, n=15):
-        return self.__last(self.nav.transpose().apply(lambda x: fromNav(x).recent(n=n), axis=1).iloc[:, -n:])\
+        return self.__last(self.__trans_nav(lambda x: fromNav(x).recent(n=n)).iloc[:, -n:])
 
     @property
     def period_returns(self):
-        return self.nav.transpose().apply(lambda x: fromNav(x).period_returns, axis=1)
+        return self.__trans_nav(lambda x: fromNav(x).period_returns)
 
     @property
     def performance(self):
-        return self.nav.transpose().apply(lambda x: fromNav(x).summary(), axis=1).transpose()
+        return self.__trans_nav(lambda x: fromNav(x).summary()).transpose()
 
     def frames(self, total=False, n=15):
         return {"recent": self.recent(n=n),
@@ -60,10 +61,8 @@ class DatabaseSymbols(Database):
 
     @property
     def reference_symbols(self):
+        # reference frame for all symbols
         return Symbol.reference_frame(self.session.query(Symbol))
 
-    #def prices(self, name="PX_LAST"):
-    #    return Symbol.read_frame(client=self.client, field=name)
-
     def symbol(self, name: str):
-        return self._filter(Symbol, name=name)
+        return self.session.query(Symbol).filter_by(name=name).one()

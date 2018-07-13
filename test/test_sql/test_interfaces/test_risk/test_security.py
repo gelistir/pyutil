@@ -26,8 +26,8 @@ class TestSecurity(unittest.TestCase):
         c = Currency(name="USD")
         self.assertEqual(s.name, "100")
 
-        pdt.assert_series_equal(s.price(client=self.client), pd.Series({}))
-        pdt.assert_series_equal(s.volatility(client=self.client, currency=c), pd.Series({}))
+        pdt.assert_series_equal(s.price, pd.Series({}))
+        pdt.assert_series_equal(s.volatility(currency=c), pd.Series({}))
 
         self.assertEqual(s.discriminator, "Security")
         self.assertEqual(s.kiid, 5)
@@ -36,15 +36,15 @@ class TestSecurity(unittest.TestCase):
 
     def test_price(self):
         s = Security(name=100)
-        s.upsert_price(client=self.client, ts=pd.Series({t0: 11.0, t1: 12.1}))
-        pdt.assert_series_equal(s.price(client=self.client), pd.Series(index=[t0, t1], data=[11.0, 12.1], name="price"))
+        s.upsert_price(ts=pd.Series({t0: 11.0, t1: 12.1}))
+        pdt.assert_series_equal(s.price, pd.Series(index=[t0, t1], data=[11.0, 12.1], name="price"))
 
-        print(Security.prices_all(client=self.client))
+        print(Security.prices_all())
 
 
     def test_volatility(self):
         s = Security(name=100)
         c = Currency(name="USD")
-        s.upsert_volatility(client=self.client, currency=c, ts=pd.Series({t0: 11.0, t1: 12.1}))
-        pdt.assert_series_equal(s.volatility(client=self.client, currency=c), pd.Series(index=[t0, t1], data=[11.0, 12.1], name="volatility"))
-        print(Security.volatility_all(client=self.client))
+        s.upsert_volatility(currency=c, ts=pd.Series({t0: 11.0, t1: 12.1}))
+        pdt.assert_series_equal(s.volatility(currency=c), pd.Series(index=[t0, t1], data=[11.0, 12.1], name="volatility"))
+        print(Security.volatility_all())
