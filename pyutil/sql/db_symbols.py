@@ -6,11 +6,7 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 
 class DatabaseSymbols(object):
-    def __init__(self, client, session):
-        Portfolio.client = client
-        Symbol.client = client
-
-        #self.client = client
+    def __init__(self, session):
         self.session = session
 
     @property

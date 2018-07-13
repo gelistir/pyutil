@@ -21,6 +21,8 @@ class TestDatabaseSymbols(TestCase):
         cls.session = postgresql_db_test(base=Base, echo=False)
         cls.client = Client(host='test-influxdb', database="test-AAA")
         Symbol.client = cls.client
+        Portfolio.client = cls.client
+
 
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
         cls.s1 = Symbol(name="Test Symbol", group=SymbolType.equities)
@@ -29,7 +31,7 @@ class TestDatabaseSymbols(TestCase):
         cls.s1.reference[cls.f1] = "100"
         cls.session.add(cls.s1)
         cls.session.commit()
-        cls.db = DatabaseSymbols(session=cls.session, client=cls.client)
+        cls.db = DatabaseSymbols(session=cls.session)
 
         cls.frame = pd.DataFrame(index=["A"], columns=["A"], data=[[1]])
         cls.frame.index.names = ["Assets"]
@@ -74,7 +76,7 @@ class TestPortfolio(TestCase):
 
         cls.session.add(s)
         cls.session.commit()
-        cls.db = DatabaseSymbols(session=cls.session, client=cls.client)
+        cls.db = DatabaseSymbols(session=cls.session)
 
     @classmethod
     def tearDownClass(cls):
