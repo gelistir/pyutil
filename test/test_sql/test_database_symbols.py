@@ -62,8 +62,6 @@ class TestPortfolio(TestCase):
     def setUpClass(cls):
         init_influxdb()
         cls.session = postgresql_db_test(base=Base, echo=False)
-        #cls.client = Client(host='test-influxdb', database="test-strategy")
-        #Portfolio.client = cls.client
 
         s = Strategy(name="Peter")
 
@@ -76,9 +74,9 @@ class TestPortfolio(TestCase):
         assets = {**assetsA, **assetsB}
 
         cls.session.add_all(assets.values())
-
         cls.session.add(s)
         cls.session.commit()
+
         cls.db = DatabaseSymbols(session=cls.session)
 
     @classmethod

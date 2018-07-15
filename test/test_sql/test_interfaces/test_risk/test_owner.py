@@ -19,10 +19,6 @@ CUSTODIAN = FIELDSOWNER["15. Custodian Name"]
 NAME = FIELDSOWNER["name"]
 
 
-#def date2str(x):
-#    return x.strftime("%Y-%m-%d")
-
-
 class TestOwner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -30,11 +26,6 @@ class TestOwner(unittest.TestCase):
 
         # create an owner
         cls.o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
-
-    #@classmethod
-    #def tearDownClass(cls):
-    #    cls.client.drop_database(dbname="addepar")
-
 
     def test_name(self):
         self.assertEqual(self.o.currency, Currency(name="USD"))
@@ -74,6 +65,8 @@ class TestOwner(unittest.TestCase):
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
         o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
 
+
+        print(o.position())
 
         pdt.assert_frame_equal(o.position(),
                                pd.DataFrame(columns=[t1, t2], index=["123"],  data=[[0.1, 0.4]]),

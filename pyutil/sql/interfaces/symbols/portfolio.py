@@ -28,6 +28,8 @@ class Portfolio(ProductInterface):
         Portfolio.client.write_points(xx, measurement="xxx2", tag_columns=["Asset"], field_columns=["Weight", "Price"], tags={"Portfolio": self.name}, batch_size=10000, time_precision="s")
 
         portfolio_new = self.portfolio_influx
+        print(portfolio_new)
+        print(portfolio_new.index)
 
         # todo: drop data first...
         # update the nav
@@ -35,15 +37,14 @@ class Portfolio(ProductInterface):
         # update the leverage
         Portfolio.client.write_series(ts=portfolio_new.leverage.dropna(), field="leverage", tags={"name": self.name}, measurement="leverage")
 
-        # upsert sector
-
-
         return portfolio_new
 
     @property
     def portfolio_influx(self):
-        p = Portfolio.client.read_series(measurement="xxx2", field="Price", tags=["Asset"], conditions={"Portfolio": self.name}, unstack=True)
-        w = Portfolio.client.read_series(measurement="xxx2", field="Weight", tags=["Asset"], conditions={"Portfolio": self.name}, unstack=True)
+        p = Portfolio.client.read_frame(measurement="xxx2", field="Price", tags=["Asset"], conditions={"Portfolio": self.name})
+        w = Portfolio.client.read_frame(measurement="xxx2", field="Weight", tags=["Asset"], conditions={"Portfolio": self.name})
+        print(p)
+        print(w)
         return _Portfolio(prices=p, weights=w)
 
     @property
@@ -61,11 +62,11 @@ class Portfolio(ProductInterface):
 
     @staticmethod
     def nav_all():
-        return Portfolio.client.read_series(measurement="nav", field="nav", tags=["name"], unstack=True)
+        return Portfolio.client.read_frame(measurement="nav", field="nav", tags=["name"])
 
     @staticmethod
     def leverage_all():
-        return Portfolio.client.read_series(measurement="leverage", field="leverage", tags=["name"], unstack=True)
+        return Portfolio.client.read_frame(measurement="leverage", field="leverage", tags=["name"])
 
     def symbols(self, session):
         return [session.query(Symbol).filter_by(name=asset).one() for asset in self.symbols_influx]

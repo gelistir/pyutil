@@ -15,11 +15,6 @@ class TestSecurity(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         init_influxdb()
-    #    cls.client = Client(host='test-influxdb', database="addepar")
-
-    #@classmethod
-    #def tearDownClass(cls):
-    #    cls.client.drop_database(dbname="addepar")
 
 
     def test_name(self):

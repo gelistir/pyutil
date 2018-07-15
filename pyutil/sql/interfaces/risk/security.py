@@ -59,7 +59,7 @@ class Security(ProductInterface):
 
     @staticmethod
     def prices_all():
-        return Security.client.read_series(measurement="PriceSecurity", field="price", tags=["security"], unstack=True)
+        return Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])
 
     @staticmethod
     def volatility_all():

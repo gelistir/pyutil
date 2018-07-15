@@ -41,17 +41,19 @@ class Client(DataFrameClient):
         else:
             return ""
 
-    def read_series(self, field, measurement, tags=None, conditions=None, unstack=False):
+    def read_series(self, field, measurement, tags=None, conditions=None):
         try:
-            a = self.__read_frame(measurement=measurement, tags=tags, conditions=conditions)
-            a = a[field]
-            if unstack:
-                return a.unstack()
-            else:
-                return a
-
+            return self.__read_frame(measurement=measurement, field=field, tags=tags, conditions=conditions)[field]
         except KeyError:
             return pd.Series({})
+
+    def read_frame(self, field, measurement, tags=None, conditions=None):
+        try:
+            a = self.__read_frame(measurement=measurement, field=field, tags=tags, conditions=conditions)
+            return a[field].unstack(level=-2)
+
+        except:
+            return pd.DataFrame({})
 
     def write_series(self, ts, field, measurement, tags=None, batch_size=5000, time_precision="s"):
         if len(ts) > 0:
@@ -66,8 +68,13 @@ class Client(DataFrameClient):
         q = "SELECT {f}::field {t} from {m}{co}""".format(f=field, t=self.__tags(tags), m=measurement, co=self.__cond(conditions))
         try:
             x = self.query(q)[measurement].tz_localize(None)
+
             if tags:
-                x = x.set_index(tags, append=True)
+                assert isinstance(tags, list)
+                # it would be nice if date is becoming the last index...
+                x["time"] = x.index
+                tags.append("time")
+                x = x.set_index(keys=tags)
             return x
         except:
             return pd.DataFrame({})
