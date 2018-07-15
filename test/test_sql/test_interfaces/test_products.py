@@ -1,11 +1,13 @@
 from unittest import TestCase
+
+from test.test_sql import init_influxdb
 from pyutil.sql.model.ref import Field, FieldType, DataType
 from test.test_sql.product import Product
-
 
 class TestProductInterface(TestCase):
     @classmethod
     def setUpClass(cls):
+        init_influxdb()
         cls.p1 = Product(name="A")
         cls.p2 = Product(name="B")
 

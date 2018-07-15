@@ -1,15 +1,16 @@
-from unittest import TestCase
 import pandas.util.testing as pdt
+from unittest import TestCase
 
-from pyutil.influx.client import Client
-from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from test.config import test_portfolio, resource
+from test.test_sql import init_influxdb
 
 
 class TestStrategy(TestCase):
     @classmethod
     def setUpClass(cls):
+        init_influxdb()
+
         with open(resource("source.py"), "r") as f:
             cls.s = Strategy(name="Peter", source=f.read(), active=True)
 
@@ -17,16 +18,8 @@ class TestStrategy(TestCase):
         config = cls.s.configuration(reader=None)
         portfolio = config.portfolio
 
-        cls.client = Client(host='test-influxdb', database="test-strategy")
-        Portfolio.client = cls.client
-
         cls.s.upsert(portfolio=portfolio)
 
-        #cls.p.upsert_influx(client=cls.client, portfolio=test_portfolio())
-
-    @classmethod
-    def tearDownClass(cls):
-        cls.client.drop_database(dbname="test-strategy")
 
     def test_upsert(self):
         p = self.s.portfolio

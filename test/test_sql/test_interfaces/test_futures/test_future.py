@@ -2,6 +2,8 @@ from unittest import TestCase
 
 import pandas as pd
 
+from test.test_sql import init_influxdb
+
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
@@ -23,6 +25,9 @@ def future():
 
 
 class TestFuture(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        init_influxdb()
 
     def test_future(self):
         f = future()
@@ -40,7 +45,7 @@ class TestFuture(TestCase):
         self.assertListEqual(f.contracts, [])
 
     def test_future_with_contracts(self):
-        session = session_test(Base.metadata, echo=True)
+        session = session_test(Base.metadata, echo=False)
         f = future()
 
         c1 = Contract(figi="BB1", notice=pd.Timestamp("2010-01-01").date(), fut_month_yr="JAN 10")

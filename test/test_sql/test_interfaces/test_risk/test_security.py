@@ -1,9 +1,9 @@
-import unittest
-
 import pandas as pd
 import pandas.util.testing as pdt
+import unittest
 
-from pyutil.influx.client import Client
+from test.test_sql import init_influxdb
+
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
 
@@ -14,11 +14,12 @@ t1 = pd.Timestamp("1978-11-16")
 class TestSecurity(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.client = Client(host='test-influxdb', database="addepar")
+        init_influxdb()
+    #    cls.client = Client(host='test-influxdb', database="addepar")
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.client.drop_database(dbname="addepar")
+    #@classmethod
+    #def tearDownClass(cls):
+    #    cls.client.drop_database(dbname="addepar")
 
 
     def test_name(self):

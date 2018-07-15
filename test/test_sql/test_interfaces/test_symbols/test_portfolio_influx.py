@@ -1,9 +1,9 @@
 import pandas as pd
+import pandas.util.testing as pdt
 from unittest import TestCase
 
-import pandas.util.testing as pdt
+from test.test_sql import init_influxdb
 
-from pyutil.influx.client import Client
 from pyutil.performance.summary import fromNav
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
@@ -16,17 +16,17 @@ from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 t1 = pd.Timestamp("2010-04-24")
 t2 = pd.Timestamp("2010-04-25")
 
+
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
+        init_influxdb()
         cls.p = Portfolio(name="Maffay")
-        cls.client = Client(host='test-influxdb', database="test-portfolio")
-        Portfolio.client = cls.client
         cls.p.upsert_influx(portfolio=test_portfolio())
 
     @classmethod
     def tearDownClass(cls):
-        cls.client.drop_database(dbname="test-portfolio")
+        Portfolio.client.close()
 
     def test_read_influx(self):
         p1 = self.p.portfolio_influx
@@ -63,18 +63,16 @@ class TestPortfolio(TestCase):
 class TestPortfolios(TestCase):
     @classmethod
     def setUpClass(cls):
+        init_influxdb()
         cls.p1 = Portfolio(name="Maffay")
         cls.p2 = Portfolio(name="Falco")
-
-        cls.client = Client(host='test-influxdb', database="test-portfolio3")
-        Portfolio.client = cls.client
 
         cls.p1.upsert_influx(portfolio=test_portfolio())
         cls.p2.upsert_influx(portfolio=test_portfolio())
 
     @classmethod
     def tearDownClass(cls):
-        cls.client.drop_database(dbname="test-portfolio3")
+        Portfolio.client.close()
 
     def test_nav_all(self):
         x = Portfolio.nav_all()
@@ -88,14 +86,17 @@ class TestPortfolios(TestCase):
 class TestPortfolioSymbols(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = postgresql_db_test(base=Base, echo=True)
+        init_influxdb()
+        cls.session = postgresql_db_test(base=Base, echo=False)
         cls.s1 = Symbol(name="A1", group=SymbolType.equities, internal="A1i")
         cls.s2 = Symbol(name="A2", group=SymbolType.equities, internal="A2i")
 
         cls.session.add_all([cls.s1, cls.s2])
         cls.session.commit()
-        cls.client = Client(host='test-influxdb', database="test-portfolio-symbol")
-        Portfolio.client = cls.client
+
+    @classmethod
+    def tearDownClass(cls):
+        Portfolio.client.close()
 
     def test_portfolio(self):
         p = Portfolio(name="Maffay")

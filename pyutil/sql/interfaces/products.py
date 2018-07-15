@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -7,6 +9,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
+from pyutil.influx.client import Client
 from pyutil.sql.base import Base
 from pyutil.sql.model.ref import _ReferenceData, Field
 
@@ -35,6 +38,7 @@ class ProductInterface(MyMixin, Base):
     # note that the name should not be unique as Portfolio and Strategy can have the same name
     __name = sq.Column("name", sq.String(200), unique=False, nullable=True)
     discriminator = sq.Column(sq.String)
+    client = Client(host=os.environ["influxdb_host"], database=os.environ["influxdb_db"])
 
     __mapper_args__ = {"polymorphic_on": discriminator}
 

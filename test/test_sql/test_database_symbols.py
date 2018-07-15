@@ -3,7 +3,8 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.influx.client import Client
+from test.test_sql import init_influxdb
+
 from pyutil.sql.base import Base
 from pyutil.sql.db_symbols import DatabaseSymbols
 from pyutil.sql.interfaces.symbols.frames import Frame
@@ -18,10 +19,11 @@ from test.config import test_portfolio
 class TestDatabaseSymbols(TestCase):
     @classmethod
     def setUpClass(cls):
+        init_influxdb()
         cls.session = postgresql_db_test(base=Base, echo=False)
-        cls.client = Client(host='test-influxdb', database="test-AAA")
-        Symbol.client = cls.client
-        Portfolio.client = cls.client
+        #cls.client = Client(host='test-influxdb', database="test-AAA")
+        #Symbol.client = cls.client
+        #Portfolio.client = cls.client
 
 
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
@@ -52,15 +54,16 @@ class TestDatabaseSymbols(TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.session.close()
-        cls.client.drop_database(dbname="test-AAA")
+        #cls.client.drop_database(dbname="test-AAA")
 
 
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
+        init_influxdb()
         cls.session = postgresql_db_test(base=Base, echo=False)
-        cls.client = Client(host='test-influxdb', database="test-strategy")
-        Portfolio.client = cls.client
+        #cls.client = Client(host='test-influxdb', database="test-strategy")
+        #Portfolio.client = cls.client
 
         s = Strategy(name="Peter")
 
@@ -81,7 +84,7 @@ class TestPortfolio(TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.session.close()
-        cls.client.drop_database(dbname="test-strategy")
+        #cls.client.drop_database(dbname="test-strategy")
 
     def test_mtd(self):
         self.assertAlmostEqual(self.db.mtd["Apr 02"]["Peter"], 0.0008949612999999967, places=5)

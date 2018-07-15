@@ -3,13 +3,11 @@ import sqlalchemy as _sq
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 
-
 from pyutil.sql.interfaces.products import ProductInterface, association_table
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.model.ref import Field, DataType, FieldType
-
 
 _association_table = association_table(left="security", right="owner", name="security_owner")
 
@@ -33,8 +31,6 @@ class Owner(ProductInterface):
     __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
     __custodian_id = _sq.Column("custodian_id", _sq.Integer, _sq.ForeignKey(Custodian.id), nullable=True)
     __custodian = _relationship(Custodian, foreign_keys=[__custodian_id], lazy="joined")
-
-    client = None
 
     def __init__(self, name, currency=None, custodian=None):
         super().__init__(name=name)

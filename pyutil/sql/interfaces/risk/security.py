@@ -1,10 +1,9 @@
 import pandas as pd
-
 from sqlalchemy.ext.hybrid import hybrid_property
+
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.model.ref import Field, DataType, FieldType
-
 
 FIELDS = {
     "Lobnek Ticker Symbol Bloomberg": Field(name="Bloomberg Ticker", result=DataType.string, type=FieldType.other),
@@ -22,7 +21,6 @@ FIELDS = {
 
 class Security(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Security"}
-    client = None
 
     def __init__(self, name, kiid=None, ticker=None):
         super().__init__(name)

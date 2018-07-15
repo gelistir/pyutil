@@ -8,7 +8,6 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 class Portfolio(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "portfolio"}
-    client = None
 
     def __init__(self, name):
         super().__init__(name)

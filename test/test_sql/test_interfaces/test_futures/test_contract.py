@@ -1,4 +1,6 @@
 from unittest import TestCase
+from test.test_sql import init_influxdb
+
 
 import pandas as pd
 
@@ -6,7 +8,6 @@ from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
 from pyutil.sql.interfaces.futures.future import Future
-
 
 def future():
     # define an exchange
@@ -18,6 +19,10 @@ def future():
 
 
 class TestContract(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        init_influxdb()
+
     def test_contract(self):
         # Contract doesn't need a future here...
         c = Contract(figi="B3BB5", notice=pd.Timestamp("2010-01-01").date(), bloomberg_symbol="AAA", fut_month_yr="MAR 00")

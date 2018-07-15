@@ -20,7 +20,7 @@ class User(Base):
 
 class TestSession(TestCase):
     def test_get_one_or_create(self):
-        session = session_test(meta=Base.metadata, echo=True)
+        session = session_test(meta=Base.metadata, echo=False)
 
         # exists is False, as the user "B" does not exist yet
         x, exists = get_one_or_create(session, User, name="B")

@@ -1,9 +1,9 @@
 import enum as _enum
-
 import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
+from pyutil.influx.client import Client
 from pyutil.sql.interfaces.products import ProductInterface
 
 
@@ -12,8 +12,6 @@ class SymbolType(_enum.Enum):
     fixed_income = "Fixed Income"
     currency = "Currency"
     equities = "Equities"
-
-MEASUREMENTS = "symbols"
 
 
 def symbol(name, field="PX_LAST"):
@@ -26,31 +24,31 @@ class Symbol(ProductInterface):
 
     __mapper_args__ = {"polymorphic_identity": "symbol"}
 
-    client = None
     measurements = "symbols"
 
     def __init__(self, name, group=None, internal=None):
         super().__init__(name)
         self.group = group
         self.internal = internal
+        print(Client)
 
     def ts(self, field="PX_LAST"):
-        return Symbol.client.read_series(field=field, measurement=MEASUREMENTS, conditions={"name": self.name})
+        return self.client.read_series(field=field, measurement=Symbol.measurements, conditions={"name": self.name})
 
     def ts_upsert(self, ts, tags=None, field="PX_LAST"):
         """ update a series for a field """
         if not tags:
             tags = {}
 
-        Symbol.client.write_series(field=field, measurement=MEASUREMENTS, tags={**{"name": self.name}, **tags}, ts=ts)
+        self.client.write_series(field=field, measurement=Symbol.measurements, tags={**{"name": self.name}, **tags}, ts=ts)
 
     # No, you can't update an entire frame for a single symbol!
     def last(self, field="PX_LAST"):
-        return Symbol.client.last(measurement=MEASUREMENTS, field=field, conditions={"name": self.name})
+        return self.client.last(measurement=Symbol.measurements, field=field, conditions={"name": self.name})
 
     @staticmethod
     def read_frame(field="PX_LAST"):
-        return Symbol.client.read_series(measurement=MEASUREMENTS, field=field, tags=["name"], unstack=True)
+        return Symbol.client.read_series(measurement=Symbol.measurements, field=field, tags=["name"], unstack=True)
 
     @staticmethod
     def group_internal(symbols):
