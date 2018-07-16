@@ -98,10 +98,6 @@ class Owner(ProductInterface):
     def vola_weighted(self, sum=False, tail=None):
         w = self.position(sum=False, tail=tail)
         v = self.vola_securities()
-        print("WWWWWWWWeights")
-        print(w)
-        print("VVVVVVolatitiliy")
-        print(v)
 
         x = w.multiply(v).dropna(axis=0, how="all").dropna(axis=1, how="all")
 
@@ -165,12 +161,12 @@ class Owner(ProductInterface):
 
     @staticmethod
     def reference_frame(owners):
-        d = dict()
-        for owner in owners:
-            x = {field.name: field.result.parse(value) for field, value in owner.reference.items()}
+        #d = dict()
+        #for owner in owners:
+            #x = {field.name: field.result.parse(value) for field, value in owner.reference.items()}
 
-            if x:
-                d[owner.name] = pd.Series(x)
+            #if x:
+        d = {owner.name : pd.Series({field.name: field.result.parse(value) for field, value in owner.reference.items()}) for owner in owners}
 
         return pd.DataFrame(d).transpose().fillna("")
 
@@ -180,10 +176,11 @@ class Owner(ProductInterface):
         d = dict()
         for owner in owners:
             for security in owner.securities:
-                x = {field.name: field.result.parse(value) for field, value in security.reference.items()}
+                #x = {field.name: field.result.parse(value) for field, value in security.reference.items()}
 
-                if x:
-                    d[(owner.name, security.name)] = pd.Series(x) #{field.name: field.result.parse(value) for field, value in security.reference.items()}
+                #if x:
+                d[(owner.name, security.name)] = pd.Series({field.name: field.result.parse(value) for field, value in security.reference.items()})
+                    #{field.name: field.result.parse(value) for field, value in security.reference.items()}
 
             return pd.DataFrame(d).transpose().fillna("")
 

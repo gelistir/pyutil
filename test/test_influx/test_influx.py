@@ -13,6 +13,7 @@ class TestInfluxDB(TestCase):
         cls.client = Client(host='test-influxdb', database="test")
         cls.client.recreate(dbname="test")
 
+
     @classmethod
     def tearDownClass(cls):
         cls.client.close()
