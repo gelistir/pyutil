@@ -49,7 +49,7 @@ class Symbol(ProductInterface):
     @staticmethod
     def read_frame(field="PX_LAST"):
         ### read a series but then unstack it using the name tag
-        return Symbol.client.read_series(measurement=Symbol.measurements, field=field, tags=["name"], unstack=True)
+        return Symbol.client.read_frame(measurement=Symbol.measurements, field=field, tags=["name"])
 
     @staticmethod
     def group_internal(symbols):
