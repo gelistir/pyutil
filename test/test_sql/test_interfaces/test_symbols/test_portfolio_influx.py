@@ -2,8 +2,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 from unittest import TestCase
 
-from test.test_sql import init_influxdb
-
+from pyutil.influx.client_test import init_influxdb
 from pyutil.performance.summary import fromNav
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio

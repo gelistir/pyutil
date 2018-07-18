@@ -3,8 +3,8 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from test.test_sql import init_influxdb
-# every product needs to have a proper influxdb database
+from pyutil.influx.client_test import init_influxdb
+
 init_influxdb()
 
 

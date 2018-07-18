@@ -1,8 +1,8 @@
 from unittest import TestCase
-from test.test_sql import init_influxdb
-
 
 import pandas as pd
+
+from pyutil.influx.client_test import init_influxdb
 
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract

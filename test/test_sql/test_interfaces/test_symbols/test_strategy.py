@@ -1,9 +1,9 @@
 import pandas.util.testing as pdt
 from unittest import TestCase
 
+from pyutil.influx.client_test import init_influxdb
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from test.config import test_portfolio, resource
-from test.test_sql import init_influxdb
 
 
 class TestStrategy(TestCase):

@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from test.test_sql import init_influxdb
+from pyutil.influx.client_test import init_influxdb
 from pyutil.sql.model.ref import Field, FieldType, DataType
 from test.test_sql.product import Product
 

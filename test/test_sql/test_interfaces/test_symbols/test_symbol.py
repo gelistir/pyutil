@@ -3,8 +3,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 from unittest import TestCase
 
-from test.test_sql import init_influxdb
-
+from pyutil.influx.client_test import init_influxdb
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 
 t0 = pd.Timestamp("2000-11-17")

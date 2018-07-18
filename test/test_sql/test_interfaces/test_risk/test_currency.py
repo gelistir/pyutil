@@ -1,7 +1,6 @@
 import unittest
 
-from test.test_sql import init_influxdb
-
+from pyutil.influx.client_test import init_influxdb
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 

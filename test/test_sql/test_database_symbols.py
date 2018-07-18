@@ -3,17 +3,19 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from test.test_sql import init_influxdb
+from pyutil.influx.client_test import init_influxdb
 
 from pyutil.sql.base import Base
 from pyutil.sql.db_symbols import DatabaseSymbols
 from pyutil.sql.interfaces.symbols.frames import Frame
-from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.sql.session import postgresql_db_test
 from test.config import test_portfolio
+
+
+# from test.test_sql import init_influxdb
 
 
 class TestDatabaseSymbols(TestCase):
