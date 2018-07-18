@@ -161,12 +161,7 @@ class Owner(ProductInterface):
 
     @staticmethod
     def reference_frame(owners):
-        #d = dict()
-        #for owner in owners:
-            #x = {field.name: field.result.parse(value) for field, value in owner.reference.items()}
-
-            #if x:
-        d = {owner.name : pd.Series({field.name: field.result.parse(value) for field, value in owner.reference.items()}) for owner in owners}
+        d = {owner.name: pd.Series({field.name: value for field, value in owner.reference.items()}) for owner in owners}
 
         return pd.DataFrame(d).transpose().fillna("")
 
@@ -176,11 +171,7 @@ class Owner(ProductInterface):
         d = dict()
         for owner in owners:
             for security in owner.securities:
-                #x = {field.name: field.result.parse(value) for field, value in security.reference.items()}
-
-                #if x:
-                d[(owner.name, security.name)] = pd.Series({field.name: field.result.parse(value) for field, value in security.reference.items()})
-                    #{field.name: field.result.parse(value) for field, value in security.reference.items()}
+                d[(owner.name, security.name)] = pd.Series({field.name: value for field, value in security.reference.items()})
 
             return pd.DataFrame(d).transpose().fillna("")
 

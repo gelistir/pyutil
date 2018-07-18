@@ -20,7 +20,7 @@ def association_table(left, right, name="association"):
                     sq.Column("right_id", sq.Integer, sq.ForeignKey('{right}.id'.format(right=right)))
                     )
 
-
+# todo: MyMixin disappear and documentation for has_inherited...
 class MyMixin(object):
     @declared_attr
     def __tablename__(cls):

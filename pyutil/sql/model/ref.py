@@ -38,18 +38,6 @@ class DataType(enum.Enum):
     def __call__(self, *args):
         return self.__fct(*args)
 
-    def parse(self, x, typ="string"):
-        #__p = {"string": lambda x: x,
-        #       "float": lambda x: float(x),
-        #       "integer": lambda x: int(float(x)),
-        #       "percentage": lambda x: float(x),
-        #       "date": lambda x: pd.Timestamp(1e6 * int(x))}
-
-        #if not x:
-        #    return None
-
-        return self.__fct(x)
-
 
 class Field(Base):
     __tablename__ = "reference_field"

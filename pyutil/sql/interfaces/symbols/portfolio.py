@@ -28,8 +28,6 @@ class Portfolio(ProductInterface):
         Portfolio.client.write_points(xx, measurement="xxx2", tag_columns=["Asset"], field_columns=["Weight", "Price"], tags={"Portfolio": self.name}, batch_size=10000, time_precision="s")
 
         portfolio_new = self.portfolio_influx
-        print(portfolio_new)
-        print(portfolio_new.index)
 
         # todo: drop data first...
         # update the nav
@@ -43,8 +41,6 @@ class Portfolio(ProductInterface):
     def portfolio_influx(self):
         p = Portfolio.client.read_frame(measurement="xxx2", field="Price", tags=["Asset"], conditions={"Portfolio": self.name})
         w = Portfolio.client.read_frame(measurement="xxx2", field="Weight", tags=["Asset"], conditions={"Portfolio": self.name})
-        print(p)
-        print(w)
         return _Portfolio(prices=p, weights=w)
 
     @property

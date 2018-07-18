@@ -67,12 +67,5 @@ class Security(ProductInterface):
 
     @staticmethod
     def reference_frame(securities):
-        d = dict()
-
-        for security in securities:
-            x = {field.name: field.result.parse(value) for field, value in security.reference.items()}
-
-            if x:
-                d[security.name] = pd.Series(x)
-
+        d = {s.name : {field.name: value for field, value in s.reference.items()} for s in securities}
         return pd.DataFrame(d).transpose().fillna("")
