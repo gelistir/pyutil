@@ -149,11 +149,11 @@ class Owner(ProductInterface):
 
     @staticmethod
     def returns_all():
-        return Owner.client.read_series(measurement="ReturnOwner", field="return", tags=["owner"], unstack=True)
+        return Owner.client.read_frame(measurement="ReturnOwner", field="return", tags=["owner"])
 
     @staticmethod
     def volatility_all():
-        return Owner.client.read_series(measurement="VolatilityOwner", field="volatility", tags=["owner"], unstack=True)
+        return Owner.client.read_frame(measurement="VolatilityOwner", field="volatility", tags=["owner"])
 
     @staticmethod
     def position_all():
