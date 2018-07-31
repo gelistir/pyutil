@@ -43,7 +43,7 @@ class Client(DataFrameClient):
 
     def read_series(self, field, measurement, tags=None, conditions=None):
         try:
-            return self.__read_frame(measurement=measurement, field=field, tags=tags, conditions=conditions)[field]
+            return self.__read_frame(measurement=measurement, field=field, tags=tags, conditions=conditions)[field].dropna()
         except KeyError:
             return pd.Series({})
 

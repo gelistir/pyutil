@@ -36,20 +36,28 @@ class TestOwner(unittest.TestCase):
         o = Owner(name=110, currency=Currency(name="USD"))
 
         o.upsert_return(ts=pd.Series({}))
-        pdt.assert_series_equal(o.returns(), pd.Series({}))
+        pdt.assert_series_equal(o.returns, pd.Series({}))
+        pdt.assert_series_equal(o.nav, pd.Series({}))
 
         o.upsert_return(ts=pd.Series({t1: 0.1, t2: 0.2}))
-        pdt.assert_series_equal(o.returns(), pd.Series({t1: 0.1, t2: 0.2}, name="return"))
+        pdt.assert_series_equal(o.returns, pd.Series({t1: 0.1, t2: 0.2}, name="return"))
+        pdt.assert_series_equal(o.nav, pd.Series({t0: 1.0, t1: 1.1, t2: 1.1*1.2}, name="nav"))
+
+        x = pd.DataFrame(index=[t1,t2], columns=["110"], data=[[0.1],[0.2]])
+        pdt.assert_frame_equal(Owner.returns_all(), x, check_names=False)
 
     def test_volatility(self):
         # new owner!
         o = Owner(name="120", currency=Currency(name="USD"))
 
         o.upsert_volatility(ts=pd.Series({}))
-        pdt.assert_series_equal(o.volatility(), pd.Series({}))
+        pdt.assert_series_equal(o.volatility, pd.Series({}))
 
         o.upsert_volatility(ts=pd.Series({t1: 0.1, t2: 0.3}))
-        pdt.assert_series_equal(o.volatility(), pd.Series({t1: 0.1, t2: 0.3}, name="volatility"))
+        pdt.assert_series_equal(o.volatility, pd.Series({t1: 0.1, t2: 0.3}, name="volatility"))
+
+        x = pd.DataFrame(index=[t1, t2], columns=["120"], data=[[0.1],[0.3]])
+        pdt.assert_frame_equal(Owner.volatility_all(), x, check_names=False)
 
     def test_position(self):
         o = Owner(name="130", currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
@@ -64,8 +72,6 @@ class TestOwner(unittest.TestCase):
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
         o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
 
-
-        print(o.position())
 
         pdt.assert_frame_equal(o.position(),
                                pd.DataFrame(columns=[t1, t2], index=["123"],  data=[[0.1, 0.4]]),
@@ -88,6 +94,12 @@ class TestOwner(unittest.TestCase):
                                check_names=False)
 
         self.assertTrue(o.position_by(index_col="MAFFAY").empty)
+
+        print(Owner.position_all())
+
+        x = Owner.position_all().loc["130"].loc["123"].loc["UBS"]
+        y = pd.Series(index=[t1, t2], data=[0.1, 0.4])
+        pdt.assert_series_equal(x, y, check_names=False)
 
 
     def test_add_security(self):
@@ -167,4 +179,22 @@ class TestOwner(unittest.TestCase):
                                             data=[[0.25, 1.4]]),
                                check_names=False)
 
+
+    def test_reference_frame(self):
+        o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
+        o.reference[NAME] = "Wurst"
+        x = Owner.reference_frame(owners=[o])
+        pdt.assert_frame_equal(x, pd.DataFrame(index=["100"], columns=["Name"], data=[["Wurst"]]))
+
+    def test_reference_securities_frame(self):
+        o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
+        # create a security
+        s1 = Security(name=123)
+        s1.reference[KIID] = 5
+
+        # update the position in security s1
+        o.securities.append(s1)
+
+        x = Owner.reference_frame_securities(owners=[o])
+        pdt.assert_frame_equal(x.loc["100"], pd.DataFrame(index=["123"], columns=["KIID"], data=[[5]]))
 

@@ -67,5 +67,5 @@ class Security(ProductInterface):
 
     @staticmethod
     def reference_frame(securities):
-        d = {s.name : {field.name: value for field, value in s.reference.items()} for s in securities}
+        d = {s.name : {field.name: value for field, value in s.reference.items()} for s in sorted(securities)}
         return pd.DataFrame(d).transpose().fillna("")

@@ -3,6 +3,7 @@ import sqlalchemy as _sq
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 
+from pyutil.performance.summary import NavSeries
 from pyutil.sql.interfaces.products import ProductInterface, association_table
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
@@ -11,17 +12,15 @@ from pyutil.sql.model.ref import Field, DataType, FieldType
 
 _association_table = association_table(left="security", right="owner", name="security_owner")
 
-
 FIELDS = {
     "name": Field(name="Name", result=DataType.string, type=FieldType.other),
     "15. Custodian Name": Field(name="Custodian", result=DataType.string, type=FieldType.other),
     "17. Reference Currency": Field(name="Currency", result=DataType.string, type=FieldType.other),
     "18. LWM Risk Profile": Field(name="Risk Profile", result=DataType.string, type=FieldType.other),
     "23. LWM - AUM Type": Field(name="AUM Type", result=DataType.string, type=FieldType.other),
-    "Inception Date": Field(name="Inception Date", result=DataType.string, type=FieldType.other)  # don't use date here...
+    "Inception Date": Field(name="Inception Date", result=DataType.string, type=FieldType.other)
+# don't use date here...
 }
-
-
 
 
 class Owner(ProductInterface):
@@ -60,10 +59,9 @@ class Owner(ProductInterface):
     def securities(self):
         return self.__securities
 
-
-
     def position(self, sum=False, tail=None):
-        f = Owner.client.read_frame(measurement="WeightsOwner", field="weight", tags=["security"], conditions={"owner": self.name})
+        f = Owner.client.read_frame(measurement="WeightsOwner", field="weight", tags=["security"],
+                                    conditions={"owner": self.name})
         print(f)
 
         if tail:
@@ -112,14 +110,16 @@ class Owner(ProductInterface):
 
     @property
     def reference_securities(self):
-        return pd.DataFrame({security.name: security.reference_series.sort_index() for security in self.securities}).sort_index().transpose()
+        return pd.DataFrame({security.name: security.reference_series.sort_index() for security in
+                             self.securities}).sort_index().transpose()
 
     @property
     def kiid(self):
         return pd.Series({security.name: security.kiid for security in self.securities})
 
     def kiid_weighted(self, sum=False, tail=None):
-        x = self.position(sum=False, tail=tail).apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
+        x = self.position(sum=False, tail=tail).apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0,
+                                                                                                          how="all")
         if sum:
             x.loc["Sum"] = x.sum(axis=0)
         return x
@@ -130,22 +130,39 @@ class Owner(ProductInterface):
 
     def upsert_return(self, ts):
         Owner.client.write_series(ts=ts, field="return", tags={"owner": self.name}, measurement='ReturnOwner')
+        try:
+            x = self.returns
+            x = pd.concat((pd.Series({(x.index[0] - pd.DateOffset(days=1)).date(): 0.0}), x))
+            return Owner.client.write_series(field="nav", ts=(x + 1.0).cumprod(), tags={"owner": self.name},
+                                             measurement='ReturnOwner')
+        except:
+            return Owner.client.write_series(field="nav", ts=pd.Series({}), tags={"owner": self.name},
+                                             measurement='ReturnOwner')
 
-    def upsert_position(self,security, custodian, ts):
+    def upsert_position(self, security, custodian, ts):
         assert isinstance(security, Security)
         assert isinstance(custodian, Custodian)
 
-        Owner.client.write_series(ts=ts, field="weight", tags={"owner": self.name, "security": security.name, "custodian": custodian.name}, measurement="WeightsOwner")
+        Owner.client.write_series(ts=ts, field="weight",
+                                  tags={"owner": self.name, "security": security.name, "custodian": custodian.name},
+                                  measurement="WeightsOwner")
 
     def upsert_volatility(self, ts):
         Owner.client.write_series(ts=ts, field="volatility", tags={"owner": self.name}, measurement='VolatilityOwner')
 
+    @property
     def returns(self):
         # this is fast!
         return Owner.client.read_series(field="return", measurement="ReturnOwner", conditions={"owner": self.name})
 
+    @property
     def volatility(self):
-        return Owner.client.read_series(field="volatility", measurement="VolatilityOwner", conditions={"owner": self.name})
+        return Owner.client.read_series(field="volatility", measurement="VolatilityOwner",
+                                        conditions={"owner": self.name})
+
+    @property
+    def nav(self):
+        return NavSeries(Owner.client.read_series(field="nav", measurement='ReturnOwner', conditions={"owner": self.name}))
 
     @staticmethod
     def returns_all():
@@ -157,24 +174,20 @@ class Owner(ProductInterface):
 
     @staticmethod
     def position_all():
-        return Owner.client.read_series(measurement="WeightsOwner", field="weight", tags=["owner", "security", "custodian"])
+        return Owner.client.read_series(measurement="WeightsOwner", field="weight",
+                                        tags=["owner", "security", "custodian"])
 
     @staticmethod
     def reference_frame(owners):
-        d = {owner.name: pd.Series({field.name: value for field, value in owner.reference.items()}) for owner in owners}
-
+        d = {owner.name: pd.Series({field.name: value for field, value in owner.reference.items()}) for owner in sorted(owners)}
         return pd.DataFrame(d).transpose().fillna("")
-
 
     @staticmethod
     def reference_frame_securities(owners):
         d = dict()
-        for owner in owners:
-            for security in owner.securities:
-                d[(owner.name, security.name)] = pd.Series({field.name: value for field, value in security.reference.items()})
+        for owner in sorted(owners):
+            for security in sorted(owner.securities):
+                d[(owner.name, security.name)] = pd.Series(
+                    {field.name: value for field, value in security.reference.items()})
 
             return pd.DataFrame(d).transpose().fillna("")
-
-
-
-

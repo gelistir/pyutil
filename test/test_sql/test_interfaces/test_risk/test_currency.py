@@ -10,6 +10,5 @@ class TestCurrency(unittest.TestCase):
         init_influxdb()
 
         o = Owner(name="Peter")
-        currency = Currency(name="CHF")
-        o.currency = currency
-        self.assertEqual(o.currency, currency)
+        o.currency = Currency(name="CHF")
+        self.assertEqual(o.currency, Currency(name="CHF"))

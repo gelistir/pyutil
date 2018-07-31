@@ -13,7 +13,6 @@ class TestInfluxDB(TestCase):
         cls.client = Client(host='test-influxdb', database="test")
         cls.client.recreate(dbname="test")
 
-
     @classmethod
     def tearDownClass(cls):
         cls.client.close()
@@ -30,8 +29,9 @@ class TestInfluxDB(TestCase):
 
         # alternative way to read the series
         x = self.client.read_series(field="nav", measurement="nav", tags=["name"])
-        print(x)
         pdt.assert_series_equal(nav, x.loc["test-a"].dropna(), check_names=False)
+        assert "nav" in self.client.measurements
+
 
     def test_write_series_date(self):
         x = pd.Series({pd.Timestamp("1978-11-12").date(): 5.1})
@@ -47,3 +47,7 @@ class TestInfluxDB(TestCase):
         y = self.client.read_frame(field="navframe", measurement="nav2", tags=["name"])
         pdt.assert_series_equal(nav, y["test-a"], check_names=False)
         pdt.assert_series_equal(nav, y["test-b"], check_names=False)
+
+    def test_read_frame(self):
+        x = self.client.read_frame(field="DoesNotExist", measurement="nav2", tags=["name"])
+        pdt.assert_frame_equal(x, pd.DataFrame({}))
