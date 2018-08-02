@@ -28,13 +28,11 @@ class TestSymbol(TestCase):
         self.assertEqual(s.group, SymbolType.equities)
         self.assertEqual(s.discriminator, "symbol")
 
-    def test_empty_ts(self):
-        s = Symbol(name="AAAAA US Equity", group=SymbolType.equities, internal="Peter Maffay")
-        pdt.assert_series_equal(s.ts(), pd.Series({}))
-        self.assertIsNone(s.last())
-
     def test_ts(self):
         s = Symbol(name="AAAAA US Equity", group=SymbolType.equities, internal="Peter Maffay")
-        s.ts_upsert(ts=series)
-        pdt.assert_series_equal(s.ts(), series.dropna())
-        self.assertEqual(s.last(), t1)
+        # update with a series containing a NaN
+        s._ts_upsert(ts=series, measurement=Symbol.measurements, field="PX_LAST")
+        # extract the series again
+        pdt.assert_series_equal(s._ts(measurement=Symbol.measurements, field="PX_LAST"), series.dropna())
+        # extract the last stamp
+        self.assertEqual(s._last(field="PX_LAST", measurement=Symbol.measurements), t1)

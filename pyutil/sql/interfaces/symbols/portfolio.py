@@ -13,7 +13,7 @@ class Portfolio(ProductInterface):
         super().__init__(name)
 
     def last(self):
-        return Portfolio.client.last(measurement="nav", field="nav", conditions={"name": self.name})
+        return super()._last(measurement="nav", field="nav")
 
     def upsert_influx(self, portfolio):
         assert isinstance(portfolio, _Portfolio)
@@ -31,16 +31,18 @@ class Portfolio(ProductInterface):
 
         # todo: drop data first...
         # update the nav
-        Portfolio.client.write_series(ts=portfolio_new.nav.dropna(), field="nav", tags={"name": self.name}, measurement="nav")
+        super()._ts_upsert(ts=portfolio_new.nav.dropna(), field="nav", measurement="nav")
+
         # update the leverage
-        Portfolio.client.write_series(ts=portfolio_new.leverage.dropna(), field="leverage", tags={"name": self.name}, measurement="leverage")
+        super()._ts_upsert(ts=portfolio_new.leverage.dropna(), field="leverage", measurement="leverage")
 
         return portfolio_new
 
     @property
     def portfolio_influx(self):
-        p = Portfolio.client.read_frame(measurement="xxx2", field="Price", tags=["Asset"], conditions={"Portfolio": self.name})
-        w = Portfolio.client.read_frame(measurement="xxx2", field="Weight", tags=["Asset"], conditions={"Portfolio": self.name})
+        #p = ProductInterface.read_frame(measurement="xxx2", field="Price", )
+        p = super().client.read_frame(measurement="xxx2", field="Price", tags=["Asset"], conditions={"Portfolio": self.name})
+        w = super().client.read_frame(measurement="xxx2", field="Weight", tags=["Asset"], conditions={"Portfolio": self.name})
         return _Portfolio(prices=p, weights=w)
 
     @property
@@ -50,19 +52,19 @@ class Portfolio(ProductInterface):
 
     @property
     def nav(self):
-        return fromNav(Portfolio.client.read_series(field="nav", measurement="nav", conditions={"name": self.name}))
+        return fromNav(super()._ts(field="nav", measurement="nav"))
 
     @property
     def leverage(self):
-        return Portfolio.client.read_series(field="leverage", measurement="leverage", conditions={"name": self.name})
+        return super()._ts(field="leverage", measurement="leverage")
 
     @staticmethod
     def nav_all():
-        return Portfolio.client.read_frame(measurement="nav", field="nav", tags=["name"])
+        return ProductInterface.read_frame(measurement="nav", field="nav")
 
     @staticmethod
     def leverage_all():
-        return Portfolio.client.read_frame(measurement="leverage", field="leverage", tags=["name"])
+        return ProductInterface.read_frame(measurement="leverage", field="leverage")
 
     def symbols(self, session):
         return [session.query(Symbol).filter_by(name=asset).one() for asset in self.symbols_influx]

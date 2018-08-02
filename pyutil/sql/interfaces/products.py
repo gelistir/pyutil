@@ -85,3 +85,26 @@ class ProductInterface(MyMixin, Base):
 
     def __hash__(self):
         return hash(self.name)
+
+    def _ts_upsert(self, ts, field, measurement, tags=None):
+        """ update a series for a field """
+        if not tags:
+            tags = {}
+
+        ProductInterface.client.write_series(field=field, measurement=measurement, tags={**{"name": self.name}, **tags}, ts=ts)
+
+    def _ts(self, field, measurement):
+        return ProductInterface.client.read_series(field=field, measurement=measurement, conditions={"name": self.name})
+
+    def _last(self, field, measurement):
+        return ProductInterface.client.last(measurement=measurement, field=field, conditions={"name": self.name})
+
+    @staticmethod
+    def read_frame(field, measurement, conditions=None):
+        # note that client is a static property of ProductInterface!
+        return ProductInterface.client.read_frame(measurement=measurement, field=field, tags=["name"], conditions=conditions)
+
+    @staticmethod
+    def reference_frame(products):
+        d = {s.name: {field.name: value for field, value in s.reference.items()} for s in products}
+        return pd.DataFrame(d).transpose().fillna("")

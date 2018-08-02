@@ -37,7 +37,7 @@ class TestSession(TestCase):
         self.assertIsNone(get_one_or_none(session, User, name="C"))
 
     def test_postgresql_session(self):
-        p_session = session(server="test-postgresql", db="postgres", password="test", user="postgres", echo=True)
+        p_session = session(server="test-postgresql", db="postgres", password="test", user="postgres", echo=False)
         self.assertIsNotNone(p_session)
 
     def test_session_scope(self):
@@ -45,7 +45,7 @@ class TestSession(TestCase):
         with session_scope(session=s) as session:
             session.add(User(name="Peter Maffay"))
             u = session.query(User).filter_by(name="Peter Maffay").one()
-            self.assertIsNotNone(u)
+            self.assertEqual(u.name, "Peter Maffay")
 
             with self.assertRaises(NoResultFound):
                 session.query(User).filter_by(name="Wurst").one()
@@ -55,4 +55,5 @@ class TestSession(TestCase):
         with self.assertRaises(IntegrityError):
             with session_scope(session=s) as session:
                 session.add(User(name="Peter Maffay"))
+                # we are trying to add the user a second time! Verboten!
                 session.add(User(name="Peter Maffay"))
