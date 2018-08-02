@@ -93,11 +93,17 @@ class ProductInterface(MyMixin, Base):
 
         ProductInterface.client.write_series(field=field, measurement=measurement, tags={**{"name": self.name}, **tags}, ts=ts)
 
-    def _ts(self, field, measurement):
-        return ProductInterface.client.read_series(field=field, measurement=measurement, conditions={"name": self.name})
+    def _ts(self, field, measurement, conditions=None):
+        if not conditions:
+            conditions = {"name": self.name}
 
-    def _last(self, field, measurement):
-        return ProductInterface.client.last(measurement=measurement, field=field, conditions={"name": self.name})
+        return ProductInterface.client.read_series(field=field, measurement=measurement, conditions=conditions)
+
+    def _last(self, field, measurement, conditions=None):
+        if not conditions:
+            conditions = {"name": self.name}
+
+        return ProductInterface.client.last(measurement=measurement, field=field, conditions=conditions)
 
     @staticmethod
     def read_frame(field, measurement, conditions=None):

@@ -176,18 +176,3 @@ class Owner(ProductInterface):
     def position_all():
         return Owner.client.read_series(measurement="WeightsOwner", field="weight",
                                         tags=["owner", "security", "custodian"])
-
-    @staticmethod
-    def reference_frame(owners):
-        d = {owner.name: pd.Series({field.name: value for field, value in owner.reference.items()}) for owner in sorted(owners)}
-        return pd.DataFrame(d).transpose().fillna("")
-
-    @staticmethod
-    def reference_frame_securities(owners):
-        d = dict()
-        for owner in sorted(owners):
-            for security in sorted(owner.securities):
-                d[(owner.name, security.name)] = pd.Series(
-                    {field.name: value for field, value in security.reference.items()})
-
-            return pd.DataFrame(d).transpose().fillna("")

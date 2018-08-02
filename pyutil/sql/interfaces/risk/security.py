@@ -1,4 +1,3 @@
-import pandas as pd
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyutil.sql.interfaces.products import ProductInterface
@@ -44,18 +43,18 @@ class Security(ProductInterface):
 
     def upsert_volatility(self, currency, ts):
         assert isinstance(currency, Currency)
-        Security.client.write_series(ts=ts, tags={"security": self.name, "currency": currency.name}, field="volatility", measurement="VolatilitySecurity")
+        super()._ts_upsert(ts=ts, tags={"security": self.name, "currency": currency.name}, field="volatility", measurement="VolatilitySecurity")
 
     def upsert_price(self, ts):
-        Security.client.write_series(ts=ts, tags={"security": self.name}, field="price", measurement="PriceSecurity")
+        super()._ts_upsert(ts=ts, tags={"security": self.name}, field="price", measurement="PriceSecurity")
 
     @property
     def price(self):
-        return Security.client.read_series(field="price", measurement="PriceSecurity", conditions={"security": self.name})
+        return super()._ts(field="price", measurement="PriceSecurity", conditions={"security": self.name})
 
     def volatility(self, currency):
         assert isinstance(currency, Currency)
-        return Security.client.read_series(field="volatility", measurement="VolatilitySecurity", conditions={"security": self.name, "currency": currency.name})
+        return super()._ts(field="volatility", measurement="VolatilitySecurity", conditions={"security": self.name, "currency": currency.name})
 
     @staticmethod
     def prices_all():
@@ -64,8 +63,3 @@ class Security(ProductInterface):
     @staticmethod
     def volatility_all():
         return Security.client.read_series(measurement="VolatilitySecurity", field="volatility", tags=["security", "currency"])
-
-    @staticmethod
-    def reference_frame(securities):
-        d = {s.name : {field.name: value for field, value in s.reference.items()} for s in sorted(securities)}
-        return pd.DataFrame(d).transpose().fillna("")

@@ -183,7 +183,7 @@ class TestOwner(unittest.TestCase):
     def test_reference_frame(self):
         o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
         o.reference[NAME] = "Wurst"
-        x = Owner.reference_frame(owners=[o])
+        x = Owner.reference_frame(products=[o])
         pdt.assert_frame_equal(x, pd.DataFrame(index=["100"], columns=["Name"], data=[["Wurst"]]))
 
     def test_reference_securities_frame(self):
@@ -195,6 +195,7 @@ class TestOwner(unittest.TestCase):
         # update the position in security s1
         o.securities.append(s1)
 
-        x = Owner.reference_frame_securities(owners=[o])
-        pdt.assert_frame_equal(x.loc["100"], pd.DataFrame(index=["123"], columns=["KIID"], data=[[5]]))
+        x = Owner.reference_frame(products=o.securities)
+
+        pdt.assert_frame_equal(x, pd.DataFrame(index=["123"], columns=["KIID"], data=[[5]]))
 
