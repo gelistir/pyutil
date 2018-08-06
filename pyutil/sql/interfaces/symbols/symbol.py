@@ -14,11 +14,8 @@ class SymbolType(_enum.Enum):
 
 
 def symbol(name, field="PX_LAST"):
-    return ProductInterface.client.read_series(field=field, measurement=Symbol.measurements, conditions={"name": name})
+    return ProductInterface.client.read_series(field=field, measurement=Symbol._measurements, conditions={"name": name})
 
-
-def frame(field="PX_LAST"):
-    return ProductInterface.client.read_frame(measurement=Symbol.measurements, field=field, tags=["name"])
 
 
 class Symbol(ProductInterface):
@@ -27,16 +24,26 @@ class Symbol(ProductInterface):
 
     __mapper_args__ = {"polymorphic_identity": "symbol"}
 
-    measurements = "symbols"
+    _measurements = "symbols"
 
     def __init__(self, name, group=None, internal=None):
         super().__init__(name)
         self.group = group
         self.internal = internal
 
-    @property
-    def last(self):
-        return self._last(field="PX_LAST", measurement=Symbol.measurements)
+    def price(self, field="PX_LAST"):
+        return self._ts(field=field, measurement=Symbol._measurements)
 
-    def upsert(self, ts):
-        self._ts_upsert(field="PX_LAST", ts=ts, measurement=Symbol.measurements)
+    def last(self, field="PX_LAST"):
+        return self._last(field=field, measurement=Symbol._measurements)
+
+    def upsert(self, ts, field="PX_LAST"):
+        return self._ts_upsert(field=field, ts=ts, measurement=Symbol._measurements)
+
+    @staticmethod
+    def frame(field="PX_LAST"):
+        return Symbol.client.read_frame(measurement=Symbol._measurements, field=field, tags=["name"])
+
+    @staticmethod
+    def symbol(name, field="PX_LAST"):
+        return ProductInterface.client.read_series(field=field, measurement=Symbol._measurements, conditions={"name": name})

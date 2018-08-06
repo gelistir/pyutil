@@ -49,8 +49,9 @@ class ProductInterface(MyMixin, Base):
 
     sq.UniqueConstraint('discriminator', 'name')
 
-    def __init__(self, name):
+    def __init__(self, name, **kwargs):
         self.__name = str(name)
+
 
     @hybrid_property
     def name(self):

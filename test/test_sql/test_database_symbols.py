@@ -2,8 +2,9 @@ from unittest import TestCase
 
 import pandas as pd
 import pandas.util.testing as pdt
+from test.config import test_portfolio
 
-from pyutil.influx.client_test import init_influxdb
+#from pyutil.influx.client_test import init_influxdb
 
 from pyutil.sql.base import Base
 from pyutil.sql.db_symbols import DatabaseSymbols
@@ -12,18 +13,18 @@ from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.sql.session import postgresql_db_test
-from test.config import test_portfolio
 
 
 class TestDatabaseSymbols(TestCase):
     @classmethod
     def setUpClass(cls):
-        init_influxdb()
+        Strategy.client.recreate(dbname="test")
+
         cls.session = postgresql_db_test(base=Base, echo=False)
 
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
         cls.s1 = Symbol(name="Test Symbol", group=SymbolType.equities)
-        cls.s1._ts_upsert(field="PX_LAST", measurement=Symbol.measurements, ts=pd.Series({pd.Timestamp("2010-10-30"): 10.1}))
+        cls.s1._ts_upsert(field="PX_LAST", measurement=Symbol._measurements, ts=pd.Series({pd.Timestamp("2010-10-30"): 10.1}))
 
         cls.s1.reference[cls.f1] = "100"
         cls.session.add(cls.s1)
@@ -51,7 +52,8 @@ class TestDatabaseSymbols(TestCase):
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        init_influxdb()
+        Strategy.client.recreate(dbname="test")
+
         cls.session = postgresql_db_test(base=Base, echo=False)
 
         s = Strategy(name="Peter")

@@ -1,38 +1,49 @@
+import pandas as pd
+
 import pandas.util.testing as pdt
 from unittest import TestCase
 
-from pyutil.influx.client_test import init_influxdb
+from test.config import test_portfolio, resource
+
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
-from test.config import test_portfolio, resource
 
 
 class TestStrategy(TestCase):
     @classmethod
     def setUpClass(cls):
-        init_influxdb()
+        Strategy.client.recreate(dbname="test")
 
         with open(resource("source.py"), "r") as f:
-            cls.s = Strategy(name="Peter", source=f.read(), active=True)
+            cls.strategy = Strategy(name="Peter", source=f.read(), active=True)
 
-        # this is a way to compute a portfolio from the source code given in source.py
-        config = cls.s.configuration(reader=None)
-        portfolio = config.portfolio
-
-        cls.x = dict()
-        for name in portfolio.assets:
-            cls.x[name] = Symbol(name=name)
-
-        cls.s.upsert(portfolio=portfolio, symbols=cls.x)
-
+    @classmethod
+    def tearDownClass(cls):
+        Strategy.client.close()
 
     def test_upsert(self):
-        p = self.s.portfolio
+        self.assertIsNone(self.strategy.last)
+
+        # compute a portfolio
+        portfolio = self.strategy.configuration(reader=None).portfolio
+        assets = {name : Symbol(name=name) for name in portfolio.assets}
+
+        # upsert the strategy
+        self.strategy.upsert(portfolio=portfolio, symbols=assets)
+        self.assertEqual(self.strategy.last, pd.Timestamp("2015-04-22"))
+
+        # extract the portfolio
+        p = self.strategy.portfolio
+
         pdt.assert_frame_equal(p.weights, test_portfolio().weights, check_names=False)
         pdt.assert_frame_equal(p.prices, test_portfolio().prices, check_names=False)
 
-        self.s.upsert(portfolio=5*test_portfolio().tail(10), days=10, symbols=self.x)
-        p = self.s.portfolio
+        # upsert the last 10 days
+        self.strategy.upsert(portfolio=5 * test_portfolio().tail(10), days=10, symbols=assets)
+
+        # extract again the portfolio
+        p = self.strategy.portfolio
+
         x = p.weights.tail(12).sum(axis=1)
         self.assertAlmostEqual(x["2015-04-08"], 0.305048, places=5)
         self.assertAlmostEqual(x["2015-04-13"], 1.486652, places=5)

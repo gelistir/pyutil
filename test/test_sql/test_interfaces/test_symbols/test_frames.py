@@ -3,9 +3,9 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.influx.client_test import init_influxdb
-
-init_influxdb()
+import os
+os.environ["influxdb_host"] = "test-influxdb"
+os.environ["influxdb_db"] = "test"
 
 
 from pyutil.sql.interfaces.symbols.frames import Frame
