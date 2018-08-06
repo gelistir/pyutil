@@ -65,7 +65,9 @@ class Strategy(ProductInterface):
 
     @property
     def last(self):
-        return self._portfolio.last()
-
+        try:
+            return self._portfolio.last
+        except:
+            return None
 
 Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio", primaryjoin="Portfolio.id == Strategy._portfolio_id")
