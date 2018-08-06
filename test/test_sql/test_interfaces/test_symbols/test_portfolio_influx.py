@@ -55,7 +55,7 @@ class TestPortfolio(TestCase):
         self.assertAlmostEqual(x["2015-04-09"], 1.524054, places=5)
 
     def test_last(self):
-        self.assertEqual(self.p.last(), pd.Timestamp("2015-04-22"))
+        self.assertEqual(self.p.last, pd.Timestamp("2015-04-22"))
 
     def test_series_portfolio(self):
         yyy = self.p.portfolio_influx

@@ -49,7 +49,7 @@ class Strategy(ProductInterface):
         assert isinstance(portfolio, _Portfolio)
 
         # find the last stamp of weights...
-        last = self._portfolio.last()
+        last = self._portfolio.last
 
         if not last:
             self._portfolio.upsert_influx(portfolio=portfolio, symbols=symbols)
