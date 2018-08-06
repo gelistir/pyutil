@@ -24,7 +24,10 @@ class Portfolio(ProductInterface):
         assert isinstance(portfolio, _Portfolio)
 
         for asset in portfolio.assets:
-            self.symbols.append(symbols[asset])
+            symbol = symbols[asset]
+            if not symbol in self.symbols:
+                # append new symbol only if it isn't there yet
+                self.symbols.append(symbols[asset])
 
         ww = portfolio.weights.stack().to_frame(name="Weight")
         pp = portfolio.prices.stack().to_frame(name="Price")
