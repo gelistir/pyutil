@@ -84,18 +84,6 @@ class TestSummary(TestCase):
         p = s.drawdown_periods
         self.assertEqual(p.loc[pd.Timestamp("2014-03-07").date()], pd.Timedelta(days=66))
 
-    # def test_to_dictionary(self):
-    #     x = s.to_dictionary()
-    #     self.assertSetEqual(set(x.keys()), {"nav", "drawdown", "volatility"})
-    #
-    #     # don't crash here!
-    #     n = NavSeries({})
-    #     a = n.to_dictionary()
-    #     print(a)
-    #     self.assertFalse(a["nav"])
-    #     self.assertFalse(a["drawdown"])
-#        self.assertFalse(a["volatility"])
-
     def test_with_dates(self):
         a = pd.Series({pd.Timestamp("2010-01-05").date(): 2.0,
                        pd.Timestamp("2012-02-13").date(): 3.0,

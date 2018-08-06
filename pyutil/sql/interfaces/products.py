@@ -105,10 +105,10 @@ class ProductInterface(MyMixin, Base):
 
         return ProductInterface.client.last(measurement=measurement, field=field, conditions=conditions)
 
-    @staticmethod
-    def read_frame(field, measurement, conditions=None):
-        # note that client is a static property of ProductInterface!
-        return ProductInterface.client.read_frame(measurement=measurement, field=field, tags=["name"], conditions=conditions)
+    #@staticmethod
+    #def read_frame(field, measurement, conditions=None):
+    #    # note that client is a static property of ProductInterface!
+    #    return ProductInterface.client.read_frame(measurement=measurement, field=field, tags=["name"], conditions=conditions)
 
     @staticmethod
     def reference_frame(products):

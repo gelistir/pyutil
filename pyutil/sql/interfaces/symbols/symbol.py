@@ -1,6 +1,5 @@
 import enum as _enum
 
-import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
@@ -35,10 +34,7 @@ class Symbol(ProductInterface):
         self.group = group
         self.internal = internal
 
-    @staticmethod
-    def group_internal(symbols):
-        return pd.DataFrame({s.name: {"group": s.group.name, "internal": s.internal} for s in symbols}).transpose()
+    #@staticmethod
+    #def group_internal(symbols):
+    #    return pd.DataFrame({s.name: {"group": s.group.name, "internal": s.internal} for s in symbols}).transpose()
 
-    @staticmethod
-    def sectormap(symbols):
-        return {s.name: s.group.name for s in symbols}

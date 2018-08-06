@@ -56,15 +56,16 @@ class TestPortfolio(TestCase):
 
         s = Strategy(name="Peter")
 
+        x = dict()
+        for name in ["A", "B", "C"]:
+            x[name] = Symbol(name=name, group=SymbolType.equities)
+
+        for name in ["D","E","F","G"]:
+            x[name] = Symbol(name=name, group=SymbolType.fixed_income)
+
         # upsert the database with the test portfolio
-        s.upsert(portfolio=test_portfolio())
+        s.upsert(portfolio=test_portfolio(), symbols=x)
 
-        # Need the assets in the database for state, etc.
-        assetsA = {asset: Symbol(name=asset, group=SymbolType.equities) for asset in ["A", "B", "C"]}
-        assetsB = {asset: Symbol(name=asset, group=SymbolType.fixed_income) for asset in ["D","E","F","G"]}
-        assets = {**assetsA, **assetsB}
-
-        cls.session.add_all(assets.values())
         cls.session.add(s)
         cls.session.commit()
 

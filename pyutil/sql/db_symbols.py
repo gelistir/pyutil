@@ -18,7 +18,7 @@ class DatabaseSymbols(object):
         return Portfolio.nav_all()
 
     def sector(self, total=False):
-        return pd.DataFrame({p.name: p.sector(session=self.session, total=total).iloc[-1] for p in self.session.query(Portfolio)}).transpose()
+        return pd.DataFrame({p.name: p.sector(total=total).iloc[-1] for p in self.session.query(Portfolio)}).transpose()
 
     def __last(self, frame, datefmt="%b %d"):
         frame = frame.sort_index(axis=1, ascending=False).rename(columns=lambda x: x.strftime(datefmt))

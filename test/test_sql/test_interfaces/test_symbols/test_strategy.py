@@ -3,6 +3,7 @@ from unittest import TestCase
 
 from pyutil.influx.client_test import init_influxdb
 from pyutil.sql.interfaces.symbols.strategy import Strategy
+from pyutil.sql.interfaces.symbols.symbol import Symbol
 from test.config import test_portfolio, resource
 
 
@@ -18,7 +19,11 @@ class TestStrategy(TestCase):
         config = cls.s.configuration(reader=None)
         portfolio = config.portfolio
 
-        cls.s.upsert(portfolio=portfolio)
+        cls.x = dict()
+        for name in portfolio.assets:
+            cls.x[name] = Symbol(name=name)
+
+        cls.s.upsert(portfolio=portfolio, symbols=cls.x)
 
 
     def test_upsert(self):
@@ -26,7 +31,7 @@ class TestStrategy(TestCase):
         pdt.assert_frame_equal(p.weights, test_portfolio().weights, check_names=False)
         pdt.assert_frame_equal(p.prices, test_portfolio().prices, check_names=False)
 
-        self.s.upsert(portfolio=5*test_portfolio().tail(10), days=10)
+        self.s.upsert(portfolio=5*test_portfolio().tail(10), days=10, symbols=self.x)
         p = self.s.portfolio
         x = p.weights.tail(12).sum(axis=1)
         self.assertAlmostEqual(x["2015-04-08"], 0.305048, places=5)

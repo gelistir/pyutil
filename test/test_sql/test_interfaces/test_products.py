@@ -66,15 +66,15 @@ class TestProductInterface(TestCase):
     def test_discriminator(self):
         self.assertEqual(self.p1.discriminator, "Test-Product")
 
-    def test_read_frame(self):
-        self.p1._ts_upsert(ts=pd.Series({t0: 10.1, t1: 10.2}), field="PX_LAST", measurement="products")
-        self.p2._ts_upsert(ts=pd.Series({t0: 11.1, t1: 11.2}), field="PX_LAST", measurement="products")
+    #def test_read_frame(self):
+    #    self.p1._ts_upsert(ts=pd.Series({t0: 10.1, t1: 10.2}), field="PX_LAST", measurement="products")
+    #    self.p2._ts_upsert(ts=pd.Series({t0: 11.1, t1: 11.2}), field="PX_LAST", measurement="products")
 
-        x = ProductInterface.read_frame(field="PX_LAST", measurement="products")
+    #    x = ProductInterface.read_frame(field="PX_LAST", measurement="products")
 
-        pdt.assert_frame_equal(x, pd.DataFrame(index=pd.DatetimeIndex([t0, t1], name="time"),
-                                               columns=pd.Index(["A","B"], name="name"),
-                                               data=[[10.1, 11.1],[10.2, 11.2]]))
+    #    pdt.assert_frame_equal(x, pd.DataFrame(index=pd.DatetimeIndex([t0, t1], name="time"),
+    #                                           columns=pd.Index(["A","B"], name="name"),
+    #                                           data=[[10.1, 11.1],[10.2, 11.2]]))
 
     def test_empty_ts(self):
         p = Product(name="CCC")
