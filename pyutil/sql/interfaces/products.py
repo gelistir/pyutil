@@ -84,8 +84,8 @@ class ProductInterface(MyMixin, Base):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.name == other.name
 
-    def __hash__(self):
-        return hash(self.name)
+    #def __hash__(self):
+    #    return hash(self.name)
 
     def _ts_upsert(self, ts, field, measurement, tags=None):
         """ update a series for a field """
@@ -105,11 +105,6 @@ class ProductInterface(MyMixin, Base):
             conditions = {"name": self.name}
 
         return ProductInterface.client.last(measurement=measurement, field=field, conditions=conditions)
-
-    #@staticmethod
-    #def read_frame(field, measurement, conditions=None):
-    #    # note that client is a static property of ProductInterface!
-    #    return ProductInterface.client.read_frame(measurement=measurement, field=field, tags=["name"], conditions=conditions)
 
     @staticmethod
     def reference_frame(products):

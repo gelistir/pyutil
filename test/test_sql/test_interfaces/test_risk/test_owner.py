@@ -35,6 +35,7 @@ class TestOwner(unittest.TestCase):
         self.assertEqual(self.o.currency, Currency(name="USD"))
         self.assertEqual(self.o.custodian, Custodian(name="UBS"))
         self.assertEqual(self.o.name, "100")
+        self.assertEqual(str(self.o), "Owner(100: None)")
 
     def test_return(self):
         # new owner!

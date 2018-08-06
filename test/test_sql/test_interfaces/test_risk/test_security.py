@@ -1,5 +1,9 @@
 import unittest
 
+import os
+os.environ["influxdb_host"] = "test-influxdb"
+os.environ["influxdb_db"] = "test"
+
 import pandas as pd
 import pandas.util.testing as pdt
 
@@ -28,6 +32,7 @@ class TestSecurity(unittest.TestCase):
         self.assertEqual(s.kiid, 5)
 
         self.assertEqual(s.bloomberg_ticker, "AAAAA US Equity")
+        self.assertEqual(str(s), "Security(100: None)")
 
     def test_price(self):
         s = Security(name=100)
