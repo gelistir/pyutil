@@ -16,6 +16,7 @@ class Portfolio(ProductInterface):
     def __init__(self, name):
         super().__init__(name)
 
+    @property
     def last(self):
         return super()._last(measurement="nav", field="nav")
 

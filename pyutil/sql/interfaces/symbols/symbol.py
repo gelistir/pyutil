@@ -34,6 +34,13 @@ class Symbol(ProductInterface):
         self.group = group
         self.internal = internal
 
+    @property
+    def last(self):
+        return self._last(field="PX_LAST", measurement=Symbol.measurements)
+
+    def upsert(self, ts):
+        self._ts_upsert(field="PX_LAST", ts=ts, measurement=Symbol.measurements)
+
     #@staticmethod
     #def group_internal(symbols):
     #    return pd.DataFrame({s.name: {"group": s.group.name, "internal": s.internal} for s in symbols}).transpose()
