@@ -75,6 +75,21 @@ class Portfolio(ProductInterface):
         symbolmap = {s.name : s.group.name for s in self.symbols}
         return self.portfolio_influx.sector_weights(symbolmap=symbolmap, total=total)
 
+    @property
+    def state(self):
+        ref =  pd.DataFrame({s.name: {"group": s.group.name, "internal": s.internal} for s in self.symbols}).transpose()
+
+        # it's important to have this column in the data otherwise no grouping possible---
+        assert "group" in ref.keys()
+
+        frame = pd.concat([self.portfolio_influx.state, ref], axis=1, sort=True)
+
+        sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
+        frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
+        frame["Relative Sector"] = 100 * frame["Extrapolated"] / frame["Sector Weight"]
+        frame["Asset"] = frame.index
+        return frame
+
 
 class PortfolioSymbol(Base):
     __tablename__ = 'portfolio_symbol'
