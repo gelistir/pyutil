@@ -1,8 +1,8 @@
-import pandas as pd
-import pandas.util.testing as pdt
 import unittest
 
-from pyutil.influx.client_test import init_influxdb
+import pandas as pd
+import pandas.util.testing as pdt
+
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
 
@@ -13,7 +13,7 @@ t1 = pd.Timestamp("1978-11-16")
 class TestSecurity(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        init_influxdb()
+        Security.client.recreate(dbname="test")
 
 
     def test_name(self):

@@ -1,12 +1,16 @@
-import pandas as pd
 from unittest import TestCase
 
-from pyutil.influx.client_test import init_influxdb
+import pandas as pd
+import pandas.util.testing as pdt
+
+
+import os
+os.environ["influxdb_host"] = "test-influxdb"
+os.environ["influxdb_db"] = "test"
+
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.model.ref import Field, FieldType, DataType
 from test.test_sql.product import Product
-
-import pandas.util.testing as pdt
 
 t0 = pd.Timestamp("2010-05-14")
 t1 = pd.Timestamp("2010-05-15")
@@ -14,7 +18,9 @@ t1 = pd.Timestamp("2010-05-15")
 class TestProductInterface(TestCase):
     @classmethod
     def setUpClass(cls):
-        init_influxdb()
+        Product.client.recreate(dbname="test")
+
+        #init_influxdb()
         cls.p1 = Product(name="A")
         cls.p2 = Product(name="B")
 

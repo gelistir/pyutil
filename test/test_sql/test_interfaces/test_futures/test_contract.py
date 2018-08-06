@@ -2,7 +2,9 @@ from unittest import TestCase
 
 import pandas as pd
 
-from pyutil.influx.client_test import init_influxdb
+import os
+os.environ["influxdb_host"] = "test-influxdb"
+os.environ["influxdb_db"] = "test"
 
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
@@ -21,7 +23,12 @@ def future():
 class TestContract(TestCase):
     @classmethod
     def setUpClass(cls):
-        init_influxdb()
+        Future.client.recreate(dbname="test")
+
+    @classmethod
+    def tearDownClass(cls):
+        Future.client.close()
+
 
     def test_contract(self):
         # Contract doesn't need a future here...

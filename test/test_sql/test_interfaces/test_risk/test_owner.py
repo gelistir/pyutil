@@ -3,7 +3,12 @@ import unittest
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.influx.client_test import init_influxdb
+import os
+os.environ["influxdb_host"] = "test-influxdb"
+os.environ["influxdb_db"] = "test"
+
+
+
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.owner import Owner, FIELDS as FIELDSOWNER
@@ -21,7 +26,7 @@ NAME = FIELDSOWNER["name"]
 class TestOwner(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        init_influxdb()
+        Owner.client.recreate(dbname="test")
 
         # create an owner
         cls.o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
