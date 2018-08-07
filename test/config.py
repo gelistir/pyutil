@@ -6,10 +6,6 @@ from pyutil.performance.summary import NavSeries
 
 pd.options.display.width = 300
 
-os.environ["influxdb_host"] = "test-influxdb"
-os.environ["influxdb_db"] = "test"
-
-
 def resource(name):
     base_dir = os.path.dirname(__file__)
     return os.path.join(base_dir, "resources", name)

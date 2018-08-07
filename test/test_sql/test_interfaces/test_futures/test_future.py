@@ -2,10 +2,6 @@ from unittest import TestCase
 
 import pandas as pd
 
-import os
-os.environ["influxdb_host"] = "test-influxdb"
-os.environ["influxdb_db"] = "test"
-
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange

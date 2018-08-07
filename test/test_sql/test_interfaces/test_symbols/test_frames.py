@@ -3,11 +3,6 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-import os
-os.environ["influxdb_host"] = "test-influxdb"
-os.environ["influxdb_db"] = "test"
-
-
 from pyutil.sql.interfaces.symbols.frames import Frame
 
 

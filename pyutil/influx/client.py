@@ -1,15 +1,20 @@
 import datetime
+import os
 
 import pandas as pd
 from influxdb import DataFrameClient
 
 
 class Client(DataFrameClient):
-    def __init__(self, host, port=8086, database=None):
+    def __init__(self, host=None, port=8086, database=None):
+
+        host=host or os.environ["influxdb_host"]
+        database=database or os.environ["influxdb_db"]
+
         super().__init__(host, port)
-        if database:
-            self.create_database(dbname=database)
-            self.switch_database(database=database)
+
+        self.create_database(dbname=database)
+        self.switch_database(database=database)
 
     def recreate(self, dbname):
         self.drop_database(dbname=dbname)

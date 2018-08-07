@@ -1,9 +1,5 @@
 import unittest
 
-import os
-os.environ["influxdb_host"] = "test-influxdb"
-os.environ["influxdb_db"] = "test"
-
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 

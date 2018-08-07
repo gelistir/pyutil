@@ -10,7 +10,7 @@ from test.config import test_portfolio
 class TestInfluxDB(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.client = Client(host='test-influxdb', database="test")
+        cls.client = Client()
         cls.client.recreate(dbname="test")
 
     @classmethod

@@ -38,7 +38,7 @@ class ProductInterface(MyMixin, Base):
     # note that the name should not be unique as Portfolio and Strategy can have the same name
     __name = sq.Column("name", sq.String(200), unique=False, nullable=True)
     discriminator = sq.Column(sq.String)
-    client = Client(host=os.environ["influxdb_host"], database=os.environ["influxdb_db"])
+    client = Client(database=os.environ["influxdb_db"])
 
     __mapper_args__ = {"polymorphic_on": discriminator}
 

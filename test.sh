@@ -8,12 +8,12 @@ rm -rf $(pwd)/html-coverage/*
 #         and database "postgres", password is "test"
 docker rm -f test-postgresql
 
-docker run --name test-postgresql -e POSTGRES_PASSWORD=test -d postgres:9.6
+docker run --name test-postgresql -e POSTGRES_PASSWORD=test  -d postgres:9.6
 
 docker run --name test-influxdb -d influxdb:1.5.4
 
 # run all tests, seems to be slow on teamcity
-docker run --link test-postgresql --link test-influxdb --rm -v $(pwd)/html-coverage:/html-coverage  -v $(pwd)/html-report:/html-report pyutil:test
+docker run --link test-postgresql --link test-influxdb -e influxdb_host=test-influxdb -e influxdb_db=test --rm -v $(pwd)/html-coverage:/html-coverage  -v $(pwd)/html-report:/html-report pyutil:test
 
 ret=$?
 

@@ -8,16 +8,15 @@ services:
      volumes:
         - ./pyutil:/pyutil/pyutil
         - ./sandbox:/pyutil/sandbox
+        -  /etc/localtime:/etc/localtime:ro
      extra_hosts:
         # obviously you can not access
         - quantsrv:192.168.100.15
      env_file:
        - .env
-     volumes:
-        -  /etc/localtime:/etc/localtime:ro
-     links:
-       - test-postgresql
-       - test-influxdb
+     environment:
+       - influxdb_host=test-influxdb
+       - influxdb_db=test
 
   test-postgresql:
     image: postgres:9.6
