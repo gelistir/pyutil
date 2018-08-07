@@ -2,7 +2,7 @@ import enum as _enum
 
 import pandas as pd
 import sqlalchemy as sq
-from sqlalchemy.orm import relationship as _relationship
+from sqlalchemy.orm import relationship
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
@@ -22,7 +22,7 @@ class Strategy(ProductInterface):
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)
     _portfolio_id = sq.Column("portfolio_id", sq.Integer, sq.ForeignKey("portfolio.id"), nullable=False)
-    _portfolio = _relationship(Portfolio, uselist=False, foreign_keys=[_portfolio_id], lazy="joined")
+    _portfolio = relationship(Portfolio, uselist=False, foreign_keys=[_portfolio_id])
     type = sq.Column(_Enum(StrategyType))
 
     def __init__(self, name, active=True, source="", type=StrategyType.conservative):
