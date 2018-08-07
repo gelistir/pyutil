@@ -96,8 +96,8 @@ class PortfolioSymbol(Base):
     portfolio_id = Column(Integer, ForeignKey('portfolio.id'), primary_key=True)
     symbol_id = Column(Integer, ForeignKey('symbol.id'), primary_key=True)
 
-    symbol = relationship(Symbol)
-    portfolio = relationship(Portfolio, backref="portfolio_symbol")
+    symbol = relationship(Symbol, lazy="joined")
+    portfolio = relationship(Portfolio, backref="portfolio_symbol", lazy="joined")
 
     def __init__(self, symbol=None, portfolio=None):
         self.symbol = symbol
