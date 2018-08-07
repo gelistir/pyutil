@@ -84,8 +84,9 @@ class ProductInterface(MyMixin, Base):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.name == other.name
 
-    #def __hash__(self):
-    #    return hash(self.name)
+    # we want to make a set of assets, etc....
+    def __hash__(self):
+        return hash(self.name)
 
     def _ts_upsert(self, ts, field, measurement, tags=None):
         """ update a series for a field """
