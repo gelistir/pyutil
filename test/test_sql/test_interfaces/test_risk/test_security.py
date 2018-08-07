@@ -3,6 +3,7 @@ import unittest
 import pandas as pd
 import pandas.util.testing as pdt
 
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
 
@@ -13,8 +14,11 @@ t1 = pd.Timestamp("1978-11-16")
 class TestSecurity(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        Security.client.recreate(dbname="test")
+        ProductInterface.client.recreate(dbname="test")
 
+    @classmethod
+    def tearDownClass(cls):
+        ProductInterface.client.close()
 
     def test_name(self):
         s = Security(name=100, kiid=5, ticker="AAAAA US Equity")

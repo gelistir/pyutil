@@ -2,6 +2,8 @@ from unittest import TestCase
 
 import pandas as pd
 import pandas.util.testing as pdt
+
+from pyutil.sql.interfaces.products import ProductInterface
 from test.config import test_portfolio, read_frame
 
 from pyutil.performance.summary import fromNav
@@ -15,7 +17,7 @@ t2 = pd.Timestamp("2010-04-25")
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        Portfolio.client.recreate(dbname="test")
+        ProductInterface.client.recreate(dbname="test")
 
         cls.p = Portfolio(name="Maffay")
 
@@ -33,7 +35,7 @@ class TestPortfolio(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        Portfolio.client.close()
+        ProductInterface.client.close()
 
     def test_read_influx(self):
         p1 = self.p.portfolio_influx

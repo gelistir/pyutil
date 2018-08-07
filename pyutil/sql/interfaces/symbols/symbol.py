@@ -26,6 +26,10 @@ class Symbol(ProductInterface):
         self.group = group
         self.internal = internal
 
+    #@property
+    #def client(self):
+    #    return ProductInterface.client
+
     def price(self, field="PX_LAST"):
         return self._ts(field=field, measurement=Symbol._measurements)
 
@@ -41,4 +45,4 @@ class Symbol(ProductInterface):
 
     @staticmethod
     def symbol(name, field="PX_LAST"):
-        return ProductInterface.client.read_series(field=field, measurement=Symbol._measurements, conditions={"name": name})
+        return Symbol.client.read_series(field=field, measurement=Symbol._measurements, conditions={"name": name})

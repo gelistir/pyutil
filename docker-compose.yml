@@ -15,6 +15,7 @@ services:
      env_file:
        - .env
      environment:
+       # used mainly for testing!
        - influxdb_host=test-influxdb
        - influxdb_db=test
 

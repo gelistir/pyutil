@@ -2,6 +2,8 @@ from unittest import TestCase
 
 import pandas as pd
 import pandas.util.testing as pdt
+
+from pyutil.sql.interfaces.products import ProductInterface
 from test.config import test_portfolio
 
 #from pyutil.influx.client_test import init_influxdb
@@ -18,7 +20,7 @@ from pyutil.sql.session import postgresql_db_test
 class TestDatabaseSymbols(TestCase):
     @classmethod
     def setUpClass(cls):
-        Strategy.client.recreate(dbname="test")
+        ProductInterface.client.recreate(dbname="test")
 
         cls.session = postgresql_db_test(base=Base, echo=False)
 
@@ -48,11 +50,12 @@ class TestDatabaseSymbols(TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.session.close()
+        ProductInterface.client.close()
 
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        Strategy.client.recreate(dbname="test")
+        ProductInterface.client.recreate(dbname="test")
 
         cls.session = postgresql_db_test(base=Base, echo=False)
 
@@ -76,6 +79,8 @@ class TestPortfolio(TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.session.close()
+        ProductInterface.client.close()
+
 
     def test_mtd(self):
         self.assertAlmostEqual(self.db.mtd["Apr 02"]["Peter"], 0.0008949612999999967, places=5)

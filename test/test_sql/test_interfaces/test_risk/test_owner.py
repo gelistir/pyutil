@@ -3,6 +3,7 @@ import unittest
 import pandas as pd
 import pandas.util.testing as pdt
 
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.owner import Owner, FIELDS as FIELDSOWNER
@@ -18,12 +19,17 @@ NAME = FIELDSOWNER["name"]
 
 
 class TestOwner(unittest.TestCase):
+
     @classmethod
     def setUpClass(cls):
-        Owner.client.recreate(dbname="test")
+        ProductInterface.client.recreate(dbname="test")
 
         # create an owner
         cls.o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
+
+    @classmethod
+    def tearDownClass(cls):
+        ProductInterface.client.close()
 
     def test_name(self):
         self.assertEqual(self.o.currency, Currency(name="USD"))

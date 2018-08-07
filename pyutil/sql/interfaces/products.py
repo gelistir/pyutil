@@ -38,7 +38,9 @@ class ProductInterface(MyMixin, Base):
     # note that the name should not be unique as Portfolio and Strategy can have the same name
     __name = sq.Column("name", sq.String(200), unique=False, nullable=True)
     discriminator = sq.Column(sq.String)
-    client = Client(database=os.environ["influxdb_db"])
+
+    # this is a static variable!
+    client = Client()
 
     __mapper_args__ = {"polymorphic_on": discriminator}
 
@@ -51,6 +53,10 @@ class ProductInterface(MyMixin, Base):
 
     def __init__(self, name, **kwargs):
         self.__name = str(name)
+
+    #@property
+    #def client(self):
+    #    return self.__client
 
 
     @hybrid_property

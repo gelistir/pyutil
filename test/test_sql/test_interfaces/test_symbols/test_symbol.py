@@ -2,6 +2,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 from unittest import TestCase
 
+from pyutil.sql.interfaces.products import ProductInterface
 from test.config import test_portfolio
 
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
@@ -10,11 +11,11 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 class TestSymbol(TestCase):
     @classmethod
     def setUpClass(cls):
-        Symbol.client.recreate(dbname="test")
+        ProductInterface.client.recreate(dbname="test")
 
     @classmethod
     def tearDownClass(cls):
-        Symbol.client.close()
+        ProductInterface.client.close()
 
     def test_init(self):
         symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")

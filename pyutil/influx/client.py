@@ -8,8 +8,8 @@ from influxdb import DataFrameClient
 class Client(DataFrameClient):
     def __init__(self, host=None, port=8086, database=None):
 
-        host=host or os.environ["influxdb_host"]
-        database=database or os.environ["influxdb_db"]
+        host = host or os.environ["influxdb_host"]
+        database = database or os.environ["influxdb_db"]
 
         super().__init__(host, port)
 
@@ -20,6 +20,21 @@ class Client(DataFrameClient):
         self.drop_database(dbname=dbname)
         self.create_database(dbname=dbname)
         self.switch_database(database=dbname)
+
+    @property
+    def host(self):
+        return super()._host
+
+    @property
+    def port(self):
+        return super()._port
+
+    def __repr__(self):
+        return "InfluxClient at {host} on port {port}".format(host=self.host, port=self.port)
+
+    #def __repr__(self):
+    #    print("Hello World")
+    #    return super()._host
 
     @property
     def databases(self):

@@ -13,7 +13,7 @@ t1 = pd.Timestamp("2010-05-15")
 class TestProductInterface(TestCase):
     @classmethod
     def setUpClass(cls):
-        Product.client.recreate(dbname="test")
+        ProductInterface.client.recreate(dbname="test")
 
         #init_influxdb()
         cls.p1 = Product(name="A")
@@ -21,6 +21,10 @@ class TestProductInterface(TestCase):
 
         cls.f1 = Field(name="x", type=FieldType.dynamic, result=DataType.integer)
         cls.f2 = Field(name="y", type=FieldType.dynamic, result=DataType.string)
+
+    @classmethod
+    def tearDownClass(cls):
+        ProductInterface.client.close()
 
     def test_name(self):
         self.assertEqual(self.p1.name, "A")

@@ -17,6 +17,15 @@ class TestInfluxDB(TestCase):
     def tearDownClass(cls):
         cls.client.close()
 
+    def test_host(self):
+        self.assertEqual(self.client.host, "test-influxdb")
+
+    def test_port(self):
+        self.assertEqual(self.client.port, 8086)
+
+    def test_repr(self):
+        self.assertEqual(str(self.client), "InfluxClient at test-influxdb on port 8086")
+
     def test_client(self):
         databases = self.client.databases
         self.assertTrue("test" in databases)
