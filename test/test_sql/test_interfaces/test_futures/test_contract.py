@@ -6,6 +6,8 @@ from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
 from pyutil.sql.interfaces.futures.future import Future
+from pyutil.sql.interfaces.products import ProductInterface
+
 
 def future():
     # define an exchange
@@ -19,11 +21,11 @@ def future():
 class TestContract(TestCase):
     @classmethod
     def setUpClass(cls):
-        Future.client.recreate(dbname="test")
+        ProductInterface.client.recreate(dbname="test")
 
     @classmethod
     def tearDownClass(cls):
-        Future.client.close()
+        ProductInterface.client.close()
 
 
     def test_contract(self):
