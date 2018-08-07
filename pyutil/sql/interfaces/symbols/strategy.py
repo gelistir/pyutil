@@ -22,7 +22,7 @@ class Strategy(ProductInterface):
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)
     _portfolio_id = sq.Column("portfolio_id", sq.Integer, sq.ForeignKey("portfolio.id"), nullable=False)
-    _portfolio = _relationship(Portfolio, uselist=False, back_populates="strategy", foreign_keys=[_portfolio_id], lazy="joined")
+    _portfolio = _relationship(Portfolio, uselist=False, foreign_keys=[_portfolio_id], lazy="joined")
     type = sq.Column(_Enum(StrategyType))
 
     def __init__(self, name, active=True, source="", type=StrategyType.conservative):
@@ -66,6 +66,3 @@ class Strategy(ProductInterface):
     @property
     def last(self):
         return self._portfolio.last
-
-
-Portfolio.strategy = _relationship("Strategy", uselist=False, back_populates="_portfolio", primaryjoin="Portfolio.id == Strategy._portfolio_id")
