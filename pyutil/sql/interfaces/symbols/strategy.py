@@ -66,3 +66,7 @@ class Strategy(ProductInterface):
     @property
     def last(self):
         return self._portfolio.last
+
+    @property
+    def assets(self):
+        return self._portfolio.symbols
