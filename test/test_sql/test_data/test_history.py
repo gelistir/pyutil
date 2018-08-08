@@ -4,7 +4,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
-from pyutil.sql.data.historyinterface import HistoryInterface
+from pyutil.sql.data.history_interface import HistoryInterface
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.session import postgresql_db_test
 from test.config import test_portfolio

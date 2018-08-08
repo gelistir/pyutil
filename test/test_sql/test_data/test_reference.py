@@ -4,7 +4,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
-from pyutil.sql.data.referenceinterface import ReferenceInterface
+from pyutil.sql.data.reference_interface import ReferenceInterface
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.model.ref import Field, FieldType, DataType
 from pyutil.sql.session import postgresql_db_test
@@ -13,7 +13,7 @@ from test.config import read_frame
 
 class LocalReference(ReferenceInterface):
     def read(self, tickers, fields):
-        return read_frame("reference.csv", index_col=None)
+        return read_frame("reference.csv", index_col=None).set_index(["ticker", "field"])["value"]
 
     def __init__(self, session):
         super().__init__(session)

@@ -23,7 +23,7 @@ class ReferenceInterface(ABC):
         self.logger.debug("Number of Assets: \n{assets}".format(assets=len(a)))
         self.logger.debug("Latest Assets: \n{assets}".format(assets=a))
 
-        frame = self.read(fields=f, tickers=a).set_index(["ticker", "field"])["value"]
+        frame = self.read(fields=f, tickers=a)  #.set_index(["ticker", "field"])["value"]
         self.logger.debug("Result (top 20): \n{frame}".format(frame=frame.head(20)))
 
         self._update_reference(frame=frame)
