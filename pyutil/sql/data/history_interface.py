@@ -10,7 +10,6 @@ from pyutil.sql.session import get_one_or_create
 
 
 class HistoryInterface(ABC):
-    # extract prices from Bloomberg
     def __init__(self, session, logger=None):
         self.__session = session
         self.__logger = logger or logging.getLogger(__name__)
@@ -40,7 +39,13 @@ class HistoryInterface(ABC):
                 pass
 
     def age(self, today=pd.Timestamp("today"), field="PX_LAST"):
-        return pd.Series({symbol.name: (today - symbol.last(field=field)).days for symbol in self.__session.query(Symbol)})
+        def f(symbol):
+            try:
+                return (today - symbol.last(field=field)).days
+            except:
+                return None
+
+        return pd.Series({symbol.name: f(symbol) for symbol in self.__session.query(Symbol)})
 
     def frame(self, name, field="PX_LAST"):
         f, exists = get_one_or_create(session=self.__session, model=Frame, name=name)

@@ -5,6 +5,7 @@ import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
 from pyutil.sql.data.history_interface import HistoryInterface
+from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.session import postgresql_db_test
 from test.config import test_portfolio
@@ -44,8 +45,22 @@ class TestHistory(TestCase):
             pdt.assert_series_equal(symbol.price(field="PX_LAST"), pd.Series({}))
 
         # run will fire off the reading
-        LocalHistory(session=self.session).run()
+        hist = LocalHistory(session=self.session)
+
+        pdt.assert_series_equal(hist.age(today=pd.Timestamp("2016-02-21")).dropna(), pd.Series({}, dtype=object))
+
+        hist.run()
+
+        x = hist.age(today=pd.Timestamp("2016-02-21"))
+        self.assertEqual(x["A"], 305)
 
         for symbol in self.session.query(Symbol):
             pdt.assert_series_equal(symbol.price(), p[symbol.name], check_names=False)
+
+        hist.frame(name="History")
+
+        # ask the session for the Frame object...
+        x = self.session.query(Frame).filter_by(name="History").one()
+
+        pdt.assert_frame_equal(x.frame, p, check_names=False)
 

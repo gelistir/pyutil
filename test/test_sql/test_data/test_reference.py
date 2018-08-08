@@ -5,6 +5,7 @@ import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
 from pyutil.sql.data.reference_interface import ReferenceInterface
+from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.model.ref import Field, FieldType, DataType
 from pyutil.sql.session import postgresql_db_test
@@ -51,7 +52,8 @@ class TestReference(TestCase):
             pdt.assert_series_equal(symbol.reference_series, pd.Series({}))
 
         # extract the data and store in database
-        LocalReference(session=self.session).run()
+        ref = LocalReference(session=self.session)
+        ref.run()
 
         # check that the data made it into the database
         frame = Symbol.reference_frame(products=self.session.query(Symbol))
@@ -60,3 +62,14 @@ class TestReference(TestCase):
         self.assertEqual(frame["CHG_PCT_1D"]["A"], 0.1)
         self.assertEqual(frame["CRNCY"]["A"],"EUR")
         self.assertEqual(frame["PX_CLOSE_DT"]["C"], pd.Timestamp("2018-08-08").date())
+
+        ref.frame(name="Reference")
+
+        # ask the session for the Frame object...
+        x = self.session.query(Frame).filter_by(name="Reference").one()
+
+        frame = x.frame
+
+        self.assertTrue(pd.isna(frame["CHG_PCT_1D"]["C"]))
+        self.assertEqual(frame["CHG_PCT_1D"]["A"], 0.1)
+        self.assertEqual(frame["CRNCY"]["A"],"EUR")
