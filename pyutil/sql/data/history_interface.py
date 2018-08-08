@@ -5,6 +5,9 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 from abc import ABC, abstractmethod
 
+from pyutil.sql.session import get_one_or_create
+
+
 class HistoryInterface(ABC):
     # extract prices from Bloomberg
     def __init__(self, session, logger=None):
@@ -36,4 +39,9 @@ class HistoryInterface(ABC):
                 pass
 
     def age(self, today=pd.Timestamp("today"), field="PX_LAST"):
-        return pd.Series({symbol.name: (today - symbol.last(field=field)).days for symbol in session.query(Symbol)})
+        return pd.Series({symbol.name: (today - symbol.last(field=field)).days for symbol in self.__session.query(Symbol)})
+
+    def frame(self, name, field="PX_LAST"):
+        frame = Symbol.frame(field)
+        f, exists = get_one_or_create(session=self.__session, model=Frame, name=name)
+        f.frame = frame
