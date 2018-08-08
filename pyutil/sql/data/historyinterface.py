@@ -5,7 +5,7 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 from abc import ABC, abstractmethod
 
-class History(ABC):
+class HistoryInterface(ABC):
     # extract prices from Bloomberg
     def __init__(self, session, logger=None):
         self.__session = session

@@ -4,14 +4,14 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
-from pyutil.sql.data.reference import Reference
+from pyutil.sql.data.referenceinterface import ReferenceInterface
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.model.ref import Field, FieldType, DataType
 from pyutil.sql.session import postgresql_db_test
 from test.config import read_frame
 
 
-class LocalReference(Reference):
+class LocalReference(ReferenceInterface):
     def read(self, tickers, fields):
         return read_frame("reference.csv", index_col=None)
 

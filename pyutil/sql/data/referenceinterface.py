@@ -6,7 +6,7 @@ from pyutil.sql.model.ref import Field, FieldType
 from sqlalchemy import or_
 
 
-class Reference(ABC):
+class ReferenceInterface(ABC):
     def __init__(self, session, logger=None):
         self.logger = logger or logging.getLogger(__name__)
         self.session = session

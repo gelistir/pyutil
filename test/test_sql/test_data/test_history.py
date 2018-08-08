@@ -4,13 +4,13 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
-from pyutil.sql.data.history import History
+from pyutil.sql.data.historyinterface import HistoryInterface
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.session import postgresql_db_test
 from test.config import test_portfolio
 
 
-class LocalHistory(History):
+class LocalHistory(HistoryInterface):
     def __init__(self, session):
         super().__init__(session)
         self.__prices = test_portfolio().prices
