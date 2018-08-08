@@ -34,3 +34,6 @@ class HistoryInterface(ABC):
             except Exception as e:
                 self.__logger.warning("Problem {e} with Bloomberg. Ticker: {ticker}".format(e=e, ticker=symbol.name))
                 pass
+
+    def age(self, today=pd.Timestamp("today"), field="PX_LAST"):
+        return pd.Series({symbol.name: (today - symbol.last(field=field)).days for symbol in session.query(Symbol)})
