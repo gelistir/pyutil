@@ -1,6 +1,7 @@
 import logging
 import pandas as pd
 
+from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 from abc import ABC, abstractmethod
