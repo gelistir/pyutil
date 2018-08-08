@@ -20,10 +20,6 @@ def strategy_loop(session, folder="/lobnek/strat", reader=None, logger=None):
 
     reader = reader or Symbol.symbol
 
-    # get a dictionary of all symbols
-    # symbols = {s.name: s for s in session.query(Symbol)}
-    logger.debug("All Symbols extracted")
-
     for sfile in os.listdir(folder):
         logger.debug("File {f}".format(f=sfile))
         with open(os.path.join(folder, sfile), "r") as f:
@@ -36,7 +32,7 @@ def strategy_loop(session, folder="/lobnek/strat", reader=None, logger=None):
             strat, exists = get_one_or_create(session=session, model=Strategy, name=configuration.name)
 
             #assert exists
-
+            logger.debug("Strategy: {s}".format(s=strat.name))
             logger.debug("Last stamp {s}".format(s=strat.last))
 
             strat.active = True
