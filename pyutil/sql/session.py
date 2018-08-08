@@ -9,6 +9,8 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 
+from pyutil.sql.interfaces.products import ProductInterface
+
 
 @contextmanager
 def session_scope(session):
@@ -64,6 +66,9 @@ def get_one_or_none(session, model, **kwargs):
 
 
 def postgresql_db_test(base, name=None, echo=False, views=None):
+    # get a fresh new InfluxDB database
+    ProductInterface.client.recreate(dbname="test")
+
     # session object
     awake = False
     while not awake:
