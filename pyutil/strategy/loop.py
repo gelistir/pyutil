@@ -6,7 +6,7 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.session import get_one_or_create
 
 
-def module(source):
+def __module(source):
     from types import ModuleType
 
     compiled = compile(source, '', 'exec')
@@ -25,13 +25,12 @@ def strategy_loop(session, folder="/lobnek/strat", reader=None, logger=None):
         with open(os.path.join(folder, sfile), "r") as f:
             source = f.read()
 
-            m = module(source=source)
+            m = __module(source=source)
 
             configuration = m.Configuration(reader=reader)
 
             strat, exists = get_one_or_create(session=session, model=Strategy, name=configuration.name)
 
-            #assert exists
             logger.debug("Strategy: {s}".format(s=strat.name))
             logger.debug("Last stamp {s}".format(s=strat.last))
 
@@ -39,5 +38,3 @@ def strategy_loop(session, folder="/lobnek/strat", reader=None, logger=None):
             strat.source = source
 
             yield configuration.portfolio, strat
-
-            #strat.upsert(portfolio=portfolio, symbols=symbols, days=5)
