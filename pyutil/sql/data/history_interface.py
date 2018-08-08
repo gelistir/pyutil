@@ -43,6 +43,5 @@ class HistoryInterface(ABC):
         return pd.Series({symbol.name: (today - symbol.last(field=field)).days for symbol in self.__session.query(Symbol)})
 
     def frame(self, name, field="PX_LAST"):
-        frame = Symbol.frame(field)
         f, exists = get_one_or_create(session=self.__session, model=Frame, name=name)
-        f.frame = frame
+        f.frame = Symbol.frame(field)
