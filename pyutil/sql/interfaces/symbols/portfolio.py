@@ -23,12 +23,6 @@ class Portfolio(ProductInterface):
     def upsert_influx(self, portfolio, symbols):
         assert isinstance(portfolio, _Portfolio)
 
-        for asset in portfolio.assets:
-            symbol = symbols[asset]
-            if not symbol in self.symbols:
-                # append new symbol only if it isn't there yet
-                self.symbols.append(symbols[asset])
-
         ww = portfolio.weights.stack().to_frame(name="Weight")
         pp = portfolio.prices.stack().to_frame(name="Price")
 
@@ -38,14 +32,20 @@ class Portfolio(ProductInterface):
 
         Portfolio.client.write_points(xx, measurement="xxx2", tag_columns=["Asset"], field_columns=["Weight", "Price"], tags={"Portfolio": self.name}, batch_size=10000, time_precision="s")
 
+        # recompute the entire portfolio!
         portfolio_new = self.portfolio_influx
 
-        # todo: drop data first...
         # update the nav
         super()._ts_upsert(ts=portfolio_new.nav.dropna(), field="nav", measurement="nav")
 
         # update the leverage
         super()._ts_upsert(ts=portfolio_new.leverage.dropna(), field="leverage", measurement="leverage")
+
+        for asset in portfolio_new.assets:
+            symbol = symbols[asset]
+            if not symbol in self.symbols:
+                # append new symbol only if it isn't there yet
+                self.symbols.append(symbols[asset])
 
         return portfolio_new
 
@@ -77,18 +77,14 @@ class Portfolio(ProductInterface):
 
     @property
     def state(self):
-        ref =  pd.DataFrame({s.name: {"group": s.group.name, "internal": s.internal} for s in self.symbols}).transpose()
-
-        # it's important to have this column in the data otherwise no grouping possible---
-        assert "group" in ref.keys()
-
-        frame = pd.concat([self.portfolio_influx.state, ref], axis=1, sort=True)
+        frame = self.portfolio_influx.state
+        frame["group"] = pd.Series({s.name : s.group.name for s in self.symbols})
+        frame["internal"] = pd.Series({s.name : s.internal for s in self.symbols})
 
         sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
         frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
         frame["Relative Sector"] = 100 * frame["Extrapolated"] / frame["Sector Weight"]
-        #frame["Asset"] = frame.index
-        return frame #.reset_index("Asset")
+        return frame
 
 
 class PortfolioSymbol(Base):
