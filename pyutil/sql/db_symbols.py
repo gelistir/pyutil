@@ -26,7 +26,7 @@ class DatabaseSymbols(object):
         return frame
 
     def __trans_nav(self, f):
-        return Portfolio.nav_all().apply(f).transpose()
+        return self.nav.apply(f).transpose()
 
     @property
     def mtd(self):

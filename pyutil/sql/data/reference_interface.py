@@ -17,7 +17,7 @@ class ReferenceInterface(ABC):
 
     @abstractmethod
     def read(self, tickers, fields):
-        pass
+        """This method should implement how read from a data source, e.g. Bloomberg"""
 
     def run(self):
         f = self._reference_fields
