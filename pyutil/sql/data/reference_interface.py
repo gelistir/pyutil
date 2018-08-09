@@ -25,9 +25,7 @@ class ReferenceInterface(ABC):
         fields = {field.name: field for field in self.__session.query(Field).filter(or_(Field.type == FieldType.dynamic, Field.type == FieldType.static))}
 
         for ticker, field, value in self.read(fields=list(fields.keys()), tickers=list(assets.keys())):
-            x = fields[field]
-            y = assets[ticker]
-            y.reference[x] = str(value)
+            assets[ticker].reference[fields[field]] = str(value)
 
     def frame(self, name):
         f, exists = get_one_or_create(session=self.__session, model=Frame, name=name)
