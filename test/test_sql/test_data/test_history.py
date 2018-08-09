@@ -16,17 +16,18 @@ from test.config import test_portfolio
 class LocalHistory(HistoryInterface):
     def __init__(self, session):
         super().__init__(session)
-        self.__prices = test_portfolio().prices
 
-    def read(self, ticker, t0, field):
-        return self.__prices[ticker]
+    @staticmethod
+    def read(ticker, t0, field):
+        return test_portfolio().prices[ticker]
 
 
 class LocalHistoryFaulty(HistoryInterface):
     def __init__(self, session):
         super().__init__(session)
 
-    def read(self, ticker, t0, field):
+    @staticmethod
+    def read(ticker, t0, field):
         # simulate a problem on the server
         raise AssertionError
 

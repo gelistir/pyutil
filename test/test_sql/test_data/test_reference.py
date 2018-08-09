@@ -14,7 +14,8 @@ from test.config import read_frame
 
 
 class LocalReference(ReferenceInterface):
-    def read(self, tickers, fields):
+    @staticmethod
+    def read(tickers, fields):
         return read_frame("reference.csv", index_col=None).set_index(["ticker", "field"])["value"]
 
     def __init__(self, session):

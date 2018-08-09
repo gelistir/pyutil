@@ -15,8 +15,9 @@ class ReferenceInterface(ABC):
         self.__logger = logger or logging.getLogger(__name__)
         self.__session = session
 
+    @staticmethod
     @abstractmethod
-    def read(self, tickers, fields):
+    def read(tickers, fields):
         """This method should implement how read from a data source, e.g. Bloomberg"""
 
     def run(self):

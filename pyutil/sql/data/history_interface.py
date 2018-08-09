@@ -14,8 +14,9 @@ class HistoryInterface(ABC):
         self.__session = session
         self.__logger = logger or logging.getLogger(__name__)
 
+    @staticmethod
     @abstractmethod
-    def read(self, ticker, t0, field):
+    def read(ticker, t0, field):
         """This method should implement how read from a data source, e.g. Bloomberg"""
 
     def run(self, t0=pd.Timestamp("2000-01-01"), offset=10, field="PX_LAST"):
