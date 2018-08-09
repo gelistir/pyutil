@@ -16,7 +16,7 @@ class HistoryInterface(ABC):
 
     @abstractmethod
     def read(self, ticker, t0, field):
-        pass
+        """This method should implement how read from a data source, e.g. Bloomberg"""
 
     def run(self, t0=pd.Timestamp("2000-01-01"), offset=10, field="PX_LAST"):
         offset = pd.offsets.Day(n=offset)
@@ -35,7 +35,7 @@ class HistoryInterface(ABC):
                 symbol.upsert(ts=ts, field=field)
 
             except Exception as e:
-                self.__logger.warning("Problem {e} with Bloomberg. Ticker: {ticker}".format(e=e, ticker=symbol.name))
+                self.__logger.warning("Problem {e} with Ticker: {ticker}".format(e=e, ticker=symbol.name))
                 pass
 
     def age(self, today=pd.Timestamp("today"), field="PX_LAST"):
