@@ -5,6 +5,7 @@ import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
 from pyutil.sql.data.reference_interface import ReferenceInterface
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.model.ref import Field, FieldType, DataType
@@ -23,6 +24,9 @@ class LocalReference(ReferenceInterface):
 class TestReference(TestCase):
     @classmethod
     def setUpClass(cls):
+        # get a fresh new InfluxDB database
+        ProductInterface.client.recreate(dbname="test")
+
         # create a session to a proper database
         cls.session = postgresql_db_test(base=Base)
 

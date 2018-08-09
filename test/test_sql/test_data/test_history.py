@@ -5,9 +5,11 @@ import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
 from pyutil.sql.data.history_interface import HistoryInterface
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.session import postgresql_db_test
+
 from test.config import test_portfolio
 
 
@@ -23,6 +25,9 @@ class LocalHistory(HistoryInterface):
 class TestHistory(TestCase):
     @classmethod
     def setUpClass(cls):
+        # get a fresh new InfluxDB database
+        ProductInterface.client.recreate(dbname="test")
+
         # create a session to a proper database
         cls.session = postgresql_db_test(base=Base)
 
