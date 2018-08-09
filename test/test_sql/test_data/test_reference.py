@@ -16,7 +16,9 @@ from test.config import read_frame
 class LocalReference(ReferenceInterface):
     @staticmethod
     def read(tickers, fields):
-        return read_frame("reference.csv", index_col=None).set_index(["ticker", "field"])["value"]
+        frame = read_frame("reference.csv", index_col=None)
+        for key,row in frame.iterrows():
+            yield row["ticker"], row["field"], row["value"]
 
     def __init__(self, session):
         super().__init__(session)
