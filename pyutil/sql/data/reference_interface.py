@@ -24,7 +24,7 @@ class ReferenceInterface(ABC):
         assets = {symbol.name: symbol for symbol in self.__session.query(Symbol)}
         fields = {field.name: field for field in self.__session.query(Field).filter(or_(Field.type == FieldType.dynamic, Field.type == FieldType.static))}
 
-        for ticker, field, value in self.read(fields=fields.keys(), tickers=assets.keys()):
+        for ticker, field, value in self.read(fields=list(fields.keys()), tickers=list(assets.keys())):
             x = fields[field]
             y = assets[ticker]
             y.reference[x] = str(value)
