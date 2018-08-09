@@ -48,6 +48,8 @@ class TestProductInterface(TestCase):
         self.p1.reference[self.f2] = "10"
         self.p1.reference[self.f2] = "11"
 
+        self.assertTrue(self.f1 < self.f2)
+
         self.assertTrue(self.f2 in self.p1.reference.keys())
         self.assertDictEqual({self.f1: 120, self.f2: "11"}, dict(self.p1.reference))
 

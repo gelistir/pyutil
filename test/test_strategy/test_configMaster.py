@@ -18,7 +18,9 @@ class _Strategy(ConfigMaster):
 class TestConfigMaster(TestCase):
     def test_run_strategy(self):
         p = test_portfolio()
-        s = _Strategy(names=["A","B","C"], reader=lambda name,field: p.prices[name])
+        s = _Strategy(names=["A","B","C"], reader=lambda name,field=None: p.prices[name])
         pdt.assert_frame_equal(s.history(), p.prices[["A","B","C"]])
         self.assertListEqual(s.names, ["A", "B", "C"])
+        self.assertIsNotNone(s.reader)
+        pdt.assert_series_equal(s.reader("A"), p.prices["A"])
 

@@ -73,7 +73,7 @@ class Field(Base):
         return hash(self.name)
 
     def __lt__(self, other):
-        return self.name < self.name
+        return self.name < other.name
 
 
 class _ReferenceData(Base):
