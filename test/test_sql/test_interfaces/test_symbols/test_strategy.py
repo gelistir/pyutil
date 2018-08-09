@@ -49,3 +49,4 @@ class TestStrategy(TestCase):
         self.assertAlmostEqual(x["2015-04-08"], 0.305048, places=5)
         self.assertAlmostEqual(x["2015-04-13"], 1.486652, places=5)
 
+        self.assertSetEqual(set(self.strategy.assets), set(assets.values()))

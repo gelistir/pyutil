@@ -89,4 +89,7 @@ class TestProductInterface(TestCase):
         self.assertIsNone(p._last(field="PX_LAST", measurement="wurst"))
 
 
+    def test_hash(self):
+        x = {self.p1, self.p2}
+        assert self.p1 in x
 
