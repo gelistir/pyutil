@@ -27,7 +27,6 @@ class ConfigMaster(dict):
     @abc.abstractmethod
     def portfolio(self):
         """ Portfolio described by the Configuration """
-        return
 
     @property
     def names(self):
