@@ -22,6 +22,16 @@ class LocalHistory(HistoryInterface):
         return self.__prices[ticker]
 
 
+class LocalHistoryFaulty(HistoryInterface):
+    def __init__(self, session):
+        super().__init__(session)
+
+    def read(self, ticker, t0, field):
+        # simulate a problem on the server
+        raise AssertionError
+
+
+
 class TestHistory(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -68,4 +78,26 @@ class TestHistory(TestCase):
         x = self.session.query(Frame).filter_by(name="History").one()
 
         pdt.assert_frame_equal(x.frame, p, check_names=False)
+
+
+class TestHistoryFaulty(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # get a fresh new InfluxDB database
+        ProductInterface.client.recreate(dbname="test")
+
+        # create a session to a proper database
+        cls.session = postgresql_db_test(base=Base)
+
+        s = Symbol(name="Maffay")
+        cls.session.add(s)
+        cls.session.commit()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.session.close()
+
+    def test_history_faulty(self):
+        hist = LocalHistoryFaulty(session=self.session)
+        hist.run()
 
