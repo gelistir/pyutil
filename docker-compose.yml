@@ -18,6 +18,9 @@ services:
        # used mainly for testing!
        - influxdb_host=test-influxdb
        - influxdb_db=test
+     links:
+       - test-influxdb
+       - test-postgresql
 
   test-postgresql:
     image: postgres:9.6

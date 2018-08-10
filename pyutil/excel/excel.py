@@ -61,4 +61,9 @@ def excelBook(title, subject):
         'company': 'Lobnek Wealth Management',
     })
 
+    # Add a format. Light red fill with dark red text.
+    e.book.add_format({'bg_color': '#FFC7CE', 'font_color': '#9C0006'})
+    # Add a format. Green fill with dark green text.
+    e.book.add_format({'bg_color': '#C6EFCE', 'font_color': '#006100'})
+
     return e
