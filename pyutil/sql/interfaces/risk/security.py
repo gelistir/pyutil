@@ -41,6 +41,10 @@ class Security(ProductInterface):
     def bloomberg_ticker(self):
         return self.get_reference("Bloomberg Ticker")
 
+    @property
+    def bloomberg_scaling(self):
+        return self.get_reference("Bloomberg Multiplier", default=1.0)
+
     def upsert_volatility(self, currency, ts):
         assert isinstance(currency, Currency)
         super()._ts_upsert(ts=ts, tags={"security": self.name, "currency": currency.name}, field="volatility", measurement="VolatilitySecurity")
