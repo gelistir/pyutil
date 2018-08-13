@@ -38,8 +38,8 @@ class TestSecurity(unittest.TestCase):
         s = Security(name=100)
         s.upsert_price(ts=pd.Series({t0: 11.0, t1: 12.1}))
         pdt.assert_series_equal(s.price, pd.Series(index=[t0, t1], data=[11.0, 12.1], name="price"))
+        pdt.assert_series_equal(Security.prices_all()["100"], pd.Series(index=[t0, t1], data=[11.0, 12.1]), check_names=False)
 
-        print(Security.prices_all())
 
     def test_volatility(self):
         s = Security(name=100)

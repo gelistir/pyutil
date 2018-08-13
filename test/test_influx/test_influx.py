@@ -53,13 +53,15 @@ class TestInfluxDB(TestCase):
 
     def test_write_frame(self):
         nav = test_portfolio().nav
-        self.client.write_series(ts=nav, tags={"name": "test-a"}, field="navframe", measurement="nav2")
-        self.client.write_series(ts=nav, tags={"name": "test-b"}, field="navframe", measurement="nav2")
+        self.client.write_series(ts=nav, tags={"namex": "test-a"}, field="navframe", measurement="nav2")
+        self.client.write_series(ts=nav.tail(20), tags={"namex": "test-b"}, field="navframe", measurement="nav2")
 
-        y = self.client.read_frame(field="navframe", measurement="nav2", tags=["name"])
+        y = self.client.read_frame(field="navframe", measurement="nav2", tags=["namex"])
         pdt.assert_series_equal(nav, y["test-a"], check_names=False)
-        pdt.assert_series_equal(nav, y["test-b"], check_names=False)
+        pdt.assert_series_equal(nav.tail(20), y["test-b"].dropna(), check_names=False)
+        #assert False
 
     def test_read_frame(self):
         x = self.client.read_frame(field="DoesNotExist", measurement="nav2", tags=["name"])
         pdt.assert_frame_equal(x, pd.DataFrame({}))
+

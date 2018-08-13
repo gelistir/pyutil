@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 
 import pandas as pd
@@ -6,7 +7,7 @@ from influxdb import DataFrameClient
 
 
 class Client(DataFrameClient):
-    def __init__(self, host=None, port=8086, database=None):
+    def __init__(self, host=None, port=8086, database=None, logger=None):
 
         host = host or os.environ["influxdb_host"]
         self.__database = database or os.environ["influxdb_db"]
@@ -15,6 +16,7 @@ class Client(DataFrameClient):
 
         self.create_database(dbname=self.database)
         self.switch_database(database=self.database)
+        self.__logger = logger or logging.getLogger(__name__)
 
     def recreate(self, dbname):
         self.drop_database(dbname=dbname)
@@ -87,8 +89,11 @@ class Client(DataFrameClient):
 
     def __read_frame(self, measurement, field="*", tags=None, conditions=None):
         q = "SELECT {f}::field {t} from {m}{co}""".format(f=field, t=self.__tags(tags), m=measurement, co=self.__cond(conditions))
+        self.__logger("Query {q}".format(q=q))
+
         try:
             x = self.query(q)[measurement].tz_localize(None)
+            self.__logger.debug("Head {h}".format(h=x.head(10)))
 
             if tags:
                 assert isinstance(tags, list)
