@@ -35,11 +35,11 @@ class Security(ProductInterface):
 
     @hybrid_property
     def kiid(self):
-        return self.reference[FIELDS["Lobnek KIID"]]
+        return self.get_reference("KIID")
 
     @hybrid_property
     def bloomberg_ticker(self):
-        return self.reference[FIELDS["Lobnek Ticker Symbol Bloomberg"]]
+        return self.get_reference("Bloomberg Ticker")
 
     @hybrid_property
     def bloomberg_scaling(self):
