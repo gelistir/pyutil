@@ -89,7 +89,7 @@ class Client(DataFrameClient):
 
     def __read_frame(self, measurement, field="*", tags=None, conditions=None):
         q = "SELECT {f}::field {t} from {m}{co}""".format(f=field, t=self.__tags(tags), m=measurement, co=self.__cond(conditions))
-        self.__logger("Query {q}".format(q=q))
+        self.__logger.debug("Query {q}".format(q=q))
 
         try:
             x = self.query(q)[measurement].tz_localize(None)
