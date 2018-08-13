@@ -37,11 +37,11 @@ class Security(ProductInterface):
     def kiid(self):
         return self.get_reference("KIID")
 
-    @property
+    @hybrid_property
     def bloomberg_ticker(self):
         return self.get_reference("Bloomberg Ticker")
 
-    @property
+    @hybrid_property
     def bloomberg_scaling(self):
         return self.get_reference("Bloomberg Multiplier", default=1.0)
 
