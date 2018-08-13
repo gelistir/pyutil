@@ -9,17 +9,22 @@ class Client(DataFrameClient):
     def __init__(self, host=None, port=8086, database=None):
 
         host = host or os.environ["influxdb_host"]
-        database = database or os.environ["influxdb_db"]
+        self.__database = database or os.environ["influxdb_db"]
 
         super().__init__(host, port)
 
-        self.create_database(dbname=database)
-        self.switch_database(database=database)
+        self.create_database(dbname=self.database)
+        self.switch_database(database=self.database)
 
     def recreate(self, dbname):
         self.drop_database(dbname=dbname)
         self.create_database(dbname=dbname)
         self.switch_database(database=dbname)
+        self.__database = dbname
+
+    @property
+    def database(self):
+        return self.__database
 
     @property
     def host(self):
@@ -31,10 +36,6 @@ class Client(DataFrameClient):
 
     def __repr__(self):
         return "InfluxClient at {host} on port {port}".format(host=self.host, port=self.port)
-
-    #def __repr__(self):
-    #    print("Hello World")
-    #    return super()._host
 
     @property
     def databases(self):

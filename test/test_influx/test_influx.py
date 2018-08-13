@@ -20,6 +20,9 @@ class TestInfluxDB(TestCase):
     def test_host(self):
         self.assertEqual(self.client.host, "test-influxdb")
 
+    def test_database(self):
+        self.assertEqual("test", self.client.database)
+
     def test_port(self):
         self.assertEqual(self.client.port, 8086)
 
