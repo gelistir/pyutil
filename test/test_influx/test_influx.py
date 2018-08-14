@@ -62,6 +62,7 @@ class TestInfluxDB(TestCase):
         #assert False
 
     def test_read_frame(self):
-        x = self.client.read_frame(field="DoesNotExist", measurement="nav2", tags=["name"])
-        pdt.assert_frame_equal(x, pd.DataFrame({}))
+        with self.assertRaises(KeyError):
+            self.client.read_frame(field="DoesNotExist", measurement="nav2", tags=["name"])
+
 

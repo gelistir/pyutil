@@ -71,12 +71,12 @@ class Client(DataFrameClient):
             return pd.Series({})
 
     def read_frame(self, field, measurement, tags=None, conditions=None):
-        try:
-            a = self.__read_frame(measurement=measurement, field=field, tags=tags, conditions=conditions)
-            return a[field].unstack(level=-2)
+        #try:
+        a = self.__read_frame(measurement=measurement, field=field, tags=tags, conditions=conditions)
+        return a[field].unstack(level=-2)
 
-        except:
-            return pd.DataFrame({})
+        #except:
+        #    return pd.DataFrame({})
 
     def write_series(self, ts, field, measurement, tags=None, batch_size=5000, time_precision="s"):
         if len(ts) > 0:
@@ -91,19 +91,19 @@ class Client(DataFrameClient):
         q = "SELECT {f}::field {t} from {m}{co}""".format(f=field, t=self.__tags(tags), m=measurement, co=self.__cond(conditions))
         self.__logger.debug("Query {q}".format(q=q))
 
-        try:
-            x = self.query(q)[measurement].tz_localize(None)
-            self.__logger.debug("Head {h}".format(h=x.head(10)))
+        #try:
+        x = self.query(q)[measurement].tz_localize(None)
+        self.__logger.debug("Head {h}".format(h=x.head(10)))
 
-            if tags:
-                assert isinstance(tags, list)
-                # it would be nice if date is becoming the last index...
-                x["time"] = x.index
-                tags.append("time")
-                x = x.set_index(keys=tags)
-            return x
-        except:
-            return pd.DataFrame({})
+        if tags:
+            assert isinstance(tags, list)
+            # it would be nice if date is becoming the last index...
+            x["time"] = x.index
+            tags.append("time")
+            x = x.set_index(keys=tags)
+        return x
+        #except:
+        #    return pd.DataFrame({})
 
     # No, you can't update an entire frame for a single symbol!
     def last(self, measurement, field, conditions=None):
