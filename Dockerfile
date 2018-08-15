@@ -5,9 +5,12 @@ COPY requirements.txt requirements.txt
 
 RUN pip install --upgrade pip && \
     conda update -y conda && \
+    apt-get -y update && \
+    apt-get install -y gcc && \
     conda install -y nomkl pandas=0.23.1 requests xlrd xlsxwriter && \
     pip install --no-cache-dir  -r requirements.txt && rm requirements.txt && \
-    conda clean -y --all
+    conda clean -y --all && \
+    apt-get remove -y gcc
 
 # install the postgresql client...
 RUN apt-get update && apt-get install -y postgresql-client

@@ -6,7 +6,6 @@ import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
-#from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.sql.base import Base
@@ -34,9 +33,6 @@ class TimeseriesKeyword(Base):
 
     timeseries_id = sq.Column(sq.Integer, sq.ForeignKey('timeseries.id'), nullable=False)
 
-
-    #timeseries = relationship("Timeseries", backref="keywords")
-
     def __init__(self, tag, value):
         self.tag = tag
         self.value = value
@@ -52,6 +48,7 @@ class Timeseries(Base):
 
     id = sq.Column("id", sq.Integer, primary_key=True, autoincrement=True)
 
+    __name = sq.Column("name", sq.String(50), nullable=False)
     __field = sq.Column("field", sq.String(50), nullable=False)
     __measurement = sq.Column("measurement", sq.String(50), nullable=False)
 
@@ -62,12 +59,19 @@ class Timeseries(Base):
 
     __keywords = relationship(TimeseriesKeyword, collection_class=attribute_mapped_collection('tag'), cascade="all, delete-orphan")
 
-    def __init__(self, field, measurement, **kwargs):
+    sq.UniqueConstraint(__name, __field, __measurement)
+
+    def __init__(self, name, field, measurement, **kwargs):
+        self.__name = name
         self.__field = field
         self.__measurement = measurement
 
         for x,y in kwargs.items():
             self.__keywords[x] = TimeseriesKeyword(tag=x, value=y)
+
+    @hybrid_property
+    def name(self):
+        return self.__name
 
     @hybrid_property
     def field(self):
@@ -78,7 +82,7 @@ class Timeseries(Base):
         return self.__measurement
 
     @hybrid_property
-    def xxx(self):
+    def keywords(self):
         return {x : y.value for x, y in self.__keywords.items()}
 
     def upsert(self, ts=None):
@@ -106,14 +110,6 @@ class Timeseries(Base):
         # update data
         self._jdata = from_pandas(self.__series_slow)
         return self
-
-    #@hybrid_property
-    #def name(self):
-    #    return self.__name
-
-    #@hybrid_property
-    #def keywords(self):
-    #    return dict(self.__keywords)
 
     @property
     def __series_slow(self):
@@ -145,4 +141,3 @@ class TimeseriesData(Base):
         self.date = date
         self.value = value
         self.ts = ts
-
