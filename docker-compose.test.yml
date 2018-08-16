@@ -14,13 +14,18 @@ services:
         -  /etc/localtime:/etc/localtime:ro
         - ./html-coverage:/html-coverage
         - ./html-report:/html-report
+        - ./source:/pyutil/source:ro
+        - ./build:/pyutil/build
+
      env_file:
        - test/.env-test
      links:
        - test-influxdb
        - test-postgresql
+
   test-postgresql:
     image: postgres:9.6
 
   test-influxdb:
     image: influxdb:1.5.4
+
