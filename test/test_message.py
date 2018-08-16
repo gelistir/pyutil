@@ -17,7 +17,7 @@ class TestMessage(TestCase):
             body='{"origin": "127.0.0.1"}'
         )
 
-        m = Mail(mailgunapi="https://api.mailgun.net/v2/maffay.com/messages", mailgunkey="1")
+        m = Mail(mailgunapi="https://api.mailgun.net/v2/maffay.com/messages")
         m.attach_stream("test.csv", pd.Series(index=[1, 2], data=[3, 4]).to_csv())
         m.inline_stream("test.csv", pd.Series(index=[1, 2], data=[3, 4]).to_csv())
         with tempfile.NamedTemporaryFile(delete=True) as file:
@@ -37,8 +37,11 @@ class TestMessage(TestCase):
             self.assertEqual(len(x), 4)
 
     def test_empty_text(self):
-        m = Mail(mailgunapi="https://api.mailgun.net/v2/maffay.com/messages", mailgunkey="1")
+        m = Mail()
         m.fromAdr = "Peter Maffay"
         m.toAdr = "David Hasselhoff"
+        # you can't send anything with fake mailgunapi and mailgunkey
         with self.assertRaises(AssertionError):
             m.send()
+
+

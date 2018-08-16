@@ -13,7 +13,7 @@ services:
         # obviously you can not access
         - quantsrv:192.168.100.15
      env_file:
-       - .env
+       - test/.env-test
      environment:
        # used mainly for testing!
        - influxdb_host=test-influxdb
@@ -24,8 +24,6 @@ services:
 
   test-postgresql:
     image: postgres:9.6
-    environment:
-      POSTGRES_PASSWORD: "test"
 
   test-influxdb:
     image: influxdb:1.5.4
