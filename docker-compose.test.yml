@@ -11,7 +11,6 @@ services:
         - ./pyutil:/pyutil/pyutil
         - ./test:/pyutil/test
         - ./sandbox:/pyutil/sandbox
-        #- /etc/localtime:/etc/localtime:ro
         - ./html-coverage:/html-coverage
         - ./html-report:/html-report
         - ./source:/pyutil/source:ro
