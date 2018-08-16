@@ -1,6 +1,8 @@
 version: '3.4'
 services:
   test-pyutil:
+     image: pyutil.test
+
      build:
        context: .
        dockerfile: Dockerfile
@@ -10,6 +12,8 @@ services:
         - ./test:/pyutil/test
         - ./sandbox:/pyutil/sandbox
         -  /etc/localtime:/etc/localtime:ro
+        - ./html-coverage:/html-coverage
+        - ./html-report:/html-report
      env_file:
        - test/.env-test
      links:

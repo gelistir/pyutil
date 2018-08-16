@@ -45,3 +45,4 @@ class TestMessage(TestCase):
             m.send()
 
 
+        assert False
