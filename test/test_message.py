@@ -43,6 +43,3 @@ class TestMessage(TestCase):
         # you can't send anything with fake mailgunapi and mailgunkey
         with self.assertRaises(AssertionError):
             m.send()
-
-
-        assert False
