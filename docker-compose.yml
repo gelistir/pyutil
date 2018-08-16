@@ -4,26 +4,13 @@ services:
      build:
        context: .
        dockerfile: Dockerfile
-       target: test
+       target: builder
      volumes:
         - ./pyutil:/pyutil/pyutil
         - ./sandbox:/pyutil/sandbox
         -  /etc/localtime:/etc/localtime:ro
      extra_hosts:
-        # obviously you can not access
         - quantsrv:192.168.100.15
      env_file:
-       - test/.env-test
-     environment:
-       # used mainly for testing!
-       - influxdb_host=test-influxdb
-       - influxdb_db=test
-     links:
-       - test-influxdb
-       - test-postgresql
+       - .env
 
-  test-postgresql:
-    image: postgres:9.6
-
-  test-influxdb:
-    image: influxdb:1.5.4
