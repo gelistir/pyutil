@@ -7,11 +7,10 @@ RUN pip install --upgrade pip && \
     conda update -y conda && \
     apt-get -y update && \
     apt-get install -y postgresql-client && \
-    apt-get install -y gcc && \
-    conda install -y nomkl pandas=0.23.1 requests xlrd xlsxwriter && \
+    conda install -y nomkl pandas=0.23.1 requests xlrd xlsxwriter lz4 && \
     pip install --no-cache-dir  -r requirements.txt && rm requirements.txt && \
-    conda clean -y --all && \
-    apt-get remove -y gcc
+    conda clean -y --all
+
 
 # copy only the package
 COPY ./pyutil /pyutil/pyutil
