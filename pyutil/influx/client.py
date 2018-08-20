@@ -1,12 +1,13 @@
 import datetime
 import logging
 import os
+from contextlib import ExitStack
 
 import pandas as pd
 from influxdb import DataFrameClient
 
 
-class Client(DataFrameClient):
+class Client(DataFrameClient, ExitStack):
     def __init__(self, host=None, port=8086, database=None, logger=None):
 
         host = host or os.environ["influxdb_host"]
@@ -17,6 +18,9 @@ class Client(DataFrameClient):
         self.create_database(dbname=self.database)
         self.switch_database(database=self.database)
         self.__logger = logger or logging.getLogger(__name__)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return self.close()
 
     def recreate(self, dbname):
         self.drop_database(dbname=dbname)

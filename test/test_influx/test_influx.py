@@ -66,3 +66,8 @@ class TestInfluxDB(TestCase):
             self.client.read_frame(field="DoesNotExist", measurement="nav2", tags=["name"])
 
 
+    def test_stack(self):
+        c = Client(database="wurst")
+        with c as client:
+            print("hello")
+
