@@ -1,3 +1,4 @@
+import logging
 import multiprocessing
 import os
 
@@ -36,8 +37,10 @@ def _symbols(session):
 def _active_strategies(session):
     return  session.query(Strategy).filter(Strategy.active==True).all()
 
-def upsert_strategies(session, folder):
+def upsert_strategies(session, folder, logger=None):
     # set all strategies to inactive!
+    logger = logger or logging.getLogger(__name__)
+
     for strat in session.query(Strategy):
         strat.active = False
 
@@ -50,3 +53,5 @@ def upsert_strategies(session, folder):
             strat, exists = get_one_or_create(session=session, model=Strategy, name=m.name)
             strat.active = True
             strat.source = source
+
+            logger.info("Strategy {s}".format(s=strat))
