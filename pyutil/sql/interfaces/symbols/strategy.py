@@ -10,6 +10,14 @@ from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 
 
+def module(source):
+    from types import ModuleType
+
+    compiled = compile(source, '', 'exec')
+    module = ModuleType("module")
+    exec(compiled, module.__dict__)
+    return module
+
 class StrategyType(_enum.Enum):
     mdt = 'mdt'
     conservative = 'conservative'
@@ -32,18 +40,10 @@ class Strategy(ProductInterface):
         self.source = source
         self.type = type
 
-    def __module(self):
-        from types import ModuleType
-
-        compiled = compile(self.source, '', 'exec')
-        module = ModuleType("module")
-        exec(compiled, module.__dict__)
-        return module
-
     def configuration(self, reader=None):
         # Configuration only needs a reader to access the symbols...
         # Reader is a function taking the name of an asset as a parameter
-        return self.__module().Configuration(reader=reader)
+        return module(self.source).Configuration(reader=reader)
 
     def upsert(self, portfolio, symbols, days=0):
         assert isinstance(portfolio, _Portfolio)
