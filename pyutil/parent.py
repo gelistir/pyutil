@@ -8,12 +8,14 @@ import io
 
 def run_jobs(jobs, logger=None):
     logger = logger or logging.getLogger(__name__)
+
     for job in jobs:
-        logger.info("Job {j}".format(j=job))
+        # all jobs get the trigge
+        logger.info("Job {j}".format(j=job.name))
         job.start()
 
     for job in jobs:
-        logger.info("Wait for job {j}".format(j=job))
+        logger.info("Wait for job {j}".format(j=job.name))
         job.join()
 
 

@@ -31,8 +31,14 @@ def run_strategies(session, logger=None):
     logger.info("{n} active strategies found".format(n=len(strategies)))
 
     # loop over all active strategies!
-    jobs = [multiprocessing.Process(target=_run, kwargs={"symbols": sym, "strategy": s, "logger": logger}) for s in
-            strategies]
+    jobs = []
+    for s in strategies:
+        job = multiprocessing.Process(target=_run, kwargs={"symbols": sym, "strategy": s, "logger": logger})
+        job.name = s.name
+        jobs.append(job)
+
+    #jobs = [multiprocessing.Process(target=_run, kwargs={"symbols": sym, "strategy": s, "logger": logger}) for s in
+    #        strategies]
 
     run_jobs(jobs, logger=logger)
 
@@ -60,4 +66,4 @@ def upsert_strategies(session, folder, logger=None):
             strat.active = True
             strat.source = source
 
-            logger.info("Strategy {s}".format(s=strat))
+            logger.info("Strategy {s} active".format(s=strat))
