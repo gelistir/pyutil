@@ -1,18 +1,10 @@
 import logging
 import os
 
-from pyutil.sql.interfaces.symbols.strategy import Strategy
+from pyutil.sql.interfaces.symbols.strategy import Strategy, module
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.session import get_one_or_create
 
-
-def __module(source):
-    from types import ModuleType
-
-    compiled = compile(source, '', 'exec')
-    module = ModuleType("module")
-    exec(compiled, module.__dict__)
-    return module
 
 
 def strategy_loop(session, folder="/lobnek/strat", reader=None, logger=None):
@@ -25,7 +17,7 @@ def strategy_loop(session, folder="/lobnek/strat", reader=None, logger=None):
         with open(os.path.join(folder, sfile), "r") as f:
             source = f.read()
 
-            m = __module(source=source)
+            m = module(source=source)
 
             configuration = m.Configuration(reader=reader)
 
