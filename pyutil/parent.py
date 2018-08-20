@@ -6,6 +6,13 @@ from contextlib import ExitStack
 import io
 
 
+def run_jobs(jobs):
+    for job in jobs:
+        job.start()
+
+    for job in jobs:
+        job.join()
+
 def _get_stream_handler(level=None, format=None, stream=sys.stdout):
     __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     __level = logging.DEBUG

@@ -2,6 +2,7 @@ import multiprocessing
 import os
 
 from pyutil.influx.client import Client
+from pyutil.parent import run_jobs
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbols.strategy import Strategy, module
 from pyutil.sql.interfaces.symbols.symbol import Symbol
@@ -26,13 +27,7 @@ def run_strategies(session):
     jobs = [multiprocessing.Process(target=_run, kwargs={"symbols": sym, "strategy": s}) for s in
             strategies]
 
-    # start all the jobs jobs
-    for job in jobs:
-        job.start()
-
-    # loop over all jobs and check if finished
-    for job in jobs:
-        job.join()
+    run_jobs(jobs)
 
 
 def _symbols(session):
