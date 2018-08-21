@@ -9,15 +9,15 @@ class Runner(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, engine, logger=None):
-        self.__engine = engine
+        self._engine = engine
         self._logger = logger or logging.getLogger(__name__)
         self.__jobs = []
 
     @property
     def _session(self):
         """ Create a fresh new session... """
-        self.__engine.dispose()
-        conn = self.__engine.connect()
+        self._engine.dispose()
+        conn = self._engine.connect()
         return Session(bind=conn)
         #factory = sessionmaker(self.__engine)
         #return factory()
