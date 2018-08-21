@@ -17,7 +17,7 @@ class Runner(object):
     def _session(self):
         """ Create a fresh new session... """
         self.__engine.dispose()
-        conn = self.__engine.connet()
+        conn = self.__engine.connect()
         return Session(bind=conn)
         #factory = sessionmaker(self.__engine)
         #return factory()
