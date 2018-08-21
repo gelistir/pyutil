@@ -2,23 +2,24 @@ import abc
 import logging
 import os
 
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy import create_engine
 
 
 class Runner(object):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, engine, logger=None):
-        self._engine = engine
+    def __init__(self, connection_str, logger=None):
+        self._connection_str = connection_str
         self._logger = logger or logging.getLogger(__name__)
         self.__jobs = []
 
     @property
-    def _session(self):
+    def _engine(self):
         """ Create a fresh new session... """
-        self._engine.dispose()
-        conn = self._engine.connect()
-        return Session(bind=conn)
+        #self._engine.dispose()
+        return create_engine(self._connection_str, echo=False)
+        #conn = engine.connect()
+        #return engine
         #factory = sessionmaker(self.__engine)
         #return factory()
 
