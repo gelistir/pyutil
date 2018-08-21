@@ -1,6 +1,7 @@
 import abc
 import logging
 import os
+from contextlib import contextmanager
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
@@ -31,6 +32,19 @@ class Runner(object):
     @property
     def _session(self):
         return Session(bind=self._connection)
+
+    @contextmanager
+    def session_scope(self):
+        """Provide a transactional scope around a series of operations."""
+        try:
+            s = self._session
+            yield s
+            s.commit()
+        except Exception as e:
+            s.rollback()
+            raise e
+        finally:
+            s.close()
 
     def _run_jobs(self):
         self._logger.debug("PID main {pid}".format(pid=os.getpid()))
