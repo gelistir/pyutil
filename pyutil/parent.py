@@ -6,19 +6,6 @@ from contextlib import ExitStack
 import io
 
 
-def run_jobs(jobs, logger=None):
-    logger = logger or logging.getLogger(__name__)
-
-    for job in jobs:
-        # all jobs get the trigge
-        logger.info("Job {j}".format(j=job.name))
-        job.start()
-
-    for job in jobs:
-        logger.info("Wait for job {j}".format(j=job.name))
-        job.join()
-
-
 def _get_stream_handler(level=None, format=None, stream=sys.stdout):
     __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     __level = logging.DEBUG

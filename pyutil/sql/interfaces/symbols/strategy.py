@@ -70,3 +70,5 @@ class Strategy(ProductInterface):
     @property
     def assets(self):
         return self._portfolio.symbols
+
+

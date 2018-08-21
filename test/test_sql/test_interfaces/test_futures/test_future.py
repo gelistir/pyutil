@@ -9,9 +9,11 @@ from pyutil.sql.interfaces.futures.future import Future
 
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.session import session_test
+#from pyutil.sql.session import session_test
 
 import pandas.util.testing as pdt
+
+from pyutil.sql.session import postgresql_db_test
 
 
 def future():
@@ -48,7 +50,8 @@ class TestFuture(TestCase):
         self.assertListEqual(f.contracts, [])
 
     def test_future_with_contracts(self):
-        session = session_test(Base.metadata, echo=False)
+        session = postgresql_db_test(Base)
+        #session = session_test(Base.metadata, echo=False)
         f = future()
 
         c1 = Contract(figi="BB1", notice=pd.Timestamp("2010-01-01").date(), fut_month_yr="JAN 10")

@@ -33,14 +33,14 @@ def session(server=None, db=None, user=None, password=None, echo=False):
     return sessionmaker(bind=engine)()
 
 
-def session_test(meta, echo=False):
-    engine = create_engine("sqlite://", echo=echo)
-
-    # make the tables...
-    meta.drop_all(engine)
-    meta.create_all(engine)
-
-    return sessionmaker(bind=engine)()
+# def session_test(meta, echo=False):
+#     engine = create_engine("sqlite://", echo=echo)
+#
+#     # make the tables...
+#     meta.drop_all(engine)
+#     meta.create_all(engine)
+#
+#     return sessionmaker(bind=engine)()
 
 
 def get_one_or_create(session, model, **kwargs):
@@ -97,4 +97,40 @@ def postgresql_db_test(base, name=None, echo=False, views=None):
             s.bind.execute(file.read())
 
     return s
+
+
+def postgresql_db_test_2(base, name=None, echo=False, views=None):
+    # session object
+    awake = False
+    while not awake:
+        try:
+            engine = create_engine("postgresql+psycopg2://postgres:test@test-postgresql/postgres")
+            conn = engine.connect()
+            conn.execute("commit")
+            awake = True
+        except OperationalError:
+            sleep(1)
+
+    name = name or "".join(random.choices(string.ascii_lowercase, k=10))
+    # String interpolation here!? Please avoid
+    conn.execute("""DROP DATABASE IF EXISTS {name}""".format(name=name))
+    conn.execute("commit")
+
+    conn.execute("""CREATE DATABASE {name}""".format(name=name))
+    conn.close()
+
+    s = session(server="test-postgresql", password="test", user="postgres", db=name, echo=echo)
+
+
+    # drop all tables (even if there are none)
+    base.metadata.drop_all(s.bind)
+
+    # create some tables
+    base.metadata.create_all(s.bind)
+
+    if views:
+        with open(views) as file:
+            s.bind.execute(file.read())
+
+    return create_engine('postgresql+psycopg2://postgres:test@test-postgresql/{db}'.format(db=name))
 

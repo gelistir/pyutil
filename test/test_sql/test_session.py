@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm.exc import NoResultFound
 
-from pyutil.sql.session import session_test, get_one_or_create, get_one_or_none, session, postgresql_db_test, \
+from pyutil.sql.session import get_one_or_create, get_one_or_none, session, postgresql_db_test, \
     session_scope
 
 Base = declarative_base()
@@ -20,7 +20,7 @@ class User(Base):
 
 class TestSession(TestCase):
     def test_get_one_or_create(self):
-        session = session_test(meta=Base.metadata, echo=False)
+        session = postgresql_db_test(base=Base)
 
         # exists is False, as the user "B" does not exist yet
         x, exists = get_one_or_create(session, User, name="B")
@@ -33,7 +33,7 @@ class TestSession(TestCase):
         self.assertEqual(x, y)
 
     def test_get_one_or_none(self):
-        session = session_test(meta=Base.metadata, echo=True)
+        session = postgresql_db_test(base=Base)
         self.assertIsNone(get_one_or_none(session, User, name="C"))
 
     def test_postgresql_session(self):
