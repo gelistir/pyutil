@@ -1,19 +1,19 @@
 from unittest import TestCase
 
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.session import postgresql_db_test_2
-from pyutil.strategy.aux import StrategyRunner
-from test.config import test_portfolio, resource
-
+from test.config import test_portfolio
 
 class TestAux(TestCase):
     def test_StratRunner(self):
         engine = postgresql_db_test_2(base=Base, echo=False)
-        factory = sessionmaker(bind=engine)
-        session = factory()
+        session = Session(bind=engine.connect())
+
+        #factory = sessionmaker(bind=engine)
+        #session = factory()
 
         for asset, data in test_portfolio().prices.items():
             s = Symbol(name=asset)
@@ -22,6 +22,6 @@ class TestAux(TestCase):
 
         session.commit()
 
-        runner = StrategyRunner(engine=engine)
-        runner.upsert_strategies(folder=resource("strat"))
-        runner.run()
+        #runner = StrategyRunner(engine=engine)
+        #runner.upsert_strategies(folder=resource("strat"))
+        #runner.run()
