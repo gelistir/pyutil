@@ -3,6 +3,7 @@ import logging
 import os
 
 from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
 
 class Runner(object):
@@ -22,6 +23,14 @@ class Runner(object):
         #return engine
         #factory = sessionmaker(self.__engine)
         #return factory()
+
+    @property
+    def _connection(self):
+        return self._engine.connect()
+
+    @property
+    def _session(self):
+        return Session(bind=self._connection)
 
     def _run_jobs(self):
         self._logger.debug("PID main {pid}".format(pid=os.getpid()))
