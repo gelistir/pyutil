@@ -12,10 +12,10 @@ def str_postgres(user="postgres", password="test", server="test-postgresql", db=
     return 'postgresql+psycopg2://{user}:{password}@{server}/{db}'.format(user=user, password=password, server=server, db=db)
 
 
-def str2session(connection_str, echo=False):
-    engine = create_engine(connection_str, echo=echo)
-    factory = sessionmaker(bind=engine)
-    return factory()
+#def str2session(connection_str, echo=False):
+#    engine = create_engine(connection_str, echo=echo)
+#    factory = sessionmaker(bind=engine)
+#    return factory()
 
 
 def get_one_or_create(session, model, **kwargs):

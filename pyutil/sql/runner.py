@@ -12,36 +12,6 @@ import traceback
 import sys
 
 
-class XSession(object):
-    def __init__(self, connection_str=None):
-        self._connection_str = connection_str
-        #self._logger = logger or logging.getLogger(__name__)
-        #self.__jobs = []
-
-    def engine(self, echo=False):
-        """ Create a fresh new session... """
-        return create_engine(self._connection_str, echo=echo)
-
-    def connection(self, echo=False):
-        return self.engine(echo=echo).connect()
-
-    def _session(self, echo=False):
-        return Session(bind=self.connection(echo=echo))
-
-    @contextmanager
-    def session(self, echo=False):
-        """Provide a transactional scope around a series of operations."""
-        try:
-            s = self._session(echo=echo)
-            yield s
-            s.commit()
-        except Exception as e:
-            s.rollback()
-            raise e
-        finally:
-            s.close()
-
-
 def get_traceback(f):
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
@@ -58,6 +28,7 @@ def get_traceback(f):
 
     return wrapper
 
+
 class Worker(ABC, multiprocessing.Process):
 
     def __init__(self, name, logger=None):
@@ -69,8 +40,6 @@ class Worker(ABC, multiprocessing.Process):
     @get_traceback
     def run(self):
         """ overwrite """
-
-    #def _session(self):
 
 
 class Runner(object):
@@ -113,9 +82,8 @@ class Runner(object):
         for job in self.jobs:
             self._logger.info("Wait for job {j}".format(j=job.name))
             job.join()
-            assert job.exitcode == 0, "Problem with job {j}".format(j = job)
+            assert job.exitcode == 0, "Problem with job {j}".format(j=job)
             self._logger.info("Job {j} done".format(j=job.name))
-
 
     @property
     def jobs(self):
@@ -124,4 +92,3 @@ class Runner(object):
     def append_job(self, job):
         self.jobs.append(job)
         return job
-
