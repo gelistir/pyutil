@@ -6,8 +6,6 @@ import pandas.util.testing as pdt
 from pyutil.sql.interfaces.products import ProductInterface
 from test.config import test_portfolio
 
-#from pyutil.influx.client_test import init_influxdb
-
 from pyutil.sql.base import Base
 from pyutil.sql.db_symbols import DatabaseSymbols
 from pyutil.sql.interfaces.symbols.frames import Frame
@@ -22,11 +20,11 @@ class TestDatabaseSymbols(TestCase):
     def setUpClass(cls):
         ProductInterface.client.recreate(dbname="test")
 
-        cls.session = postgresql_db_test(base=Base, echo=False)
+        cls.session = postgresql_db_test(base=Base, echo=True)
 
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
         cls.s1 = Symbol(name="Test Symbol", group=SymbolType.equities)
-        cls.s1._ts_upsert(field="PX_LAST", measurement=Symbol._measurements, ts=pd.Series({pd.Timestamp("2010-10-30"): 10.1}))
+        cls.s1.upsert(field="PX_LAST", ts=pd.Series({pd.Timestamp("2010-10-30"): 10.1}))
 
         cls.s1.reference[cls.f1] = "100"
         cls.session.add(cls.s1)

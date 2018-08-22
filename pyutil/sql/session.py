@@ -1,7 +1,5 @@
-import os
 import random
 import string
-from contextlib import contextmanager
 from time import sleep
 
 from sqlalchemy import create_engine
@@ -10,37 +8,14 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 
 
-@contextmanager
-def session_scope(session):
-    """Provide a transactional scope around a series of operations."""
-    try:
-        yield session
-        session.commit()
-    except Exception as e:
-        session.rollback()
-        raise e
-    finally:
-        session.close()
+def str_postgres(user="postgres", password="test", server="test-postgresql", db="postgres"):
+    return 'postgresql+psycopg2://{user}:{password}@{server}/{db}'.format(user=user, password=password, server=server, db=db)
 
 
-def session(server=None, db=None, user=None, password=None, echo=False):
-    user = user or os.environ["user"]
-    password = password or os.environ["password"]
-    server = server or os.environ["server"]
-    db = db or os.environ["db"]
-
-    engine = create_engine('postgresql+psycopg2://{user}:{password}@{server}/{db}'.format(user=user, password=password, server=server, db=db), echo=echo)
-    return sessionmaker(bind=engine)()
-
-
-# def session_test(meta, echo=False):
-#     engine = create_engine("sqlite://", echo=echo)
-#
-#     # make the tables...
-#     meta.drop_all(engine)
-#     meta.create_all(engine)
-#
-#     return sessionmaker(bind=engine)()
+def str2session(connection_str, echo=False):
+    engine = create_engine(connection_str, echo=echo)
+    factory = sessionmaker(bind=engine)
+    return factory()
 
 
 def get_one_or_create(session, model, **kwargs):
@@ -66,13 +41,18 @@ def get_one_or_none(session, model, **kwargs):
 def postgresql_db_test(base, name=None, echo=False, views=None):
     # session object
     awake = False
+
+    str_test = str_postgres()
+    assert str_test == "postgresql+psycopg2://postgres:test@test-postgresql/postgres"
+
     while not awake:
         try:
-            engine = create_engine("postgresql+psycopg2://postgres:test@test-postgresql/postgres")
+            engine = create_engine(str_test)
             conn = engine.connect()
             conn.execute("commit")
             awake = True
         except OperationalError:
+            print(sleep)
             sleep(1)
 
     name = name or "".join(random.choices(string.ascii_lowercase, k=10))
@@ -83,54 +63,17 @@ def postgresql_db_test(base, name=None, echo=False, views=None):
     conn.execute("""CREATE DATABASE {name}""".format(name=name))
     conn.close()
 
-    s = session(server="test-postgresql", password="test", user="postgres", db=name, echo=echo)
-
+    engine = create_engine(str_postgres(db=name), echo=echo)
 
     # drop all tables (even if there are none)
-    base.metadata.drop_all(s.bind)
+    base.metadata.drop_all(engine)
 
     # create some tables
-    base.metadata.create_all(s.bind)
+    base.metadata.create_all(engine)
 
     if views:
         with open(views) as file:
-            s.bind.execute(file.read())
+            engine.execute(file.read())
 
-    return s
-
-
-def postgresql_db_test_2(base, name=None, echo=False, views=None):
-    # session object
-    awake = False
-    while not awake:
-        try:
-            engine = create_engine("postgresql+psycopg2://postgres:test@test-postgresql/postgres")
-            conn = engine.connect()
-            conn.execute("commit")
-            awake = True
-        except OperationalError:
-            sleep(1)
-
-    name = name or "".join(random.choices(string.ascii_lowercase, k=10))
-    # String interpolation here!? Please avoid
-    conn.execute("""DROP DATABASE IF EXISTS {name}""".format(name=name))
-    conn.execute("commit")
-
-    conn.execute("""CREATE DATABASE {name}""".format(name=name))
-    conn.close()
-
-    s = session(server="test-postgresql", password="test", user="postgres", db=name, echo=echo)
-
-
-    # drop all tables (even if there are none)
-    base.metadata.drop_all(s.bind)
-
-    # create some tables
-    base.metadata.create_all(s.bind)
-
-    if views:
-        with open(views) as file:
-            s.bind.execute(file.read())
-
-    return create_engine('postgresql+psycopg2://postgres:test@test-postgresql/{db}'.format(db=name))
+    return sessionmaker(bind=engine)()
 

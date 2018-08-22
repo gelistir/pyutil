@@ -1,13 +1,47 @@
 import logging
+import multiprocessing
 import os
+from abc import ABCMeta, ABC, abstractmethod
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
+import functools
+import traceback
+import sys
+
+
+def get_traceback(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception as ex:
+            ret = "\nException caught:"
+            ret += "\n" + '-' * 60
+            ret += "\n" + traceback.format_exc()
+            ret += "\n" + '-' * 60
+            print(sys.stderr, ret)
+            sys.stderr.flush()
+            raise ex
+
+    return wrapper
+
+class Worker(ABC, multiprocessing.Process):
+
+    def __init__(self, name):
+        super().__init__()
+        self.name = name
+
+    @abstractmethod
+    @get_traceback
+    def run(self):
+        """ overwrite """
+
 
 class Runner(object):
-    def __init__(self, connection_str, logger=None):
+    def __init__(self, connection_str=None, logger=None):
         self._connection_str = connection_str
         self._logger = logger or logging.getLogger(__name__)
         self.__jobs = []
@@ -35,7 +69,7 @@ class Runner(object):
         finally:
             s.close()
 
-    def _run_jobs(self):
+    def run_jobs(self):
         self._logger.debug("PID main {pid}".format(pid=os.getpid()))
 
         for job in self.jobs:
@@ -46,11 +80,16 @@ class Runner(object):
         for job in self.jobs:
             self._logger.info("Wait for job {j}".format(j=job.name))
             job.join()
+            assert job.exitcode == 0, "Problem with job {j}".format(j = job)
             self._logger.info("Job {j} done".format(j=job.name))
+
+        #print(self.__queue.get())
 
     @property
     def jobs(self):
         return self.__jobs
 
-
+    def append_job(self, job):
+        self.jobs.append(job)
+        return job
 
