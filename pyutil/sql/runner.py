@@ -11,6 +11,8 @@ import functools
 import traceback
 import sys
 
+from pyutil.sql.interfaces.symbols.strategy import Strategy
+
 
 def get_traceback(f):
     @functools.wraps(f)
@@ -92,3 +94,16 @@ class Runner(object):
     def append_job(self, job):
         self.jobs.append(job)
         return job
+
+    def iterate_strategies(self, target):
+        with self.session() as session:
+            for strategy in session.query(Strategy).all():
+                j = multiprocessing.Process(target=target, kwargs={"strategy_id": strategy.id})
+                j.name = strategy.name
+                self.append_job(job=j)
+
+        self.run_jobs()
+
+
+
+
