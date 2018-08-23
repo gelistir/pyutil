@@ -40,7 +40,7 @@ class TestHistory(TestCase):
         ProductInterface.client.recreate(dbname="test")
 
         # create a session to a proper database
-        cls.session = postgresql_db_test(base=Base)
+        cls.session, connection_str = postgresql_db_test(base=Base)
 
         # we need to add symbols to the database
         for asset in test_portfolio().prices.keys():
@@ -88,7 +88,7 @@ class TestHistoryFaulty(TestCase):
         ProductInterface.client.recreate(dbname="test")
 
         # create a session to a proper database
-        cls.session = postgresql_db_test(base=Base)
+        cls.session, connection_str = postgresql_db_test(base=Base)
 
         s = Symbol(name="Maffay")
         cls.session.add(s)

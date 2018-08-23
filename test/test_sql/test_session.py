@@ -9,7 +9,7 @@ from test.test_sql.user import User, Base
 
 class TestSession(TestCase):
     def test_get_one_or_create(self):
-        session = postgresql_db_test(base=Base)
+        session, connection_str = postgresql_db_test(base=Base)
 
         # exists is False, as the user "B" does not exist yet
         x, exists = get_one_or_create(session, User, name="B")
@@ -22,11 +22,11 @@ class TestSession(TestCase):
         self.assertEqual(x, y)
 
     def test_get_one_or_none(self):
-        session = postgresql_db_test(base=Base)
+        session, _ = postgresql_db_test(base=Base)
         self.assertIsNone(get_one_or_none(session, User, name="C"))
 
     def test_session_scope(self):
-        session = postgresql_db_test(base=Base)
+        session, _ = postgresql_db_test(base=Base)
         #with session_scope(session=s) as session:
         session.add(User(name="Peter Maffay"))
         u = session.query(User).filter_by(name="Peter Maffay").one()
@@ -36,7 +36,7 @@ class TestSession(TestCase):
             session.query(User).filter_by(name="Wurst").one()
 
     def test_throw_error(self):
-        session = postgresql_db_test(base=Base)
+        session, _ = postgresql_db_test(base=Base)
         with self.assertRaises(IntegrityError):
             #with session_scope(session=s) as session:
             session.add(User(name="Peter Maffay"))

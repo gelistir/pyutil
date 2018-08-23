@@ -50,7 +50,7 @@ class TestFuture(TestCase):
         self.assertListEqual(f.contracts, [])
 
     def test_future_with_contracts(self):
-        session = postgresql_db_test(Base)
+        session, _ = postgresql_db_test(Base)
         #session = session_test(Base.metadata, echo=False)
         f = future()
 

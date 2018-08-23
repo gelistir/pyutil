@@ -12,12 +12,6 @@ def str_postgres(user="postgres", password="test", server="test-postgresql", db=
     return 'postgresql+psycopg2://{user}:{password}@{server}/{db}'.format(user=user, password=password, server=server, db=db)
 
 
-#def str2session(connection_str, echo=False):
-#    engine = create_engine(connection_str, echo=echo)
-#    factory = sessionmaker(bind=engine)
-#    return factory()
-
-
 def get_one_or_create(session, model, **kwargs):
     #  see http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/
 
@@ -75,5 +69,6 @@ def postgresql_db_test(base, name=None, echo=False, views=None):
         with open(views) as file:
             engine.execute(file.read())
 
-    return sessionmaker(bind=engine)()
+    return sessionmaker(bind=engine)(), str_postgres(db=name)
+
 

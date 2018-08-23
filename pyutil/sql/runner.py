@@ -102,7 +102,10 @@ class Runner(object):
                 j.name = strategy.name
                 self.append_job(job=j)
 
-        self.run_jobs()
+            self.run_jobs()
+
+
+        # session should be closed now
 
 
 

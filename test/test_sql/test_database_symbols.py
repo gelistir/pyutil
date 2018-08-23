@@ -20,7 +20,9 @@ class TestDatabaseSymbols(TestCase):
     def setUpClass(cls):
         ProductInterface.client.recreate(dbname="test")
 
-        cls.session = postgresql_db_test(base=Base, echo=True)
+        cls.session, connection_str = postgresql_db_test(base=Base, echo=True)
+
+        print(connection_str)
 
         cls.f1 = Field(name="Field A", result=DataType.integer, type=FieldType.dynamic)
         cls.s1 = Symbol(name="Test Symbol", group=SymbolType.equities)
@@ -55,7 +57,7 @@ class TestPortfolio(TestCase):
     def setUpClass(cls):
         ProductInterface.client.recreate(dbname="test")
 
-        cls.session = postgresql_db_test(base=Base, echo=False)
+        cls.session, _ = postgresql_db_test(base=Base, echo=False)
 
         s = Strategy(name="Peter")
 

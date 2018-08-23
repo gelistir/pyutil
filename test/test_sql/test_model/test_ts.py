@@ -12,7 +12,7 @@ from test.config import test_portfolio
 class TestTimeseries(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session = postgresql_db_test(base=Base, echo=False)
+        cls.session, connection_str = postgresql_db_test(base=Base, echo=False)
 
     def test_same_timeseries_twice(self):
         ts_a = Timeseries(name="price", field="price", measurement="b")
