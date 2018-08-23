@@ -51,7 +51,7 @@ class TestFuture(TestCase):
 
     def test_future_with_contracts(self):
         session, _ = postgresql_db_test(Base)
-        #session = session_test(Base.metadata, echo=False)
+
         f = future()
 
         c1 = Contract(figi="BB1", notice=pd.Timestamp("2010-01-01").date(), fut_month_yr="JAN 10")

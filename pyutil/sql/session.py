@@ -46,7 +46,6 @@ def postgresql_db_test(base, name=None, echo=False, views=None):
             conn.execute("commit")
             awake = True
         except OperationalError:
-            print(sleep)
             sleep(1)
 
     name = name or "".join(random.choices(string.ascii_lowercase, k=10))

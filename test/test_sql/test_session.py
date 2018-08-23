@@ -27,9 +27,10 @@ class TestSession(TestCase):
 
     def test_session_scope(self):
         session, _ = postgresql_db_test(base=Base)
-        #with session_scope(session=s) as session:
+
         session.add(User(name="Peter Maffay"))
         u = session.query(User).filter_by(name="Peter Maffay").one()
+
         self.assertEqual(u.name, "Peter Maffay")
 
         with self.assertRaises(NoResultFound):
@@ -38,7 +39,6 @@ class TestSession(TestCase):
     def test_throw_error(self):
         session, _ = postgresql_db_test(base=Base)
         with self.assertRaises(IntegrityError):
-            #with session_scope(session=s) as session:
             session.add(User(name="Peter Maffay"))
             # we are trying to add the user a second time! Verboten!
             session.add(User(name="Peter Maffay"))
