@@ -1,47 +1,10 @@
 import logging
 import multiprocessing
 import os
-from abc import ABCMeta, ABC, abstractmethod
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-
-import functools
-import traceback
-import sys
-
-from pyutil.sql.interfaces.symbols.strategy import Strategy
-
-
-def get_traceback(f):
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        try:
-            return f(*args, **kwargs)
-        except Exception as ex:
-            ret = "\nException caught:"
-            ret += "\n" + '-' * 60
-            ret += "\n" + traceback.format_exc()
-            ret += "\n" + '-' * 60
-            print(sys.stderr, ret)
-            sys.stderr.flush()
-            raise ex
-
-    return wrapper
-
-
-class Worker(ABC, multiprocessing.Process):
-
-    def __init__(self, name, logger=None):
-        super().__init__()
-        self.name = name
-        self.logger = logger or logging.getLogger(__name__)
-
-    @abstractmethod
-    @get_traceback
-    def run(self):
-        """ overwrite """
 
 
 class Runner(object):
@@ -95,18 +58,13 @@ class Runner(object):
         self.jobs.append(job)
         return job
 
-    def iterate_strategies(self, target):
+    def iterate_objects(self, object_cls, target):
         with self.session() as session:
-            for strategy in session.query(Strategy).all():
-                j = multiprocessing.Process(target=target, kwargs={"strategy_id": strategy.id})
-                j.name = strategy.name
+            for obj in session.query(object_cls).all():
+                self._logger.debug("Object {s}".format(s=obj))
+                j = multiprocessing.Process(target=target, args=(obj.id, ))
+                j.name = obj.name
                 self.append_job(job=j)
 
             self.run_jobs()
-
-
-        # session should be closed now
-
-
-
 
