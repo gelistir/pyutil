@@ -7,6 +7,7 @@ services:
        context: .
        dockerfile: Dockerfile
        target: test
+
      volumes:
         - ./pyutil:/pyutil/pyutil
         - ./test:/pyutil/test
@@ -15,9 +16,12 @@ services:
         - ./html-report:/html-report
         - ./source:/pyutil/source:ro
         - ./build:/pyutil/build
-
+        - ./pyan.py:/pyutil/pyan.py
+        - ./pyan:/pyutil/pyan
+        - ./graph:/pyutil/graph
      env_file:
        - test/.env-test
+
      links:
        - test-influxdb
        - test-postgresql

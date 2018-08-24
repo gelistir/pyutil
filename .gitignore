@@ -9,3 +9,6 @@ html-report
 build
 .env
 env
+
+*.dot
+*.svg
