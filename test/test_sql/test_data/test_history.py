@@ -18,7 +18,7 @@ class LocalHistory(HistoryInterface):
         super().__init__(session)
 
     @staticmethod
-    def read(ticker, t0, field):
+    def read_history(ticker, t0, field):
         return test_portfolio().prices[ticker]
 
 
@@ -27,7 +27,7 @@ class LocalHistoryFaulty(HistoryInterface):
         super().__init__(session)
 
     @staticmethod
-    def read(ticker, t0, field):
+    def read_history(ticker, t0, field):
         # simulate a problem on the server
         raise AssertionError
 

@@ -15,7 +15,7 @@ from test.config import read_frame
 
 class LocalReference(ReferenceInterface):
     @staticmethod
-    def read(tickers, fields):
+    def read_reference(tickers, fields):
         frame = read_frame("reference.csv", index_col=None)
         for key,row in frame.iterrows():
             yield row["ticker"], row["field"], row["value"]

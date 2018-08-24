@@ -16,7 +16,7 @@ class HistoryInterface(ABC):
 
     @staticmethod
     @abstractmethod
-    def read(ticker, t0, field):
+    def read_history(ticker, t0, field):
         """This method should implement how read from a data source, e.g. Bloomberg"""
 
     def run(self, t0=pd.Timestamp("2000-01-01"), offset=10, field="PX_LAST"):
@@ -28,7 +28,7 @@ class HistoryInterface(ABC):
                 self.__logger.debug("Symbol {symbol} and start {s}".format(symbol=symbol.name, s=t))
 
                 # extract price from Bloomberg
-                ts = self.read(ticker=symbol.name, t0=t, field=field).dropna()
+                ts = self.read_history(ticker=symbol.name, t0=t, field=field).dropna()
 
                 self.__logger.debug("Length of timeseries {n}".format(n=len(ts)))
 

@@ -17,14 +17,14 @@ class ReferenceInterface(ABC):
 
     @staticmethod
     @abstractmethod
-    def read(tickers, fields):
+    def read_reference(tickers, fields):
         """This method should implement how read from a data source, e.g. Bloomberg"""
 
     def run(self):
         assets = {symbol.name: symbol for symbol in self.__session.query(Symbol)}
         fields = {field.name: field for field in self.__session.query(Field).filter(or_(Field.type == FieldType.dynamic, Field.type == FieldType.static))}
 
-        for ticker, field, value in self.read(fields=list(fields.keys()), tickers=list(assets.keys())):
+        for ticker, field, value in self.read_reference(fields=list(fields.keys()), tickers=list(assets.keys())):
             assets[ticker].reference[fields[field]] = str(value)
 
     def frame(self, name):
