@@ -1,4 +1,16 @@
 #!/usr/bin/env bash
-docker-compose -f docker-compose.test.yml run test-pyutil python pyan.py pyutil/**/*.py -v --uses --defines --colored --dot --nested-groups > graph/architecture.dot
-docker-compose -f docker-compose.test.yml run test-pyutil dot -Tsvg graph/architecture.dot > graph/architecture.svg
+
+package='pyutil'
+
+docker run \
+       --mount type=bind,source=$(pwd)/${package},target=/pyan/${package},readonly \
+       tschm/pyan:latest \
+       python pyan.py ${package}/**/*.py -V --uses --defines --colored --dot --nested-groups \
+       > graph/graph.dot   # this is the output of the docker run command. It's writtern directly to the host
+
+docker run \
+       --mount type=bind,source=$(pwd)/graph,target=/pyan/graph \
+       tschm/pyan:latest \
+       dot -Tsvg /pyan/graph/graph.dot \
+       > graph/graph.svg
 
