@@ -9,13 +9,12 @@ services:
        target: test
 
      volumes:
-        - ./pyutil:/pyutil/pyutil
-        - ./test:/pyutil/test
-        - ./sandbox:/pyutil/sandbox
+        - ./pyutil:/pyutil/pyutil:ro
+        - ./test:/pyutil/test:ro
         - ./html-coverage:/html-coverage
         - ./html-report:/html-report
-        - ./source:/pyutil/source:ro
-        - ./build:/pyutil/build
+        - ./source:/source:ro
+        - ./build:/build
 
      env_file:
        - test/.env-test

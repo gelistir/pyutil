@@ -6,8 +6,7 @@ services:
        dockerfile: Dockerfile
        target: builder
      volumes:
-        - ./pyutil:/pyutil/pyutil
-        - ./sandbox:/pyutil/sandbox
+        - ./pyutil:/pyutil/pyutil:ro
      extra_hosts:
         - quantsrv:192.168.100.15
      env_file:

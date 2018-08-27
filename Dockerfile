@@ -6,7 +6,7 @@ COPY requirements.txt requirements.txt
 RUN pip install --upgrade pip && \
     conda update -y conda && \
     apt-get -y update && \
-    apt-get install -y postgresql-client graphviz && \
+    apt-get install -y postgresql-client && \
     conda install -y nomkl pandas=0.23.1 requests xlrd xlsxwriter lz4 && \
     pip install --no-cache-dir  -r requirements.txt && rm requirements.txt && \
     conda clean -y --all
@@ -26,9 +26,5 @@ RUN pip install --no-cache-dir httpretty pytest pytest-cov pytest-html sphinx
 COPY ./test            /pyutil/test
 COPY ./sphinx.sh       /pyutil/sphinx.sh
 COPY ./graph.sh        /pyutil/graph.sh
-COPY ./pyan.py         /pyutil/pyan.py
-COPY ./pyan            /pyutil/pyan
-
-RUN apt-get install -y graphviz
 
 CMD py.test --cov=pyutil  --cov-report html:/html-coverage --cov-report term --html=/html-report/report.html test
