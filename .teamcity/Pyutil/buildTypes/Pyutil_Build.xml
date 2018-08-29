@@ -9,7 +9,7 @@
     </options>
     <parameters />
     <build-runners>
-      <runner id="RUNNER_11" name="" type="simpleRunner">
+      <runner id="RUNNER_11" name="Test" type="simpleRunner">
         <parameters>
           <param name="script.content" value="sh test.sh" />
           <param name="teamcity.step.mode" value="default" />
