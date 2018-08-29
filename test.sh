@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-docker-compose -f docker-compose.test.yml build
+docker-compose -f docker-compose.test.yml build test
 ./graph.sh
-docker-compose -f docker-compose.test.yml run test-pyutil
+docker-compose -f docker-compose.test.yml run test
 ./sphinx.sh
 
-# remove all containers that are exited...
-docker rm $(docker ps -q -f status=exited)
-# remove the volumes hanging around...
-docker volume prune --force
+# removes also all the containers linked to this particular service "test" defined in "docker-compose.test.yml"
+docker-compose -f docker-compose.test.yml rm -v -f test

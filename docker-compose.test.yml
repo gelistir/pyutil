@@ -1,8 +1,6 @@
 version: '3.6'
 services:
-  test-pyutil:
-     image: pyutil.test
-
+  test:
      build:
        context: .
        dockerfile: Dockerfile
@@ -11,10 +9,8 @@ services:
      volumes:
         - ./pyutil:/pyutil/pyutil:ro
         - ./test:/pyutil/test:ro
-        - ./html-coverage:/html-coverage
-        - ./html-report:/html-report
+        - ./artifacts:/pyutil/artifacts
         - ./source:/source:ro
-        - ./build:/build
 
      env_file:
        - test/.env-test
