@@ -3,7 +3,7 @@ import sqlalchemy as _sq
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 
-from pyutil.performance.summary import NavSeries
+from pyutil.performance.summary import NavSeries, fromNav
 from pyutil.sql.interfaces.products import ProductInterface, association_table
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
@@ -162,7 +162,7 @@ class Owner(ProductInterface):
 
     @property
     def nav(self):
-        return NavSeries(Owner.client.read_series(field="nav", measurement='ReturnOwner', conditions={"owner": self.name}))
+        return fromNav(Owner.client.read_series(field="nav", measurement='ReturnOwner', conditions={"owner": self.name}))
 
     @staticmethod
     def returns_all():

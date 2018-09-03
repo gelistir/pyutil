@@ -1,5 +1,5 @@
 import pandas as pd
-from pyutil.performance.drawdown import drawdown, drawdown_periods, Drawdown
+from pyutil.performance._drawdown import _Drawdown
 from test.config import read_series
 from unittest import TestCase
 
@@ -10,45 +10,26 @@ import pandas.util.testing as pdt
 
 class TestDrawdown(TestCase):
     def test_drawdown(self):
-        pdt.assert_series_equal(drawdown(ts), read_series("drawdown.csv", parse_dates=True), check_names=False)
+        pdt.assert_series_equal(_Drawdown(ts).drawdown, read_series("drawdown.csv", parse_dates=True), check_names=False)
 
     def test_periods(self):
-        x = drawdown_periods(ts)
+        x = _Drawdown(ts).periods
         self.assertEqual(x[pd.Timestamp("2014-03-07")], pd.Timedelta(days=66))
 
     def test_empty(self):
         x = pd.Series({})
-        pdt.assert_series_equal(drawdown(x), pd.Series({}))
+        pdt.assert_series_equal(_Drawdown(x).drawdown, pd.Series({}))
 
     def test_negative_price(self):
         x = pd.Series({0: 3, 1: 2, 2: -2})
         with self.assertRaises(AssertionError):
-            drawdown(x)
+            _Drawdown(x)
 
     def test_wrong_index_order(self):
         x = pd.Series(index=[0, 2, 1], data=[1, 1, 1])
         with self.assertRaises(AssertionError):
-            drawdown(x)
+            _Drawdown(x)
 
-
-class TestDrawdown2(TestCase):
-    def test_drawdown(self):
-        pdt.assert_series_equal(Drawdown(ts).undermark, read_series("drawdown.csv", parse_dates=True), check_names=False)
-
-    def test_periods(self):
-        x = Drawdown(ts).periods
-        self.assertEqual(x[pd.Timestamp("2014-03-07")], pd.Timedelta(days=66))
-
-    def test_empty(self):
+    def test_eps(self):
         x = pd.Series({})
-        pdt.assert_series_equal(Drawdown(x).undermark, pd.Series({}))
-
-    def test_negative_price(self):
-        x = pd.Series({0: 3, 1: 2, 2: -2})
-        with self.assertRaises(AssertionError):
-            Drawdown(x)
-
-    def test_wrong_index_order(self):
-        x = pd.Series(index=[0, 2, 1], data=[1, 1, 1])
-        with self.assertRaises(AssertionError):
-            Drawdown(x)
+        self.assertEqual(_Drawdown(x, eps=1e-10).eps, 1e-10)

@@ -4,26 +4,31 @@ from datetime import date
 import pandas as pd
 import numpy as np
 
-from pyutil.timeseries.timeseries import mtd, ytd
-from .month import monthlytable
-from .drawdown import drawdown as dd, drawdown_periods as dp
+from ._month import _monthlytable
 from .periods import period_returns
-from .var import value_at_risk, conditional_value_at_risk
+from ._drawdown import _Drawdown
+from ._var import _VaR
+#from addict import Dict
 
 
-def fromReturns(r):
-    return NavSeries((1 + r).cumprod().dropna()).adjust(value=1.0)
+def fromReturns(r, adjust=False):
+    x = NavSeries((1 + r.dropna()).cumprod())
+    if adjust:
+        return x.adjust(value=1.0)
+
+    return x
 
 
-def fromNav(ts, adjust=True):
+def fromNav(ts, adjust=False):
     x = NavSeries(ts.dropna())
     if adjust:
         return x.adjust(value=1.0)
 
     return x
 
+
 def performance(nav, alpha=0.95, periods=None):
-    return NavSeries(nav.dropna()).summary(alpha=alpha, periods=periods)
+    return fromNav(nav).summary(alpha=alpha, periods=periods)
 
 
 class NavSeries(pd.Series):
@@ -54,12 +59,12 @@ class NavSeries(pd.Series):
         # => A = exp(Sum [log a_i] // n)
         return np.exp(np.mean(np.log(a)))
 
-    def truncate(self, before=None, after=None):
-        return NavSeries(super().truncate(before=before, after=after))
+    def truncate(self, before=None, after=None, adjust=False):
+        return fromNav(super().truncate(before=before, after=after), adjust=adjust)
 
     @property
     def monthlytable(self):
-        return monthlytable(self)
+        return _monthlytable(self)
 
     @property
     def returns(self):
@@ -101,7 +106,7 @@ class NavSeries(pd.Series):
 
     @property
     def drawdown(self):
-        return dd(self)
+        return _Drawdown(self).drawdown
 
     def sortino_ratio(self, periods=None, r_f=0):
         periods = periods or self.__periods_per_year
@@ -117,7 +122,7 @@ class NavSeries(pd.Series):
         start = self.index[-1] - pd.DateOffset(years=3)
         # truncate the nav
         x = self.truncate(before=start)
-        return NavSeries(x).sortino_ratio(periods=periods, r_f=r_f)
+        return fromNav(x).sortino_ratio(periods=periods, r_f=r_f)
 
     @property
     def autocorrelation(self):
@@ -159,7 +164,36 @@ class NavSeries(pd.Series):
         Extract the series of returns in the current month
         :return:
         """
-        return mtd(self.returns, today=self.index[-1])
+        return self.__mtd(self.returns, today=self.index[-1])
+
+    @staticmethod
+    def __mtd(ts: pd.Series, today=None) -> pd.Series:
+        """
+        Extract month to date of a series or a frame
+
+        :param ts: series or frame
+        :param today: today, relevant for testing
+
+        :return: ts or frame starting at the first day of today's month
+        """
+        today = today or pd.Timestamp("today")
+        first_day_of_month = (today + pd.offsets.MonthBegin(-1)).date()
+        return ts.truncate(before=first_day_of_month, after=today)
+
+    @staticmethod
+    def __ytd(ts: pd.Series, today=None) -> pd.Series:
+        """
+        Extract year to date of a series or a frame
+
+        :param ts: series or frame
+        :param today: today, relevant for testing
+
+        :return: ts or frame starting at the first day of today's year
+        """
+        today = today or pd.Timestamp("today")
+        first_day_of_year = (today + pd.offsets.YearBegin(-1)).date()
+        last_day_of_month = (today + pd.offsets.MonthEnd(0)).date()
+        return ts.truncate(before=first_day_of_year, after=last_day_of_month)
 
     @property
     def ytd_series(self):
@@ -167,22 +201,23 @@ class NavSeries(pd.Series):
         Extract the series of monthly returns in the current year
         :return:
         """
-        return ytd(self.returns_monthly, today=self.index[-1])
+        return self.__ytd(self.returns_monthly, today=self.index[-1])
 
 
     def recent(self, n=15):
         return self.pct_change().tail(n).dropna()
 
     def var(self, alpha=0.95):
-        return value_at_risk(self, alpha=alpha)
+        return _VaR(series=self, alpha=alpha).var
 
     def cvar(self, alpha=0.95):
-        return conditional_value_at_risk(self, alpha=alpha)
+        return _VaR(series=self, alpha=alpha).cvar
 
     def summary(self, alpha=0.95, periods=None, r_f=0):
         periods = periods or self.__periods_per_year
 
         d = OrderedDict()
+        #d = Dict()
 
         d["Return"] = 100 * self.cum_return
         d["# Events"] = self.events
@@ -211,8 +246,8 @@ class NavSeries(pd.Series):
 
         d["Value at Risk (alpha = {alpha})".format(alpha=int(100*alpha))] = 100*self.var(alpha=alpha)
         d["Conditional Value at Risk (alpha = {alpha})".format(alpha=int(100*alpha))] = 100*self.cvar(alpha=alpha)
-        d["First_at"] = self.index[0].date()
-        d["Last_at"] = self.index[-1].date()
+        d["First at"] = self.index[0].date()
+        d["Last at"] = self.index[-1].date()
 
         x = pd.Series(d)
         x.index.name = "Performance number"
@@ -247,25 +282,20 @@ class NavSeries(pd.Series):
 
     @property
     def annual(self):
-        return NavSeries(self.__res("A"))
+        return fromNav(self.__res("A"))
 
     @property
     def weekly(self):
-        return NavSeries(self.__res("W"))
+        return fromNav(self.__res("W"))
 
-    def fee(self, daily_fee_basis_pts=0.5):
+    def fee(self, daily_fee_basis_pts=0.5, adjust=False):
         ret = self.pct_change().fillna(0.0) - daily_fee_basis_pts / 10000.0
-        return NavSeries((ret + 1.0).cumprod())
+        return fromReturns(ret, adjust=adjust)
+        #return fromNav((ret + 1.0).cumprod())
 
     @property
     def drawdown_periods(self):
-        return dp(self)
-
-    #@property
-    #def annual_returns(self):
-    #    x = self.annual.pct_change().dropna()
-    #    x.index = [a.year for a in x.index]
-    #    return x
+        return _Drawdown(self).periods
 
     def __res(self, rule="M"):
         ### refactor NAV at the end but keep the first element. Important for return computations!
@@ -274,10 +304,4 @@ class NavSeries(pd.Series):
         # overwrite the last index with the trust last index
         a.index = a.index[:-1].append(pd.DatetimeIndex([self.index[-1]]))
         return a
-
-    #def to_dictionary(self, **kwargs):
-    #    return {**{"nav": series2array(self),
-    #               "drawdown": series2array(self.drawdown),
-    #               "volatility": series2array(self.ewm_volatility())}, **kwargs}
-
 

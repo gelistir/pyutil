@@ -2,12 +2,12 @@ from unittest import TestCase
 import pandas as pd
 import numpy as np
 
-from pyutil.performance.summary import NavSeries, performance, fromNav
+from pyutil.performance.summary import performance, fromNav
 from test.config import read_series
 
 import pandas.util.testing as pdt
 
-s = NavSeries(read_series("ts.csv", parse_dates=True))
+s = fromNav(read_series("ts.csv", parse_dates=True))
 
 
 class TestSummary(TestCase):
@@ -18,7 +18,7 @@ class TestSummary(TestCase):
 
     def test_summary(self):
         pdt.assert_series_equal(s.summary().apply(str), read_series("summary.csv").apply(str), check_names=False)
-        x = NavSeries(pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-02-06")], data=[1.0, 1.02]))
+        x = fromNav(pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-02-06")], data=[1.0, 1.02]))
         self.assertAlmostEqual(float(x.summary()["Annua Return"]), 22.0, places=10)
 
     def test_autocorrelation(self):
@@ -27,12 +27,12 @@ class TestSummary(TestCase):
     def test_mtd(self):
         self.assertAlmostEqual(100 * s.mtd, 1.4133604922211385, places=10)
         x = pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-01-06")], data=[1.0, 1.6])
-        self.assertAlmostEqual(NavSeries(x).mtd, 0.6, places=10)
+        self.assertAlmostEqual(fromNav(x).mtd, 0.6, places=10)
 
     def test_ytd(self):
         self.assertAlmostEqual(100 * s.ytd, 2.1718996734564122, places=10)
         x = pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-03-06")], data=[1.0, 1.6])
-        self.assertAlmostEqual(NavSeries(x).mtd, 0.6, places=10)
+        self.assertAlmostEqual(fromNav(x).mtd, 0.6, places=10)
 
     def test_monthly_table(self):
         self.assertAlmostEqual(100 * s.monthlytable["Nov"][2014], -0.19540358586001005, places=5)
@@ -90,7 +90,7 @@ class TestSummary(TestCase):
                        pd.Timestamp("2012-02-14").date(): 4.0
                        })
 
-        n = NavSeries(a)
+        n = fromNav(a)
 
         # returns in Feb 2012, 50% on the 13th, 1.0/3.0 on the 14th
         pdt.assert_series_equal(n.mtd_series, pd.Series({pd.Timestamp("2012-02-13"): 0.5, pd.Timestamp("2012-02-14"): 1.0 / 3.0}))
@@ -102,13 +102,13 @@ class TestSummary(TestCase):
         self.assertEqual(n.ytd, 1.0)
 
     def test_adjust(self):
-        n = NavSeries(pd.Series({}))
+        n = fromNav(pd.Series({}))
         self.assertTrue(n.adjust().empty)
 
 
     def test_sortino_ratio_no_drawdown(self):
-        x = pd.Series(pd.Series({pd.Timestamp("2012-02-13"): 1.0, pd.Timestamp("2012-02-14"): 1.0}))
-        n = NavSeries(x)
+        x = pd.Series({pd.Timestamp("2012-02-13"): 1.0, pd.Timestamp("2012-02-14"): 1.0})
+        n = fromNav(x)
 
         self.assertEqual(n.sortino_ratio(), np.inf)
 

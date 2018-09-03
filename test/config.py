@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 from pyutil.portfolio.portfolio import Portfolio
-from pyutil.performance.summary import NavSeries
+from pyutil.performance.summary import NavSeries, fromNav
 
 pd.options.display.width = 300
 
@@ -25,7 +25,7 @@ def test_portfolio():
 
 
 if __name__ == '__main__':
-    ts = NavSeries(read_series("ts.csv"))
+    ts = fromNav(read_series("ts.csv"))
     ts.drawdown.to_csv(resource("drawdown.csv"))
 
     ts.summary(alpha=0.95).to_csv(resource("summary.csv"))

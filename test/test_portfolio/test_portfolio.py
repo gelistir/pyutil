@@ -102,15 +102,15 @@ class TestPortfolio(TestCase):
             weights = pd.DataFrame(columns=["C"], index=[1.5], data=[[0.3]])
             Portfolio(prices=prices, weights=weights)
 
-    def test_mtd(self):
-        portfolio = test_portfolio()
-        p = portfolio.mtd(today=portfolio.index[-1])
-        self.assertEqual(p.index[0], pd.Timestamp("2015-04-01"))
+    #def test_mtd(self):
+    #    portfolio = test_portfolio()
+    #    p = portfolio.mtd(today=portfolio.index[-1])
+    #    self.assertEqual(p.index[0], pd.Timestamp("2015-04-01"))
 
-    def test_ytd(self):
-        portfolio = test_portfolio()
-        p = portfolio.ytd(today=portfolio.index[-1])
-        self.assertEqual(p.index[0], pd.Timestamp("2015-01-01"))
+    #def test_ytd(self):
+    #    portfolio = test_portfolio()
+    #    p = portfolio.ytd(today=portfolio.index[-1])
+    #    self.assertEqual(p.index[0], pd.Timestamp("2015-01-01"))
 
     def test_state(self):
         x = test_portfolio().state

@@ -2,7 +2,6 @@ import pandas as pd
 
 from ..performance.summary import fromReturns
 from ..performance.periods import period_returns, periods
-from ..timeseries.timeseries import ytd, mtd
 
 
 def merge(portfolios, axis=0):
@@ -280,12 +279,6 @@ class Portfolio(object):
         __fundsize = 1e6
         days = (__fundsize * self.position).diff().abs().sum(axis=1)
         return sorted(list(days[days > 1].index))
-
-    def ytd(self, today=None):
-        return Portfolio(prices=ytd(self.prices, today=today), weights=ytd(self.weights, today=today))
-
-    def mtd(self, today=None):
-        return Portfolio(prices=mtd(self.prices, today=today), weights=mtd(self.weights, today=today))
 
     @property
     def state(self):

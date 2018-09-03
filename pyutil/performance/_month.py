@@ -2,7 +2,7 @@ import calendar
 import numpy as np
 
 
-def monthlytable(nav):
+def _monthlytable(nav):
     """
     Get a table of monthly returns
 
