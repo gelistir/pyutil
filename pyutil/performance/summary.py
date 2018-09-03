@@ -8,7 +8,9 @@ from ._month import _monthlytable
 from .periods import period_returns
 from ._drawdown import _Drawdown
 from ._var import _VaR
-#from addict import Dict
+
+
+# from addict import Dict
 
 
 def fromReturns(r, adjust=False):
@@ -48,7 +50,7 @@ class NavSeries(pd.Series):
 
     def annualized_volatility(self, periods=None):
         t = periods or self.__periods_per_year
-        return np.sqrt(t)*self.dropna().pct_change().std()
+        return np.sqrt(t) * self.dropna().pct_change().std()
 
     @staticmethod
     def __gmean(a):
@@ -97,12 +99,12 @@ class NavSeries(pd.Series):
         return (1 + self.returns).prod() - 1.0
 
     def sharpe_ratio(self, periods=None, r_f=0):
-        return self.mean_r(periods, r_f=r_f) /self.annualized_volatility(periods)
+        return self.mean_r(periods, r_f=r_f) / self.annualized_volatility(periods)
 
     def mean_r(self, periods=None, r_f=0):
         # annualized performance over a risk_free rate r_f (annualized)
         periods = periods or self.__periods_per_year
-        return periods*(self.__gmean(self.returns + 1.0)  - 1.0) - r_f
+        return periods * (self.__gmean(self.returns + 1.0) - 1.0) - r_f
 
     @property
     def drawdown(self):
@@ -141,7 +143,7 @@ class NavSeries(pd.Series):
         x = self.resample("M").last().dropna()
 
         if len(x) <= 1:
-            return self.dropna().tail(1).values[0]/self.dropna().head(1).values[0] - 1.0
+            return self.dropna().tail(1).values[0] / self.dropna().head(1).values[0] - 1.0
         else:
             return x.pct_change().dropna().tail(1).values[0]
 
@@ -154,7 +156,7 @@ class NavSeries(pd.Series):
         x = self.resample("A").last().dropna()
 
         if len(x) <= 1:
-            return self.dropna().tail(1).values[0]/self.dropna().head(1).values[0] - 1.0
+            return self.dropna().tail(1).values[0] / self.dropna().head(1).values[0] - 1.0
         else:
             return x.pct_change().dropna().tail(1).values[0]
 
@@ -178,7 +180,12 @@ class NavSeries(pd.Series):
         """
         today = today or pd.Timestamp("today")
         first_day_of_month = (today + pd.offsets.MonthBegin(-1)).date()
-        return ts.truncate(before=first_day_of_month, after=today)
+        x = ts.truncate(before=first_day_of_month, after=today)
+        if len(x.index) < 10:
+            first_day_of_month = (today + pd.offsets.MonthBegin(-2)).date()
+            x = ts.truncate(before=first_day_of_month, after=today)
+
+        return x
 
     @staticmethod
     def __ytd(ts: pd.Series, today=None) -> pd.Series:
@@ -201,8 +208,7 @@ class NavSeries(pd.Series):
         Extract the series of monthly returns in the current year
         :return:
         """
-        return self.__ytd(self.returns_monthly, today=self.index[-1])
-
+        return self.__ytd(self.returns_monthly, today=self.index[-1]).sort_index(ascending=False).rename(index=lambda x: x.strftime("%b"))
 
     def recent(self, n=15):
         return self.pct_change().tail(n).dropna()
@@ -217,7 +223,7 @@ class NavSeries(pd.Series):
         periods = periods or self.__periods_per_year
 
         d = OrderedDict()
-        #d = Dict()
+        # d = Dict()
 
         d["Return"] = 100 * self.cum_return
         d["# Events"] = self.events
@@ -232,8 +238,8 @@ class NavSeries(pd.Series):
         d["Max % return"] = 100 * self.returns.max()
         d["Min % return"] = 100 * self.returns.min()
 
-        d["MTD"] = 100*self.mtd
-        d["YTD"] = 100*self.ytd
+        d["MTD"] = 100 * self.mtd
+        d["YTD"] = 100 * self.ytd
 
         d["Current Nav"] = self.tail(1).values[0]
         d["Max Nav"] = self.max()
@@ -244,8 +250,8 @@ class NavSeries(pd.Series):
         d["# Positive Events"] = self.positive_events
         d["# Negative Events"] = self.negative_events
 
-        d["Value at Risk (alpha = {alpha})".format(alpha=int(100*alpha))] = 100*self.var(alpha=alpha)
-        d["Conditional Value at Risk (alpha = {alpha})".format(alpha=int(100*alpha))] = 100*self.cvar(alpha=alpha)
+        d["Value at Risk (alpha = {alpha})".format(alpha=int(100 * alpha))] = 100 * self.var(alpha=alpha)
+        d["Conditional Value at Risk (alpha = {alpha})".format(alpha=int(100 * alpha))] = 100 * self.cvar(alpha=alpha)
         d["First at"] = self.index[0].date()
         d["Last at"] = self.index[-1].date()
 
@@ -291,7 +297,7 @@ class NavSeries(pd.Series):
     def fee(self, daily_fee_basis_pts=0.5, adjust=False):
         ret = self.pct_change().fillna(0.0) - daily_fee_basis_pts / 10000.0
         return fromReturns(ret, adjust=adjust)
-        #return fromNav((ret + 1.0).cumprod())
+        # return fromNav((ret + 1.0).cumprod())
 
     @property
     def drawdown_periods(self):
@@ -304,4 +310,3 @@ class NavSeries(pd.Series):
         # overwrite the last index with the trust last index
         a.index = a.index[:-1].append(pd.DatetimeIndex([self.index[-1]]))
         return a
-

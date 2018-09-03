@@ -95,7 +95,7 @@ class TestSummary(TestCase):
         # returns in Feb 2012, 50% on the 13th, 1.0/3.0 on the 14th
         pdt.assert_series_equal(n.mtd_series, pd.Series({pd.Timestamp("2012-02-13"): 0.5, pd.Timestamp("2012-02-14"): 1.0 / 3.0}))
         # no return in Jan 2012, 100% in Feb (from 2.0 to 4.0)
-        pdt.assert_series_equal(n.ytd_series, pd.Series({pd.Timestamp("2012-01-31"): 0.0, pd.Timestamp("2012-02-14"): 1.0}))
+        pdt.assert_series_equal(n.ytd_series, pd.Series({"Feb": 1.0, "Jan": 0.0}))
 
         # we made 100% in Feb
         self.assertEqual(n.mtd, 1.0)
