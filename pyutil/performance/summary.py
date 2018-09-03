@@ -160,32 +160,32 @@ class NavSeries(pd.Series):
         else:
             return x.pct_change().dropna().tail(1).values[0]
 
-    @property
-    def mtd_series(self):
-        """
-        Extract the series of returns in the current month
-        :return:
-        """
-        return self.__mtd(self.returns, today=self.index[-1])
-
-    @staticmethod
-    def __mtd(ts: pd.Series, today=None) -> pd.Series:
-        """
-        Extract month to date of a series or a frame
-
-        :param ts: series or frame
-        :param today: today, relevant for testing
-
-        :return: ts or frame starting at the first day of today's month
-        """
-        today = today or pd.Timestamp("today")
-        first_day_of_month = (today + pd.offsets.MonthBegin(-1)).date()
-        x = ts.truncate(before=first_day_of_month, after=today)
-        if len(x.index) < 10:
-            first_day_of_month = (today + pd.offsets.MonthBegin(-2)).date()
-            x = ts.truncate(before=first_day_of_month, after=today)
-
-        return x
+    # @property
+    # def mtd_series(self):
+    #     """
+    #     Extract the series of returns in the current month
+    #     :return:
+    #     """
+    #     return self.__mtd(self.returns, today=self.index[-1])
+    #
+    # @staticmethod
+    # def __mtd(ts: pd.Series, today=None) -> pd.Series:
+    #     """
+    #     Extract month to date of a series or a frame
+    #
+    #     :param ts: series or frame
+    #     :param today: today, relevant for testing
+    #
+    #     :return: ts or frame starting at the first day of today's month
+    #     """
+    #     today = today or pd.Timestamp("today")
+    #     first_day_of_month = (today + pd.offsets.MonthBegin(-1)).date()
+    #     x = ts.truncate(before=first_day_of_month, after=today)
+    #     if len(x.index) < 10:
+    #         first_day_of_month = (today + pd.offsets.MonthBegin(-2)).date()
+    #         x = ts.truncate(before=first_day_of_month, after=today)
+    #
+    #     return x
 
     @staticmethod
     def __ytd(ts: pd.Series, today=None) -> pd.Series:
