@@ -11,6 +11,13 @@ s = fromNav(read_series("ts.csv", parse_dates=True))
 
 
 class TestSummary(TestCase):
+    def test_adjust(self):
+        x = s.adjust(value=10000)
+        self.assertAlmostEqual(x.loc[0], 10000.0, places=10)
+
+        y = 10000*fromNav(s, adjust=True)
+        pdt.assert_series_equal(x, y)
+
     def test_pos_neg(self):
         self.assertEqual(s.negative_events, 164)
         self.assertEqual(s.positive_events, 176)

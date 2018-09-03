@@ -33,3 +33,7 @@ class TestDrawdown(TestCase):
     def test_eps(self):
         x = pd.Series({})
         self.assertEqual(_Drawdown(x, eps=1e-10).eps, 1e-10)
+
+    def test_series(self):
+        x = pd.Series({0: 3, 1: 2, 2: 1})
+        pdt.assert_series_equal(x, _Drawdown(x).price_series)
