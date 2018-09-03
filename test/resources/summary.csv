@@ -17,5 +17,5 @@ Calmar Ratio (3Y),0.22284128137695638
 # Negative Events,164
 Value at Risk (alpha = 95),0.3018679213777742
 Conditional Value at Risk (alpha = 95),0.40138246298554187
-First_at,2014-01-01
-Last_at,2015-04-22
+First at,2014-01-01
+Last at,2015-04-22
