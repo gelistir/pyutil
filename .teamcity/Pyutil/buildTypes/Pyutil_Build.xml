@@ -4,7 +4,7 @@
   <description />
   <settings>
     <options>
-      <option name="artifactRules" value="html-coverage =&gt; html-coverage&#xA;build =&gt; build&#xA;html-report =&gt; html-report&#xA;graph =&gt; graph" />
+      <option name="artifactRules" value="artifacts =&gt; artifacts" />
       <option name="cleanBuild" value="true" />
     </options>
     <parameters />
