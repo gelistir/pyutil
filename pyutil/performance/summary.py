@@ -83,25 +83,25 @@ class NavSeries(pd.Series):
         return x
 
     @property
-    def positive_events(self):
+    def __positive_events(self):
         return (self.returns >= 0).sum()
 
     @property
-    def negative_events(self):
+    def __negative_events(self):
         return (self.returns < 0).sum()
 
     @property
-    def events(self):
+    def __events(self):
         return self.returns.size
 
     @property
-    def cum_return(self):
+    def __cum_return(self):
         return (1 + self.returns).prod() - 1.0
 
     def sharpe_ratio(self, periods=None, r_f=0):
-        return self.mean_r(periods, r_f=r_f) / self.annualized_volatility(periods)
+        return self.__mean_r(periods, r_f=r_f) / self.annualized_volatility(periods)
 
-    def mean_r(self, periods=None, r_f=0):
+    def __mean_r(self, periods=None, r_f=0):
         # annualized performance over a risk_free rate r_f (annualized)
         periods = periods or self.__periods_per_year
         return periods * (self.__gmean(self.returns + 1.0) - 1.0) - r_f
@@ -117,7 +117,7 @@ class NavSeries(pd.Series):
         if m == 0:
             return np.inf
         else:
-            return self.mean_r(periods, r_f=r_f) / m
+            return self.__mean_r(periods, r_f=r_f) / m
 
     def calmar_ratio(self, periods=None, r_f=0):
         periods = periods or self.__periods_per_year
@@ -126,12 +126,12 @@ class NavSeries(pd.Series):
         x = self.truncate(before=start)
         return fromNav(x).sortino_ratio(periods=periods, r_f=r_f)
 
-    @property
-    def autocorrelation(self):
-        """
-        Compute the autocorrelation of returns
-        :return:
-        """
+    # @property
+    # def __autocorrelation(self):
+    #     """
+    #     Compute the autocorrelation of returns
+    #     :return:
+    #     """
         return self.returns.autocorr(lag=1)
 
     @property
@@ -211,7 +211,7 @@ class NavSeries(pd.Series):
         return self.__ytd(self.returns_monthly, today=self.index[-1]).sort_index(ascending=False).rename(index=lambda x: x.strftime("%b"))
 
     def recent(self, n=15):
-        return self.pct_change().tail(n).dropna()
+        return self.returns.tail(n).dropna()
 
     def var(self, alpha=0.95):
         return _VaR(series=self, alpha=alpha).var
@@ -225,11 +225,11 @@ class NavSeries(pd.Series):
         d = OrderedDict()
         # d = Dict()
 
-        d["Return"] = 100 * self.cum_return
-        d["# Events"] = self.events
+        d["Return"] = 100 * self.__cum_return
+        d["# Events"] = self.__events
         d["# Events per year"] = periods
 
-        d["Annua Return"] = 100 * self.mean_r(periods=periods)
+        d["Annua Return"] = 100 * self.__mean_r(periods=periods)
         d["Annua Volatility"] = 100 * self.annualized_volatility(periods=periods)
         d["Annua Sharpe Ratio (r_f = {0})".format(r_f)] = self.sharpe_ratio(periods=periods, r_f=r_f)
 
@@ -247,8 +247,8 @@ class NavSeries(pd.Series):
 
         d["Calmar Ratio (3Y)"] = self.calmar_ratio(periods=periods, r_f=r_f)
 
-        d["# Positive Events"] = self.positive_events
-        d["# Negative Events"] = self.negative_events
+        d["# Positive Events"] = self.__positive_events
+        d["# Negative Events"] = self.__negative_events
 
         d["Value at Risk (alpha = {alpha})".format(alpha=int(100 * alpha))] = 100 * self.var(alpha=alpha)
         d["Conditional Value at Risk (alpha = {alpha})".format(alpha=int(100 * alpha))] = 100 * self.cvar(alpha=alpha)
@@ -259,17 +259,17 @@ class NavSeries(pd.Series):
         x.index.name = "Performance number"
         return x
 
-    def ewm_volatility(self, com=50, min_periods=50, periods=None):
-        periods = periods or self.__periods_per_year
-        return np.sqrt(periods) * self.returns.fillna(0.0).ewm(com=com, min_periods=min_periods).std(bias=False)
+    #def ewm_volatility(self, com=50, min_periods=50, periods=None):
+    #    periods = periods or self.__periods_per_year
+    #    return np.sqrt(periods) * self.returns.fillna(0.0).ewm(com=com, min_periods=min_periods).std(bias=False)
 
-    def ewm_ret(self, com=50, min_periods=50, periods=None):
-        periods = periods or self.__periods_per_year
-        return periods * self.returns.fillna(0.0).ewm(com=com, min_periods=min_periods).mean()
+    #def ewm_ret(self, com=50, min_periods=50, periods=None):
+    #    periods = periods or self.__periods_per_year
+    #    return periods * self.returns.fillna(0.0).ewm(com=com, min_periods=min_periods).mean()
 
-    def ewm_sharpe(self, com=50, min_periods=50, periods=None):
-        periods = periods or self.__periods_per_year
-        return self.ewm_ret(com, min_periods, periods) / self.ewm_volatility(com, min_periods, periods)
+    #def ewm_sharpe(self, com=50, min_periods=50, periods=None):
+    #    periods = periods or self.__periods_per_year
+    #    return self.ewm_ret(com, min_periods, periods) / self.ewm_volatility(com, min_periods, periods)
 
     @property
     def period_returns(self):
