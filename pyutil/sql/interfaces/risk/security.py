@@ -1,3 +1,5 @@
+import warnings
+
 import pandas as pd
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -63,10 +65,12 @@ class Security(ProductInterface):
 
     @staticmethod
     def prices_all():
+        warnings.warn("deprecated", DeprecationWarning)
         return pd.DataFrame({name : ts for name, ts in Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])})
 
         #return Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])
 
     @staticmethod
     def volatility_all():
+        warnings.warn("deprecated", DeprecationWarning)
         return Security.client.read_series(measurement="VolatilitySecurity", field="volatility", tags=["security", "currency"])

@@ -1,3 +1,5 @@
+import warnings
+
 import pandas as pd
 import sqlalchemy as _sq
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -167,13 +169,16 @@ class Owner(ProductInterface):
 
     @staticmethod
     def returns_all():
+        warnings.warn("deprecated", DeprecationWarning)
         return Owner.client.read_frame(measurement="ReturnOwner", field="return", tags=["owner"])
 
     @staticmethod
     def volatility_all():
+        warnings.warn("deprecated", DeprecationWarning)
         return Owner.client.read_frame(measurement="VolatilityOwner", field="volatility", tags=["owner"])
 
     @staticmethod
     def position_all():
+        warnings.warn("deprecated", DeprecationWarning)
         x = Owner.client.read_series(measurement="WeightsOwner", field="weight", tags=["owner", "security", "custodian"])
         return x.reorder_levels(["owner", "security", "custodian", "time"])

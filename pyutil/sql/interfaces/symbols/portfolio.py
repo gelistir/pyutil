@@ -1,3 +1,5 @@
+import warnings
+
 import pandas as pd
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -69,10 +71,12 @@ class Portfolio(ProductInterface):
 
     @staticmethod
     def nav_all():
+        warnings.warn("deprecated", DeprecationWarning)
         return ProductInterface.client.read_frame(measurement="nav", field="nav", tags=["name"])
 
     @staticmethod
     def leverage_all():
+        warnings.warn("deprecated", DeprecationWarning)
         return ProductInterface.client.read_frame(measurement="leverage", field="leverage", tags=["name"])
 
     def sector(self, total=False):
