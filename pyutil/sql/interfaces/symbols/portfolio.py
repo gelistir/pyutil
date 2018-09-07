@@ -53,6 +53,10 @@ class Portfolio(ProductInterface):
     def portfolio_influx(self):
         p = super().client.read_frame(measurement="xxx2", field="Price", tags=["Asset"], conditions={"Portfolio": self.name})
         w = super().client.read_frame(measurement="xxx2", field="Weight", tags=["Asset"], conditions={"Portfolio": self.name})
+
+        p = pd.DataFrame({name:ts for name, ts in p})
+        w = pd.DataFrame({name:ts for name, ts in w})
+
         return _Portfolio(prices=p, weights=w)
 
     @property

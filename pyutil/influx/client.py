@@ -75,12 +75,12 @@ class Client(DataFrameClient, ExitStack):
             return pd.Series({})
 
     def read_frame(self, field, measurement, tags=None, conditions=None):
-        #try:
         a = self.__read_frame(measurement=measurement, field=field, tags=tags, conditions=conditions)
-        return a[field].unstack(level=-2)
+        assert tags, "There are no tags definded to read the frame"
 
-        #except:
-        #    return pd.DataFrame({})
+        # The last tag is decisive
+        for name in a.index.get_level_values(tags[-1]).unique():
+            yield name, a.xs(name, level=tags[-1], drop_level=True)[field]
 
     def write_series(self, ts, field, measurement, tags=None, batch_size=5000, time_precision="s"):
         if len(ts) > 0:
@@ -93,21 +93,15 @@ class Client(DataFrameClient, ExitStack):
 
     def __read_frame(self, measurement, field="*", tags=None, conditions=None):
         q = "SELECT {f}::field {t} from {m}{co}""".format(f=field, t=self.__tags(tags), m=measurement, co=self.__cond(conditions))
-        self.__logger.debug("Query {q}".format(q=q))
 
-        #try:
         x = self.query(q)[measurement].tz_localize(None)
-        self.__logger.debug("Head {h}".format(h=x.head(10)))
+        x.index.name = "time"
 
         if tags:
             assert isinstance(tags, list)
-            # it would be nice if date is becoming the last index...
-            x["time"] = x.index
-            tags.append("time")
-            x = x.set_index(keys=tags)
+            x = x.set_index(keys=tags, append=True)
+
         return x
-        #except:
-        #    return pd.DataFrame({})
 
     # No, you can't update an entire frame for a single symbol!
     def last(self, measurement, field, conditions=None):

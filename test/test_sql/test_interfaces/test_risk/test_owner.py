@@ -46,11 +46,13 @@ class TestOwner(unittest.TestCase):
         pdt.assert_series_equal(o.nav, pd.Series({}))
 
         o.upsert_return(ts=pd.Series({t1: 0.1, t2: 0.2}))
-        pdt.assert_series_equal(o.returns, pd.Series({t1: 0.1, t2: 0.2}, name="return"))
-        pdt.assert_series_equal(o.nav, pd.Series({t0: 1.0, t1: 1.1, t2: 1.1*1.2}, name="nav"))
+        pdt.assert_series_equal(o.returns, pd.Series({t1: 0.1, t2: 0.2}), check_names=False)
+        pdt.assert_series_equal(o.nav, pd.Series({t0: 1.0, t1: 1.1, t2: 1.1*1.2}), check_names=False)
 
         x = pd.DataFrame(index=[t1,t2], columns=["110"], data=[[0.1],[0.2]])
-        pdt.assert_frame_equal(Owner.returns_all(), x, check_names=False)
+        y = pd.DataFrame({name : series for name, series in Owner.returns_all()})
+
+        pdt.assert_frame_equal(y, x, check_names=False)
 
     def test_volatility(self):
         # new owner!
@@ -60,10 +62,12 @@ class TestOwner(unittest.TestCase):
         pdt.assert_series_equal(o.volatility, pd.Series({}))
 
         o.upsert_volatility(ts=pd.Series({t1: 0.1, t2: 0.3}))
-        pdt.assert_series_equal(o.volatility, pd.Series({t1: 0.1, t2: 0.3}, name="volatility"))
+        pdt.assert_series_equal(o.volatility, pd.Series({t1: 0.1, t2: 0.3}), check_names=False)
 
         x = pd.DataFrame(index=[t1, t2], columns=["120"], data=[[0.1],[0.3]])
-        pdt.assert_frame_equal(Owner.volatility_all(), x, check_names=False)
+        y = pd.DataFrame({name: series for name, series in Owner.volatility_all()})
+
+        pdt.assert_frame_equal(y, x, check_names=False)
 
     def test_position(self):
         o = Owner(name="130", currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
@@ -174,7 +178,7 @@ class TestOwner(unittest.TestCase):
 
         pdt.assert_frame_equal(o.vola_securities(),
                                pd.DataFrame(columns=pd.Index([t1, t2]), index=["123"],
-                                            data=[[2.5, 3.5]]))
+                                            data=[[2.5, 3.5]]), check_names=False)
 
         pdt.assert_frame_equal(o.vola_weighted(sum=True),
                                pd.DataFrame(columns=pd.Index([t1, t2]), index=["123", "Sum"],

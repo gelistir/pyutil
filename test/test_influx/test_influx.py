@@ -37,11 +37,13 @@ class TestInfluxDB(TestCase):
         nav = test_portfolio().nav
         nav.name = "nav"
         self.client.write_series(ts=nav, tags={"name": "test-a"}, field="nav", measurement="nav")
-        pdt.assert_series_equal(nav, self.client.read_series(field="nav", measurement="nav", conditions={"name": "test-a"}))
+        pdt.assert_series_equal(nav, self.client.read_series(field="nav", measurement="nav", conditions={"name": "test-a"}), check_names=False)
 
         # alternative way to read the series
         x = self.client.read_series(field="nav", measurement="nav", tags=["name"])
-        pdt.assert_series_equal(nav, x.loc["test-a"].dropna(), check_names=False)
+        y = x.xs(key="test-a", level="name", drop_level=True)
+
+        pdt.assert_series_equal(nav, y.dropna(), check_names=False)
         assert "nav" in self.client.measurements
 
 
@@ -49,21 +51,25 @@ class TestInfluxDB(TestCase):
         x = pd.Series({pd.Timestamp("1978-11-12").date(): 5.1})
         self.client.write_series(ts = x, tags={"name": "birthday"}, field="temperature", measurement="nav")
         y = self.client.read_series(field="temperature", measurement="nav", conditions={"name": "birthday"})
-        pdt.assert_series_equal(y, pd.Series({pd.Timestamp("1978-11-12"): 5.1}, name="temperature"))
+        pdt.assert_series_equal(y, pd.Series({pd.Timestamp("1978-11-12"): 5.1}, name="temperature"), check_names=False)
 
     def test_write_frame(self):
         nav = test_portfolio().nav
-        self.client.write_series(ts=nav, tags={"namex": "test-a"}, field="navframe", measurement="nav2")
-        self.client.write_series(ts=nav.tail(20), tags={"namex": "test-b"}, field="navframe", measurement="nav2")
+        self.client.write_series(ts=nav, tags={"name": "test-a"}, field="navframe", measurement="nav2")
+        self.client.write_series(ts=nav.tail(20), tags={"name": "test-b"}, field="navframe", measurement="nav2")
 
-        y = self.client.read_frame(field="navframe", measurement="nav2", tags=["namex"])
-        pdt.assert_series_equal(nav, y["test-a"], check_names=False)
-        pdt.assert_series_equal(nav.tail(20), y["test-b"].dropna(), check_names=False)
-        #assert False
+        for name, ts in self.client.read_frame(field="navframe", measurement="nav2", tags=["name"]):
+            print(name)
+            print(ts)
+
+        xx = pd.concat({name: ts for name, ts in self.client.read_frame(field="navframe", measurement="nav2", tags=["name"])}, axis=1)
+        print(xx)
+
 
     def test_read_frame(self):
         with self.assertRaises(KeyError):
-            self.client.read_frame(field="DoesNotExist", measurement="nav2", tags=["name"])
+            for name, x in self.client.read_frame(field="DoesNotExist", measurement="nav2", tags=["name"]):
+                print(name)
 
 
     def test_stack(self):

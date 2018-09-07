@@ -25,6 +25,6 @@ def oscillator(price, a=32, b=96, min_periods=100):
     return osc / np.sqrt(__geom(l_fast**2) - 2.0 * __geom(l_slow * l_fast) + __geom(l_slow**2))
 
 
-def trend(price, a=32, b=96, vola=32, winsor=4.2, min_periods=50):
-    return np.tanh(oscillator(__adjprice(price, vola, winsor, min_periods), a, b, 2 * min_periods))
+def trend(price, a=32, b=96, vola=32, winsor=4.2, min_periods=50, f=np.tanh):
+    return f(oscillator(__adjprice(price, vola, winsor, min_periods), a, b, 2 * min_periods))
 

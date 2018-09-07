@@ -60,11 +60,11 @@ class TestPortfolio(TestCase):
         self.assertEqual(self.p.last, pd.Timestamp("2015-04-22"))
 
     def test_nav_all(self):
-        x = Portfolio.nav_all()
-        pdt.assert_series_equal(fromNav(x["Maffay"]), test_portfolio().nav, check_names=False)
+        d = {name: nav for name, nav in Portfolio.nav_all()}
+        pdt.assert_series_equal(fromNav(d["Maffay"]), test_portfolio().nav, check_names=False)
 
     def test_leverage_all(self):
-        x = Portfolio.leverage_all()
+        x = {name: lev for name, lev in Portfolio.leverage_all()}
         pdt.assert_series_equal(x["Maffay"], test_portfolio().leverage, check_names=False)
 
     def test_sector(self):

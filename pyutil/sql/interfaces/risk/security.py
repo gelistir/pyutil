@@ -1,3 +1,4 @@
+import pandas as pd
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyutil.sql.interfaces.products import ProductInterface
@@ -62,7 +63,9 @@ class Security(ProductInterface):
 
     @staticmethod
     def prices_all():
-        return Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])
+        return pd.DataFrame({name : ts for name, ts in Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])})
+
+        #return Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])
 
     @staticmethod
     def volatility_all():

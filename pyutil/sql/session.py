@@ -49,6 +49,7 @@ def postgresql_db_test(base, name=None, echo=False, views=None):
             sleep(1)
 
     name = name or "".join(random.choices(string.ascii_lowercase, k=10))
+
     # String interpolation here!? Please avoid
     conn.execute("""DROP DATABASE IF EXISTS {name}""".format(name=name))
     conn.execute("commit")

@@ -60,9 +60,10 @@ class Owner(ProductInterface):
         return self.__securities
 
     def position(self, sum=False, tail=None):
-        f = Owner.client.read_frame(measurement="WeightsOwner", field="weight", tags=["security"],
-                                    conditions={"owner": self.name})
-        print(f)
+        #f = Owner.client.read_frame(measurement="WeightsOwner", field="weight", tags=["security"],
+        #                            conditions={"owner": self.name})
+
+        f = pd.DataFrame({name: ts for name, ts in Owner.client.read_frame(field="weight", measurement="WeightsOwner", tags=["security"], conditions={"owner": self.name})})
 
         if tail:
             f = f.tail(tail)
@@ -174,5 +175,5 @@ class Owner(ProductInterface):
 
     @staticmethod
     def position_all():
-        return Owner.client.read_series(measurement="WeightsOwner", field="weight",
-                                        tags=["owner", "security", "custodian"])
+        x = Owner.client.read_series(measurement="WeightsOwner", field="weight", tags=["owner", "security", "custodian"])
+        return x.reorder_levels(["owner", "security", "custodian", "time"])

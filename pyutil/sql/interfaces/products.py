@@ -73,7 +73,7 @@ class ProductInterface(MyMixin, Base):
             pass
         else:
             # loop over all fields
-            fields = {f.name : f for f in self._refdata.keys()}
+            fields = {f.name: f for f in self._refdata.keys()}
             field = fields.get(field)
 
         if field in self._refdata.keys():
