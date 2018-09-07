@@ -101,11 +101,11 @@ class ProductInterface(MyMixin, Base):
 
         ProductInterface.client.write_series(field=field, measurement=measurement, tags={**{"name": self.name}, **tags}, ts=ts)
 
-    def _ts(self, field, measurement, conditions=None):
+    def _ts(self, field, measurement, conditions=None, tags=None):
         if not conditions:
             conditions = {"name": self.name}
 
-        return ProductInterface.client.read_series(field=field, measurement=measurement, conditions=conditions)
+        return ProductInterface.client.read_series(field=field, measurement=measurement, conditions=conditions, tags=tags)
 
     def _last(self, field, measurement, conditions=None):
         if not conditions:

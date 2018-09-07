@@ -82,17 +82,21 @@ class TestOwner(unittest.TestCase):
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
         o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
 
+        print(o.position())
+        print(o.position(tail=1))
+        print(o.position(tail=1, sum=True))
+
 
         pdt.assert_frame_equal(o.position(),
-                               pd.DataFrame(columns=[t1, t2], index=["123"],  data=[[0.1, 0.4]]),
+                               pd.DataFrame(columns=["123"], index=[t1, t2],  data=[[0.1], [0.4]]),
                                check_names=False)
 
-        pdt.assert_frame_equal(o.position(sum=False, tail=1),
+        pdt.assert_frame_equal(o.position(sum=False, tail=1).transpose(),
                                pd.DataFrame(columns=pd.Index([t2]), index=["123"], data=[[0.4]]),
                                check_names=False)
 
         pdt.assert_frame_equal(o.position(sum=True, tail=1),
-                               pd.DataFrame(columns=pd.Index([t2]), index=["123", "Sum"], data=[[0.4], [0.4]]),
+                               pd.DataFrame(index=pd.Index([t2]), columns=["123", "Sum"], data=[[0.4, 0.4]]),
                                check_names=False)
 
         pdt.assert_frame_equal(o.position_by(index_col="KIID", tail=1),
@@ -208,4 +212,6 @@ class TestOwner(unittest.TestCase):
         x = Owner.reference_frame(products=o.securities)
 
         pdt.assert_frame_equal(x, pd.DataFrame(index=["123"], columns=["KIID"], data=[[5]]))
+
+
 

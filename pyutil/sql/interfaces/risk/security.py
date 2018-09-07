@@ -63,6 +63,11 @@ class Security(ProductInterface):
         assert isinstance(currency, Currency)
         return super()._ts(field="volatility", measurement="VolatilitySecurity", conditions={"security": self.name, "currency": currency.name})
 
+    @property
+    def vola(self):
+        #assert isinstance(currency, Currency)
+        return super()._ts(field="volatility", measurement="VolatilitySecurity", tags=["currency"], conditions={"security": self.name})
+
     @staticmethod
     def prices_all():
         warnings.warn("deprecated", DeprecationWarning)

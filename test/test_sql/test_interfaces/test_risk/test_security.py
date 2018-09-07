@@ -57,3 +57,17 @@ class TestSecurity(unittest.TestCase):
 
         x = pd.DataFrame(index=["100", "110", "120"], columns=["KIID"], data=[[4],[3],[5]])
         pdt.assert_frame_equal(x, Security.reference_frame(products=sorted([s1, s2, s3])))
+
+    def test_vola(self):
+        s1 = Security(name=222, kiid=6)
+
+        c1 = Currency(name="USD")
+        c2 = Currency(name="CHF")
+
+        s1.upsert_volatility(currency=c1, ts=pd.Series({t0: 11.0, t1: 12.1}))
+        s1.upsert_volatility(currency=c2, ts=pd.Series({t0: 10.0, t1: 11.1}))
+
+        print(s1.vola)
+        print(s1.vola.swaplevel())
+
+        #assert False
