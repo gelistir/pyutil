@@ -61,28 +61,39 @@ class Owner(ProductInterface):
     def securities(self):
         return self.__securities
 
-    def position(self, sum=False, tail=None):
-        f = pd.DataFrame({name: ts for name, ts in Owner.client.read_frame(field="weight", measurement="WeightsOwner", tags=["security"], conditions={"owner": self.name})})
+    def position(self, sum=False, tail=None, custodian=True):
+        if custodian:
+            tags = ["custodian", "security"]
+        else:
+            tags = ["security"]
+
+        f = pd.DataFrame({name: ts.groupby(ts.index).sum() for name, ts in Owner.client.read_frame(field="weight", measurement="WeightsOwner", tags=tags, conditions={"owner": self.name})})
 
         if tail:
             f = f.tail(tail)
-
-        #f = f.transpose()
 
         if sum:
             f["Sum"] = f.sum(axis=1)
 
         return f
 
-
     def position_by(self, index_col, sum=False, tail=None):
-        pos = self.position(sum=False, tail=tail).transpose()
+        pos = self.position(sum=False, tail=tail, tags=["security"]).transpose()
+        #print(pos)
+        #print(index_col)
+
         return self.__weighted_by(x=pos, index_col=index_col, sum=sum)
 
     def __weighted_by(self, x, index_col, sum=False):
         try:
+            #print(index_col)
             ref = self.reference_securities[index_col]
+            #print(ref)
+
             a = pd.concat((x, ref), axis=1, sort=True).groupby(by=index_col).sum()
+            #print(a)
+            #assert False
+
             if sum:
                 a.loc["Sum"] = a.sum(axis=0)
             # this is a very weird construction but it seems it can not be avoided
@@ -95,8 +106,10 @@ class Owner(ProductInterface):
         return x.transpose()
 
     def vola_weighted(self, sum=False, tail=None):
-        w = self.position(sum=False, tail=tail).transpose()
+        w = self.position(sum=False, tail=tail, custodian=False).transpose()
+        print(w)
         v = self.vola_securities()
+        print(v)
 
         x = w.multiply(v).dropna(axis=0, how="all").dropna(axis=1, how="all")
 
@@ -119,7 +132,7 @@ class Owner(ProductInterface):
         return pd.Series({security.name: security.kiid for security in self.securities})
 
     def kiid_weighted(self, sum=False, tail=None):
-        x = self.position(sum=False, tail=tail).transpose().apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
+        x = self.position(sum=False, tail=tail, custodian=False).transpose().apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
         if sum:
             x.loc["Sum"] = x.sum(axis=0)
         return x
@@ -139,8 +152,12 @@ class Owner(ProductInterface):
             return Owner.client.write_series(field="nav", ts=pd.Series({}), tags={"owner": self.name},
                                              measurement='ReturnOwner')
 
-    def upsert_position(self, security, custodian, ts):
+    def upsert_position(self, security, ts, custodian=None):
         assert isinstance(security, Security)
+
+        #if not custodian:
+        custodian = custodian or self.custodian
+
         assert isinstance(custodian, Custodian)
 
         Owner.client.write_series(ts=ts, field="weight",

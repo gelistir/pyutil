@@ -72,7 +72,6 @@ class Security(ProductInterface):
     def prices_all():
         warnings.warn("deprecated", DeprecationWarning)
         return pd.DataFrame({name : ts for name, ts in Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])})
-
         #return Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])
 
     @staticmethod

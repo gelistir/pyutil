@@ -47,10 +47,10 @@ class TestOwner(unittest.TestCase):
 
         o.upsert_return(ts=pd.Series({t1: 0.1, t2: 0.2}))
         pdt.assert_series_equal(o.returns, pd.Series({t1: 0.1, t2: 0.2}), check_names=False)
-        pdt.assert_series_equal(o.nav, pd.Series({t0: 1.0, t1: 1.1, t2: 1.1*1.2}), check_names=False)
+        pdt.assert_series_equal(o.nav, pd.Series({t0: 1.0, t1: 1.1, t2: 1.1 * 1.2}), check_names=False)
 
-        x = pd.DataFrame(index=[t1,t2], columns=["110"], data=[[0.1],[0.2]])
-        y = pd.DataFrame({name : series for name, series in Owner.returns_all()})
+        x = pd.DataFrame(index=[t1, t2], columns=["110"], data=[[0.1], [0.2]])
+        y = pd.DataFrame({name: series for name, series in Owner.returns_all()})
 
         pdt.assert_frame_equal(y, x, check_names=False)
 
@@ -64,7 +64,7 @@ class TestOwner(unittest.TestCase):
         o.upsert_volatility(ts=pd.Series({t1: 0.1, t2: 0.3}))
         pdt.assert_series_equal(o.volatility, pd.Series({t1: 0.1, t2: 0.3}), check_names=False)
 
-        x = pd.DataFrame(index=[t1, t2], columns=["120"], data=[[0.1],[0.3]])
+        x = pd.DataFrame(index=[t1, t2], columns=["120"], data=[[0.1], [0.3]])
         y = pd.DataFrame({name: series for name, series in Owner.volatility_all()})
 
         pdt.assert_frame_equal(y, x, check_names=False)
@@ -82,21 +82,38 @@ class TestOwner(unittest.TestCase):
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
         o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
 
-        print(o.position())
-        print(o.position(tail=1))
-        print(o.position(tail=1, sum=True))
+        # print(o.position())
+        o.position(tail=1)
+        # assert False
 
+        # print(o.position(tail=1, sum=True))
+
+        tuples = [(t1, "UBS"), (t2, "UBS")]
+        index = pd.MultiIndex.from_tuples([(t1, "UBS"), (t2, "UBS")], names=['time', 'custodian'])
+        index_small = pd.MultiIndex.from_tuples([(t2, "UBS")], names=['time', 'custodian'])
 
         pdt.assert_frame_equal(o.position(),
-                               pd.DataFrame(columns=["123"], index=[t1, t2],  data=[[0.1], [0.4]]),
+                               pd.DataFrame(columns=["123"], index=index, data=[[0.1], [0.4]]),
                                check_names=False)
 
-        pdt.assert_frame_equal(o.position(sum=False, tail=1).transpose(),
-                               pd.DataFrame(columns=pd.Index([t2]), index=["123"], data=[[0.4]]),
+        print(index)
+        print(index_small)
+
+        pdt.assert_frame_equal(o.position(tail=1),
+                               pd.DataFrame(columns=["123"], index=index_small, data=[[0.4]]),
                                check_names=False)
+
+        # assert False
+        # print("AAAAA")
+        # print(o.position(sum=False, tail=1))
+        # print(pd.DataFrame(index=[index[1]], columns=["123"], data=[0.4]))
+
+        # pdt.assert_frame_equal(o.position(sum=False, tail=1),
+        #                       pd.DataFrame(index=[index[1]], columns=["123"], data=[0.4]),
+        #                       check_names=False)
 
         pdt.assert_frame_equal(o.position(sum=True, tail=1),
-                               pd.DataFrame(index=pd.Index([t2]), columns=["123", "Sum"], data=[[0.4, 0.4]]),
+                               pd.DataFrame(index=index_small, columns=["123", "Sum"], data=[[0.4, 0.4]]),
                                check_names=False)
 
         pdt.assert_frame_equal(o.position_by(index_col="KIID", tail=1),
@@ -109,12 +126,11 @@ class TestOwner(unittest.TestCase):
 
         self.assertTrue(o.position_by(index_col="MAFFAY").empty)
 
-        print(Owner.position_all())
+        # print(Owner.position_all())
 
-        x = Owner.position_all().loc["130"].loc["123"].loc["UBS"]
-        y = pd.Series(index=[t1, t2], data=[0.1, 0.4])
-        pdt.assert_series_equal(x, y, check_names=False)
-
+        # x = Owner.position_all().loc["130"].loc["123"].loc["UBS"]
+        # y = pd.Series(index=[t1, t2], data=[0.1, 0.4])
+        # pdt.assert_series_equal(x, y, check_names=False)
 
     def test_add_security(self):
         o = Owner(name="100", currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
@@ -171,11 +187,9 @@ class TestOwner(unittest.TestCase):
         s1 = Security(name=123)
         s1.reference[KIID] = 5
 
-        c1 = Custodian(name="UBS")
-
         # update the position in security s1
         o.securities.append(s1)
-        o.upsert_position( security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
+        o.upsert_position(security=s1, ts=pd.Series({t1: 0.1, t2: 0.4}))
 
         # update the volatility, note that you can update the volatility even after the security has been added to the owner
         s1.upsert_volatility(currency=o.currency, ts=pd.Series({t1: 2.5, t2: 3.5}))
@@ -186,13 +200,12 @@ class TestOwner(unittest.TestCase):
 
         pdt.assert_frame_equal(o.vola_weighted(sum=True),
                                pd.DataFrame(columns=pd.Index([t1, t2]), index=["123", "Sum"],
-                                            data=[[0.25, 1.4],[0.25, 1.4]]), check_names=False)
+                                            data=[[0.25, 1.4], [0.25, 1.4]]), check_names=False)
 
         pdt.assert_frame_equal(o.vola_weighted_by(index_col="KIID"),
                                pd.DataFrame(index=[5], columns=[t1, t2],
                                             data=[[0.25, 1.4]]),
                                check_names=False)
-
 
     def test_reference_frame(self):
         o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
@@ -213,5 +226,16 @@ class TestOwner(unittest.TestCase):
 
         pdt.assert_frame_equal(x, pd.DataFrame(index=["123"], columns=["KIID"], data=[[5]]))
 
+    def test_special(self):
+        o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
+        s1 = Security(name=123)
 
+        o.securities.append(s1)
+        # this is weird! Although the owner has a unique custodian we can assign a different custodian...
+        c1 = Custodian(name="CS")
 
+        # not specifying the custodian!
+        o.upsert_position(security=s1, ts=pd.Series({t1: 0.1, t2: 0.4}))
+        o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.5, pd.Timestamp("2018-09-06"): 1.0}))
+
+        print(o.position(custodian=False))
