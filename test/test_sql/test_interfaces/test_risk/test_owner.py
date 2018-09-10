@@ -53,10 +53,6 @@ class TestOwner(unittest.TestCase):
         pdt.assert_series_equal(o.returns, pd.Series({t1: 0.1, t2: 0.2}), check_names=False)
         pdt.assert_series_equal(o.nav, pd.Series({t0: 1.0, t1: 1.1, t2: 1.1 * 1.2}), check_names=False)
 
-        # x = pd.DataFrame(index=[t1, t2], columns=["110"], data=[[0.1], [0.2]])
-        # y = pd.DataFrame({name: series for name, series in Owner.returns_all()})
-        # pdt.assert_frame_equal(y, x, check_names=False)
-
     def test_volatility(self):
         # new owner!
         o = Owner(name="102", currency=Currency(name="USD"))
@@ -66,10 +62,6 @@ class TestOwner(unittest.TestCase):
 
         o.upsert_volatility(ts=pd.Series({t1: 0.1, t2: 0.3}))
         pdt.assert_series_equal(o.volatility, pd.Series({t1: 0.1, t2: 0.3}), check_names=False)
-
-        # x = pd.DataFrame(index=[t1, t2], columns=["120"], data=[[0.1], [0.3]])
-        # y = pd.DataFrame({name: series for name, series in Owner.volatility_all()})
-        # pdt.assert_frame_equal(y, x, check_names=False)
 
     def test_position(self):
         o = Owner(name="103", currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
@@ -84,8 +76,9 @@ class TestOwner(unittest.TestCase):
         c1 = Custodian(name="UBS")
         c2 = Custodian(name="CS")
 
-        o.securities.append(s1)
-        o.securities.append(s2)
+        # not needed!
+        #o.securities.append(s1)
+        #o.securities.append(s2)
 
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
         o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
@@ -110,7 +103,7 @@ class TestOwner(unittest.TestCase):
         s1.reference[KIID] = 5
 
         # update the position in security s1
-        o.securities.append(s1)
+        # o.securities.append(s1)
         o.upsert_position(security=s1, ts=pd.Series({t1: 0.1, t2: 0.4}))
 
         # update the volatility, note that you can update the volatility after the security has been added to the owner
@@ -119,37 +112,11 @@ class TestOwner(unittest.TestCase):
         for v in o.vola_weighted(index_col="KIID"):
             print(v)
 
-        #assert False
-
         for v in o.vola():
             print(v)
-        #print(list(o.vola()))
+
         for v in o.vola(index_col="KIID"):
             print(v)
-
-        #assert False
-
-        #x = pd.DataFrame(o.vola_securities()).transpose()
-        #print(x)
-        # assert False
-
-        #ssert False
-
-        # pdt.assert_frame_equal(x,
-        #
-        #                        pd.DataFrame(columns=pd.Index([t1, t2]), index=[s1],
-        #                                     data=[[2.5, 3.5]]), check_names=False)
-        #
-        # # assert False
-        #
-        # pdt.assert_frame_equal(o.vola_weighted(),
-        #                        pd.DataFrame(columns=pd.Index([t1, t2]), index=["123", "Sum"],
-        #                                     data=[[0.25, 1.4], [0.25, 1.4]]), check_names=False)
-        #
-        # pdt.assert_frame_equal(o.vola_weighted_by(index_col="KIID"),
-        #                        pd.DataFrame(index=[5], columns=[t1, t2],
-        #                                     data=[[0.25, 1.4]]),
-        #                        check_names=False)
 
     def test_reference_frame(self):
         o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))

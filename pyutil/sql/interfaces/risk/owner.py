@@ -146,6 +146,9 @@ class Owner(ProductInterface):
     def upsert_position(self, security, ts, custodian=None):
         assert isinstance(security, Security)
 
+        # append the security. This is an idempotent operation!
+        self.securities.append(security)
+
         # if not custodian:
         custodian = custodian or self.custodian
 
@@ -177,20 +180,4 @@ class Owner(ProductInterface):
     def reference_securities(self):
         for s in self.securities:
             yield s, s.reference
-    #
-    # @staticmethod
-    # def returns_all():
-    #     warnings.warn("deprecated", DeprecationWarning)
-    #     return Owner.client.read_frame(measurement="ReturnOwner", field="return", tags=["owner"])
-    #
-    # @staticmethod
-    # def volatility_all():
-    #     warnings.warn("deprecated", DeprecationWarning)
-    #     return Owner.client.read_frame(measurement="VolatilityOwner", field="volatility", tags=["owner"])
-    #
-    # @staticmethod
-    # def position_all():
-    #     warnings.warn("deprecated", DeprecationWarning)
-    #     x = Owner.client.read_series(measurement="WeightsOwner", field="weight",
-    #                                  tags=["owner", "security", "custodian"])
-    #     return x.reorder_levels(["owner", "security", "custodian", "time"])
+

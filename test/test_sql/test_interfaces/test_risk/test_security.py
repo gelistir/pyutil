@@ -33,6 +33,8 @@ class TestSecurity(unittest.TestCase):
 
         self.assertEqual(s.bloomberg_ticker, "AAAAA US Equity")
         self.assertEqual(str(s), "Security(100: None)")
+        self.assertEqual(s.bloomberg_scaling, 1.0)
+
 
     def test_price(self):
         s = Security(name=100)
