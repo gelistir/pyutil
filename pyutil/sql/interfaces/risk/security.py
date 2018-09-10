@@ -1,6 +1,3 @@
-import warnings
-
-import pandas as pd
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyutil.sql.interfaces.products import ProductInterface
@@ -20,6 +17,12 @@ FIELDS = {
     "name": Field(name="Name", result=DataType.string, type=FieldType.other)
 }
 
+from collections import namedtuple
+
+Price = namedtuple('Price', ['date', 'security', 'value'])
+
+Volatility = namedtuple('Volatility', ['date', 'security', 'currency', 'value'])
+
 
 class Security(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Security"}
@@ -34,7 +37,6 @@ class Security(ProductInterface):
 
     def __repr__(self):
         return "Security({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
-
 
     @hybrid_property
     def kiid(self):
@@ -57,24 +59,27 @@ class Security(ProductInterface):
 
     @property
     def price(self):
-        return super()._ts(field="price", measurement="PriceSecurity", conditions={"security": self.name})
+        for date, value in super()._ts(field="price", measurement="PriceSecurity", conditions={"security": self.name}).items():
+            yield Price(date=date, value=value, security=self)
 
     def volatility(self, currency):
         assert isinstance(currency, Currency)
-        return super()._ts(field="volatility", measurement="VolatilitySecurity", conditions={"security": self.name, "currency": currency.name})
+        for date, value in super()._ts(field="volatility", measurement="VolatilitySecurity", conditions={"security": self.name, "currency": currency.name}).items():
+            yield Volatility(date=date, value=value, security=self, currency=currency)
 
-    @property
-    def vola(self):
-        #assert isinstance(currency, Currency)
-        return super()._ts(field="volatility", measurement="VolatilitySecurity", tags=["currency"], conditions={"security": self.name})
+    #@property
+    #def vola(self):
+    #    # that's a frame!
+    #    #assert isinstance(currency, Currency)
+    #    return super()._ts(field="volatility", measurement="VolatilitySecurity", tags=["currency"], conditions={"security": self.name})
 
-    @staticmethod
-    def prices_all():
-        warnings.warn("deprecated", DeprecationWarning)
-        return pd.DataFrame({name : ts for name, ts in Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])})
-        #return Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])
-
-    @staticmethod
-    def volatility_all():
-        warnings.warn("deprecated", DeprecationWarning)
-        return Security.client.read_series(measurement="VolatilitySecurity", field="volatility", tags=["security", "currency"])
+    # @staticmethod
+    # def prices_all():
+    #     warnings.warn("deprecated", DeprecationWarning)
+    #     return pd.DataFrame({name : ts for name, ts in Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])})
+    #     #return Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])
+    #
+    # @staticmethod
+    # def volatility_all():
+    #     warnings.warn("deprecated", DeprecationWarning)
+    #     return Security.client.read_series(measurement="VolatilitySecurity", field="volatility", tags=["security", "currency"])

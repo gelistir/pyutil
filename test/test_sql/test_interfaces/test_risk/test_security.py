@@ -25,8 +25,8 @@ class TestSecurity(unittest.TestCase):
         c = Currency(name="USD")
         self.assertEqual(s.name, "100")
 
-        pdt.assert_series_equal(s.price, pd.Series({}))
-        pdt.assert_series_equal(s.volatility(currency=c), pd.Series({}))
+        self.assertListEqual(list(s.price), [])
+        self.assertListEqual(list(s.volatility(currency=c)), [])
 
         self.assertEqual(s.discriminator, "Security")
         self.assertEqual(s.kiid, 5)
@@ -37,37 +37,23 @@ class TestSecurity(unittest.TestCase):
     def test_price(self):
         s = Security(name=100)
         s.upsert_price(ts=pd.Series({t0: 11.0, t1: 12.1}))
-        pdt.assert_series_equal(s.price, pd.Series(index=[t0, t1], data=[11.0, 12.1]), check_names=False)
-        pdt.assert_series_equal(Security.prices_all()["100"], pd.Series(index=[t0, t1], data=[11.0, 12.1]), check_names=False)
 
+        x = pd.Series({data.date: data.value for data in s.price})
+        pdt.assert_series_equal(x, pd.Series(index=[t0, t1], data=[11.0, 12.1]), check_names=False)
 
     def test_volatility(self):
         s = Security(name=100)
         c = Currency(name="USD")
         s.upsert_volatility(currency=c, ts=pd.Series({t0: 11.0, t1: 12.1}))
-        pdt.assert_series_equal(s.volatility(currency=c), pd.Series(index=[t0, t1], data=[11.0, 12.1]), check_names=False)
-        print(Security.volatility_all())
+
+        x = pd.Series({data.date: data.value for data in s.volatility(currency=c)})
+        pdt.assert_series_equal(x, pd.Series(index=[t0, t1], data=[11.0, 12.1]), check_names=False)
 
     def test_reference_frame(self):
         s1 = Security(name=110, kiid=3)
         s2 = Security(name=120, kiid=5)
         s3 = Security(name=100, kiid=4)
 
-        print(Security.reference_frame(products=sorted([s1, s2, s3])))
-
         x = pd.DataFrame(index=["100", "110", "120"], columns=["KIID"], data=[[4],[3],[5]])
         pdt.assert_frame_equal(x, Security.reference_frame(products=sorted([s1, s2, s3])))
 
-    def test_vola(self):
-        s1 = Security(name=222, kiid=6)
-
-        c1 = Currency(name="USD")
-        c2 = Currency(name="CHF")
-
-        s1.upsert_volatility(currency=c1, ts=pd.Series({t0: 11.0, t1: 12.1}))
-        s1.upsert_volatility(currency=c2, ts=pd.Series({t0: 10.0, t1: 11.1}))
-
-        print(s1.vola)
-        print(s1.vola.swaplevel())
-
-        #assert False

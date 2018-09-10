@@ -4,6 +4,7 @@ from unittest import TestCase
 import pandas.util.testing as pdt
 
 from pyutil.influx.client import Client
+from pyutil.performance.summary import fromNav
 from test.config import test_portfolio
 
 
@@ -58,18 +59,17 @@ class TestInfluxDB(TestCase):
         self.client.write_series(ts=nav, tags={"name": "test-a"}, field="navframe", measurement="nav2")
         self.client.write_series(ts=nav.tail(20), tags={"name": "test-b"}, field="navframe", measurement="nav2")
 
-        for name, ts in self.client.read_frame(field="navframe", measurement="nav2", tags=["name"]):
-            print(name)
-            print(ts)
+        frame = self.client.read_series(field="navframe", measurement="nav2", tags=["name"]).unstack()
 
-        xx = pd.concat({name: ts for name, ts in self.client.read_frame(field="navframe", measurement="nav2", tags=["name"])}, axis=1)
-        print(xx)
+        pdt.assert_series_equal(fromNav(frame["test-a"]), nav, check_names=False)
+        pdt.assert_series_equal(fromNav(frame["test-b"]).dropna(), nav.tail(20), check_names=False)
 
 
-    def test_read_frame(self):
-        with self.assertRaises(KeyError):
-            for name, x in self.client.read_frame(field="DoesNotExist", measurement="nav2", tags=["name"]):
-                print(name)
+
+
+    #def test_read_frame(self):
+    #    with self.assertRaises(KeyError):
+    #        frame = self.client.read_series(field="DoesNotExist", measurement="nav2", tags=["name"])
 
 
     def test_stack(self):

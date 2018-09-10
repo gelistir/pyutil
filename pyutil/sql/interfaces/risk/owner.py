@@ -1,11 +1,9 @@
-import warnings
-
 import pandas as pd
 import sqlalchemy as _sq
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 
-from pyutil.performance.summary import NavSeries, fromNav
+from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.products import ProductInterface, association_table
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
@@ -21,8 +19,13 @@ FIELDS = {
     "18. LWM Risk Profile": Field(name="Risk Profile", result=DataType.string, type=FieldType.other),
     "23. LWM - AUM Type": Field(name="AUM Type", result=DataType.string, type=FieldType.other),
     "Inception Date": Field(name="Inception Date", result=DataType.string, type=FieldType.other)
-# don't use date here...
+    # don't use date here...
 }
+
+from collections import namedtuple
+
+Position = namedtuple('Position', ['date', 'security', 'custodian', 'value', 'owner'])
+Volatility = namedtuple('Volatility', ['date', 'owner', 'security', 'currency', 'value'])
 
 
 class Owner(ProductInterface):
@@ -61,66 +64,52 @@ class Owner(ProductInterface):
     def securities(self):
         return self.__securities
 
-    def position(self, sum=False, tail=None, custodian=True):
-        if custodian:
-            tags = ["custodian", "security"]
+    @property
+    def __position(self):
+        for security in self.securities:
+            for (time, custodian), value in self._ts(field="weight", measurement="WeightsOwner", tags=["custodian"],
+                                                     conditions={"security": security.name}).items():
+                yield Position(date=time, custodian=custodian, security=security, value=value, owner=self)
+
+    def position(self, index_col=None):
+        if not index_col:
+            yield from self.__position
         else:
-            tags = ["security"]
+            for position in self.__position:
+                yield Position(date=position.date, custodian=position.custodian, security=position.security,
+                               value=position.value * position.security.get_reference(index_col), owner=position.owner)
 
-        f = pd.DataFrame({name: ts.groupby(ts.index).sum() for name, ts in Owner.client.read_frame(field="weight", measurement="WeightsOwner", tags=tags, conditions={"owner": self.name})})
+    @property
+    def __volatility(self):
+        for security in self.securities:
+            for vola in security.volatility(currency=self.currency):
+                yield Volatility(date=vola.date, currency=self.currency, security=vola.security, value=vola.value,
+                                 owner=self)
 
-        if tail:
-            f = f.tail(tail)
+    def vola(self, index_col=None):
+        if not index_col:
+            yield from self.__volatility
+        else:
+            for vola in self.__volatility:
+                yield Volatility(date=vola.date, security=vola.security, currency=self.currency,
+                                 value=vola.value * vola.security.get_reference(index_col), owner=self)
 
-        if sum:
-            f["Sum"] = f.sum(axis=1)
+    @property
+    def __vola_weighted(self):
+        v = pd.DataFrame([v for v in self.vola()]).set_index(keys=["owner", "security", "date"])["value"]
+        w = pd.DataFrame([w for w in self.position()]).set_index(keys=["owner", "security", "date"])["value"]
 
-        return f
+        for (owner, security, date), value in w.multiply(v).items():
+            yield Volatility(owner=owner, security=security, date=date, currency=self.currency, value=value)
 
-    def position_by(self, index_col, sum=False, tail=None):
-        pos = self.position(sum=False, tail=tail, tags=["security"]).transpose()
-        #print(pos)
-        #print(index_col)
+    def vola_weighted(self, index_col=None):
+        # volatility * weight
+        if not index_col:
+            yield from self.__vola_weighted
+        else:
+            for volatility in self.__vola_weighted:
+                yield Volatility(owner=self, security=volatility.security, date=volatility.date, currency=self.currency, value=volatility.security.get_reference(index_col) * volatility.value)
 
-        return self.__weighted_by(x=pos, index_col=index_col, sum=sum)
-
-    def __weighted_by(self, x, index_col, sum=False):
-        try:
-            #print(index_col)
-            ref = self.reference_securities[index_col]
-            #print(ref)
-
-            a = pd.concat((x, ref), axis=1, sort=True).groupby(by=index_col).sum()
-            #print(a)
-            #assert False
-
-            if sum:
-                a.loc["Sum"] = a.sum(axis=0)
-            # this is a very weird construction but it seems it can not be avoided
-            return pd.DataFrame(index=a.index, data=a.values, columns=pd.DatetimeIndex([b for b in a.keys()]))
-        except KeyError:
-            return pd.DataFrame({})
-
-    def vola_securities(self):
-        x = pd.DataFrame({security.name: security.volatility(currency=self.currency) for security in self.securities})
-        return x.transpose()
-
-    def vola_weighted(self, sum=False, tail=None):
-        w = self.position(sum=False, tail=tail, custodian=False).transpose()
-        print(w)
-        v = self.vola_securities()
-        print(v)
-
-        x = w.multiply(v).dropna(axis=0, how="all").dropna(axis=1, how="all")
-
-        if sum:
-            x.loc["Sum"] = x.sum(axis=0)
-
-        return x
-
-    def vola_weighted_by(self, index_col, sum=False, tail=None):
-        vola = self.vola_weighted(sum=False, tail=tail)
-        return self.__weighted_by(x=vola, index_col=index_col, sum=sum)
 
     @property
     def reference_securities(self):
@@ -129,17 +118,19 @@ class Owner(ProductInterface):
 
     @property
     def kiid(self):
-        return pd.Series({security.name: security.kiid for security in self.securities})
+        for security in self.securities:  # {security.name: security.kiid for security in self.securities})
+            yield security.name, security.kiid
 
-    def kiid_weighted(self, sum=False, tail=None):
-        x = self.position(sum=False, tail=tail, custodian=False).transpose().apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
-        if sum:
-            x.loc["Sum"] = x.sum(axis=0)
-        return x
+    # def kiid_weighted(self, sum=False, tail=None):
+    #    x = self.position(sum=False, tail=tail, custodian=False).transpose().apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
+    #    if sum:
+    #        x.loc["Sum"] = x.sum(axis=0)
+    #    return x
 
-    def kiid_weighted_by(self, index_col, sum=False, tail=None):
-        kiid = self.kiid_weighted(sum=False, tail=tail)
-        return self.__weighted_by(x=kiid, index_col=index_col, sum=sum)
+    # def kiid_weighted_by(self, index_col, sum=False, tail=None):#
+    #
+    #        kiid = self.kiid_weighted(sum=False, tail=tail)
+    #        return self.__weighted_by(x=kiid, index_col=index_col, sum=sum)
 
     def upsert_return(self, ts):
         Owner.client.write_series(ts=ts, field="return", tags={"owner": self.name}, measurement='ReturnOwner')
@@ -155,7 +146,7 @@ class Owner(ProductInterface):
     def upsert_position(self, security, ts, custodian=None):
         assert isinstance(security, Security)
 
-        #if not custodian:
+        # if not custodian:
         custodian = custodian or self.custodian
 
         assert isinstance(custodian, Custodian)
@@ -179,20 +170,27 @@ class Owner(ProductInterface):
 
     @property
     def nav(self):
-        return fromNav(Owner.client.read_series(field="nav", measurement='ReturnOwner', conditions={"owner": self.name}))
+        return fromNav(
+            Owner.client.read_series(field="nav", measurement='ReturnOwner', conditions={"owner": self.name}))
 
-    @staticmethod
-    def returns_all():
-        warnings.warn("deprecated", DeprecationWarning)
-        return Owner.client.read_frame(measurement="ReturnOwner", field="return", tags=["owner"])
-
-    @staticmethod
-    def volatility_all():
-        warnings.warn("deprecated", DeprecationWarning)
-        return Owner.client.read_frame(measurement="VolatilityOwner", field="volatility", tags=["owner"])
-
-    @staticmethod
-    def position_all():
-        warnings.warn("deprecated", DeprecationWarning)
-        x = Owner.client.read_series(measurement="WeightsOwner", field="weight", tags=["owner", "security", "custodian"])
-        return x.reorder_levels(["owner", "security", "custodian", "time"])
+    @property
+    def reference_securities(self):
+        for s in self.securities:
+            yield s, s.reference
+    #
+    # @staticmethod
+    # def returns_all():
+    #     warnings.warn("deprecated", DeprecationWarning)
+    #     return Owner.client.read_frame(measurement="ReturnOwner", field="return", tags=["owner"])
+    #
+    # @staticmethod
+    # def volatility_all():
+    #     warnings.warn("deprecated", DeprecationWarning)
+    #     return Owner.client.read_frame(measurement="VolatilityOwner", field="volatility", tags=["owner"])
+    #
+    # @staticmethod
+    # def position_all():
+    #     warnings.warn("deprecated", DeprecationWarning)
+    #     x = Owner.client.read_series(measurement="WeightsOwner", field="weight",
+    #                                  tags=["owner", "security", "custodian"])
+    #     return x.reorder_levels(["owner", "security", "custodian", "time"])

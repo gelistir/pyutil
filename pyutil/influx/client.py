@@ -74,14 +74,6 @@ class Client(DataFrameClient, ExitStack):
         except KeyError:
             return pd.Series({})
 
-    def read_frame(self, field, measurement, tags=None, conditions=None):
-        a = self.__read_frame(measurement=measurement, field=field, tags=tags, conditions=conditions)
-        assert tags, "There are no tags definded to read the frame"
-
-        # The last tag is decisive
-        for name in a.index.get_level_values(tags[-1]).unique():
-            yield name, a.xs(name, level=tags[-1], drop_level=True)[field]
-
     def write_series(self, ts, field, measurement, tags=None, batch_size=5000, time_precision="s"):
         if len(ts) > 0:
             # convert from date to datetime if needed...

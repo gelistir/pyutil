@@ -54,11 +54,6 @@ class ProductInterface(MyMixin, Base):
     def __init__(self, name, **kwargs):
         self.__name = str(name)
 
-    #@property
-    #def client(self):
-    #    return self.__client
-
-
     @hybrid_property
     def name(self):
         return self.__name

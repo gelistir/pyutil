@@ -39,7 +39,7 @@ class Symbol(ProductInterface):
 
     @staticmethod
     def frame(field="PX_LAST"):
-        return pd.DataFrame({name: ts for name, ts in Symbol.client.read_frame(measurement=Symbol._measurements, field=field, tags=["name"])}).sort_index(axis=1)
+        return Symbol.client.read_series(measurement=Symbol._measurements, field=field, tags=["name"]).unstack(level="name")
 
     @staticmethod
     def symbol(name, field="PX_LAST"):

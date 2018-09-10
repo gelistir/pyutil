@@ -63,7 +63,15 @@ class TestReference(TestCase):
         ref.run()
 
         # check that the data made it into the database
+        #for name, reference in Symbol.reference_frame(products=self.session.query(Symbol)):
+        #    print(name)
+        #    print(reference)
+
         frame = Symbol.reference_frame(products=self.session.query(Symbol))
+        #frame = pd.concat({name: pd.Series(reference) for name, reference in Symbol.reference_frame(products=self.session.query(Symbol))}).unstack()
+        #print(frame)
+
+
 
         self.assertTrue(pd.isna(frame["CHG_PCT_1D"]["C"]))
         self.assertEqual(frame["CHG_PCT_1D"]["A"], 0.1)
