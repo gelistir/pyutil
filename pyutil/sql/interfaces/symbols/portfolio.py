@@ -56,10 +56,6 @@ class Portfolio(ProductInterface):
         p = super().client.read_series(measurement="xxx2", field="Price", tags=["Asset"], conditions={"Portfolio": self.name}).unstack(level="Asset")
         w = super().client.read_series(measurement="xxx2", field="Weight", tags=["Asset"], conditions={"Portfolio": self.name}).unstack(level="Asset")
 
-
-        #p = pd.DataFrame({name:ts for name, ts in p})
-        #w = pd.DataFrame({name:ts for name, ts in w})
-
         return _Portfolio(prices=p, weights=w)
 
     @property

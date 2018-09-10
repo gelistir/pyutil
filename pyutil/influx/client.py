@@ -102,4 +102,3 @@ class Client(DataFrameClient, ExitStack):
             return self.query(query)[measurement].index[0].tz_localize(None)
         except KeyError:
             return None
-

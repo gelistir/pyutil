@@ -44,7 +44,7 @@ class Security(ProductInterface):
 
     @hybrid_property
     def bloomberg_ticker(self):
-        return self.get_reference("Bloomberg Ticker")
+        return self.get_reference("Bloomberg Ticker", default=None)
 
     @hybrid_property
     def bloomberg_scaling(self):
@@ -67,19 +67,3 @@ class Security(ProductInterface):
         for date, value in super()._ts(field="volatility", measurement="VolatilitySecurity", conditions={"security": self.name, "currency": currency.name}).items():
             yield Volatility(date=date, value=value, security=self, currency=currency)
 
-    #@property
-    #def vola(self):
-    #    # that's a frame!
-    #    #assert isinstance(currency, Currency)
-    #    return super()._ts(field="volatility", measurement="VolatilitySecurity", tags=["currency"], conditions={"security": self.name})
-
-    # @staticmethod
-    # def prices_all():
-    #     warnings.warn("deprecated", DeprecationWarning)
-    #     return pd.DataFrame({name : ts for name, ts in Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])})
-    #     #return Security.client.read_frame(measurement="PriceSecurity", field="price", tags=["security"])
-    #
-    # @staticmethod
-    # def volatility_all():
-    #     warnings.warn("deprecated", DeprecationWarning)
-    #     return Security.client.read_series(measurement="VolatilitySecurity", field="volatility", tags=["security", "currency"])

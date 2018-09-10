@@ -1,6 +1,5 @@
 import enum as _enum
 
-import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
@@ -26,7 +25,6 @@ class Symbol(ProductInterface):
         super().__init__(name)
         self.group = group
         self.internal = internal
-
 
     def price(self, field="PX_LAST"):
         return self._ts(field=field, measurement=Symbol._measurements)

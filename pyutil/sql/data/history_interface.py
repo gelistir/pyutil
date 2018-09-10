@@ -50,4 +50,6 @@ class HistoryInterface(ABC):
 
     def frame(self, name, field="PX_LAST"):
         f, exists = get_one_or_create(session=self.__session, model=Frame, name=name)
+        #f.frame = Symbol.client.read_series(measurement=Symbol._measurements, field=field, tags=["name"]).unstack(level="name")
+
         f.frame = Symbol.frame(field)
