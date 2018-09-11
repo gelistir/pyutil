@@ -16,7 +16,11 @@ class Client(ExitStack):
         password = password or os.environ["influxdb_password"]
 
         self.__client = DataFrameClient(host=host, port=port, username=username, password=password)
-        self.__client.create_database(dbname=self.database)
+
+        # only try to create the database if it doesn't exist! You would need admin rights here...
+        if not self.database in self.databases:
+            self.__client.create_database(dbname=self.database)
+
         self.__client.switch_database(database=self.database)
         self.__logger = logger or logging.getLogger(__name__)
 
