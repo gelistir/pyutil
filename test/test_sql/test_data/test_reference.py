@@ -3,6 +3,7 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
+from pyutil.influx.client import test_client
 from pyutil.sql.base import Base
 from pyutil.sql.data.reference_interface import ReferenceInterface
 from pyutil.sql.interfaces.products import ProductInterface
@@ -28,7 +29,7 @@ class TestReference(TestCase):
     @classmethod
     def setUpClass(cls):
         # get a fresh new InfluxDB database
-        ProductInterface.client.recreate(dbname="test")
+        ProductInterface.client = test_client() #recreate(dbname="test")
 
         # create a session to a proper database
         cls.session, connection_str = postgresql_db_test(base=Base)

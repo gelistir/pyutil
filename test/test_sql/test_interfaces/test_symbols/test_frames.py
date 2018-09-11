@@ -3,6 +3,7 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
+from pyutil.influx.client import test_client
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbols.frames import Frame
 
@@ -10,7 +11,7 @@ from pyutil.sql.interfaces.symbols.frames import Frame
 class TestModels(TestCase):
     @classmethod
     def setUpClass(cls):
-        ProductInterface.client.recreate(dbname="test")
+        ProductInterface.client = test_client()
 
     @classmethod
     def tearDownClass(cls):

@@ -37,8 +37,8 @@ class ProductInterface(MyMixin, Base):
     __name = sq.Column("name", sq.String(200), unique=False, nullable=True)
     discriminator = sq.Column(sq.String)
 
-    # this is a static variable!
-    client = Client()
+    # this is a static variable! The system is relying on environment variables here!
+    client = None #Client()
 
     __mapper_args__ = {"polymorphic_on": discriminator}
 

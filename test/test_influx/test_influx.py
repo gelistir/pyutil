@@ -1,9 +1,9 @@
-import pandas as pd
 from unittest import TestCase
 
+import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.influx.client import Client
+from pyutil.influx.client import test_client
 from pyutil.performance.summary import fromNav
 from test.config import test_portfolio
 
@@ -11,7 +11,7 @@ from test.config import test_portfolio
 class TestInfluxDB(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.client = Client()
+        cls.client = test_client()
         cls.client.recreate(dbname="test")
 
     @classmethod
@@ -66,7 +66,7 @@ class TestInfluxDB(TestCase):
 
 
     def test_stack(self):
-        c = Client(database="wurst")
+        c = test_client()
         with c as client:
             print("hello")
 
