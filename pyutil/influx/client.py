@@ -8,9 +8,10 @@ from influxdb import DataFrameClient
 
 
 class Client(ExitStack):
-    def __init__(self, host=None, port=8086, database=None, logger=None, username=None, password=None):
+    def __init__(self, host=None, port=None, database=None, logger=None, username=None, password=None):
 
         host = host or os.environ["influxdb_host"]
+        port = port or os.environ["influxdb_port"]
         self.__database = database or os.environ["influxdb_db"]
         username = username or os.environ["influxdb_username"]
         password = password or os.environ["influxdb_password"]
