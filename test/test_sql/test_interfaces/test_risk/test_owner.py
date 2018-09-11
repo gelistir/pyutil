@@ -80,8 +80,7 @@ class TestOwner(unittest.TestCase):
         o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
         o.upsert_position(security=s2, custodian=c2, ts=pd.Series({t1: 0.5, t2: 0.5}))
 
-        pdt.assert_series_equal(pd.Series({name: value for name, value in o.kiid}),
-                                pd.Series(index=["123", "211"], data=[5, 7]))
+        pdt.assert_series_equal(pd.Series({name: value for name, value in o.kiid}).sort_index(), pd.Series(index=["123", "211"], data=[5, 7]))
 
         for position in o.position():
             print(position)
