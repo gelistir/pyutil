@@ -52,18 +52,18 @@ class Security(ProductInterface):
 
     def upsert_volatility(self, currency, ts):
         assert isinstance(currency, Currency)
-        super()._ts_upsert(ts=ts, tags={"security": self.name, "currency": currency.name}, field="volatility", measurement="VolatilitySecurity")
+        self._ts_upsert(ts=ts, tags={"currency": currency.name}, field="volatility", measurement="VolatilitySecurity")
 
     def upsert_price(self, ts):
-        super()._ts_upsert(ts=ts, tags={"security": self.name}, field="price", measurement="PriceSecurity")
+        self._ts_upsert(ts=ts, field="price", measurement="PriceSecurity")
 
     @property
     def price(self):
-        for date, value in super()._ts(field="price", measurement="PriceSecurity", conditions={"security": self.name}).items():
+        for date, value in self._ts(field="price", measurement="PriceSecurity").items():
             yield Price(date=date, value=value, security=self)
 
     def volatility(self, currency):
         assert isinstance(currency, Currency)
-        for date, value in super()._ts(field="volatility", measurement="VolatilitySecurity", conditions={"security": self.name, "currency": currency.name}).items():
+        for date, value in self._ts(field="volatility", measurement="VolatilitySecurity", conditions={"currency": currency.name}).items():
             yield Volatility(date=date, value=value, security=self, currency=currency)
 

@@ -67,9 +67,9 @@ class Owner(ProductInterface):
     @property
     def __position(self):
         for security in self.securities:
-            for (time, custodian), value in self._ts(field="weight", measurement="WeightsOwner", tags=["custodian"],
-                                                     conditions={"security": security.name}).items():
-                yield Position(date=time, custodian=custodian, security=security, value=value, owner=self)
+            ts = self._ts(field="weight", measurement="WeightsOwner", tags=["custodian"], conditions={"security": security.name})
+            for (time, custodian), value in ts.items():
+                yield Position(date=time, custodian=custodian, security=security, owner=self, value=value)
 
     def position(self, index_col=None):
         if not index_col:
@@ -77,10 +77,11 @@ class Owner(ProductInterface):
         else:
             for position in self.__position:
                 yield Position(date=position.date, custodian=position.custodian, security=position.security,
-                               value=position.value * position.security.get_reference(index_col), owner=position.owner)
+                               value=position.value * position.security.get_reference(index_col), owner=self)
 
     @property
     def __volatility(self):
+        #volas = self.client.read_series(field=)
         for security in self.securities:
             for vola in security.volatility(currency=self.currency):
                 yield Volatility(date=vola.date, currency=self.currency, security=vola.security, value=vola.value,
@@ -133,15 +134,14 @@ class Owner(ProductInterface):
     #        return self.__weighted_by(x=kiid, index_col=index_col, sum=sum)
 
     def upsert_return(self, ts):
-        Owner.client.write_series(ts=ts, field="return", tags={"owner": self.name}, measurement='ReturnOwner')
+        self._ts_upsert(ts=ts, field="return", measurement='ReturnOwner')
+
         try:
             x = self.returns
             x = pd.concat((pd.Series({(x.index[0] - pd.DateOffset(days=1)).date(): 0.0}), x))
-            return Owner.client.write_series(field="nav", ts=(x + 1.0).cumprod(), tags={"owner": self.name},
-                                             measurement='ReturnOwner')
+            return self._ts_upsert(field="nav", ts=(x + 1.0).cumprod(), measurement='ReturnOwner')
         except:
-            return Owner.client.write_series(field="nav", ts=pd.Series({}), tags={"owner": self.name},
-                                             measurement='ReturnOwner')
+            return self._ts_upsert(field="nav", ts=pd.Series({}), measurement='ReturnOwner')
 
     def upsert_position(self, security, ts, custodian=None):
         assert isinstance(security, Security)
@@ -154,30 +154,39 @@ class Owner(ProductInterface):
 
         assert isinstance(custodian, Custodian)
 
-        Owner.client.write_series(ts=ts, field="weight",
-                                  tags={"owner": self.name, "security": security.name, "custodian": custodian.name},
-                                  measurement="WeightsOwner")
+        self._ts_upsert(ts=ts, field="weight",
+                                tags={"security": security.name, "custodian": custodian.name},
+                                measurement="WeightsOwner")
 
     def upsert_volatility(self, ts):
-        Owner.client.write_series(ts=ts, field="volatility", tags={"owner": self.name}, measurement='VolatilityOwner')
+        self._ts_upsert(ts=ts, field="volatility", measurement='VolatilityOwner')
 
     @property
     def returns(self):
         # this is fast!
-        return Owner.client.read_series(field="return", measurement="ReturnOwner", conditions={"owner": self.name})
+        return self._ts(field="return", measurement="ReturnOwner")
 
     @property
     def volatility(self):
-        return Owner.client.read_series(field="volatility", measurement="VolatilityOwner",
-                                        conditions={"owner": self.name})
+        return self._ts(field="volatility", measurement="VolatilityOwner")
 
     @property
     def nav(self):
-        return fromNav(
-            Owner.client.read_series(field="nav", measurement='ReturnOwner', conditions={"owner": self.name}))
+        return fromNav(self._ts(field="nav", measurement='ReturnOwner'))
 
     @property
     def reference_securities(self):
         for s in self.securities:
             yield s, s.reference
+
+    @staticmethod
+    def positions(owners, index_col=None):
+        for owner in owners:
+            for p in owner.position(index_col=index_col):
+                yield p
+
+    @staticmethod
+    def volatilities(owners):
+        for owner in owners:
+            yield owner, owner.volatility
 

@@ -7,26 +7,27 @@ import pandas as pd
 from influxdb import DataFrameClient
 
 
-class Client(DataFrameClient, ExitStack):
+class Client(ExitStack):
     def __init__(self, host=None, port=8086, database=None, logger=None):
 
         host = host or os.environ["influxdb_host"]
         self.__database = database or os.environ["influxdb_db"]
-
-        super().__init__(host, port)
-
-        self.create_database(dbname=self.database)
-        self.switch_database(database=self.database)
+        self.__client = DataFrameClient(host=host, port=port)
+        self.__client.create_database(dbname=self.database)
+        self.__client.switch_database(database=self.database)
         self.__logger = logger or logging.getLogger(__name__)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         return self.close()
 
     def recreate(self, dbname):
-        self.drop_database(dbname=dbname)
-        self.create_database(dbname=dbname)
-        self.switch_database(database=dbname)
+        self.__client.drop_database(dbname=dbname)
+        self.__client.create_database(dbname=dbname)
+        self.__client.switch_database(database=dbname)
         self.__database = dbname
+
+    def close(self):
+        self.__client.close()
 
     @property
     def database(self):
@@ -34,11 +35,11 @@ class Client(DataFrameClient, ExitStack):
 
     @property
     def host(self):
-        return super()._host
+        return self.__client._host
 
     @property
     def port(self):
-        return super()._port
+        return self.__client._port
 
     def __repr__(self):
         return "InfluxClient at {host} on port {port}".format(host=self.host, port=self.port)
@@ -46,12 +47,12 @@ class Client(DataFrameClient, ExitStack):
     @property
     def databases(self):
         """ get set of databases (names) """
-        return set([a["name"] for a in self.get_list_database()])
+        return set([a["name"] for a in self.__client.get_list_database()])
 
     @property
     def measurements(self):
         """ get set of measurements for a given database """
-        return set([a["name"] for a in self.get_list_measurements()])
+        return set([a["name"] for a in self.__client.get_list_measurements()])
 
     @staticmethod
     def __cond(conditions=None):
@@ -68,28 +69,31 @@ class Client(DataFrameClient, ExitStack):
         else:
             return ""
 
-    def read_series(self, field, measurement, tags=None, conditions=None):
+    def read(self, field, measurement, tags=None, conditions=None):
+        # always return a series, tags show up in the Multiindex!
         try:
             return self.__read_frame(measurement=measurement, field=field, tags=tags, conditions=conditions)[field].dropna()
         except KeyError:
             return pd.Series({})
 
-    def write_series(self, ts, field, measurement, tags=None, batch_size=5000, time_precision="s"):
-        if len(ts) > 0:
-            # convert from date to datetime if needed...
-            if isinstance(ts.index[0], datetime.date):
-                ts.index = [pd.Timestamp(a) for a in ts.index]
+    def write(self, frame, measurement, field_columns=None, tag_columns=None, tags=None, batch_size=5000, time_precision="s"):
+        if len(frame.index) > 0:
+            if isinstance(frame.index[0], datetime.date):
+                frame.index = [pd.Timestamp(a) for a in frame.index]
 
-            self.write_points(dataframe=ts.to_frame(name=field), measurement=measurement, tags=tags, field_columns=[field],
-                              batch_size=batch_size, time_precision=time_precision)
+            assert isinstance(frame, pd.DataFrame)
+
+            self.__client.write_points(frame, measurement=measurement, tag_columns=tag_columns, tags=tags,
+                                       field_columns=field_columns, batch_size=batch_size, time_precision=time_precision)
 
     def __read_frame(self, measurement, field="*", tags=None, conditions=None):
         q = "SELECT {f}::field {t} from {m}{co}""".format(f=field, t=self.__tags(tags), m=measurement, co=self.__cond(conditions))
 
-        x = self.query(q)[measurement].tz_localize(None)
+        x = self.__client.query(q)[measurement].tz_localize(None)
         x.index.name = "time"
 
         if tags:
+            # append the tags to the index, time remains the first column in the new Multiindex
             assert isinstance(tags, list)
             x = x.set_index(keys=tags, append=True)
 
@@ -99,6 +103,6 @@ class Client(DataFrameClient, ExitStack):
     def last(self, measurement, field, conditions=None):
         try:
             query = """SELECT LAST({f}) FROM {m}{c}""".format(f=field, m=measurement, c=self.__cond(conditions))
-            return self.query(query)[measurement].index[0].tz_localize(None)
+            return self.__client.query(query)[measurement].index[0].tz_localize(None)
         except KeyError:
             return None

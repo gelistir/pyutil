@@ -1,5 +1,3 @@
-import os
-
 import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -94,13 +92,24 @@ class ProductInterface(MyMixin, Base):
         if not tags:
             tags = {}
 
-        ProductInterface.client.write_series(field=field, measurement=measurement, tags={**{"name": self.name}, **tags}, ts=ts)
+        ProductInterface.client.write(frame=ts.to_frame(name=field), field_columns=[field], measurement=measurement, tags={**{"name": self.name}, **tags})
+
+    def _frame_upsert(self, frame, measurement, field_columns=None, tag_columns=None, tags=None):
+        if not tags:
+            tags = {}
+
+        ProductInterface.client.write(frame=frame, field_columns=field_columns, measurement=measurement, tag_columns=tag_columns, tags={**{"name": self.name}, **tags})
 
     def _ts(self, field, measurement, conditions=None, tags=None):
-        if not conditions:
-            conditions = {"name": self.name}
+        if not tags:
+            tags = {}
 
-        return ProductInterface.client.read_series(field=field, measurement=measurement, conditions=conditions, tags=tags)
+        #ProductInterface.client.write_frame()
+
+        if not conditions:
+            conditions = {}
+
+        return ProductInterface.client.read(field=field, measurement=measurement, conditions={**{"name": self.name}, **conditions}, tags=tags)
 
     def _last(self, field, measurement, conditions=None):
         if not conditions:

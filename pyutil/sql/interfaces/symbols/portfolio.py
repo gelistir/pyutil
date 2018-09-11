@@ -30,51 +30,57 @@ class Portfolio(ProductInterface):
 
         ww.index.names = ["Date", "Asset"]
         pp.index.names = ["Date", "Asset"]
-        xx = pd.concat([ww, pp], axis=1).reset_index().set_index("Date")
 
-        Portfolio.client.write_points(xx, measurement="xxx2", tag_columns=["Asset"], field_columns=["Weight", "Price"], tags={"Portfolio": self.name}, batch_size=10000, time_precision="s")
+        # combine into frame Date, Asset, Weight Price...
+
+        frame = pd.concat([ww, pp], axis=1).reset_index().set_index("Date")
+
+        self._frame_upsert(frame=frame, field_columns=["Weight", "Price"], measurement="xxx2",
+                           tag_columns=["Asset"], tags={"name": self.name})
+
+
+        #Portfolio.client.write_points(xx, measurement="xxx2",
+        #                              tag_columns=["Asset"], field_columns=["Weight", "Price"], tags={"name": self.name},
+        #                              batch_size=10000, time_precision="s")
 
         # recompute the entire portfolio!
         portfolio_new = self.portfolio_influx
 
         # update the nav
-        super()._ts_upsert(ts=portfolio_new.nav.dropna(), field="nav", measurement="nav")
+        self._ts_upsert(ts=portfolio_new.nav.dropna(), field="nav", measurement="nav")
 
         # update the leverage
-        super()._ts_upsert(ts=portfolio_new.leverage.dropna(), field="leverage", measurement="leverage")
+        self._ts_upsert(ts=portfolio_new.leverage.dropna(), field="leverage", measurement="leverage")
 
         for asset in portfolio_new.assets:
-            symbol = symbols[asset]
-            if not symbol in self.symbols:
-                # append new symbol only if it isn't there yet
-                self.symbols.append(symbols[asset])
+            self.symbols.append(symbols[asset])
 
         return portfolio_new
 
     @property
     def portfolio_influx(self):
-        p = super().client.read_series(measurement="xxx2", field="Price", tags=["Asset"], conditions={"Portfolio": self.name}).unstack(level="Asset")
-        w = super().client.read_series(measurement="xxx2", field="Weight", tags=["Asset"], conditions={"Portfolio": self.name}).unstack(level="Asset")
+        p = self._ts(measurement="xxx2", field="Price", tags=["Asset"]).unstack(level="Asset")
+        w = self._ts(measurement="xxx2", field="Weight", tags=["Asset"]).unstack(level="Asset")
 
         return _Portfolio(prices=p, weights=w)
 
     @property
     def nav(self):
-        return fromNav(super()._ts(field="nav", measurement="nav"))
+        return fromNav(self._ts(field="nav", measurement="nav"))
 
     @property
     def leverage(self):
-        return super()._ts(field="leverage", measurement="leverage")
-
-    @staticmethod
-    def nav_all():
-        warnings.warn("deprecated", DeprecationWarning)
-        return ProductInterface.client.read_frame(measurement="nav", field="nav", tags=["name"])
-
-    @staticmethod
-    def leverage_all():
-        warnings.warn("deprecated", DeprecationWarning)
-        return ProductInterface.client.read_frame(measurement="leverage", field="leverage", tags=["name"])
+        return self._ts(field="leverage", measurement="leverage")
+    #
+    # @staticmethod
+    # def nav_all():
+    #     warnings.warn("deprecated", DeprecationWarning)
+    #     return ProductInterface.client.read_frame(measurement="nav", field="nav", tags=["name"])
+    #
+    # @staticmethod
+    # def leverage_all():
+    #     warnings.warn("deprecated", DeprecationWarning)
+    #     return ProductInterface.client.read_frame(measurement="leverage", field="leverage", tags=["name"])
 
     def sector(self, total=False):
         symbolmap = {s.name : s.group.name for s in self.symbols}

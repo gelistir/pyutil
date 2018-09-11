@@ -76,10 +76,6 @@ class TestOwner(unittest.TestCase):
         c1 = Custodian(name="UBS")
         c2 = Custodian(name="CS")
 
-        # not needed!
-        #o.securities.append(s1)
-        #o.securities.append(s2)
-
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
         o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
         o.upsert_position(security=s2, custodian=c2, ts=pd.Series({t1: 0.5, t2: 0.5}))
@@ -103,7 +99,6 @@ class TestOwner(unittest.TestCase):
         s1.reference[KIID] = 5
 
         # update the position in security s1
-        # o.securities.append(s1)
         o.upsert_position(security=s1, ts=pd.Series({t1: 0.1, t2: 0.4}))
 
         # update the volatility, note that you can update the volatility after the security has been added to the owner
@@ -118,6 +113,8 @@ class TestOwner(unittest.TestCase):
         for v in o.vola(index_col="KIID"):
             print(v)
 
+        # todo: finish the test
+
     def test_reference_frame(self):
         o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
         o.reference[NAME] = "Wurst"
@@ -125,14 +122,41 @@ class TestOwner(unittest.TestCase):
         pdt.assert_frame_equal(x, pd.DataFrame(index=["100"], columns=["Name"], data=[["Wurst"]]))
 
     def test_reference_securities_frame(self):
-        o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
         # create a security
         s1 = Security(name=410)
         s1.reference[KIID] = 5
 
-        # update the position in security s1
-        o.securities.append(s1)
-
-        x = Owner.reference_frame(products=o.securities)
+        x = Owner.reference_frame(products=[s1])
 
         pdt.assert_frame_equal(x, pd.DataFrame(index=["410"], columns=["KIID"], data=[[5]]))
+
+    def test_positions(self):
+        o1 = Owner(name=152, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
+        o2 = Owner(name=153, currency=Currency(name="EUR"), custodian=Custodian(name="CS"))
+
+        s1 = Security(name=460)
+        s2 = Security(name=461)
+
+        o1.upsert_position(security=s1, ts=pd.Series({t1: 0.1, t2: 0.4}))
+        o2.upsert_position(security=s1, ts=pd.Series({t2: 0.4}))
+        o1.upsert_position(security=s2, ts=pd.Series({t1: 0.7}))
+
+        p = set(Owner.positions(owners=[o1, o2], index_col=None))
+        self.assertEqual(len(p), 4)
+
+        #assert False
+
+        # todo: finish the test
+
+    def test_volatilities(self):
+        o1 = Owner(name=152, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
+        o2 = Owner(name=153, currency=Currency(name="EUR"), custodian=Custodian(name="CS"))
+
+        o1.upsert_volatility(ts=pd.Series({t1: 0.1, t2: 0.4}))
+        o2.upsert_volatility(ts=pd.Series({t2: 0.4}))
+
+        for owner, volatility in Owner.volatilities(owners=[o1, o2]):
+            print(owner)
+            print(volatility)
+
+        # todo: finish the test
