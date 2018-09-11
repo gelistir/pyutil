@@ -8,11 +8,14 @@ from influxdb import DataFrameClient
 
 
 class Client(ExitStack):
-    def __init__(self, host=None, port=8086, database=None, logger=None):
+    def __init__(self, host=None, port=8086, database=None, logger=None, username=None, password=None):
 
         host = host or os.environ["influxdb_host"]
         self.__database = database or os.environ["influxdb_db"]
-        self.__client = DataFrameClient(host=host, port=port)
+        username = username or os.environ["influxdb_username"]
+        password = password or os.environ["influxdb_password"]
+
+        self.__client = DataFrameClient(host=host, port=port, username=username, password=password)
         self.__client.create_database(dbname=self.database)
         self.__client.switch_database(database=self.database)
         self.__logger = logger or logging.getLogger(__name__)
@@ -28,6 +31,9 @@ class Client(ExitStack):
 
     def close(self):
         self.__client.close()
+
+    def drop_database(self, dbname):
+        self.__client.drop_database(dbname=dbname)
 
     @property
     def database(self):
