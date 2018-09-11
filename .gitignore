@@ -4,11 +4,9 @@ sandbox/*
 */__pycache__/
 todo
 results
-html-coverage
-html-report
-build
 .env
 env
 
 *.dot
 *.svg
+artifacts
