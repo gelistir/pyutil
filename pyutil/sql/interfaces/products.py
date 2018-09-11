@@ -89,25 +89,16 @@ class ProductInterface(MyMixin, Base):
 
     def _ts_upsert(self, ts, field, measurement, tags=None):
         """ update a series for a field """
-        if not tags:
-            tags = {}
-
-        ProductInterface.client.write(frame=ts.to_frame(name=field), field_columns=[field], measurement=measurement, tags={**{"name": self.name}, **tags})
+        tags = tags or {}
+        ProductInterface.client.write(frame=ts.to_frame(name=field), measurement=measurement, tags={**{"name": self.name}, **tags})
 
     def _frame_upsert(self, frame, measurement, field_columns=None, tag_columns=None, tags=None):
-        if not tags:
-            tags = {}
-
+        tags = tags or {}
         ProductInterface.client.write(frame=frame, field_columns=field_columns, measurement=measurement, tag_columns=tag_columns, tags={**{"name": self.name}, **tags})
 
     def _ts(self, field, measurement, conditions=None, tags=None):
-        if not tags:
-            tags = {}
-
-        #ProductInterface.client.write_frame()
-
-        if not conditions:
-            conditions = {}
+        tags = tags or {}
+        conditions = conditions or {}
 
         return ProductInterface.client.read(field=field, measurement=measurement, conditions={**{"name": self.name}, **conditions}, tags=tags)
 

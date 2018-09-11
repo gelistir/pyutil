@@ -160,3 +160,17 @@ class TestOwner(unittest.TestCase):
             print(volatility)
 
         # todo: finish the test
+
+    def test_double_position(self):
+        o = Owner(name=999, currency=Currency(name="USD"), custodian=Custodian(name="CS"))
+        s = Security(name=777)
+        x = pd.Series({t1.date(): 0.1})
+        o.upsert_position(s, ts=x)
+        #print(o.client.read(field="weight", measurement="WeightsOwner", tags=["security", "custodian"]))
+
+        self.assertEqual(len(list(o.position())), 1)
+
+        o.upsert_position(s, ts=x)
+        #print(o.client.read(field="weight", measurement="WeightsOwner", tags=["security", "custodian"]))
+
+        self.assertEqual(len(list(o.position())), 1)

@@ -66,7 +66,7 @@ class Owner(ProductInterface):
 
     @property
     def __position(self):
-        for security in self.securities:
+        for security in set(self.securities):
             ts = self._ts(field="weight", measurement="WeightsOwner", tags=["custodian"], conditions={"security": security.name})
             for (time, custodian), value in ts.items():
                 yield Position(date=time, custodian=custodian, security=security, owner=self, value=value)
@@ -82,7 +82,7 @@ class Owner(ProductInterface):
     @property
     def __volatility(self):
         #volas = self.client.read_series(field=)
-        for security in self.securities:
+        for security in set(self.securities):
             for vola in security.volatility(currency=self.currency):
                 yield Volatility(date=vola.date, currency=self.currency, security=vola.security, value=vola.value,
                                  owner=self)
@@ -119,7 +119,7 @@ class Owner(ProductInterface):
 
     @property
     def kiid(self):
-        for security in self.securities:  # {security.name: security.kiid for security in self.securities})
+        for security in set(self.securities):  # {security.name: security.kiid for security in self.securities})
             yield security.name, security.kiid
 
     # def kiid_weighted(self, sum=False, tail=None):
@@ -146,17 +146,16 @@ class Owner(ProductInterface):
     def upsert_position(self, security, ts, custodian=None):
         assert isinstance(security, Security)
 
-        # append the security. This is an idempotent operation!
-        self.securities.append(security)
+        # append the security. This is an idempotent operation! Not really!?
+        if not security in set(self.securities):
+            self.securities.append(security)
 
         # if not custodian:
         custodian = custodian or self.custodian
 
         assert isinstance(custodian, Custodian)
 
-        self._ts_upsert(ts=ts, field="weight",
-                                tags={"security": security.name, "custodian": custodian.name},
-                                measurement="WeightsOwner")
+        self._ts_upsert(ts=ts, field="weight", tags={"security": security.name, "custodian": custodian.name}, measurement="WeightsOwner")
 
     def upsert_volatility(self, ts):
         self._ts_upsert(ts=ts, field="volatility", measurement='VolatilityOwner')
@@ -176,7 +175,7 @@ class Owner(ProductInterface):
 
     @property
     def reference_securities(self):
-        for s in self.securities:
+        for s in set(self.securities):
             yield s, s.reference
 
     @staticmethod

@@ -37,7 +37,7 @@ class TestInfluxDB(TestCase):
     def test_write_series(self):
         nav = test_portfolio().nav
         nav.name = "nav"
-        self.client.write(frame=nav.to_frame(name="nav"), tags={"name": "test-a"}, field_columns=["nav"], measurement="nav")
+        self.client.write(frame=nav.to_frame(name="nav"), tags={"name": "test-a"}, measurement="nav")
         pdt.assert_series_equal(nav, self.client.read(field="nav", measurement="nav", conditions={"name": "test-a"}), check_names=False)
 
         # alternative way to read the series
@@ -65,15 +65,23 @@ class TestInfluxDB(TestCase):
         pdt.assert_series_equal(fromNav(frame["test-b"]).dropna(), nav.tail(20), check_names=False)
 
 
-
-
-    #def test_read_frame(self):
-    #    with self.assertRaises(KeyError):
-    #        frame = self.client.read_series(field="DoesNotExist", measurement="nav2", tags=["name"])
-
-
     def test_stack(self):
         c = Client(database="wurst")
         with c as client:
             print("hello")
 
+    def test_repeat(self):
+        nav = test_portfolio().nav
+        nav.name = "nav"
+        print(nav)
+
+        self.client.write(frame=nav.to_frame(name="wurst"), tags={"name": "test-wurst"}, measurement="navx")
+        y = self.client.read(field="wurst", tags=["name"], measurement="navx")
+
+        # write the entire series again!
+        self.client.write(frame=nav.to_frame(name="wurst"), tags={"name": "test-wurst"}, measurement="navx")
+        x = self.client.read(field="wurst", tags=["name"], measurement="navx")
+
+        self.assertEqual(len(x), len(y))
+
+        #assert False
