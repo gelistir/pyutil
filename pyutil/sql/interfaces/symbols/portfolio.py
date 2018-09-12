@@ -35,7 +35,7 @@ class Portfolio(ProductInterface):
 
         frame = pd.concat([ww, pp], axis=1).reset_index().set_index("Date")
 
-        self._frame_upsert(frame=frame, field_columns=["Weight", "Price"], measurement="xxx2",
+        self._frame_upsert(frame=frame, field_columns=["Weight", "Price"], measurement="portfoliosx",
                            tag_columns=["Asset"], tags={"name": self.name})
 
 
@@ -59,8 +59,8 @@ class Portfolio(ProductInterface):
 
     @property
     def portfolio_influx(self):
-        p = self._ts(measurement="xxx2", field="Price", tags=["Asset"]).unstack(level="Asset")
-        w = self._ts(measurement="xxx2", field="Weight", tags=["Asset"]).unstack(level="Asset")
+        p = self._ts(measurement="portfoliosx", field="Price", tags=["Asset"]).unstack(level="Asset")
+        w = self._ts(measurement="portfoliosx", field="Weight", tags=["Asset"]).unstack(level="Asset")
 
         return _Portfolio(prices=p, weights=w)
 

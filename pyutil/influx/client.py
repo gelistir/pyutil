@@ -46,6 +46,9 @@ class Client(ExitStack):
     def drop_database(self, dbname):
         self.__client.drop_database(dbname=dbname)
 
+    def drop_measurement(self, measurement):
+        self.__client.drop_measurement(measurement=measurement)
+
     @property
     def database(self):
         return self.__database
