@@ -53,7 +53,8 @@ class Portfolio(ProductInterface):
         self._ts_upsert(ts=portfolio_new.leverage.dropna(), field="leverage", measurement="leverage")
 
         for asset in portfolio_new.assets:
-            self.symbols.append(symbols[asset])
+            if symbols[asset] not in set(self.symbols):
+                self.symbols.append(symbols[asset])
 
         return portfolio_new
 
