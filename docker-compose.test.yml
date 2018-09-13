@@ -10,7 +10,7 @@ services:
         - ./pyutil:/pyutil/pyutil:ro
         - ./test:/pyutil/test:ro
         - ./artifacts:/pyutil/artifacts
-        - ./source:/source:ro
+        - ./source:/source
 
      env_file:
        - test/.env-test
