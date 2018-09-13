@@ -1,6 +1,7 @@
 import logging
 import pandas as pd
 
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 
@@ -10,9 +11,10 @@ from pyutil.sql.session import get_one_or_create
 
 
 class HistoryInterface(ABC):
-    def __init__(self, session, logger=None):
+    def __init__(self, session, influx_client, logger=None):
         self.__session = session
         self.__logger = logger or logging.getLogger(__name__)
+        ProductInterface.client = influx_client
 
     @staticmethod
     @abstractmethod

@@ -15,8 +15,8 @@ from test.config import test_portfolio
 
 
 class LocalHistory(HistoryInterface):
-    def __init__(self, session):
-        super().__init__(session)
+    def __init__(self, session, influx_client):
+        super().__init__(session, influx_client)
 
     @staticmethod
     def read_history(ticker, t0, field):
@@ -24,8 +24,8 @@ class LocalHistory(HistoryInterface):
 
 
 class LocalHistoryFaulty(HistoryInterface):
-    def __init__(self, session):
-        super().__init__(session)
+    def __init__(self, session, influx_client):
+        super().__init__(session, influx_client)
 
     @staticmethod
     def read_history(ticker, t0, field):
@@ -62,7 +62,7 @@ class TestHistory(TestCase):
             pdt.assert_series_equal(symbol.price(field="PX_LAST"), pd.Series({}))
 
         # run will fire off the reading
-        hist = LocalHistory(session=self.session)
+        hist = LocalHistory(session=self.session, influx_client=test_client())
 
         pdt.assert_series_equal(hist.age(today=pd.Timestamp("2016-02-21")).dropna(), pd.Series({}, dtype=object))
 
@@ -102,6 +102,6 @@ class TestHistoryFaulty(TestCase):
         cls.session.close()
 
     def test_history_faulty(self):
-        hist = LocalHistoryFaulty(session=self.session)
+        hist = LocalHistoryFaulty(session=self.session, influx_client=test_client())
         hist.run()
 
