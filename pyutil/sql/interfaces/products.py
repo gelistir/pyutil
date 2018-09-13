@@ -7,7 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
-from pyutil.influx.client import __Client
+from pyutil.influx.client import Client
 from pyutil.sql.base import Base
 from pyutil.sql.model.ref import _ReferenceData, Field
 
@@ -100,7 +100,10 @@ class ProductInterface(MyMixin, Base):
         tags = tags or {}
         conditions = conditions or {}
 
-        return ProductInterface.client.read(field=field, measurement=measurement, conditions={**{"name": self.name}, **conditions}, tags=tags)
+        try:
+            return ProductInterface.client.read(field=field, measurement=measurement, conditions={**{"name": self.name}, **conditions}, tags=tags)[field].dropna()
+        except KeyError:
+            return pd.Series({})
 
     def _last(self, field, measurement, conditions=None):
         if not conditions:

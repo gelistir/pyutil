@@ -1,4 +1,3 @@
-import collections
 import datetime
 import logging
 import os
@@ -7,20 +6,14 @@ from contextlib import ExitStack
 import pandas as pd
 from influxdb import DataFrameClient
 
-ConnectionInflux = collections.namedtuple(typename='ConnectionInflux', field_names=['host', 'port', 'database', 'user', 'password'])
-
-
-def tuple2influx_client(tuple):
-    return __Client(host=tuple.host, port=tuple.port, database=tuple.database, username=tuple.user, password=tuple.password)
-
 
 def test_client(database="test"):
-    client = __Client(host="test-influxdb", port=8086, database=database, username="root", password="root")
+    client = Client(host="test-influxdb", port=8086, database=database, username="root", password="root")
     client.recreate(dbname=database)
     return client
 
 
-class __Client(ExitStack):
+class Client(ExitStack):
     def __init__(self, host=None, port=None, database=None, logger=None, username=None, password=None):
 
         host = host or os.environ["influxdb_host"]
@@ -99,7 +92,7 @@ class __Client(ExitStack):
     def read(self, field, measurement, tags=None, conditions=None):
         # always return a series, tags show up in the Multiindex!
         try:
-            return self.__read_frame(measurement=measurement, field=field, tags=tags, conditions=conditions)[field].dropna()
+            return self.__read_frame(measurement=measurement, field=field, tags=tags, conditions=conditions)#[field].dropna()
         except KeyError:
             return pd.Series({})
 
@@ -114,8 +107,7 @@ class __Client(ExitStack):
                                        field_columns=field_columns, batch_size=batch_size, time_precision=time_precision)
 
     def __read_frame(self, measurement, field="*", tags=None, conditions=None):
-        q = "SELECT {f}::field {t} from {m}{co}""".format(f=field, t=self.__tags(tags), m=measurement, co=self.__cond(conditions))
-
+        q = "SELECT {f} {t} from {m}{co}""".format(f=field, t=self.__tags(tags), m=measurement, co=self.__cond(conditions))
         x = self.__client.query(q)[measurement].tz_localize(None)
         x.index.name = "time"
 

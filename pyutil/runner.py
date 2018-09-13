@@ -7,24 +7,23 @@ from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from pyutil.influx.client import tuple2influx_client
-from pyutil.sql.session import tuple2connection_str
+from pyutil.influx.client import Client
 
 
 class Runner(object):
-    def __init__(self, sql=None, influxdb=None, logger=None):
+    def __init__(self, sql=None, logger=None):
         self._sql = sql
-        self._influxdb = influxdb
 
         self._logger = logger or logging.getLogger(__name__)
         self.__jobs = []
 
     def engine(self, echo=False):
         """ Create a fresh new session... """
-        return create_engine(tuple2connection_str(self._sql), echo=echo)
+        return create_engine(self._sql, echo=echo)
 
     def influx_client(self):
-        return tuple2influx_client(self._influxdb)
+        # here you read from the environment variables!
+        return Client()
 
     def connection(self, echo=False):
         return self.engine(echo=echo).connect()

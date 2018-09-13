@@ -8,13 +8,10 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 
-ConnectionString = collections.namedtuple(typename='ConnectionSQL', field_names=['host', 'database', 'user', 'password'])
 
-
-def tuple2connection_str(tuple):
-    return 'postgresql+psycopg2://{user}:{password}@{host}/{db}'.format(user=tuple.user, password=tuple.password,
-                                                                        host=tuple.host, db=tuple.database)
-
+def connection_str(user, password, host, database):
+    return 'postgresql+psycopg2://{user}:{password}@{host}/{db}'.format(user=user, password=password,
+                                                                        host=host, db=database)
 
 def get_one_or_create(session, model, **kwargs):
     #  see http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/
@@ -40,11 +37,9 @@ def postgresql_db_test(base, name=None, echo=False, views=None):
     # session object
     awake = False
     name = name or "".join(random.choices(string.ascii_lowercase, k=10))
-    tuple1 = ConnectionString(user="postgres", password="test", host="test-postgresql", database="postgres")
-    tuple2 = ConnectionString(user="postgres", password="test", host="test-postgresql", database=name)
 
-    str_test = tuple2connection_str(tuple=tuple1)
-    print(str_test)
+    str_test = connection_str(user="postgres", password="test", host="test-postgresql", database="postgres")
+    str_name = connection_str(user="postgres", password="test", host="test-postgresql", database=name)
 
     while not awake:
         try:
@@ -62,7 +57,7 @@ def postgresql_db_test(base, name=None, echo=False, views=None):
     conn.execute("""CREATE DATABASE {name}""".format(name=name))
     conn.close()
 
-    engine = create_engine(tuple2connection_str(tuple2), echo=echo)
+    engine = create_engine(str_name, echo=echo)
 
     # drop all tables (even if there are none)
     base.metadata.drop_all(engine)
@@ -74,4 +69,4 @@ def postgresql_db_test(base, name=None, echo=False, views=None):
         with open(views) as file:
             engine.execute(file.read())
 
-    return sessionmaker(bind=engine)(), tuple2
+    return sessionmaker(bind=engine)(), str_name
