@@ -1,3 +1,4 @@
+import collections
 import datetime
 import logging
 import os
@@ -6,14 +7,20 @@ from contextlib import ExitStack
 import pandas as pd
 from influxdb import DataFrameClient
 
+ConnectionInflux = collections.namedtuple(typename='ConnectionInflux', field_names=['host', 'port', 'database', 'user', 'password'])
 
-def test_client(host="test-influxdb", port=8086, database="test", username="root", password="root"):
-    client = Client(host=host, port=port, database=database, username=username, password=password)
+
+def tuple2influx_client(tuple):
+    return __Client(host=tuple.host, port=tuple.port, database=tuple.database, username=tuple.user, password=tuple.password)
+
+
+def test_client(database="test"):
+    client = __Client(host="test-influxdb", port=8086, database=database, username="root", password="root")
     client.recreate(dbname=database)
     return client
 
 
-class Client(ExitStack):
+class __Client(ExitStack):
     def __init__(self, host=None, port=None, database=None, logger=None, username=None, password=None):
 
         host = host or os.environ["influxdb_host"]

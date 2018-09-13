@@ -1,3 +1,4 @@
+import collections
 import random
 import string
 from time import sleep
@@ -7,9 +8,12 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 
+ConnectionString = collections.namedtuple(typename='ConnectionSQL', field_names=['host', 'database', 'user', 'password'])
 
-def str_postgres(user="postgres", password="test", server="test-postgresql", db="postgres"):
-    return 'postgresql+psycopg2://{user}:{password}@{server}/{db}'.format(user=user, password=password, server=server, db=db)
+
+def tuple2connection_str(tuple):
+    return 'postgresql+psycopg2://{user}:{password}@{host}/{db}'.format(user=tuple.user, password=tuple.password,
+                                                                        host=tuple.host, db=tuple.database)
 
 
 def get_one_or_create(session, model, **kwargs):
@@ -35,9 +39,12 @@ def get_one_or_none(session, model, **kwargs):
 def postgresql_db_test(base, name=None, echo=False, views=None):
     # session object
     awake = False
+    name = name or "".join(random.choices(string.ascii_lowercase, k=10))
+    tuple1 = ConnectionString(user="postgres", password="test", host="test-postgresql", database="postgres")
+    tuple2 = ConnectionString(user="postgres", password="test", host="test-postgresql", database=name)
 
-    str_test = str_postgres()
-    assert str_test == "postgresql+psycopg2://postgres:test@test-postgresql/postgres"
+    str_test = tuple2connection_str(tuple=tuple1)
+    print(str_test)
 
     while not awake:
         try:
@@ -48,8 +55,6 @@ def postgresql_db_test(base, name=None, echo=False, views=None):
         except OperationalError:
             sleep(1)
 
-    name = name or "".join(random.choices(string.ascii_lowercase, k=10))
-
     # String interpolation here!? Please avoid
     conn.execute("""DROP DATABASE IF EXISTS {name}""".format(name=name))
     conn.execute("commit")
@@ -57,7 +62,7 @@ def postgresql_db_test(base, name=None, echo=False, views=None):
     conn.execute("""CREATE DATABASE {name}""".format(name=name))
     conn.close()
 
-    engine = create_engine(str_postgres(db=name), echo=echo)
+    engine = create_engine(tuple2connection_str(tuple2), echo=echo)
 
     # drop all tables (even if there are none)
     base.metadata.drop_all(engine)
@@ -69,6 +74,4 @@ def postgresql_db_test(base, name=None, echo=False, views=None):
         with open(views) as file:
             engine.execute(file.read())
 
-    return sessionmaker(bind=engine)(), str_postgres(db=name)
-
-
+    return sessionmaker(bind=engine)(), tuple2

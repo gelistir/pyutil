@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.strategy import Strategy
-from pyutil.sql.runner import Runner
+from pyutil.runner import Runner
 from pyutil.sql.session import postgresql_db_test
 
 class WorkerImpl1(multiprocessing.Process):
@@ -26,8 +26,8 @@ class WorkerImpl2(multiprocessing.Process):
 
 
 class RunnerImpl(Runner):
-    def __init__(self, connection_str):
-        super().__init__(connection_str)
+    def __init__(self, sql=None, influxdb=None):
+        super().__init__(sql, influxdb)
         manager = Manager()
         self.__dict = manager.dict()
 
@@ -45,7 +45,7 @@ class RunnerImpl(Runner):
 class TestRunnerSession(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session, cls.connection_str = postgresql_db_test(base=Base)
+        cls.session, cls.connection_tuple = postgresql_db_test(base=Base)
         cls.session.add_all([Strategy(name="Peter"), Strategy(name="Maffay")])
         cls.session.commit()
 
@@ -54,7 +54,7 @@ class TestRunnerSession(TestCase):
         cls.session.close()
 
     def test_iterate_strategies(self):
-        runner = RunnerImpl(connection_str=self.connection_str)
+        runner = RunnerImpl(sql=self.connection_tuple)
         runner.iterate_objects(object_cls=Strategy, target=runner.target)
         print(runner.dict)
         self.assertDictEqual(dict(runner.dict),  {'Peter': 'Peter', 'Maffay': 'Maffay'})

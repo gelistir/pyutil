@@ -1,3 +1,4 @@
+import collections
 import logging
 import multiprocessing
 import os
@@ -6,16 +7,24 @@ from contextlib import contextmanager
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
+from pyutil.influx.client import tuple2influx_client
+from pyutil.sql.session import tuple2connection_str
+
 
 class Runner(object):
-    def __init__(self, connection_str=None, logger=None):
-        self._connection_str = connection_str
+    def __init__(self, sql=None, influxdb=None, logger=None):
+        self._sql = sql
+        self._influxdb = influxdb
+
         self._logger = logger or logging.getLogger(__name__)
         self.__jobs = []
 
     def engine(self, echo=False):
         """ Create a fresh new session... """
-        return create_engine(self._connection_str, echo=echo)
+        return create_engine(tuple2connection_str(self._sql), echo=echo)
+
+    def influx_client(self):
+        return tuple2influx_client(self._influxdb)
 
     def connection(self, echo=False):
         return self.engine(echo=echo).connect()

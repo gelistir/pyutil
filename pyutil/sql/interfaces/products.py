@@ -7,7 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
-from pyutil.influx.client import Client
+from pyutil.influx.client import __Client
 from pyutil.sql.base import Base
 from pyutil.sql.model.ref import _ReferenceData, Field
 
