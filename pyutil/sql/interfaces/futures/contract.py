@@ -13,6 +13,7 @@ class Contract(ProductInterface):
     _future_id = sq.Column("future_id", sq.Integer, sq.ForeignKey("future.id"))
     _future = relationship("Future", foreign_keys=[_future_id], back_populates="contracts")
     _notice = sq.Column("notice", sq.Date)
+    _last_tradeable = sq.Column("last_tradeable", sq.Date)
     _figi = sq.Column("figi", sq.String(200), unique=True)
     bloomberg_symbol = sq.Column(sq.String(200))
     fut_month_yr = sq.Column(sq.String(200))
@@ -27,7 +28,7 @@ class Contract(ProductInterface):
     def __lt__(self, other):
         return self.notice < other.notice
 
-    def __init__(self, figi, notice, bloomberg_symbol=None, fut_month_yr=None):
+    def __init__(self, figi, notice, bloomberg_symbol=None, fut_month_yr=None, last_tradeable_date=None):
         super().__init__(name=figi)
 
         assert isinstance(notice, Date)
@@ -36,6 +37,8 @@ class Contract(ProductInterface):
         self._notice = notice
         self.bloomberg_symbol = bloomberg_symbol
         self.fut_month_yr = fut_month_yr
+        self._last_tradeable_date = last_tradeable_date
+
 
     @hybrid_property
     def figi(self):
@@ -49,6 +52,9 @@ class Contract(ProductInterface):
     def notice(self):
         return self._notice
 
+    @hybrid_property
+    def notice2(self):
+        return min(self._notice, self._last_tradeable_date)
     @property
     def quandl(self):
         return "{quandl}{month}{year}".format(quandl=self._future.quandl, month=self.month_x, year=self.year)
