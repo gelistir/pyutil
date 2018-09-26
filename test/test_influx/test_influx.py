@@ -75,9 +75,8 @@ class TestInfluxDB(TestCase):
             print("hello")
 
     def test_repeat(self):
-        nav = test_portfolio().nav
+        nav = test_portfolio().nav.dropna()
         nav.name = "nav"
-        print(nav)
 
         self.client.write(frame=nav.to_frame(name="wurst"), tags={"name": "test-wurst"}, measurement="navx")
         y = self.client.read(field="wurst", tags=["name"], measurement="navx")["wurst"].dropna()
@@ -87,5 +86,3 @@ class TestInfluxDB(TestCase):
         x = self.client.read(field="wurst", tags=["name"], measurement="navx")["wurst"].dropna()
 
         self.assertEqual(len(x), len(y))
-
-        #assert False
