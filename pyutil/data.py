@@ -55,7 +55,7 @@ class Database(object):
     def session(self, echo=False):
         """Provide a transactional scope around a series of operations."""
         try:
-            s = self.__session(echo=echo)
+            s = self.__session
             yield s
             s.commit()
         except Exception as e:
