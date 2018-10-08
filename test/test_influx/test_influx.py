@@ -37,7 +37,7 @@ class TestInfluxDB(TestCase):
     def test_write_series(self):
         nav = test_portfolio().nav
         nav.name = "nav"
-        self.client.write(frame=nav.to_frame(name="nav"), tags={"name": "test-a"}, measurement="nav")
+        self.client.write(frame=nav.to_frame(name="nav"), tags={"name": "test-a", "singer": "Peter Maffay"}, measurement="nav")
         pdt.assert_series_equal(nav, self.client.read(field="nav", measurement="nav", conditions={"name": "test-a"})["nav"].dropna(), check_names=False)
 
         # alternative way to read the series

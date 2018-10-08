@@ -208,7 +208,7 @@ class NavSeries(pd.Series):
         Extract the series of monthly returns in the current year
         :return:
         """
-        return self.__ytd(self.returns_monthly, today=self.index[-1]).sort_index(ascending=False).rename(index=lambda x: x.strftime("%b"))
+        return self.__ytd(self.returns_monthly, today=self.index[-1]).sort_index(ascending=False).rename(index=lambda x: "{:02d}".format(x.month))
 
     def recent(self, n=15):
         return self.returns.tail(n).dropna()
