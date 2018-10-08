@@ -11,10 +11,10 @@ from pyutil.sql.session import get_one_or_create
 
 
 class HistoryInterface(ABC):
-    def __init__(self, session, influx_client, logger=None):
+    def __init__(self, session, logger=None):
         self.__session = session
         self.__logger = logger or logging.getLogger(__name__)
-        ProductInterface.client = influx_client
+        #ProductInterface.client = influx_client
 
     @staticmethod
     @abstractmethod
