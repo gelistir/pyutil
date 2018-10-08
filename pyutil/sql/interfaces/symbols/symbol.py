@@ -37,8 +37,8 @@ class Symbol(ProductInterface):
 
     @staticmethod
     def frame(field="PX_LAST"):
-        return Symbol.client.read(measurement=Symbol._measurements, field=field, tags=["name"])[field].dropna().unstack(level="name")
+        return ProductInterface.client.read(measurement=Symbol._measurements, field=field, tags=["name"])[field].dropna().unstack(level="name")
 
     @staticmethod
     def symbol(name, field="PX_LAST"):
-        return Symbol.client.read(field=field, measurement=Symbol._measurements, conditions={"name": name})[field].dropna()
+        return ProductInterface.client.read(field=field, measurement=Symbol._measurements, conditions={"name": name})[field].dropna()

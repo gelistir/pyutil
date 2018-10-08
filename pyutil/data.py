@@ -1,3 +1,4 @@
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 
@@ -8,6 +9,8 @@ class Database(object):
         # session, sql database
         self.__session = session
         self.__client = client
+        # this is how the sql database is using influx...
+        ProductInterface.client = self.__client
 
     def close(self):
         self.__session.close()
