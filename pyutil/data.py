@@ -1,8 +1,7 @@
-from contextlib import contextmanager
-
 import pandas as pd
 
 from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 
@@ -56,15 +55,5 @@ class Database(object):
         # we prefer this solution as is goes through the cleaner SQL database!
         return pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
 
-    #@contextmanager
-    #def session(self):
-    #    """Provide a transactional scope around a series of operations."""
-    #    try:
-    #        s = self.__session
-    #        yield s
-    #        s.commit()
-    #    except Exception as e:
-    #        s.rollback()
-    #        raise e
-    #    finally:
-    #        s.close()
+    def frame(self, name):
+        return self.session.query(Frame).filter_by(name=name).one()
