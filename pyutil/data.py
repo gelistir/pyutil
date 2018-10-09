@@ -3,6 +3,7 @@ import pandas as pd
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
+from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 
@@ -35,11 +36,19 @@ class Database(object):
     def portfolios(self):
         return self.__session.query(Portfolio)
 
+    @property
+    def strategies(self):
+        return self.__session.query(Strategy)
+
+
     def symbol(self, name):
         return self.symbols.filter(Symbol.name == name).one()
 
     def portfolio(self, name):
         return self.portfolios.filter(Portfolio.name == name).one()
+
+    def strategy(self, name):
+        return self.strategies.filter(Strategy.name == name).one()
 
     @property
     def reference(self):
