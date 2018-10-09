@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from pyutil.influx.client import Client
+from pyutil.sql.session import session as session_cm
 
 
 class Runner(object):
@@ -17,32 +18,35 @@ class Runner(object):
         self._logger = logger or logging.getLogger(__name__)
         self.__jobs = []
 
-    def engine(self, echo=False):
-        """ Create a fresh new session... """
-        return create_engine(self._sql, echo=echo)
+    #def engine(self, echo=False):
+    #    """ Create a fresh new session... """
+    #    return create_engine(self._sql, echo=echo)
 
-    def influx_client(self):
-        # here you read from the environment variables!
-        return Client()
+    #def influx_client(self):
+    #    # here you read from the environment variables!
+    #    return Client()
 
-    def connection(self, echo=False):
-        return self.engine(echo=echo).connect()
+    #def connection(self, echo=False):
+    #    return self.engine(echo=echo).connect()
 
-    def _session(self, echo=False):
-        return Session(bind=self.connection(echo=echo))
+    #def _session(self, echo=False):
+    #    return Session(bind=self.connection(echo=echo))
 
-    @contextmanager
     def session(self, echo=False):
-        """Provide a transactional scope around a series of operations."""
-        try:
-            s = self._session(echo=echo)
-            yield s
-            s.commit()
-        except Exception as e:
-            s.rollback()
-            raise e
-        finally:
-            s.close()
+        return session_cm(connection_str=self._sql, echo=echo)
+
+    #@contextmanager
+    #def session(self, echo=False):
+    #    """Provide a transactional scope around a series of operations."""
+    #    try:
+    #        s = self._session(echo=echo)
+    #        yield s
+    #        s.commit()
+    #    except Exception as e:
+    #        s.rollback()
+    #        raise e
+    #    finally:
+    #        s.close()
 
     def run_jobs(self):
         self._logger.debug("PID main {pid}".format(pid=os.getpid()))
