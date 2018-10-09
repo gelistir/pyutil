@@ -1,12 +1,28 @@
-import collections
 import random
 import string
+from contextlib import contextmanager
 from time import sleep
 
 from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.orm.exc import NoResultFound
+
+
+@contextmanager
+def session(connection_str, echo=False):
+    """Provide a transactional scope around a series of operations."""
+    try:
+        engine = create_engine(connection_str, echo=echo)
+        connection = engine.connect()
+        s = Session(bind=connection)
+        yield s
+        s.commit()
+    except Exception as e:
+        s.rollback()
+        raise e
+    finally:
+         s.close()
 
 
 def connection_str(user, password, host, database):

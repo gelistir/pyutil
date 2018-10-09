@@ -1,29 +1,10 @@
 from contextlib import contextmanager
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+import pandas as pd
 
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.symbol import Symbol
-
-
-def engine(sql, echo=False):
-    """ Create a fresh new session... """
-    return create_engine(sql, echo=echo)
-
-
-#def influx_client(self):
-#    # here you read from the environment variables!
-#    return Client()
-
-
-def connection(sql, echo=False):
-    return engine(sql=sql, echo=echo).connect()
-
-
-def session(sql, echo=False):
-    return Session(bind=connection(sql=sql, echo=echo))
 
 
 class Database(object):
@@ -44,6 +25,10 @@ class Database(object):
         return self.__client
 
     @property
+    def session(self):
+        return self.__session
+
+    @property
     def symbols(self):
         return self.__session.query(Symbol)
 
@@ -51,15 +36,35 @@ class Database(object):
     def portfolios(self):
         return self.__session.query(Portfolio)
 
-    @contextmanager
-    def session(self, echo=False):
-        """Provide a transactional scope around a series of operations."""
-        try:
-            s = self.__session
-            yield s
-            s.commit()
-        except Exception as e:
-            s.rollback()
-            raise e
-        finally:
-            s.close()
+    def symbol(self, name):
+        return self.symbols.filter(Symbol.name == name).one()
+
+    def portfolio(self, name):
+        return self.portfolios.filter(Portfolio.name == name).one()
+
+    @property
+    def reference(self):
+        return Symbol.reference_frame(self.symbols)
+
+    def sector(self, total=False):
+        return pd.DataFrame({p.name: p.sector(total=total).iloc[-1] for p in self.portfolios}).transpose()
+
+    def nav(self, f=None):
+        #if not f:
+        f = f or (lambda x: x)
+
+        # we prefer this solution as is goes through the cleaner SQL database!
+        return pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
+
+    #@contextmanager
+    #def session(self):
+    #    """Provide a transactional scope around a series of operations."""
+    #    try:
+    #        s = self.__session
+    #        yield s
+    #        s.commit()
+    #    except Exception as e:
+    #        s.rollback()
+    #        raise e
+    #    finally:
+    #        s.close()
