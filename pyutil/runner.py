@@ -1,13 +1,7 @@
-import collections
 import logging
 import multiprocessing
 import os
-from contextlib import contextmanager
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-
-from pyutil.influx.client import Client
 from pyutil.sql.session import session as session_cm
 
 
@@ -18,35 +12,8 @@ class Runner(object):
         self._logger = logger or logging.getLogger(__name__)
         self.__jobs = []
 
-    #def engine(self, echo=False):
-    #    """ Create a fresh new session... """
-    #    return create_engine(self._sql, echo=echo)
-
-    #def influx_client(self):
-    #    # here you read from the environment variables!
-    #    return Client()
-
-    #def connection(self, echo=False):
-    #    return self.engine(echo=echo).connect()
-
-    #def _session(self, echo=False):
-    #    return Session(bind=self.connection(echo=echo))
-
     def session(self, echo=False):
         return session_cm(connection_str=self._sql, echo=echo)
-
-    #@contextmanager
-    #def session(self, echo=False):
-    #    """Provide a transactional scope around a series of operations."""
-    #    try:
-    #        s = self._session(echo=echo)
-    #        yield s
-    #        s.commit()
-    #    except Exception as e:
-    #        s.rollback()
-    #        raise e
-    #    finally:
-    #        s.close()
 
     def run_jobs(self):
         self._logger.debug("PID main {pid}".format(pid=os.getpid()))
@@ -66,7 +33,7 @@ class Runner(object):
     def jobs(self):
         return self.__jobs
 
-    def append_job(self, job):
+    def _append_job(self, job):
         self.jobs.append(job)
         return job
 
@@ -76,7 +43,7 @@ class Runner(object):
                 self._logger.debug("Object {s}".format(s=obj))
                 j = multiprocessing.Process(target=target, args=(obj.id, ))
                 j.name = obj.name
-                self.append_job(job=j)
+                self._append_job(job=j)
 
             self.run_jobs()
 

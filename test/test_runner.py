@@ -48,9 +48,6 @@ class TestRunnerSession(TestCase):
         cls.session, cls.connection_tuple = postgresql_db_test(base=Base)
         cls.session.add_all([Strategy(name="Peter"), Strategy(name="Maffay")])
         cls.session.commit()
-
-    @classmethod
-    def tearDownClass(cls):
         cls.session.close()
 
     def test_iterate_strategies(self):
@@ -66,14 +63,14 @@ class TestRunner(TestCase):
 
         # worker will raise an Exception!
         with self.assertRaises(AssertionError):
-            runner.append_job(WorkerImpl1(name="Peter", x=10))
+            runner._append_job(WorkerImpl1(name="Peter", x=10))
             runner.run_jobs()
 
     def test_Runner_Correct(self):
         runner = Runner()
 
         # worker will not raise an Exception!
-        runner.append_job(WorkerImpl2(name="Peter", x=10))
+        runner._append_job(WorkerImpl2(name="Peter", x=10))
         runner.run_jobs()
 
     def test_Runner_empty(self):
@@ -83,16 +80,3 @@ class TestRunner(TestCase):
         # this won't do any harm
         runner.run_jobs()
 
-    #def test_session(self):
-        #runner = Runner(connection_str=self.connection_str)
-        #with runner.session() as session:
-        #    self.assertIsNotNone(session)
-        #    session.add(User(name="Hans"))
-        #    session.add(User(name="Dampf"))
-
-        # it will now commit both users as soon as we exit the with statement
-        # this will now create a second fresh session from scratch!
-        #with runner.session() as session:
-        #    x = session.query(User).filter_by(name="Hans").one()
-        #    self.assertIsNotNone(x)
-        #    self.assertIsInstance(x, User)

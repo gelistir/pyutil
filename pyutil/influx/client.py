@@ -7,10 +7,8 @@ import pandas as pd
 from influxdb import DataFrameClient
 
 
-def test_client(database="test"):
-    client = Client(host="test-influxdb", port=8086, database=database, username="root", password="root")
-    client.recreate(dbname=database)
-    return client
+def test_client(database="test", port=8086, host="test-influxdb", username="root", password="root"):
+    return Client(host=host, port=port, database=database, username=username, password=password)
 
 
 class Client(ExitStack):

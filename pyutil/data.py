@@ -5,20 +5,23 @@ from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
+from pyutil.sql.model.ref import Field
 
 
 class Database(object):
 
-    def __init__(self, session, client):
+    def __init__(self, session, client=None):
         # session, sql database
         self.__session = session
-        self.__client = client
-        # this is how the sql database is using influx...
-        ProductInterface.client = self.__client
+        if client:
+            self.__client = client
+            # this is how the sql database is using influx...
+            ProductInterface.client = self.__client
 
     def close(self):
         self.__session.close()
-        self.__client.close()
+        if self.__client:
+            self.__client.close()
 
     @property
     def influx_client(self):
@@ -40,6 +43,13 @@ class Database(object):
     def strategies(self):
         return self.__session.query(Strategy)
 
+    @property
+    def frames(self):
+        return self.__session.query(Frame)
+
+    @property
+    def fields(self):
+        return self.__session.query(Field)
 
     def symbol(self, name):
         return self.symbols.filter(Symbol.name == name).one()
@@ -58,7 +68,6 @@ class Database(object):
         return pd.DataFrame({p.name: p.sector(total=total).iloc[-1] for p in self.portfolios}).transpose()
 
     def nav(self, f=None):
-        #if not f:
         f = f or (lambda x: x)
 
         # we prefer this solution as is goes through the cleaner SQL database!
