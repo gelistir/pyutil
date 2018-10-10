@@ -50,11 +50,11 @@ class TestInfluxDB(TestCase):
 
     def test_write_series_date(self):
         x = pd.Series({pd.Timestamp("1978-11-12").date(): 5.1})
-        self.client.write(frame=x.to_frame(name="temperature"), tags={"name": "birthday"}, measurement="navx")
-        y = self.client.read(field="temperature", measurement="navx", conditions={"name": "birthday"})["temperature"].dropna()
+        self.client.write(frame=x.to_frame(name="temperature"), tags={"name": "birthday"}, measurement="navxx")
+        y = self.client.read(field="temperature", measurement="navxx", conditions={"name": "birthday"})["temperature"].dropna()
         pdt.assert_series_equal(y, pd.Series({pd.Timestamp("1978-11-12"): 5.1}, name="temperature"), check_names=False)
 
-        z = self.client.read(field="*", tags=None, measurement="navx")
+        z = self.client.read(field="*", tags=None, measurement="navxx")
         pdt.assert_frame_equal(z, pd.DataFrame(index=[pd.Timestamp("1978-11-12")], data=[["birthday",5.1]],columns=["name","temperature"]), check_names=False)
         #assert False
 
