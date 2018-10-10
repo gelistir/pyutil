@@ -1,11 +1,8 @@
 import multiprocessing
-from multiprocessing import Manager
 from unittest import TestCase
 
-from pyutil.sql.base import Base
-from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.runner import Runner
-from pyutil.sql.session import postgresql_db_test
+
 
 class WorkerImpl1(multiprocessing.Process):
     def __init__(self, name, x):
@@ -23,24 +20,6 @@ class WorkerImpl2(multiprocessing.Process):
 
     def run(self):
         assert True
-
-
-class RunnerImpl(Runner):
-    def __init__(self, sql=None, influxdb=None):
-        super().__init__(sql, influxdb)
-        manager = Manager()
-        self.__dict = manager.dict()
-
-    def target(self, strategy_id):
-        with self.session() as session:
-            s = session.query(Strategy).filter_by(id=strategy_id).one()
-            self.__dict[s.name] = s.name
-            print(s)
-
-    @property
-    def dict(self):
-        return self.__dict
-
 
 
 class TestRunner(TestCase):
