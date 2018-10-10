@@ -42,20 +42,6 @@ class RunnerImpl(Runner):
         return self.__dict
 
 
-class TestRunnerSession(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.session, cls.connection_tuple = postgresql_db_test(base=Base)
-        cls.session.add_all([Strategy(name="Peter"), Strategy(name="Maffay")])
-        cls.session.commit()
-        cls.session.close()
-
-    def test_iterate_strategies(self):
-        runner = RunnerImpl(sql=self.connection_tuple)
-        runner.iterate_objects(object_cls=Strategy, target=runner.target)
-        print(runner.dict)
-        self.assertDictEqual(dict(runner.dict),  {'Peter': 'Peter', 'Maffay': 'Maffay'})
-
 
 class TestRunner(TestCase):
     def test_Runner_Faulty(self):
@@ -63,14 +49,14 @@ class TestRunner(TestCase):
 
         # worker will raise an Exception!
         with self.assertRaises(AssertionError):
-            runner._append_job(WorkerImpl1(name="Peter", x=10))
+            runner.jobs.append(WorkerImpl1(name="Peter", x=10))
             runner.run_jobs()
 
     def test_Runner_Correct(self):
         runner = Runner()
 
         # worker will not raise an Exception!
-        runner._append_job(WorkerImpl2(name="Peter", x=10))
+        runner.jobs.append(WorkerImpl2(name="Peter", x=10))
         runner.run_jobs()
 
     def test_Runner_empty(self):

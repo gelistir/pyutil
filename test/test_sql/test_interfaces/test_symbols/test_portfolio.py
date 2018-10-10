@@ -3,10 +3,10 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
+from pyutil.influx.client import test_client
 from pyutil.sql.interfaces.products import ProductInterface
 from test.config import test_portfolio, read_frame
 
-from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 
@@ -17,7 +17,9 @@ t2 = pd.Timestamp("2010-04-25")
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        ProductInterface.client.recreate(dbname="test")
+        client = test_client()
+
+        ProductInterface.client = client
 
         cls.p = Portfolio(name="Maffay")
 
@@ -27,8 +29,6 @@ class TestPortfolio(TestCase):
 
         for name in ["D","E","F","G"]:
             cls.x[name] = Symbol(name=name, group=SymbolType.fixed_income)
-
-
 
 
         cls.p.upsert_influx(portfolio=test_portfolio(), symbols=cls.x)
