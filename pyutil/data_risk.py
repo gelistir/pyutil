@@ -43,7 +43,7 @@ class Database(object):
         return self.securities.filter(Security.name == name).one()
 
     @property
-    def reference_owner(self):
+    def reference_owners(self):
         return Owner.reference_frame(self.owners)
 
     @property
