@@ -1,6 +1,8 @@
 import pandas as pd
 
 from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.risk.currency import Currency
+from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
 
@@ -36,11 +38,25 @@ class Database(object):
     def securities(self):
         return self.__session.query(Security)
 
+    @property
+    def currencies(self):
+        return self.__session.query(Currency)
+
+    @property
+    def custodians(self):
+        return self.__session.query(Custodian)
+
     def owner(self, name):
         return self.owners.filter(Owner.name == name).one()
 
     def security(self, name):
         return self.securities.filter(Security.name == name).one()
+
+    def currency(self, name):
+        return self.currencies.filter(Currency.name == name).one()
+
+    def custodian(self, name):
+        return self.custodians.filter(Custodian.name == name).one()
 
     @property
     def reference_owners(self):
