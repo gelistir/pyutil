@@ -1,4 +1,4 @@
-#import pandas as pd
+import pandas as pd
 
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.owner import Owner
@@ -50,6 +50,9 @@ class Database(object):
     def reference_securities(self):
         return Security.reference_frame(self.securities)
 
+    @property
+    def prices(self):
+        return pd.DataFrame({security.name: pd.Series({x.date: x.value for x in security.price}) for security in self.securities})
 
     #def sector(self, total=False):
     #    return pd.DataFrame({p.name: p.sector(total=total).iloc[-1] for p in self.portfolios}).transpose()
