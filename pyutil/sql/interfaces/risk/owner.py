@@ -83,9 +83,8 @@ class Owner(ProductInterface):
     def __volatility(self):
         #volas = self.client.read_series(field=)
         for security in set(self.securities):
-            for vola in security.volatility(currency=self.currency):
-                yield Volatility(date=vola.date, currency=self.currency, security=vola.security, value=vola.value,
-                                 owner=self)
+            for date, value in security.volatility(currency=self.currency).items():
+                yield Volatility(date=date, currency=self.currency, security=security, value=value, owner=self)
 
     def vola(self, index_col=None):
         if not index_col:

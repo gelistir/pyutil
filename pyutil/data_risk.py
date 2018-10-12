@@ -68,8 +68,27 @@ class Database(object):
 
     @property
     def prices(self):
-        return pd.DataFrame({security.name: pd.Series({x.date: x.value for x in security.price}) for security in self.securities})
+        return pd.DataFrame({security.name: security.price for security in self.securities})
 
+    @property
+    def returns(self):
+        return pd.DataFrame({owner.name: owner.returns for owner in self.owners})
+
+    @property
+    def owner_volatility(self):
+        return pd.DataFrame({owner.name: owner.volatility for owner in self.owners})
+
+    def positions(self, owner, index_col=None):
+        #for owner in self.session.query(Owner):
+        for x in owner.position(index_col=index_col):
+            yield x
+
+    def securities_volatility(self, currency):
+        #for security in self.securities:
+        return pd.DataFrame({security.name: security.volatility(currency) for security in self.securities})
+
+
+        #    yield security.name, security.volatility(currency)
     #def sector(self, total=False):
     #    return pd.DataFrame({p.name: p.sector(total=total).iloc[-1] for p in self.portfolios}).transpose()
 

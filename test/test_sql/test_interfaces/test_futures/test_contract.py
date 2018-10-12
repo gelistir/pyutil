@@ -2,6 +2,7 @@ from unittest import TestCase
 
 import pandas as pd
 
+from pyutil.influx.client import test_client
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
@@ -21,7 +22,9 @@ def future():
 class TestContract(TestCase):
     @classmethod
     def setUpClass(cls):
-        ProductInterface.client.recreate(dbname="test")
+        ProductInterface.client = test_client()
+
+        #ProductInterface.client.recreate(dbname="test")
 
     @classmethod
     def tearDownClass(cls):

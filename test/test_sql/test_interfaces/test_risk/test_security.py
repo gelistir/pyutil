@@ -39,17 +39,15 @@ class TestSecurity(unittest.TestCase):
     def test_price(self):
         s = Security(name=100)
         s.upsert_price(ts=pd.Series({t0: 11.0, t1: 12.1}))
-
-        x = pd.Series({data.date: data.value for data in s.price})
-        pdt.assert_series_equal(x, pd.Series(index=[t0, t1], data=[11.0, 12.1]), check_names=False)
+        pdt.assert_series_equal(s.price, pd.Series(index=[t0, t1], data=[11.0, 12.1]), check_names=False)
 
     def test_volatility(self):
         s = Security(name=100)
         c = Currency(name="USD")
         s.upsert_volatility(currency=c, ts=pd.Series({t0: 11.0, t1: 12.1}))
 
-        x = pd.Series({data.date: data.value for data in s.volatility(currency=c)})
-        pdt.assert_series_equal(x, pd.Series(index=[t0, t1], data=[11.0, 12.1]), check_names=False)
+        #x = pd.Series({data.date: data.value for data in s.volatility(currency=c)})
+        pdt.assert_series_equal(s.volatility(currency=c), pd.Series(index=[t0, t1], data=[11.0, 12.1]), check_names=False)
 
     def test_reference_frame(self):
         s1 = Security(name=110, kiid=3)
