@@ -99,15 +99,8 @@ class Owner(ProductInterface):
 
 
     @property
-    def reference_securities(self):
-        return pd.DataFrame({security.name: security.reference_series.sort_index() for security in
-                             self.securities}).sort_index().transpose()
-
-    @property
     def kiid(self):
-        #for security in set(self.securities):
         return pd.Series({security: security.kiid for security in self.securities})
-         #   yield security.name, security.kiid
 
     # def kiid_weighted(self, sum=False, tail=None):
     #    x = self.position(sum=False, tail=tail, custodian=False).transpose().apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")

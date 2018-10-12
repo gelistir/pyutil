@@ -1,4 +1,3 @@
-#import pandas as pd
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyutil.sql.interfaces.products import ProductInterface
@@ -17,12 +16,6 @@ FIELDS = {
     "Lobnek Risk Monitoring Security Name": Field(name="Risk Security Name", result=DataType.string, type=FieldType.other),
     "name": Field(name="Name", result=DataType.string, type=FieldType.other)
 }
-
-#from collections import namedtuple
-
-#Price = namedtuple('Price', ['date', 'security', 'value'])
-
-#Volatility = namedtuple('Volatility', ['date', 'security', 'currency', 'value'])
 
 
 class Security(ProductInterface):
@@ -60,15 +53,9 @@ class Security(ProductInterface):
 
     @property
     def price(self):
-        #for date, value in self._ts(field="price", measurement="PriceSecurity").items():
         return self._ts(field="price", measurement="PriceSecurity")
-            #yield Price(date=date, value=value, security=self)
 
     def volatility(self, currency):
         assert isinstance(currency, Currency)
         return self._ts(field="volatility", measurement="VolatilitySecurity", conditions={"currency": currency.name})
-
-        #    return pd.Series({date: value})
-
-            #yield Volatility(date=date, value=value, security=self, currency=currency)
 
