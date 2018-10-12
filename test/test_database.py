@@ -23,7 +23,7 @@ class TestDatabase(TestCase):
         for name in ["A", "B", "C"]:
             cls.symbols[name] = Symbol(name=name, group=SymbolType.equities)
 
-        for name in ["D","E","F","G"]:
+        for name in ["D", "E", "F", "G"]:
             cls.symbols[name] = Symbol(name=name, group=SymbolType.fixed_income)
 
         client = test_client()
@@ -41,7 +41,6 @@ class TestDatabase(TestCase):
 
         session.add(Frame(name="Peter Maffay", frame=test_portfolio().prices))
         session.commit()
-
 
     @classmethod
     def tearDownClass(cls):
@@ -83,5 +82,6 @@ class TestDatabase(TestCase):
         frame = pd.DataFrame(index=[p], columns=["equities", "fixed_income"], data=[[0.135671, 0.173303]])
         pdt.assert_frame_equal(f, frame)
 
-
-
+    def test_reference(self):
+        f = self.database.reference
+        pdt.assert_frame_equal(f, pd.DataFrame(index=["A", "B", "C", "D", "E", "F", "G"]))
