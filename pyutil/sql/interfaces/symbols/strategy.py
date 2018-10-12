@@ -48,6 +48,8 @@ class Strategy(ProductInterface):
     def upsert(self, portfolio, symbols, days=0):
         assert isinstance(portfolio, _Portfolio)
 
+        assert self._portfolio
+
         # find the last stamp of weights...
         last = self._portfolio.last
 

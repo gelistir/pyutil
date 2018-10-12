@@ -16,7 +16,9 @@ class TestInfluxDB(TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        cls.client.drop_database("test")
         cls.client.close()
+
 
     def test_host(self):
         self.assertEqual(self.client.host, "test-influxdb")

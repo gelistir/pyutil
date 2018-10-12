@@ -17,9 +17,7 @@ t2 = pd.Timestamp("2010-04-25")
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        client = test_client()
-
-        ProductInterface.client = client
+        ProductInterface.client = test_client()
 
         cls.p = Portfolio(name="Maffay")
 

@@ -8,28 +8,40 @@ from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
-from pyutil.sql.interfaces.symbols.symbol import Symbol
+from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.sql.session import postgresql_db_test
 
 import pandas.util.testing as pdt
 
+from test.config import test_portfolio
+
+
 class TestDatabase(TestCase):
     @classmethod
     def setUpClass(cls):
-        client = test_client()
-        session, connection_str = postgresql_db_test(base=Base)
+        cls.symbols = dict()
+        for name in ["A", "B", "C"]:
+            cls.symbols[name] = Symbol(name=name, group=SymbolType.equities)
 
-        session.add(Symbol(name="Peter Maffay"))
-        session.commit()
+        for name in ["D","E","F","G"]:
+            cls.symbols[name] = Symbol(name=name, group=SymbolType.fixed_income)
+
+        client = test_client()
+        client.recreate(dbname="test")
+
+        session, connection_str = postgresql_db_test(base=Base)
+        cls.database = Database(client=client, session=session)
 
         # this will add a portfolio, too!
-        session.add(Strategy(name="Peter Maffay"))
+        s = Strategy(name="Peter Maffay")
+        s.upsert(portfolio=test_portfolio(), symbols=cls.symbols)
+
+        session.add(s)
         session.commit()
 
-        session.add(Frame(name="Peter Maffay", frame=pd.DataFrame(index=[0,1], columns=["A","B"], data=[[1,2],[3,4]])))
+        session.add(Frame(name="Peter Maffay", frame=test_portfolio().prices))
         session.commit()
 
-        cls.database = Database(client=client, session=session)
 
     @classmethod
     def tearDownClass(cls):
@@ -42,34 +54,34 @@ class TestDatabase(TestCase):
         self.assertIsNotNone(self.database.session)
 
     def test_symbols(self):
-        s = [x for x in self.database.symbols]
-        self.assertEqual(len(s), 1)
-        self.assertEqual(s[0], Symbol(name="Peter Maffay"))
-
-        x = self.database.symbol(name="Peter Maffay")
-        self.assertEqual(x, Symbol(name="Peter Maffay"))
+        self.assertEqual(self.database.symbols.count(), 7)
+        self.assertEqual(self.database.symbol(name="A"), Symbol(name="A"))
 
     def test_portfolios(self):
-        p = [x for x in self.database.portfolios]
-        self.assertEqual(len(p), 1)
-        self.assertEqual(p[0], Portfolio(name="Peter Maffay"))
-
-        x = self.database.portfolio(name="Peter Maffay")
-        self.assertEqual(x, Portfolio(name="Peter Maffay"))
+        self.assertEqual(self.database.portfolios.count(), 1)
+        self.assertEqual(self.database.portfolio(name="Peter Maffay"), Portfolio(name="Peter Maffay"))
 
     def test_strategies(self):
-        s = [x for x in self.database.strategies]
-        self.assertEqual(len(s), 1)
-        self.assertEqual(s[0], Strategy(name="Peter Maffay"))
-
-        x = self.database.strategy(name="Peter Maffay")
-        self.assertEqual(x, Strategy(name="Peter Maffay"))
+        self.assertEqual(self.database.strategies.count(), 1)
+        self.assertEqual(self.database.strategy(name="Peter Maffay"), Strategy(name="Peter Maffay"))
 
     def test_frames(self):
-        f = [x for x in self.database.frames]
-        self.assertEqual(len(f), 1)
-        self.assertEqual(f[0].name, "Peter Maffay")
-        pdt.assert_frame_equal(f[0].frame, pd.DataFrame(index=[0,1], columns=["A","B"], data=[[1,2],[3,4]]))
+        self.assertEqual(self.database.frames.count(), 1)
+        self.assertEqual(self.database.frame(name="Peter Maffay").name, "Peter Maffay")
 
-        f = self.database.frame(name="Peter Maffay")
-        pdt.assert_frame_equal(f.frame, pd.DataFrame(index=[0,1], columns=["A","B"], data=[[1,2],[3,4]]))
+        pdt.assert_frame_equal(self.database.frame(name="Peter Maffay").frame,
+                               test_portfolio().prices)
+
+    def test_nav(self):
+        f = self.database.nav()
+        p = self.database.portfolio(name="Peter Maffay")
+        pdt.assert_series_equal(f[p], pd.Series(test_portfolio().nav), check_names=False)
+
+    def test_sector(self):
+        f = self.database.sector(total=False)
+        p = self.database.portfolio(name="Peter Maffay")
+        frame = pd.DataFrame(index=[p], columns=["equities", "fixed_income"], data=[[0.135671, 0.173303]])
+        pdt.assert_frame_equal(f, frame)
+
+
+
