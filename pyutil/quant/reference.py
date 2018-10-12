@@ -12,7 +12,15 @@ def __read_reference(reader, tickers, fields):
 
 def frame(session, name="Reference"):
     f, exists = get_one_or_create(session=session, model=Frame, name=name)
-    f.frame = Symbol.reference_frame(session.query(Symbol))
+    x = Symbol.reference_frame(session.query(Symbol))
+
+    # change the index
+    x.index = [a.name for a in x.index]
+
+    #assert isinstance(f, Frame)
+
+    f.frame = x
+
     return f.frame
 
 

@@ -3,6 +3,7 @@ import unittest
 import pandas as pd
 import pandas.util.testing as pdt
 
+from pyutil.influx.client import test_client
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.security import Security
@@ -14,7 +15,10 @@ t1 = pd.Timestamp("1978-11-16")
 class TestSecurity(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        ProductInterface.client.recreate(dbname="test")
+        client = test_client()
+        client.recreate(dbname="test")
+        ProductInterface.client = client
+
 
     @classmethod
     def tearDownClass(cls):
@@ -50,10 +54,10 @@ class TestSecurity(unittest.TestCase):
         pdt.assert_series_equal(s.volatility(currency=c), pd.Series(index=[t0, t1], data=[11.0, 12.1]), check_names=False)
 
     def test_reference_frame(self):
-        s1 = Security(name=110, kiid=3)
-        s2 = Security(name=120, kiid=5)
-        s3 = Security(name=100, kiid=4)
+        s1 = Security(name=100, kiid=4)
+        s2 = Security(name=110, kiid=3)
+        s3 = Security(name=120, kiid=5)
 
-        x = pd.DataFrame(index=["100", "110", "120"], columns=["KIID"], data=[[4],[3],[5]])
+        x = pd.DataFrame(index=[s1, s2, s3], columns=["KIID"], data=[[4],[3],[5]])
         pdt.assert_frame_equal(x, Security.reference_frame(products=sorted([s1, s2, s3])))
 

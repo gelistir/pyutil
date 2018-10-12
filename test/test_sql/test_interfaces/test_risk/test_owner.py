@@ -85,17 +85,11 @@ class TestOwner(unittest.TestCase):
 
         pdt.assert_series_equal(pd.Series({security.name: value for security, value in o.kiid.items()}).sort_index(), pd.Series(index=["123", "211"], data=[5, 7]))
 
-        #for position in o.position():
-        #    print(position)
-
-        #assert False
-
         print(o.position("KIID"))
         for position in o.position(index_col="KIID"):
             print(position)
 
-        #frame = pd.DataFrame([position for position in o.position(index_col="KIID")]).set_index(keys=["security", "custodian", "date"])
-        #print(frame)
+
 
     def test_volatility_weighted(self):
         o = Owner(name=105, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
@@ -128,7 +122,7 @@ class TestOwner(unittest.TestCase):
         o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
         o.reference[NAME] = "Wurst"
         x = Owner.reference_frame(products=[o])
-        pdt.assert_frame_equal(x, pd.DataFrame(index=["100"], columns=["Name"], data=[["Wurst"]]))
+        pdt.assert_frame_equal(x, pd.DataFrame(index=[o], columns=["Name"], data=[["Wurst"]]))
 
     def test_reference_securities_frame(self):
         # create a security
@@ -137,7 +131,7 @@ class TestOwner(unittest.TestCase):
 
         x = Owner.reference_frame(products=[s1])
 
-        pdt.assert_frame_equal(x, pd.DataFrame(index=["410"], columns=["KIID"], data=[[5]]))
+        pdt.assert_frame_equal(x, pd.DataFrame(index=[s1], columns=["KIID"], data=[[5]]))
 
     # def test_positions(self):
     #     o1 = Owner(name=152, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))

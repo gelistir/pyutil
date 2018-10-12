@@ -17,6 +17,9 @@ from test.config import resource, read_frame
 class TestQuant(TestCase):
     @classmethod
     def setUpClass(cls):
+        client = test_client()
+        client.recreate(dbname="test")
+
         cls.session, cls.connection_str = postgresql_db_test(base=Base)
 
         for asset, data in read_frame(resource("price.csv")).items():
@@ -29,7 +32,7 @@ class TestQuant(TestCase):
         cls.session.commit()
 
         # proper database connection!
-        cls.data = Database(session=cls.session, client=test_client())
+        cls.data = Database(session=cls.session, client=client)
 
     @classmethod
     def tearDownClass(cls):
