@@ -132,7 +132,7 @@ class NavSeries(pd.Series):
     #     Compute the autocorrelation of returns
     #     :return:
     #     """
-        return self.returns.autocorr(lag=1)
+    #    return self.returns.autocorr(lag=1)
 
     @property
     def mtd(self):

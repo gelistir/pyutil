@@ -75,3 +75,6 @@ class Database(object):
 
     def frame(self, name):
         return self.session.query(Frame).filter_by(name=name).one()
+
+    def history(self, field="PX_LAST"):
+        return Symbol.frame(field=field)
