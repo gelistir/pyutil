@@ -16,6 +16,7 @@ class TestInfluxDB(TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        cls.client.drop_measurement("nav")
         cls.client.drop_database("test")
         cls.client.close()
 
