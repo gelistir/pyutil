@@ -68,35 +68,19 @@ class Database(object):
 
     @property
     def prices(self):
-        return pd.DataFrame({security.name: security.price for security in self.securities})
+        return pd.DataFrame({security: security.price for security in self.securities})
 
     @property
     def returns(self):
-        return pd.DataFrame({owner.name: owner.returns for owner in self.owners})
+        return pd.DataFrame({owner: owner.returns for owner in self.owners})
 
     @property
     def owner_volatility(self):
-        return pd.DataFrame({owner.name: owner.volatility for owner in self.owners})
+        return pd.DataFrame({owner: owner.volatility for owner in self.owners})
 
-    def positions(self, owner, index_col=None):
-        #for owner in self.session.query(Owner):
-        for x in owner.position(index_col=index_col):
-            yield x
+    #def positions(self, owner, index_col=None):
+    #    return owner.position(index_col=index_col)
 
     def securities_volatility(self, currency):
-        #for security in self.securities:
-        return pd.DataFrame({security.name: security.volatility(currency) for security in self.securities})
+        return pd.DataFrame({security: security.volatility(currency) for security in self.securities})
 
-
-        #    yield security.name, security.volatility(currency)
-    #def sector(self, total=False):
-    #    return pd.DataFrame({p.name: p.sector(total=total).iloc[-1] for p in self.portfolios}).transpose()
-
-    #def nav(self, f=None):
-    #    f = f or (lambda x: x)
-
-    #    # we prefer this solution as is goes through the cleaner SQL database!
-    #    return pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
-
-    #def frame(self, name):
-    #    return self.session.query(Frame).filter_by(name=name).one()

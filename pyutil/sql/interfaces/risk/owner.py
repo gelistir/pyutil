@@ -22,11 +22,6 @@ FIELDS = {
     # don't use date here...
 }
 
-from collections import namedtuple
-
-Position = namedtuple('Position', ['date', 'security', 'custodian', 'value', 'owner'])
-Volatility = namedtuple('Volatility', ['date', 'owner', 'security', 'currency', 'value'])
-
 
 class Owner(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Owner"}
@@ -66,49 +61,41 @@ class Owner(ProductInterface):
 
     @property
     def __position(self):
-        for security in set(self.securities):
-            ts = self._ts(field="weight", measurement="WeightsOwner", tags=["custodian"], conditions={"security": security.name})
-            for (time, custodian), value in ts.items():
-                yield Position(date=time, custodian=custodian, security=security, owner=self, value=value)
+        x = pd.DataFrame({security: self._ts(field="weight", measurement="WeightsOwner", tags=["custodian"], conditions={"security": security.name}) for security in set(self.securities)}).stack()
+        x.index.names = ["Date", "Custodian", "Security"]
+        return x
 
     def position(self, index_col=None):
         if not index_col:
-            yield from self.__position
+            return self.__position
         else:
-            for position in self.__position:
-                yield Position(date=position.date, custodian=position.custodian, security=position.security,
-                               value=position.value * position.security.get_reference(index_col), owner=self)
+            p = self.__position.unstack(level="Security")
+            for security in p.keys():
+                p[security] = p[security] * security.get_reference(index_col)
+
+            return p.stack()
 
     @property
     def __volatility(self):
-        #volas = self.client.read_series(field=)
-        for security in set(self.securities):
-            for date, value in security.volatility(currency=self.currency).items():
-                yield Volatility(date=date, currency=self.currency, security=security, value=value, owner=self)
+        x = pd.DataFrame({security: security.volatility(currency=self.currency) for security in set(self.securities)}).stack()
+        x.index.names = ["Date", "Security"]
+        return x
 
     def vola(self, index_col=None):
         if not index_col:
-            yield from self.__volatility
+            return self.__volatility
         else:
-            for vola in self.__volatility:
-                yield Volatility(date=vola.date, security=vola.security, currency=self.currency,
-                                 value=vola.value * vola.security.get_reference(index_col), owner=self)
+            v = self.__volatility.unstack(level="Security")
+            for security in v.keys():
+                v[security] = v[security] * security.get_reference(index_col)
 
-    @property
-    def __vola_weighted(self):
-        v = pd.DataFrame([v for v in self.vola()]).set_index(keys=["owner", "security", "date"])["value"]
-        w = pd.DataFrame([w for w in self.position()]).set_index(keys=["owner", "security", "date"])["value"]
-
-        for (owner, security, date), value in w.multiply(v).items():
-            yield Volatility(owner=owner, security=security, date=date, currency=self.currency, value=value)
+            return v.stack()
 
     def vola_weighted(self, index_col=None):
-        # volatility * weight
-        if not index_col:
-            yield from self.__vola_weighted
-        else:
-            for volatility in self.__vola_weighted:
-                yield Volatility(owner=self, security=volatility.security, date=volatility.date, currency=self.currency, value=volatility.security.get_reference(index_col) * volatility.value)
+        v = self.vola(index_col=index_col)
+        # get rid of the custodian here...
+        w = self.position().groupby(level=["Date", "Security"]).sum()
+        return w*v
 
 
     @property
@@ -118,8 +105,9 @@ class Owner(ProductInterface):
 
     @property
     def kiid(self):
-        for security in set(self.securities):  # {security.name: security.kiid for security in self.securities})
-            yield security.name, security.kiid
+        #for security in set(self.securities):
+        return pd.Series({security: security.kiid for security in self.securities})
+         #   yield security.name, security.kiid
 
     # def kiid_weighted(self, sum=False, tail=None):
     #    x = self.position(sum=False, tail=tail, custodian=False).transpose().apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
@@ -174,17 +162,4 @@ class Owner(ProductInterface):
 
     @property
     def reference_securities(self):
-        for s in set(self.securities):
-            yield s, s.reference
-
-    @staticmethod
-    def positions(owners, index_col=None):
-        for owner in owners:
-            for p in owner.position(index_col=index_col):
-                yield p
-
-    @staticmethod
-    def volatilities(owners):
-        for owner in owners:
-            yield owner, owner.volatility
-
+        return Security.reference_frame(self.securities)
