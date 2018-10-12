@@ -78,9 +78,6 @@ class Database(object):
     def owner_volatility(self):
         return pd.DataFrame({owner: owner.volatility for owner in self.owners})
 
-    #def positions(self, owner, index_col=None):
-    #    return owner.position(index_col=index_col)
-
     def securities_volatility(self, currency):
         return pd.DataFrame({security: security.volatility(currency) for security in self.securities})
 

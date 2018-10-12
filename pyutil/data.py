@@ -65,13 +65,13 @@ class Database(object):
         return Symbol.reference_frame(self.symbols)
 
     def sector(self, total=False):
-        return pd.DataFrame({p.name: p.sector(total=total).iloc[-1] for p in self.portfolios}).transpose()
+        return pd.DataFrame({p: p.sector(total=total).iloc[-1] for p in self.portfolios}).transpose()
 
     def nav(self, f=None):
         f = f or (lambda x: x)
 
         # we prefer this solution as is goes through the cleaner SQL database!
-        return pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
+        return pd.DataFrame({portfolio: f(portfolio.nav) for portfolio in self.portfolios})
 
     def frame(self, name):
         return self.session.query(Frame).filter_by(name=name).one()
