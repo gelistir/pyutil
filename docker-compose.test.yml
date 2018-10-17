@@ -18,10 +18,14 @@ services:
      links:
        - test-influxdb
        - test-postgresql
+       - test-mongo
 
   test-postgresql:
     image: postgres:9.6
 
   test-influxdb:
     image: influxdb:1.5.4
+
+  test-mongo:
+    image: mongo:4.1.4
 
