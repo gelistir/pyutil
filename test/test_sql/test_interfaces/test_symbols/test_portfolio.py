@@ -46,8 +46,7 @@ class TestPortfolio(TestCase):
         self.assertAlmostEqual(x["2015-04-09"], 1.524054, places=5)
 
     def test_last(self):
-        print(self.p.ts["prices"])
-        self.assertEqual(self.p.last, pd.Timestamp("2015-04-22"))
+        self.assertEqual(self.p.last("prices"), pd.Timestamp("2015-04-22"))
 
     def test_sector(self):
         pdt.assert_series_equal(self.p.sector(total=False).loc["2015-04-22"], pd.Series(index=["equities","fixed_income"], data=[0.135671, 0.173303]), check_names=False)

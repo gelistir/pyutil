@@ -18,12 +18,12 @@ class Portfolio(ProductInterface):
     def __init__(self, name):
         super().__init__(name)
 
-    @property
-    def last(self):
-        try:
-            return self.ts["prices"].index[-1]
-        except:
-            return None
+    #@property
+    #def last(self):
+    #    try:
+    #        return self.ts["prices"].index[-1]
+    #    except:
+    #        return None
 
     def upsert_influx(self, portfolio, symbols):
         assert isinstance(portfolio, _Portfolio)

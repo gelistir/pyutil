@@ -3,7 +3,6 @@ from unittest import TestCase
 import pandas as pd
 
 from pyutil.data import Database
-#from pyutil.influx.client import test_client
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
@@ -24,9 +23,6 @@ class TestDatabase(TestCase):
 
         for name in ["D", "E", "F", "G"]:
             cls.symbols[name] = Symbol(name=name, group=SymbolType.fixed_income)
-
-        #client = test_client()
-        #client.recreate(dbname="test")
 
         session, connection_str = postgresql_db_test(base=Base)
         cls.database = Database(session=session)

@@ -51,7 +51,8 @@ class Strategy(ProductInterface):
         assert self._portfolio
 
         # find the last stamp of weights...
-        last = self._portfolio.last
+        last = self._portfolio.last("nav")
+        print(last)
 
         if not last:
             self._portfolio.upsert_influx(portfolio=portfolio, symbols=symbols)
@@ -65,9 +66,9 @@ class Strategy(ProductInterface):
     def portfolio(self):
         return self._portfolio.portfolio_influx
 
-    #@property
-    #def last(self):
-    #    return self._portfolio.last
+    @property
+    def last(self):
+        return self._portfolio.last("nav")
 
     @property
     def assets(self):
