@@ -1,5 +1,5 @@
 psycopg2-binary
-sqlalchemy==1.2.8
+sqlalchemy==1.2.12
 #influxdb==5.1.0
 
 # not really using at the moment but in for later experiments...

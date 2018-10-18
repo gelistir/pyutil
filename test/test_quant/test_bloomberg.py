@@ -48,10 +48,9 @@ class TestQuant(TestCase):
         def f(tickers, t0=None, field=None):
             return read_frame(resource("price.csv"))[tickers].dropna()
 
-        # do the history
-        data = Database(session=self.session)
+        a = update_history(symbols=self.session.query(Symbol), reader=f, today=pd.Timestamp("2018-01-01"))
 
-        a = update_history(data=data, reader=f, today=pd.Timestamp("2018-01-01"))
+        # returns the age here...
         self.assertEqual(a["A"], 985)
 
         for symbol in self.session.query(Symbol):
