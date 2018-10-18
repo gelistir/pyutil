@@ -3,7 +3,6 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 from pyutil.data import Database
-from pyutil.influx.client import test_client
 from pyutil.quant.history import update_history
 from pyutil.quant.reference import update_reference
 from pyutil.sql.base import Base
@@ -17,9 +16,6 @@ from test.config import resource, read_frame
 class TestQuant(TestCase):
     @classmethod
     def setUpClass(cls):
-        client = test_client()
-        client.recreate(dbname="test")
-
         cls.session, cls.connection_str = postgresql_db_test(base=Base)
 
         for asset, data in read_frame(resource("price.csv")).items():
@@ -32,7 +28,7 @@ class TestQuant(TestCase):
         cls.session.commit()
 
         # proper database connection!
-        cls.data = Database(session=cls.session, client=client)
+        cls.data = Database(session=cls.session)
 
     @classmethod
     def tearDownClass(cls):
@@ -53,7 +49,7 @@ class TestQuant(TestCase):
             return read_frame(resource("price.csv"))[tickers].dropna()
 
         # do the history
-        data = Database(session=self.session, client=test_client())
+        data = Database(session=self.session)
 
         a = update_history(data=data, reader=f, today=pd.Timestamp("2018-01-01"))
         self.assertEqual(a["A"], 985)

@@ -3,7 +3,6 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.influx.client import test_client
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.model.ref import Field, FieldType, DataType
 from test.test_sql.product import Product
@@ -14,7 +13,7 @@ t1 = pd.Timestamp("2010-05-15")
 class TestProductInterface(TestCase):
     @classmethod
     def setUpClass(cls):
-        ProductInterface.client = test_client()
+        #ProductInterface.client = test_client()
 
         #init_influxdb()
         cls.p1 = Product(name="A")
@@ -23,9 +22,9 @@ class TestProductInterface(TestCase):
         cls.f1 = Field(name="x", type=FieldType.dynamic, result=DataType.integer)
         cls.f2 = Field(name="y", type=FieldType.dynamic, result=DataType.string)
 
-    @classmethod
-    def tearDownClass(cls):
-        ProductInterface.client.close()
+    #@classmethod
+    #def tearDownClass(cls):
+    #    ProductInterface.client.close()
 
     def test_name(self):
         self.assertEqual(self.p1.name, "A")
@@ -68,8 +67,8 @@ class TestProductInterface(TestCase):
         self.assertEqual(self.p1.get_reference(field="z", default=5), 5)
 
     # here we can also test the timeseries stuff
-    def test_timeseries(self):
-        self.assertIsNotNone(self.p1.client)
+    #def test_timeseries(self):
+    #    self.assertIsNotNone(self.p1.client)
 
     def test_discriminator(self):
         self.assertEqual(self.p1.discriminator, "Test-Product")
@@ -86,9 +85,8 @@ class TestProductInterface(TestCase):
 
     def test_empty_ts(self):
         p = Product(name="CCC")
-        pdt.assert_series_equal(p._ts(measurement="wurst", field="PX_LAST"), pd.Series({}))
-        self.assertIsNone(p._last(field="PX_LAST", measurement="wurst"))
-
+        self.assertIsNone(p.get_ts(field="PX_LAST"))
+        self.assertIsNone(p._last(field="PX_LAST"))
 
     def test_hash(self):
         x = {self.p1, self.p2}

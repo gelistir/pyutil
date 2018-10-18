@@ -1,6 +1,6 @@
 import pandas as pd
 
-from pyutil.sql.interfaces.products import ProductInterface
+#from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.owner import Owner
@@ -9,22 +9,22 @@ from pyutil.sql.interfaces.risk.security import Security
 
 class Database(object):
 
-    def __init__(self, session, client=None):
+    def __init__(self, session):
         # session, sql database
         self.__session = session
-        if client:
-            self.__client = client
-            # this is how the sql database is using influx...
-            ProductInterface.client = self.__client
+        #if client:
+        #    self.__client = client
+        #    # this is how the sql database is using influx...
+        #    ProductInterface.client = self.__client
 
     def close(self):
         self.__session.close()
-        if self.__client:
-            self.__client.close()
+        #if self.__client:
+        #    self.__client.close()
 
-    @property
-    def influx_client(self):
-        return self.__client
+    #@property
+    #def influx_client(self):
+    #    return self.__client
 
     @property
     def session(self):
@@ -68,15 +68,15 @@ class Database(object):
 
     @property
     def prices(self):
-        return pd.DataFrame({security: security.price for security in self.securities})
+        return pd.DataFrame({security: security.get_ts("price") for security in self.securities})
 
     @property
     def returns(self):
-        return pd.DataFrame({owner: owner.returns for owner in self.owners})
+        return pd.DataFrame({owner: owner.get_ts("return") for owner in self.owners})
 
     @property
     def owner_volatility(self):
-        return pd.DataFrame({owner: owner.volatility for owner in self.owners})
+        return pd.DataFrame({owner: owner.ts["volatility"] for owner in self.owners})
 
     def securities_volatility(self, currency):
         return pd.DataFrame({security: security.volatility(currency) for security in self.securities})

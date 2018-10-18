@@ -45,17 +45,9 @@ class Security(ProductInterface):
         return self.get_reference("Bloomberg Multiplier", default=1.0)
 
     def upsert_volatility(self, currency, ts):
-        assert isinstance(currency, Currency)
-        self._ts_upsert(ts=ts, tags={"currency": currency.name}, field="volatility", measurement="VolatilitySecurity")
-
-    def upsert_price(self, ts):
-        self._ts_upsert(ts=ts, field="price", measurement="PriceSecurity")
-
-    @property
-    def price(self):
-        return self._ts(field="price", measurement="PriceSecurity")
+        self.ts["volatility_{currency}".format(currency=currency.name)] = ts
+        return self.volatility(currency=currency)
 
     def volatility(self, currency):
         assert isinstance(currency, Currency)
-        return self._ts(field="volatility", measurement="VolatilitySecurity", conditions={"currency": currency.name})
-
+        return self.get_ts(field="volatility_{currency}".format(currency=currency.name))

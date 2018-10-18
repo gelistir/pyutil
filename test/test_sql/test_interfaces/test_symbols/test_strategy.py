@@ -2,8 +2,6 @@ import pandas as pd
 
 import pandas.util.testing as pdt
 from unittest import TestCase
-
-from pyutil.sql.interfaces.products import ProductInterface
 from test.config import test_portfolio, resource
 
 from pyutil.sql.interfaces.symbols.strategy import Strategy
@@ -13,21 +11,15 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol
 class TestStrategy(TestCase):
     @classmethod
     def setUpClass(cls):
-        ProductInterface.client.recreate(dbname="test")
-
         with open(resource("source.py"), "r") as f:
             cls.strategy = Strategy(name="Peter", source=f.read(), active=True)
-
-    @classmethod
-    def tearDownClass(cls):
-        ProductInterface.client.close()
 
     def test_upsert(self):
         self.assertIsNone(self.strategy.last)
 
         # compute a portfolio
         portfolio = self.strategy.configuration(reader=None).portfolio
-        assets = {name : Symbol(name=name) for name in portfolio.assets}
+        assets = {name: Symbol(name=name) for name in portfolio.assets}
 
         # upsert the strategy
         self.strategy.upsert(portfolio=portfolio, symbols=assets)

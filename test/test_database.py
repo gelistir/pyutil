@@ -3,7 +3,7 @@ from unittest import TestCase
 import pandas as pd
 
 from pyutil.data import Database
-from pyutil.influx.client import test_client
+#from pyutil.influx.client import test_client
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
@@ -25,11 +25,11 @@ class TestDatabase(TestCase):
         for name in ["D", "E", "F", "G"]:
             cls.symbols[name] = Symbol(name=name, group=SymbolType.fixed_income)
 
-        client = test_client()
-        client.recreate(dbname="test")
+        #client = test_client()
+        #client.recreate(dbname="test")
 
         session, connection_str = postgresql_db_test(base=Base)
-        cls.database = Database(client=client, session=session)
+        cls.database = Database(session=session)
 
         # this will add a portfolio, too!
         s = Strategy(name="Peter Maffay")
@@ -42,8 +42,8 @@ class TestDatabase(TestCase):
     def tearDownClass(cls):
         cls.database.close()
 
-    def test_client(self):
-        self.assertIsNotNone(self.database.influx_client)
+    #def test_client(self):
+    #    self.assertIsNotNone(self.database.influx_client)
 
     def test_session(self):
         self.assertIsNotNone(self.database.session)

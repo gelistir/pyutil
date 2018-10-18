@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 import pandas as pd
-from pyutil.influx.client import test_client
+#from pyutil.influx.client import test_client
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
@@ -45,15 +45,12 @@ class TestDatabase(TestCase):
         cls.session.add_all([c1, c2, c3, o1, f1, f2, s1, s2])
         cls.session.commit()
 
-        cls.client = test_client()
-        cls.database = Database(session=cls.session, client=cls.client)
+        #cls.client = test_client()
+        cls.database = Database(session=cls.session)
 
     @classmethod
     def tearDownClass(cls):
         cls.database.close()
-
-    def test_client(self):
-        self.assertIsNotNone(self.database.influx_client)
 
     def test_session(self):
         self.assertIsNotNone(self.database.session)
@@ -65,18 +62,11 @@ class TestDatabase(TestCase):
         self.assertEqual(self.database.security(name="123"), Security(name="123"))
         self.assertEqual(self.database.security(name="123").bloomberg_ticker, "HAHA US Equity")
 
-    def test_client(self):
-        client = self.database.influx_client
-        self.assertEqual(client.host, "test-influxdb")
-        self.assertEqual(client.database, "test")
-        self.assertEqual(client.port, 8086)
-        self.assertTrue("test" in client.databases)
-
     def test_prices(self):
         # add prices to the database
         security = self.database.security(name="123")
         ts = pd.Series({pd.Timestamp("2010-04-20"): 11.0, pd.Timestamp("2010-04-21"): 11.2})
-        security.upsert_price(ts = ts)
+        security.ts["price"] = ts
 
         d = self.database.prices.sort_index(ascending=False)
         pdt.assert_series_equal(d[security], ts.sort_index(ascending=False), check_names=False)
@@ -86,7 +76,7 @@ class TestDatabase(TestCase):
         owner = self.database.owner(name="102")
 
         ts = pd.Series({pd.Timestamp("2010-04-20"): 0.05, pd.Timestamp("2010-04-21"): 0.10})
-        owner.upsert_return(ts=ts)
+        owner.ts["return"] = ts
         pdt.assert_series_equal(self.database.returns[owner], ts, check_names=False)
 
     def test_owner_volatility(self):
@@ -94,7 +84,7 @@ class TestDatabase(TestCase):
         owner = self.database.owner(name="102")
 
         ts = pd.Series({pd.Timestamp("2010-04-20"): 0.05, pd.Timestamp("2010-04-21"): 0.10})
-        owner.upsert_volatility(ts=ts)
+        owner.ts["volatility"] = ts
 
         pdt.assert_series_equal(self.database.owner_volatility[owner], ts, check_names=False)
 

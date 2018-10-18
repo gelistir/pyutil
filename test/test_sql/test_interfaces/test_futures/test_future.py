@@ -2,15 +2,13 @@ from unittest import TestCase
 
 import pandas as pd
 
-from pyutil.influx.client import test_client
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
 from pyutil.sql.interfaces.futures.future import Future
 
 from pyutil.sql.base import Base
-from pyutil.sql.interfaces.products import ProductInterface
-#from pyutil.sql.session import session_test
+
 
 import pandas.util.testing as pdt
 
@@ -27,14 +25,6 @@ def future():
 
 
 class TestFuture(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        ProductInterface.client = test_client()
-
-    @classmethod
-    def tearDownClass(cls):
-        ProductInterface.client.close()
-
     def test_future(self):
         f = future()
         self.assertEqual(f.name, "ES1 Index")

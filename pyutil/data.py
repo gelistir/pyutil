@@ -12,19 +12,19 @@ class Database(object):
     def __init__(self, session, client=None):
         # session, sql database
         self.__session = session
-        if client:
-            self.__client = client
-            # this is how the sql database is using influx...
-            ProductInterface.client = self.__client
+        #if client:
+        #    self.__client = client
+        #    # this is how the sql database is using influx...
+        #    ProductInterface.client = self.__client
 
     def close(self):
         self.__session.close()
-        if self.__client:
-            self.__client.close()
+        #if self.__client:
+        #    self.__client.close()
 
-    @property
-    def influx_client(self):
-        return self.__client
+    #@property
+    #def influx_client(self):
+    #    return self.__client
 
     @property
     def session(self):

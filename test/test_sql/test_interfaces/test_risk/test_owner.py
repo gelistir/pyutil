@@ -3,8 +3,6 @@ import unittest
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.influx.client import test_client
-from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.owner import Owner, FIELDS as FIELDSOWNER
@@ -23,14 +21,8 @@ class TestOwner(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        ProductInterface.client = test_client() #.recreate(dbname="test")
-
         # create an owner
         cls.o1 = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
-
-    @classmethod
-    def tearDownClass(cls):
-        ProductInterface.client.close()
 
     def test_name(self):
         o = Owner(name=100, currency=Currency(name="USD"), custodian=Custodian(name="UBS"))
@@ -44,25 +36,25 @@ class TestOwner(unittest.TestCase):
         o = Owner(name=101, currency=Currency(name="USD"))
 
         # update with an empty return series
-        o.upsert_return(ts=pd.Series({}))
-        pdt.assert_series_equal(o.returns, pd.Series({}))
-        pdt.assert_series_equal(o.nav, pd.Series({}))
-        pdt.assert_series_equal(o.volatility, pd.Series({}))
+        o.ts["returns"] = pd.Series({})
+        pdt.assert_series_equal(o.ts["returns"], pd.Series({}))
+        #pdt.assert_series_equal(o.ts["nav"], pd.Series({}))
+        #pdt.assert_series_equal(o.ts["volatility"], pd.Series({}))
 
         # now update with a proper series
-        o.upsert_return(ts=pd.Series({t1: 0.1, t2: 0.2}))
-        pdt.assert_series_equal(o.returns, pd.Series({t1: 0.1, t2: 0.2}), check_names=False)
-        pdt.assert_series_equal(o.nav, pd.Series({t0: 1.0, t1: 1.1, t2: 1.1 * 1.2}), check_names=False)
+        o.ts["returns"] = pd.Series({t1: 0.1, t2: 0.2})
+        pdt.assert_series_equal(o.ts["returns"], pd.Series({t1: 0.1, t2: 0.2}), check_names=False)
+        #pdt.assert_series_equal(o.ts["nav"], pd.Series({t0: 1.0, t1: 1.1, t2: 1.1 * 1.2}), check_names=False)
 
     def test_volatility(self):
         # new owner!
         o = Owner(name="102", currency=Currency(name="USD"))
 
-        o.upsert_volatility(ts=pd.Series({}))
-        pdt.assert_series_equal(o.volatility, pd.Series({}))
+        o.ts["volatility"] = pd.Series({})
+        pdt.assert_series_equal(o.ts["volatility"], pd.Series({}))
 
-        o.upsert_volatility(ts=pd.Series({t1: 0.1, t2: 0.3}))
-        pdt.assert_series_equal(o.volatility, pd.Series({t1: 0.1, t2: 0.3}), check_names=False)
+        o.ts["volatility"] = pd.Series({t1: 0.1, t2: 0.3})
+        pdt.assert_series_equal(o.ts["volatility"], pd.Series({t1: 0.1, t2: 0.3}), check_names=False)
 
     def test_position(self):
         o = Owner(name="103", currency=Currency(name="USD"), custodian=Custodian(name="UBS"))

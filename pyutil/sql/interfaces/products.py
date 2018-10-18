@@ -7,7 +7,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
-from pyutil.influx.client import Client
+#from pyutil.influx.client import Client
 from pyutil.sql.base import Base
 from pyutil.sql.model.ref import _ReferenceData, Field
 
@@ -74,6 +74,12 @@ class ProductInterface(MyMixin, Base):
         else:
             return default
 
+    def get_ts(self, field, default=None):
+        try:
+            return self.ts[field]
+        except KeyError:
+            return None
+
     def __repr__(self):
         return "{d}({name})".format(d=self.discriminator, name=self.name)
 
@@ -87,14 +93,14 @@ class ProductInterface(MyMixin, Base):
     def __hash__(self):
         return hash(self.name)
 
-    def _ts_upsert(self, ts, field, measurement, tags=None):
-        """ update a series for a field """
-        tags = tags or {}
-        ProductInterface.client.write(frame=ts.to_frame(name=field), measurement=measurement, tags={**{"name": self.name}, **tags})
+    #def _ts_upsert(self, ts, field, measurement, tags=None):
+    #    """ update a series for a field """
+    #    tags = tags or {}
+    #    ProductInterface.client.write(frame=ts.to_frame(name=field), measurement=measurement, tags={**{"name": self.name}, **tags})
 
-    def _frame_upsert(self, frame, measurement, field_columns=None, tag_columns=None, tags=None):
-        tags = tags or {}
-        ProductInterface.client.write(frame=frame, field_columns=field_columns, measurement=measurement, tag_columns=tag_columns, tags={**{"name": self.name}, **tags})
+    #def _frame_upsert(self, frame, measurement, field_columns=None, tag_columns=None, tags=None):
+    #    tags = tags or {}
+    #    ProductInterface.client.write(frame=frame, field_columns=field_columns, measurement=measurement, tag_columns=tag_columns, tags={**{"name": self.name}, **tags})
 
     def _ts(self, field, measurement, conditions=None, tags=None):
         tags = tags or {}
@@ -105,11 +111,16 @@ class ProductInterface(MyMixin, Base):
         except KeyError:
             return pd.Series({})
 
-    def _last(self, field, measurement, conditions=None):
-        if not conditions:
-            conditions = {"name": self.name}
+    def _last(self, field): #, measurement, conditions=None):
+        try:
+            self.ts[field].index[-1]
+        except KeyError:
+            return None
 
-        return ProductInterface.client.last(measurement=measurement, field=field, conditions=conditions)
+        #if not conditions:
+        #    conditions = {"name": self.name}
+
+        #return ProductInterface.client.last(measurement=measurement, field=field, conditions=conditions)
 
     @staticmethod
     def reference_frame(products):
@@ -139,7 +150,7 @@ class Timeseries(Base):
             truncated = self.series
             series = pd.concat((truncated[truncated.index < series.index[0]], series))
 
-        self.__data = series.dropna().to_msgpack()
+        self.__data = series.to_msgpack()
 
 
     @property

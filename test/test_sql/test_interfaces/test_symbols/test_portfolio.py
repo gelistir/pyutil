@@ -2,9 +2,6 @@ from unittest import TestCase
 
 import pandas as pd
 import pandas.util.testing as pdt
-
-from pyutil.influx.client import test_client
-from pyutil.sql.interfaces.products import ProductInterface
 from test.config import test_portfolio, read_frame
 
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
@@ -17,8 +14,6 @@ t2 = pd.Timestamp("2010-04-25")
 class TestPortfolio(TestCase):
     @classmethod
     def setUpClass(cls):
-        ProductInterface.client = test_client()
-
         cls.p = Portfolio(name="Maffay")
 
         cls.x = dict()
@@ -31,17 +26,13 @@ class TestPortfolio(TestCase):
 
         cls.p.upsert_influx(portfolio=test_portfolio(), symbols=cls.x)
 
-    @classmethod
-    def tearDownClass(cls):
-        ProductInterface.client.close()
-
     def test_read_influx(self):
         p1 = self.p.portfolio_influx
         pdt.assert_frame_equal(p1.weights, test_portfolio().weights, check_names=False)
         pdt.assert_frame_equal(p1.prices, test_portfolio().prices, check_names=False)
 
     def test_nav(self):
-        pdt.assert_series_equal(self.p.nav, test_portfolio().nav, check_names=False)
+        pdt.assert_series_equal(self.p.nav, test_portfolio().nav.series, check_names=False)
 
     def test_leverage(self):
         pdt.assert_series_equal(self.p.leverage, test_portfolio().leverage, check_names=False)
@@ -55,6 +46,7 @@ class TestPortfolio(TestCase):
         self.assertAlmostEqual(x["2015-04-09"], 1.524054, places=5)
 
     def test_last(self):
+        print(self.p.ts["prices"])
         self.assertEqual(self.p.last, pd.Timestamp("2015-04-22"))
 
     def test_sector(self):

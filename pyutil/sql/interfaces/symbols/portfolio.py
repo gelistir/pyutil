@@ -20,58 +20,56 @@ class Portfolio(ProductInterface):
 
     @property
     def last(self):
-        return super()._last(measurement="nav", field="nav")
+        try:
+            return self.ts["prices"].index[-1]
+        except:
+            return None
 
     def upsert_influx(self, portfolio, symbols):
         assert isinstance(portfolio, _Portfolio)
 
-        ww = portfolio.weights.stack().to_frame(name="Weight")
-        pp = portfolio.prices.stack().to_frame(name="Price")
+        self.ts["weights"] = portfolio.weights
+        self.ts["prices"] = portfolio.prices
 
-        ww.index.names = ["Date", "Asset"]
-        pp.index.names = ["Date", "Asset"]
-
-        # combine into frame Date, Asset, Weight Price...
-
-        frame = pd.concat([ww, pp], axis=1).reset_index().set_index("Date")
-
-        self._frame_upsert(frame=frame, field_columns=["Weight", "Price"], measurement="portfoliosx",
-                           tag_columns=["Asset"], tags={"name": self.name})
-
-
-        #Portfolio.client.write_points(xx, measurement="xxx2",
-        #                              tag_columns=["Asset"], field_columns=["Weight", "Price"], tags={"name": self.name},
-        #                              batch_size=10000, time_precision="s")
+        print(self.ts["prices"])
+        print(self.ts["weights"])
 
         # recompute the entire portfolio!
         portfolio_new = self.portfolio_influx
 
-        # update the nav
-        self._ts_upsert(ts=portfolio_new.nav.dropna(), field="nav", measurement="nav")
-
-        # update the leverage
-        self._ts_upsert(ts=portfolio_new.leverage.dropna(), field="leverage", measurement="leverage")
+        self.ts["nav"] = portfolio_new.nav.dropna()
+        self.ts["leverage"] = portfolio_new.leverage.dropna()
 
         for asset in portfolio_new.assets:
             if symbols[asset] not in set(self.symbols):
                 self.symbols.append(symbols[asset])
 
+        print(self.last)
+        print(self.ts["prices"])
+
+        #assert False
+
         return portfolio_new
 
     @property
     def portfolio_influx(self):
-        p = self._ts(measurement="portfoliosx", field="Price", tags=["Asset"]).unstack(level="Asset")
-        w = self._ts(measurement="portfoliosx", field="Weight", tags=["Asset"]).unstack(level="Asset")
+        #p = self._ts(measurement="portfoliosx", field="Price", tags=["Asset"]).unstack(level="Asset")
+        #w = self._ts(measurement="portfoliosx", field="Weight", tags=["Asset"]).unstack(level="Asset")
+        #return _Portfolio(prices=p, weights=w)
 
-        return _Portfolio(prices=p, weights=w)
+
+        return _Portfolio(prices=self.ts["prices"], weights=self.ts["weights"])
 
     @property
     def nav(self):
-        return fromNav(self._ts(field="nav", measurement="nav"))
+        return self.ts["nav"]
+
 
     @property
     def leverage(self):
-        return self._ts(field="leverage", measurement="leverage")
+        return self.ts["leverage"]
+
+        #return self._ts(field="leverage", measurement="leverage")
     #
     # @staticmethod
     # def nav_all():

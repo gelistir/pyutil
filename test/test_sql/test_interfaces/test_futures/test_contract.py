@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import pandas as pd
 
-from pyutil.influx.client import test_client
+#from pyutil.influx.client import test_client
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
@@ -20,17 +20,6 @@ def future():
 
 
 class TestContract(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        ProductInterface.client = test_client()
-
-        #ProductInterface.client.recreate(dbname="test")
-
-    @classmethod
-    def tearDownClass(cls):
-        ProductInterface.client.close()
-
-
     def test_contract(self):
         # Contract doesn't need a future here...
         c = Contract(figi="B3BB5", notice=pd.Timestamp("2010-01-01").date(), bloomberg_symbol="AAA", fut_month_yr="MAR 00")

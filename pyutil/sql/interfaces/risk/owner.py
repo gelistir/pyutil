@@ -59,26 +59,42 @@ class Owner(ProductInterface):
     def securities(self):
         return self.__securities
 
+    def f(self, match):
+        for a in self.ts.keys():
+            if a.startswith(match):
+                yield tuple(a.split("_")[1:]), self.ts[a]
+
     @property
     def __position(self):
-        x = pd.DataFrame({security: self._ts(field="weight", measurement="WeightsOwner", tags=["custodian"], conditions={"security": security.name}) for security in set(self.securities)}).stack()
-        x.index.names = ["Date", "Custodian", "Security"]
-        return x
+
+        d = dict()
+        for tags, data in self.f("position"):
+            d[tags] = data
+
+        a = pd.DataFrame(d).transpose().stack()
+        a.index.names = ["Security", "Custodian", "Date"]
+        return a
 
     def position(self, index_col=None):
         if not index_col:
             return self.__position
         else:
             p = self.__position.unstack(level="Security")
+
+            g = self.reference_securities
+            g.index = [x.name for x in g.index]
+
             for security in p.keys():
-                p[security] = p[security] * security.get_reference(index_col)
+                p[security] = p[security] * g.loc[security][index_col]
 
             return p.stack()
 
     @property
     def __volatility(self):
-        x = pd.DataFrame({security: security.volatility(currency=self.currency) for security in set(self.securities)}).stack()
+        x = pd.DataFrame({security.name: security.volatility(currency=self.currency) for security in set(self.securities)}).stack()
         x.index.names = ["Date", "Security"]
+        print(x)
+
         return x
 
     def vola(self, index_col=None):
@@ -86,42 +102,33 @@ class Owner(ProductInterface):
             return self.__volatility
         else:
             v = self.__volatility.unstack(level="Security")
+
+            g = self.reference_securities
+            g.index = [x.name for x in g.index]
+
             for security in v.keys():
-                v[security] = v[security] * security.get_reference(index_col)
+                v[security] = v[security] * g.loc[security][index_col]
 
             return v.stack()
 
     def vola_weighted(self, index_col=None):
         v = self.vola(index_col=index_col)
+        print(index_col)
+        print(v)
+        # date security
+        #assert False
+
         # get rid of the custodian here...
         w = self.position().groupby(level=["Date", "Security"]).sum()
+        print(w)
+        #assert False
+
         return w*v
 
 
     @property
     def kiid(self):
         return pd.Series({security: security.kiid for security in self.securities})
-
-    # def kiid_weighted(self, sum=False, tail=None):
-    #    x = self.position(sum=False, tail=tail, custodian=False).transpose().apply(lambda weights: weights * self.kiid, axis=0).dropna(axis=0, how="all")
-    #    if sum:
-    #        x.loc["Sum"] = x.sum(axis=0)
-    #    return x
-
-    # def kiid_weighted_by(self, index_col, sum=False, tail=None):#
-    #
-    #        kiid = self.kiid_weighted(sum=False, tail=tail)
-    #        return self.__weighted_by(x=kiid, index_col=index_col, sum=sum)
-
-    def upsert_return(self, ts):
-        self._ts_upsert(ts=ts, field="return", measurement='ReturnOwner')
-
-        try:
-            x = self.returns
-            x = pd.concat((pd.Series({(x.index[0] - pd.DateOffset(days=1)).date(): 0.0}), x))
-            return self._ts_upsert(field="nav", ts=(x + 1.0).cumprod(), measurement='ReturnOwner')
-        except:
-            return self._ts_upsert(field="nav", ts=pd.Series({}), measurement='ReturnOwner')
 
     def upsert_position(self, security, ts, custodian=None):
         assert isinstance(security, Security)
@@ -135,23 +142,7 @@ class Owner(ProductInterface):
 
         assert isinstance(custodian, Custodian)
 
-        self._ts_upsert(ts=ts, field="weight", tags={"security": security.name, "custodian": custodian.name}, measurement="WeightsOwner")
-
-    def upsert_volatility(self, ts):
-        self._ts_upsert(ts=ts, field="volatility", measurement='VolatilityOwner')
-
-    @property
-    def returns(self):
-        # this is fast!
-        return self._ts(field="return", measurement="ReturnOwner")
-
-    @property
-    def volatility(self):
-        return self._ts(field="volatility", measurement="VolatilityOwner")
-
-    @property
-    def nav(self):
-        return fromNav(self._ts(field="nav", measurement='ReturnOwner'))
+        self.ts["position_{sec}_{custodian}".format(sec=security.name, custodian=custodian.name)] = ts
 
     @property
     def reference_securities(self):
