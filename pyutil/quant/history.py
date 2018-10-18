@@ -1,7 +1,6 @@
 import logging
 
 import pandas as pd
-from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.session import get_one_or_create
 
@@ -19,7 +18,8 @@ def __read(symbol, reader, field="PX_LAST", t0=pd.Timestamp("2000-01-01"), offse
         logger.debug("Length of timeseries {n}".format(n=len(ts)))
 
         # this can now accept dates!
-        symbol.upsert(ts=ts, field=field)
+        symbol.ts[field] = ts
+        #symbol.upsert(ts=ts, field=field)
 
     except Exception as e:
         logger.warning("Problem {e} with Ticker: {ticker}".format(e=e, ticker=symbol.name))
@@ -31,11 +31,6 @@ def __age(symbol, today=pd.Timestamp("today"), field="PX_LAST"):
         return (today - symbol.last(field=field)).days
     except:
         return None
-
-
-def frame(session, name="History", field="PX_LAST"):
-    frm, exists = get_one_or_create(session=session, model=Frame, name=name)
-    frm.frame = Symbol.frame(field)
 
 
 def update_history(data, reader, offset=10, today=pd.Timestamp("today"), field="PX_LAST", logger=None):

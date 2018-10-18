@@ -1,7 +1,6 @@
 import pandas as pd
 
 from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
@@ -72,9 +71,3 @@ class Database(object):
 
         # we prefer this solution as is goes through the cleaner SQL database!
         return pd.DataFrame({portfolio: f(portfolio.nav) for portfolio in self.portfolios})
-
-    def frame(self, name):
-        return self.session.query(Frame).filter_by(name=name).one()
-
-    def history(self, field="PX_LAST"):
-        return Symbol.frame(field=field)

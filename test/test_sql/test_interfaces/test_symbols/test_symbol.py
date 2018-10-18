@@ -9,14 +9,6 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 
 
 class TestSymbol(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        ProductInterface.client.recreate(dbname="test")
-
-    @classmethod
-    def tearDownClass(cls):
-        ProductInterface.client.close()
-
     def test_init(self):
         symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
         self.assertEqual(symbol.internal, "Peter Maffay")
@@ -30,19 +22,18 @@ class TestSymbol(TestCase):
         self.assertIsNone(symbol.last())
 
         # upsert series
-        symbol.upsert(ts=test_portfolio().prices["A"])
+        symbol.ts["PX_LAST"] = test_portfolio().prices["A"]
 
         # extract the series again
-        pdt.assert_series_equal(symbol.price(), test_portfolio().prices["A"].dropna(), check_names=False)
+        pdt.assert_series_equal(symbol.ts["PX_LAST"], test_portfolio().prices["A"].dropna(), check_names=False)
 
         # extract the last stamp
         self.assertEqual(symbol.last(), pd.Timestamp("2015-04-22"))
 
-        # call a static method
-        pdt.assert_series_equal(Symbol.symbol(name="A"), symbol.price())
+    def test_upsert(self):
+        symbol = Symbol(name="B", group=SymbolType.equities, internal="Peter Maffay")
 
-        pdt.assert_series_equal(Symbol.frame()["A"], symbol.price(), check_names=False)
+        symbol.ts["PX_LAST"] = pd.Series(index=[1,2], data=[5,8])
+        symbol.ts["PX_LAST"] = pd.Series(index=[2,4], data=[9,10])
 
-
-
-
+        pdt.assert_series_equal(symbol.ts["PX_LAST"], pd.Series(index=[1,2,4], data=[5,9,10]))

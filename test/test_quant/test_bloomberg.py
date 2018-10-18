@@ -5,7 +5,7 @@ import pandas.util.testing as pdt
 from pyutil.data import Database
 from pyutil.influx.client import test_client
 from pyutil.quant.history import update_history
-from pyutil.quant.reference import update_reference, frame
+from pyutil.quant.reference import update_reference
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.model.ref import Field, DataType, FieldType
@@ -48,8 +48,6 @@ class TestQuant(TestCase):
         for symbol in self.session.query(Symbol):
             self.assertEqual(symbol.get_reference("f1"), "A{x}".format(x=symbol.name))
 
-        frame(session=self.session)
-
     def test_history(self):
         def f(tickers, t0=None, field=None):
             return read_frame(resource("price.csv"))[tickers].dropna()
@@ -61,6 +59,6 @@ class TestQuant(TestCase):
         self.assertEqual(a["A"], 985)
 
         for symbol in self.session.query(Symbol):
-            pdt.assert_series_equal(symbol.price(), f(symbol.name), check_names=False)
+            pdt.assert_series_equal(symbol.ts["PX_LAST"], f(symbol.name), check_names=False)
 
 

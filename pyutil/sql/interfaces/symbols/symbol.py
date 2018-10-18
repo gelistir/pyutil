@@ -18,7 +18,6 @@ class Symbol(ProductInterface):
     internal = sq.Column(sq.String, nullable=True)
 
     __mapper_args__ = {"polymorphic_identity": "symbol"}
-
     _measurements = "symbols"
 
     def __init__(self, name, group=None, internal=None):
@@ -26,19 +25,9 @@ class Symbol(ProductInterface):
         self.group = group
         self.internal = internal
 
-    def price(self, field="PX_LAST"):
-        return self._ts(field=field, measurement=Symbol._measurements)
-
     def last(self, field="PX_LAST"):
-        return self._last(field=field, measurement=Symbol._measurements)
+        try:
+            return self.ts[field].index[-1]
+        except KeyError:
+            return None
 
-    def upsert(self, ts, field="PX_LAST"):
-        return self._ts_upsert(field=field, ts=ts, measurement=Symbol._measurements)
-
-    @staticmethod
-    def frame(field="PX_LAST"):
-        return ProductInterface.client.read(measurement=Symbol._measurements, field=field, tags=["name"])[field].dropna().unstack(level="name")
-
-    @staticmethod
-    def symbol(name, field="PX_LAST"):
-        return ProductInterface.client.read(field=field, measurement=Symbol._measurements, conditions={"name": name})[field].dropna()

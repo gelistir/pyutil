@@ -5,7 +5,6 @@ import pandas as pd
 from pyutil.data import Database
 from pyutil.influx.client import test_client
 from pyutil.sql.base import Base
-from pyutil.sql.interfaces.symbols.frames import Frame
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
@@ -39,9 +38,6 @@ class TestDatabase(TestCase):
         session.add(s)
         session.commit()
 
-        session.add(Frame(name="Peter Maffay", frame=test_portfolio().prices))
-        session.commit()
-
     @classmethod
     def tearDownClass(cls):
         cls.database.close()
@@ -63,13 +59,6 @@ class TestDatabase(TestCase):
     def test_strategies(self):
         self.assertEqual(self.database.strategies.count(), 1)
         self.assertEqual(self.database.strategy(name="Peter Maffay"), Strategy(name="Peter Maffay"))
-
-    def test_frames(self):
-        self.assertEqual(self.database.frames.count(), 1)
-        self.assertEqual(self.database.frame(name="Peter Maffay").name, "Peter Maffay")
-
-        pdt.assert_frame_equal(self.database.frame(name="Peter Maffay").frame,
-                               test_portfolio().prices)
 
     def test_nav(self):
         f = self.database.nav()
