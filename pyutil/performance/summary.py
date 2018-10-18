@@ -41,6 +41,10 @@ class NavSeries(pd.Series):
                 self.rename(index=lambda x: pd.Timestamp(x), inplace=True)
 
     @property
+    def series(self):
+        return pd.Series({t: v for t, v in self.items()})
+
+    @property
     def __periods_per_year(self):
         if len(self.index) >= 2:
             x = pd.Series(data=self.index)

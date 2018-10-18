@@ -1,80 +1,83 @@
 from unittest import TestCase
 
 import pandas as pd
-from sqlalchemy.exc import IntegrityError
-
 from pyutil.sql.base import Base
-from test.test_sql.test_model.ts import Timeseries
-from pyutil.sql.session import postgresql_db_test, get_one_or_create
+
+from pyutil.sql.interfaces.products import Timeseries
+from pyutil.sql.session import postgresql_db_test
 from test.config import test_portfolio
+
+import numpy as np
+
+import pandas.util.testing as pdt
+
+from test.test_sql.product import Product
 
 
 class TestTimeseries(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.session, connection_str = postgresql_db_test(base=Base, echo=False)
+        cls.p1 = Product(name="A")
+        cls.p2 = Product(name="B")
 
-    def test_same_timeseries_twice(self):
-        ts_a = Timeseries(name="price", field="price", measurement="b")
-        ts_b = Timeseries(name="price", field="price", measurement="b")
-        self.session.add_all([ts_a, ts_b])
-        # this should result in an error:
+    def test_basic(self):
+        # create  new price series
+        x = Timeseries(product=self.p1, name="price")
 
-        with self.assertRaises(IntegrityError):
-            self.session.commit()
+        self.assertEqual(x.name, "price")
 
-        self.session.rollback()
+        pdt.assert_series_equal(x.series, pd.Series({}))
+        self.assertIsNone(x.last)
 
-    def test_x(self):
-        ts1 = Timeseries(name="price", field="price", measurement="a")
-        ts2 = Timeseries(name="price", field="price", measurement="b", partner="BBB", hans="dampf")
-        ts3 = Timeseries(name="haha", field="correlation", measurement="b", partner="CCC")
+        # set the series...
+        x.series = pd.Series({1: 100.0, 2: 120.0, 3: 110.0}, name="Wurst")
+        pdt.assert_series_equal(x.series, pd.Series({1: 100.0, 2: 120.0, 3: 110.0}, name="Wurst"))
+        self.assertEqual(x.last, 3)
 
-        self.session.add_all([ts1, ts2, ts3])
+        a = pd.Series({2: 140, 3: 150})
+        x.series = a
+        pdt.assert_series_equal(x.series, pd.Series({1: 100.0, 2: 140.0, 3: 150.0}))
+        pdt.assert_series_equal(a, pd.Series({2: 140, 3: 150}))
+
+    def test_timeseries(self):
+        x = Timeseries(product=self.p1, name="nav")
+        nav = test_portfolio().nav
+        x.series = nav.apply(float)
+        pdt.assert_series_equal(x.series, nav.series)
+
+    def test_speed(self):
+        x = Timeseries(product=self.p1, name="price2")
+
+        a = np.random.randn(1000000)
+        x.series = pd.Series(data=a)
+
+        # go via memory! This is slow
+        self.session.add(x)
         self.session.commit()
 
-        for t in self.session.query(Timeseries).all():
-            print({"partner": "CCC"}.items() <= t.keywords.items())
-            print(t.keywords)
+        x = self.session.query(Timeseries).filter(Timeseries.name == "price2").one()
 
-        for t in self.session.query(Timeseries).filter(Timeseries.name=="haha"):
-            print(t)
+    def test_backref(self):
+        p = Product(name="B")
+        self.session.add(p)
+        self.session.commit()
 
-        for t in self.session.query(Timeseries).filter(Timeseries.field == "price"):
-            print(t)
+        x = Timeseries(product=p, name="a")
+        y = Timeseries(product=p, name="b")
 
-        for t in self.session.query(Timeseries).filter(Timeseries.measurement == "b"):
-            print(t)
+        pdt.assert_frame_equal(pd.DataFrame(dict(p.ts)), pd.DataFrame({"a": x.series, "b": y.series}))
 
-    def test_create(self):
-        x, exists = get_one_or_create(session=self.session, model=Timeseries, name="Peter", field="Maffay", measurement="xxx")
-        self.assertFalse(exists)
+    def test_speed_2(self):
+        x = Timeseries(product=self.p1, name="wurst")
 
-        self.assertEqual(x.name, "Peter")
-        self.assertEqual(x.field, "Maffay")
-        self.assertEqual(x.measurement, "xxx")
+        a = np.random.randn(100, 100)
+        x.series = pd.DataFrame(data=a)
 
-        y, exists = get_one_or_create(session=self.session, model=Timeseries, name="Peter", field="Maffay",
-                                      measurement="xxx")
+        pdt.assert_frame_equal(x.series, pd.DataFrame(data=a))
 
-        self.assertTrue(exists)
-        self.assertEqual(y.name, "Peter")
-        self.assertEqual(y.field, "Maffay")
-        self.assertEqual(y.measurement, "xxx")
+    def test_product_to_ts(self):
+        p = Product(name="C")
+        p.ts["Wurst"] = pd.Series(data=[1, 2, 3])
+        pdt.assert_series_equal(p.ts["Wurst"], pd.Series(data=[1, 2, 3]))
 
-    def test_write_series(self):
-        nav = test_portfolio().nav
-        nav.name = "nav"
-        ts1 = Timeseries(field="nav", measurement="nav", name="test-a")
-        ts1.upsert(ts=nav)
-
-        ts2 = Timeseries(field="nav", measurement="nav", name="test-b")
-        ts2.upsert(ts=nav)
-
-        self.session.add_all([ts1, ts2])
-
-        def xxx(ts):
-            return pd.DataFrame({(t.name, t.field, t.measurement) : t.series for t in ts})
-
-        a = xxx(self.session.query(Timeseries).filter(Timeseries.field=="nav", Timeseries.measurement=="nav").all())
-        print(a)

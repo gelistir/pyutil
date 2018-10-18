@@ -115,3 +115,42 @@ class ProductInterface(MyMixin, Base):
     def reference_frame(products):
         d = {s: {field.name: value for field, value in s.reference.items()} for s in products}
         return pd.DataFrame(d).transpose()
+
+
+class Timeseries(Base):
+    __tablename__ = "timeseries"
+
+    __data = sq.Column("data", sq.LargeBinary)
+    name = sq.Column(sq.String, primary_key=True)
+
+    __product_id = sq.Column("product_id", sq.Integer, sq.ForeignKey("productinterface.id"), primary_key=True, index=True)
+
+
+    @property
+    def series(self):
+        try:
+            return pd.read_msgpack(self.__data)
+        except ValueError:
+            return pd.Series({})
+
+    @series.setter
+    def series(self, series):
+        if self.__data:
+            truncated = self.series
+            series = pd.concat((truncated[truncated.index < series.index[0]], series))
+
+        self.__data = series.dropna().to_msgpack()
+
+
+    @property
+    def last(self):
+        try:
+            return self.series.index[-1]
+        except IndexError:
+            return None
+
+
+ProductInterface._timeseries = relationship(Timeseries, backref="product", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan")
+
+
+ProductInterface.ts = association_proxy('_timeseries', 'series', creator=lambda k, v: Timeseries(name=k, series=v))
