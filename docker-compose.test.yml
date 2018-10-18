@@ -27,5 +27,5 @@ services:
     image: influxdb:1.5.4
 
   test-mongo:
-    image: mongo:4.1.4
+    image: mongo:4.0.1
 
