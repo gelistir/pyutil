@@ -65,9 +65,9 @@ class Strategy(ProductInterface):
     def portfolio(self):
         return self._portfolio.portfolio_influx
 
-    @property
-    def last(self):
-        return self._portfolio.last
+    #@property
+    #def last(self):
+    #    return self._portfolio.last
 
     @property
     def assets(self):

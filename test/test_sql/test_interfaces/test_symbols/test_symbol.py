@@ -17,7 +17,7 @@ class TestSymbol(TestCase):
         symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
 
         # update with a series containing a NaN
-        self.assertIsNone(symbol.last())
+        self.assertIsNone(symbol.last(field="PX_LAST"))
 
         # upsert series
         symbol.ts["PX_LAST"] = test_portfolio().prices["A"]
@@ -26,7 +26,7 @@ class TestSymbol(TestCase):
         pdt.assert_series_equal(symbol.ts["PX_LAST"], test_portfolio().prices["A"].dropna(), check_names=False)
 
         # extract the last stamp
-        self.assertEqual(symbol.last(), pd.Timestamp("2015-04-22"))
+        self.assertEqual(symbol.last(field="PX_LAST"), pd.Timestamp("2015-04-22"))
 
     def test_upsert(self):
         symbol = Symbol(name="B", group=SymbolType.equities, internal="Peter Maffay")

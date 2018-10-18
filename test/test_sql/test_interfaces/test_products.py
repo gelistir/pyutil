@@ -86,7 +86,7 @@ class TestProductInterface(TestCase):
     def test_empty_ts(self):
         p = Product(name="CCC")
         self.assertIsNone(p.get_ts(field="PX_LAST"))
-        self.assertIsNone(p._last(field="PX_LAST"))
+        self.assertIsNone(p.last(field="PX_LAST"))
 
     def test_hash(self):
         x = {self.p1, self.p2}

@@ -31,9 +31,6 @@ class Portfolio(ProductInterface):
         self.ts["weights"] = portfolio.weights
         self.ts["prices"] = portfolio.prices
 
-        print(self.ts["prices"])
-        print(self.ts["weights"])
-
         # recompute the entire portfolio!
         portfolio_new = self.portfolio_influx
 
@@ -44,20 +41,10 @@ class Portfolio(ProductInterface):
             if symbols[asset] not in set(self.symbols):
                 self.symbols.append(symbols[asset])
 
-        print(self.last)
-        print(self.ts["prices"])
-
-        #assert False
-
         return portfolio_new
 
     @property
     def portfolio_influx(self):
-        #p = self._ts(measurement="portfoliosx", field="Price", tags=["Asset"]).unstack(level="Asset")
-        #w = self._ts(measurement="portfoliosx", field="Weight", tags=["Asset"]).unstack(level="Asset")
-        #return _Portfolio(prices=p, weights=w)
-
-
         return _Portfolio(prices=self.ts["prices"], weights=self.ts["weights"])
 
     @property
@@ -68,18 +55,6 @@ class Portfolio(ProductInterface):
     @property
     def leverage(self):
         return self.ts["leverage"]
-
-        #return self._ts(field="leverage", measurement="leverage")
-    #
-    # @staticmethod
-    # def nav_all():
-    #     warnings.warn("deprecated", DeprecationWarning)
-    #     return ProductInterface.client.read_frame(measurement="nav", field="nav", tags=["name"])
-    #
-    # @staticmethod
-    # def leverage_all():
-    #     warnings.warn("deprecated", DeprecationWarning)
-    #     return ProductInterface.client.read_frame(measurement="leverage", field="leverage", tags=["name"])
 
     def sector(self, total=False):
         symbolmap = {s.name : s.group.name for s in self.symbols}

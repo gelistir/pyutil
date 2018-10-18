@@ -24,10 +24,3 @@ class Symbol(ProductInterface):
         super().__init__(name)
         self.group = group
         self.internal = internal
-
-    def last(self, field="PX_LAST"):
-        try:
-            return self.ts[field].index[-1]
-        except KeyError:
-            return None
-

@@ -113,16 +113,8 @@ class Owner(ProductInterface):
 
     def vola_weighted(self, index_col=None):
         v = self.vola(index_col=index_col)
-        print(index_col)
-        print(v)
-        # date security
-        #assert False
-
         # get rid of the custodian here...
         w = self.position().groupby(level=["Date", "Security"]).sum()
-        print(w)
-        #assert False
-
         return w*v
 
 
