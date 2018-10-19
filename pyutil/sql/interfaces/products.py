@@ -123,10 +123,11 @@ class Timeseries(Base):
 
     @series.setter
     def series(self, series):
-        if self.__data:
-            series = pd.concat((self.truncate(series.index[0]), series))
+        if len(series.index) > 0:
+            if self.__data:
+                series = pd.concat((self.truncate(series.index[0]), series), sort=True)
 
-        self.__data = series.to_msgpack()
+            self.__data = series.to_msgpack()
 
     def truncate(self, after, include=False):
         t = self.series

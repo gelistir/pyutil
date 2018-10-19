@@ -1,7 +1,6 @@
 import abc
 import logging
 import pandas as pd
-from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 
 class ConfigMaster(dict):
