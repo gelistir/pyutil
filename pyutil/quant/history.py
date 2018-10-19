@@ -6,13 +6,13 @@ def __read(symbol, reader, field="PX_LAST", t0=pd.Timestamp("2000-01-01"), offse
     offset = pd.offsets.Day(n=offset)
 
     t = (symbol.last(field=field) or t0 + offset) - offset
-    logger.debug("Symbol {symbol} and start {s}".format(symbol=symbol.name, s=t))
 
     try:
         # extract price from Bloomberg
         ts = reader(tickers=symbol.name, t0=t, field=field).dropna()
 
-        logger.debug("Length of timeseries {n}".format(n=len(ts)))
+        # update to Timestamps
+        ts.index = [pd.Timestamp(a) for a in ts.index]
 
         # this can now accept dates!
         symbol.ts[field] = ts

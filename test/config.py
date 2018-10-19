@@ -1,8 +1,9 @@
 import os
+
 import pandas as pd
 
+from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio
-from pyutil.performance.summary import NavSeries, fromNav
 
 pd.options.display.width = 300
 
