@@ -117,7 +117,7 @@ class Timeseries(Base):
     @property
     def series(self):
         try:
-            return pd.read_msgpack(self.__data)
+            return pd.read_msgpack(self.__data).sort_index()
         except ValueError:
             return pd.Series({})
 
