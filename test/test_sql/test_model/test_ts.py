@@ -97,5 +97,15 @@ class TestTimeseries(TestCase):
         x.index = [4, 5, 6]
         pdt.assert_series_equal(x.series, pd.Series(index=[4, 5, 6], data=[1, 2, 3]))
 
-        # print(p.ts["Maffay"])
-        # assert False
+    def test_date(self):
+        p = Product(name="F")
+        x = Timeseries(product=p, name="Maffay")
+        t0 = pd.Timestamp("2010-10-20").date()
+        t1 = pd.Timestamp("2010-10-21").date()
+
+        x.series = pd.Series(index=[t0, t1], data=[1,2])
+        pdt.assert_series_equal(x.series, pd.Series(index=[t0, t1], data=[1, 2]))
+
+        x.index = [pd.Timestamp(a) for a in x.index]
+        pdt.assert_series_equal(x.series, pd.Series(index=[pd.Timestamp(t0), pd.Timestamp(t1)],
+                                                    data=[1, 2]))
