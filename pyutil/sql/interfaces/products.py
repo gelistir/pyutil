@@ -124,11 +124,34 @@ class Timeseries(Base):
     @series.setter
     def series(self, series):
         if self.__data:
-            truncated = self.series
-            series = pd.concat((truncated[truncated.index < series.index[0]], series))
+            series = pd.concat((self.truncate(series.index[0]), series))
 
         self.__data = series.to_msgpack()
 
+    def truncate(self, after, include=False):
+        t = self.series
+        if include:
+            return t[t.index <= after]
+        else:
+            return t[t.index < after]
+
+    def __erase(self):
+        self.__data = None
+
+    @property
+    def index(self):
+        return self.series.index
+
+    @index.setter
+    def index(self, index):
+        # extract the series
+        x = self.series
+        # erase all existing data
+        self.__erase()
+        # set the new index
+        x.index = index
+        # update the series
+        self.series = x
 
     @property
     def last(self):
@@ -139,6 +162,4 @@ class Timeseries(Base):
 
 
 ProductInterface._timeseries = relationship(Timeseries, backref="product", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan")
-
-
 ProductInterface.ts = association_proxy('_timeseries', 'series', creator=lambda k, v: Timeseries(name=k, series=v))
