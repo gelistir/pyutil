@@ -81,15 +81,6 @@ class TestTimeseries(TestCase):
         p.ts["Wurst"] = pd.Series(data=[1, 2, 3])
         pdt.assert_series_equal(p.ts["Wurst"], pd.Series(data=[1, 2, 3]))
 
-    def test_erase(self):
-        p = Product(name="D")
-        # p.ts["Maffay"] = pd.Series(data=[1,2,3])
-
-        x = Timeseries(product=p, name="Maffay")
-        x.series = pd.Series(data=[1, 2, 3])
-        x.erase()
-        pdt.assert_series_equal(x.series, pd.Series({}))
-
     def test_index(self):
         p = Product(name="E")
         x = Timeseries(product=p, name="Maffay")

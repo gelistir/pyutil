@@ -8,11 +8,11 @@ class ConfigMaster(dict):
     """ Every strategy is described by a configuration object. Each such object inherits from the ConfigMaster class."""
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, names, reader=None, logger=None, **kwargs):
+    def __init__(self, names, reader, logger=None, **kwargs):
         """
         Abstract base class for all strategies
 
-        :param reader: is a function accepting a name as an argument. Returns an Asset...
+        :param reader: is a function accepting a name and the field as an argument. Returns a timeseries...
         :param names: names of the assets used in the strategy
         :param logger: logger
         """
@@ -20,7 +20,7 @@ class ConfigMaster(dict):
 
         # the logger
         self.logger = logger or logging.getLogger(__name__)
-        self.__reader = reader or Symbol.symbol
+        self.__reader = reader
         self.__names = names
 
     @property
