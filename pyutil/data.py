@@ -71,3 +71,6 @@ class Database(object):
 
         # we prefer this solution as is goes through the cleaner SQL database!
         return pd.DataFrame({portfolio: f(portfolio.nav) for portfolio in self.portfolios})
+
+    def history(self, field):
+        return pd.DataFrame({symbol.name: symbol.ts[field] for symbol in self.symbols})
