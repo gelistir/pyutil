@@ -52,7 +52,6 @@ class Strategy(ProductInterface):
 
         # find the last stamp of weights...
         last = self._portfolio.last("nav")
-        print(last)
 
         if not last:
             self._portfolio.upsert_influx(portfolio=portfolio, symbols=symbols)
