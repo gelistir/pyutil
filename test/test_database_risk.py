@@ -1,7 +1,6 @@
 from unittest import TestCase
 
 import pandas as pd
-#from pyutil.influx.client import test_client
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
@@ -98,16 +97,17 @@ class TestDatabase(TestCase):
         x = self.database.securities_volatility(currency=currency)
         pdt.assert_series_equal(x[security], ts, check_names=False)
 
-    def test_positions(self):
-        owner = self.database.owner(name="102")
-        security = self.database.security(name="123")
-        custodian = self.database.custodian(name="UBS")
+    #def test_positions(self):
+    #    owner = self.database.owner(name="102")
+    #    security = self.database.security(name="123")
+    #    custodian = self.database.custodian(name="UBS")
 
-        ts = pd.Series({pd.Timestamp("2010-04-20"): 0.05, pd.Timestamp("2010-04-21"): 0.10})
-        owner.upsert_position(security=security, custodian=custodian, ts=ts)
+    #    ts = pd.Series({pd.Timestamp("2010-04-20"): 0.05, pd.Timestamp("2010-04-21"): 0.10})
+    #    owner.upsert_position(security=security, custodian=custodian, ts=ts)
 
-        frame = owner.position()
-        print(frame)
+
+    #    frame = owner.position
+    #    print(frame)
 
     def test_reference_owners(self):
         x = self.database.reference_owners

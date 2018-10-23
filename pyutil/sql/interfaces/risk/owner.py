@@ -3,7 +3,6 @@ import sqlalchemy as _sq
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 
-from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.products import ProductInterface, association_table
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
@@ -59,7 +58,7 @@ class Owner(ProductInterface):
     def securities(self):
         return self.__securities
 
-    def f(self, match):
+    def __f(self, match):
         for a in self.ts.keys():
             if a.startswith(match):
                 yield tuple(a.split("_")[1:]), self.ts[a]
@@ -68,59 +67,19 @@ class Owner(ProductInterface):
     def __position(self):
 
         d = dict()
-        for tags, data in self.f("position"):
+        for tags, data in self.__f("position"):
             d[tags] = data
 
         a = pd.DataFrame(d).transpose().stack()
         a.index.names = ["Security", "Custodian", "Date"]
-        return a
+        return a.to_frame(name="Position")
 
-    def position(self, index_col=None):
-        if not index_col:
-            return self.__position
-        else:
-            p = self.__position.unstack(level="Security")
-
-            g = self.reference_securities
-            g.index = [x.name for x in g.index]
-
-            for security in p.keys():
-                p[security] = p[security] * g.loc[security][index_col]
-
-            return p.stack()
 
     @property
     def __volatility(self):
         x = pd.DataFrame({security.name: security.volatility(currency=self.currency) for security in set(self.securities)}).stack()
         x.index.names = ["Date", "Security"]
-        print(x)
-
-        return x
-
-    def vola(self, index_col=None):
-        if not index_col:
-            return self.__volatility
-        else:
-            v = self.__volatility.unstack(level="Security")
-
-            g = self.reference_securities
-            g.index = [x.name for x in g.index]
-
-            for security in v.keys():
-                v[security] = v[security] * g.loc[security][index_col]
-
-            return v.stack()
-
-    def vola_weighted(self, index_col=None):
-        v = self.vola(index_col=index_col)
-        # get rid of the custodian here...
-        w = self.position().groupby(level=["Date", "Security"]).sum()
-        return w*v
-
-
-    @property
-    def kiid(self):
-        return pd.Series({security: security.kiid for security in self.securities})
+        return x.swaplevel().to_frame("Volatility")
 
     def upsert_position(self, security, ts, custodian=None):
         assert isinstance(security, Security)
@@ -138,4 +97,17 @@ class Owner(ProductInterface):
 
     @property
     def reference_securities(self):
-        return Security.reference_frame(self.securities)
+        frame = Security.reference_frame(self.securities)
+        frame.index.names = ["Security"]
+        return frame
+
+    @property
+    def position(self):
+        reference = self.reference_securities
+        position = self.__position
+        volatility = self.__volatility
+        reference.index = [security.name for security in reference.index]
+
+        position_reference = position.join(reference, on="Security")
+
+        return position_reference.join(volatility, on=["Security", "Date"])

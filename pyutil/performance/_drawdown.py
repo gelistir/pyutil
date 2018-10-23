@@ -2,9 +2,17 @@ import pandas as pd
 
 
 class _Drawdown(object):
-    def __init__(self, series, eps=0):
+    def __init__(self, series: pd.Series, eps: float = 0) -> object:
+        """
+        Drawdown for a given series
+        :param series: pandas Series
+        :param eps: a day is down day if the drawdown (positive) is larger than eps
+        """
+        # check series is indeed a series
         assert isinstance(series, pd.Series)
+        # check that all indices are increasing
         assert series.index.is_monotonic_increasing
+        # make sure all entries non-negative
         assert not (series < 0).any()
 
         self.__series = series
