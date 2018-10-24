@@ -71,13 +71,12 @@ class TestDatabase(TestCase):
 
     def test_nav(self):
         f = self.database.nav()
-        p = self.database.portfolio(name="Peter Maffay")
-        pdt.assert_series_equal(f[p], pd.Series(test_portfolio().nav), check_names=False)
+        #p = self.database.portfolio(name="Peter Maffay")
+        pdt.assert_series_equal(f["Peter Maffay"], pd.Series(test_portfolio().nav), check_names=False)
 
     def test_sector(self):
         f = self.database.sector(total=False)
-        p = self.database.portfolio(name="Peter Maffay")
-        frame = pd.DataFrame(index=[p], columns=["equities", "fixed_income"], data=[[0.135671, 0.173303]])
+        frame = pd.DataFrame(index=["Peter Maffay"], columns=["equities", "fixed_income"], data=[[0.135671, 0.173303]])
         pdt.assert_frame_equal(f, frame)
 
     def test_reference(self):

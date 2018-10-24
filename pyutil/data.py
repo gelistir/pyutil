@@ -20,12 +20,12 @@ class Database(object):
     def __last(frame, datefmt="%b %d"):
         frame = frame.sort_index(axis=1, ascending=False).rename(columns=lambda x: x.strftime(datefmt))
         frame["total"] = (frame + 1).prod(axis=1) - 1
-        return Database.__reindex(frame)
+        return frame #return Database.__reindex(frame)
 
-    @staticmethod
-    def __reindex(frame):
-        frame.index = [a.name for a in frame.index]
-        return frame
+    #@staticmethod
+    #def __reindex(frame):
+    #    frame.index = [a.name for a in frame.index]
+    #    return frame
 
     @staticmethod
     def __percentage(x):
@@ -70,13 +70,14 @@ class Database(object):
         return Symbol.reference_frame(self.symbols)
 
     def sector(self, total=False):
-        return pd.DataFrame({p: p.sector(total=total).iloc[-1] for p in self.portfolios}).transpose()
+        frame = pd.DataFrame({p.name: p.sector(total=total).iloc[-1] for p in self.portfolios}).transpose()
+        return frame
 
     def nav(self, f=None):
         f = f or (lambda x: x)
 
         # we prefer this solution as is goes through the cleaner SQL database!
-        return pd.DataFrame({portfolio: f(portfolio.nav) for portfolio in self.portfolios})
+        return pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
 
     def history(self, field):
         return pd.DataFrame({symbol.name: symbol.ts[field] for symbol in self.symbols})
@@ -96,7 +97,7 @@ class Database(object):
     def ytd(self):
         g = self.nav(f=lambda x: fromNav(x).ytd_series).transpose()
         g["total"] = (g + 1).prod(axis=1) - 1
-        g = self.__reindex(g)
+        #g = self.__reindex(g)
         return g.applymap(self.__percentage)
 
     def nav_asset(self, name, f=lambda x: x, **kwargs):
