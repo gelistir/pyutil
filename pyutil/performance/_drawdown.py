@@ -9,7 +9,7 @@ class _Drawdown(object):
         :param eps: a day is down day if the drawdown (positive) is larger than eps
         """
         # check series is indeed a series
-        assert isinstance(series, pd.Series), "The argument series is {s} of type {t}".format(s=series, t=type(series))
+        assert isinstance(series, pd.Series)
         # check that all indices are increasing
         assert series.index.is_monotonic_increasing
         # make sure all entries non-negative

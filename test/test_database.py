@@ -38,8 +38,21 @@ class TestDatabase(TestCase):
     def tearDownClass(cls):
         cls.database.close()
 
-    #def test_client(self):
-    #    self.assertIsNotNone(self.database.influx_client)
+    def test_recent(self):
+        frame = self.database.recent()
+        self.assertEqual(frame["Apr 17"]["Peter Maffay"], "-0.17%")
+        self.assertEqual(frame["total"]["Peter Maffay"], "1.12%")
+
+    def test_mtd(self):
+        frame = self.database.mtd()
+        self.assertEqual(frame["Apr 17"]["Peter Maffay"], "-0.17%")
+        self.assertEqual(frame["total"]["Peter Maffay"], "1.41%")
+
+    def test_ytd(self):
+        frame = self.database.ytd()
+        print(frame)
+        self.assertEqual(frame["04"]["Peter Maffay"], "1.41%")
+        self.assertEqual(frame["total"]["Peter Maffay"], "2.17%")
 
     def test_session(self):
         self.assertIsNotNone(self.database.session)
