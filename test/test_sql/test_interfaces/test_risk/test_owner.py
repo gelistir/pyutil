@@ -69,12 +69,13 @@ class TestOwner(unittest.TestCase):
         o = Owner(name=999, currency=Currency(name="USD"), custodian=Custodian(name="CS"))
         s = Security(name=777)
         x = pd.Series({t1.date(): 0.1})
-        s.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1.date(): 10}))
+        #s.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1.date(): 10}))
 
         o.upsert_position(s, ts=x)
         a = o.position
 
         o.upsert_position(s, ts=x)
         b = o.position
-
+        #print(o.position)
         pdt.assert_frame_equal(a,b)
+        #assert False

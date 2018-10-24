@@ -1,3 +1,4 @@
+import pandas as pd
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyutil.sql.interfaces.products import ProductInterface
@@ -50,4 +51,4 @@ class Security(ProductInterface):
 
     def volatility(self, currency):
         assert isinstance(currency, Currency)
-        return self.get_ts(field="volatility_{currency}".format(currency=currency.name))
+        return self.get_ts(field="volatility_{currency}".format(currency=currency.name)) or pd.Series({})

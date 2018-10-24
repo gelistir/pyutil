@@ -77,6 +77,8 @@ class Owner(ProductInterface):
 
     @property
     def __volatility(self):
+        print({security.name: security.volatility(currency=self.currency) for security in set(self.securities)})
+
         x = pd.DataFrame({security.name: security.volatility(currency=self.currency) for security in set(self.securities)}).stack()
         x.index.names = ["Date", "Security"]
         return x.swaplevel().to_frame("Volatility")
