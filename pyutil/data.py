@@ -110,7 +110,7 @@ class Database(object):
 
     def nav_strategy(self, name,  f=lambda x: x, **kwargs):
         portfolio = self.portfolio(name=name)
-        nav = portfolio.nav
+        nav = fromNav(portfolio.nav)
         vola = nav.ewm_volatility()
         drawdown = nav.drawdown
 
