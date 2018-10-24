@@ -78,7 +78,7 @@ class ProductInterface(MyMixin, Base):
         try:
             return self.ts[field]
         except KeyError:
-            return None
+            return default
 
     def __repr__(self):
         return "{d}({name})".format(d=self.discriminator, name=self.name)

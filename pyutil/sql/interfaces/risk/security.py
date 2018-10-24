@@ -51,4 +51,5 @@ class Security(ProductInterface):
 
     def volatility(self, currency):
         assert isinstance(currency, Currency)
-        return self.get_ts(field="volatility_{currency}".format(currency=currency.name)) or pd.Series({})
+        return self.get_ts(field="volatility_{currency}".format(currency=currency.name), default=pd.Series({}))
+
