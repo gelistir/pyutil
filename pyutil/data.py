@@ -106,7 +106,7 @@ class Database(object):
         vola = nav.ewm_volatility()
         drawdown = nav.drawdown
 
-        return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola)}, **kwargs}
+        return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}
 
     def nav_strategy(self, name,  f=lambda x: x, **kwargs):
         portfolio = self.portfolio(name=name)
@@ -114,15 +114,6 @@ class Database(object):
         vola = nav.ewm_volatility()
         drawdown = nav.drawdown
 
-        return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola)}, **kwargs}
-
-        #return math_dictionary(portfolio.nav, name=name)
-
-
-        return math_dictionary(symbol.ts["PX_LAST"], name=name)
-
-    def nav_strategy(self, name):
-        portfolio = self.portfolio(name=name)
-        return math_dictionary(portfolio.nav, name=name)
+        return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}
 
 
