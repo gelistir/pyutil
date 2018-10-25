@@ -112,7 +112,7 @@ class TestDatabase(TestCase):
     def test_reference_owners(self):
         x = self.database.reference_owners
         owner = self.database.owner(name="102")
-        f = pd.DataFrame(index=[owner], columns=["XXX"], data=[100])
+        f = pd.DataFrame(index=["102"], columns=["XXX"], data=[100])
         pdt.assert_frame_equal(f, x)
 
     def test_reference_securities(self):
@@ -120,9 +120,9 @@ class TestDatabase(TestCase):
         s1 = self.database.security(name="123")
         s2 = self.database.security(name="456")
 
-        f = pd.DataFrame(index=[s1, s2], columns=["Bloomberg Ticker", "XXX"])
-        f["Bloomberg Ticker"][s1] = "HAHA US Equity"
-        f["XXX"][s1] = 200
+        f = pd.DataFrame(index=["123", "456"], columns=["Bloomberg Ticker", "XXX"])
+        f["Bloomberg Ticker"]["123"] = "HAHA US Equity"
+        f["XXX"]["123"] = 200
         pdt.assert_frame_equal(x, f)
 
 

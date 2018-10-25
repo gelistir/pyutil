@@ -12,19 +12,14 @@ class Database(object):
     def __init__(self, session):
         # session, sql database
         self.__session = session
-        #if client:
-        #    self.__client = client
-        #    # this is how the sql database is using influx...
-        #    ProductInterface.client = self.__client
+
+    @staticmethod
+    def __reindex(frame):
+        frame.index = [a.name for a in frame.index]
+        return frame
 
     def close(self):
         self.__session.close()
-        #if self.__client:
-        #    self.__client.close()
-
-    #@property
-    #def influx_client(self):
-    #    return self.__client
 
     @property
     def session(self):
@@ -60,11 +55,11 @@ class Database(object):
 
     @property
     def reference_owners(self):
-        return Owner.reference_frame(self.owners)
+        return self.__reindex(Owner.reference_frame(self.owners))
 
     @property
     def reference_securities(self):
-        return Security.reference_frame(self.securities)
+        return self.__reindex(Security.reference_frame(self.securities))
 
     @property
     def prices(self):
