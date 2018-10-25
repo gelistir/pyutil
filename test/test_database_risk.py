@@ -1,6 +1,8 @@
 from unittest import TestCase
 
 import pandas as pd
+from sqlalchemy.orm.exc import NoResultFound
+
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
@@ -111,18 +113,20 @@ class TestDatabase(TestCase):
 
     def test_reference_owners(self):
         x = self.database.reference_owners
-        owner = self.database.owner(name="102")
         f = pd.DataFrame(index=["102"], columns=["XXX"], data=[100])
         pdt.assert_frame_equal(f, x)
 
     def test_reference_securities(self):
         x = self.database.reference_securities
-        s1 = self.database.security(name="123")
-        s2 = self.database.security(name="456")
 
         f = pd.DataFrame(index=["123", "456"], columns=["Bloomberg Ticker", "XXX"])
         f["Bloomberg Ticker"]["123"] = "HAHA US Equity"
         f["XXX"]["123"] = 200
         pdt.assert_frame_equal(x, f)
+
+    def test_custodian(self):
+        self.assertEqual(self.database.custodian(name="UBS"), Custodian(name="UBS"))
+        with self.assertRaises(NoResultFound):
+            self.database.custodian(name="NONONO")
 
 
