@@ -79,7 +79,7 @@ class Database(object):
         # we prefer this solution as is goes through the cleaner SQL database!
         return pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
 
-    def history(self, field):
+    def history(self, field="PX_LAST"):
         return pd.DataFrame({symbol.name: symbol.ts[field] for symbol in self.symbols})
 
     def mtd(self):
@@ -111,7 +111,7 @@ class Database(object):
     def nav_strategy(self, name,  f=lambda x: x, **kwargs):
         portfolio = self.portfolio(name=name)
         nav = fromNav(portfolio.nav)
-        vola = nav.ewm_volatility()
+        vola = nav.ewm_volatility().dropna()
         drawdown = nav.drawdown
 
         return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}

@@ -31,6 +31,9 @@ class TestDatabase(TestCase):
         s = Strategy(name="Peter Maffay")
         s.upsert(portfolio=test_portfolio(), symbols=cls.symbols)
 
+        for name, ts in test_portfolio().prices.items():
+            cls.symbols[name].ts["PX_LAST"] = ts.dropna()
+
         session.add(s)
         session.commit()
 
@@ -81,6 +84,19 @@ class TestDatabase(TestCase):
 
     def test_reference(self):
         f = self.database.reference
-        #todo: Finish test
+        self.assertTrue(f.empty)
 
-        #pdt.assert_frame_equal(f, pd.DataFrame(index=["A", "B", "C", "D", "E", "F", "G"]), check_index_type=False)
+    def test_history(self):
+        f = self.database.history(field="PX_LAST")
+        pdt.assert_frame_equal(f, test_portfolio().prices)
+
+    def test_nav_strategy(self):
+        f = self.database.nav_strategy(name="Peter Maffay", creator="Thomas")
+        self.assertIsInstance(f, dict)
+        self.assertEqual(f["creator"], "Thomas")
+
+    def test_nav_symbol(self):
+        f = self.database.nav_asset(name="A", creator="Thomas")
+        self.assertIsInstance(f, dict)
+        self.assertEqual(f["creator"], "Thomas")
+
