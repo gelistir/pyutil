@@ -95,8 +95,15 @@ class TestDatabase(TestCase):
         self.assertIsInstance(f, dict)
         self.assertEqual(f["creator"], "Thomas")
 
+    def test_nav_strategy_empty(self):
+        pass
+
+
     def test_nav_symbol(self):
         f = self.database.nav_asset(name="A", creator="Thomas")
         self.assertIsInstance(f, dict)
         self.assertEqual(f["creator"], "Thomas")
+
+    def test_nav_symbol_empty(self):
+        pass
 

@@ -129,4 +129,14 @@ class TestDatabase(TestCase):
         with self.assertRaises(NoResultFound):
             self.database.custodian(name="NONONO")
 
+    def test_nav_owner(self):
+        print(self.database.nav_owner(name="102"))
 
+    def test_nav_security(self):
+        print(self.database.nav_security(name="123"))
+
+    def test_nav_owner_empty(self):
+        pass
+
+    def test_nav_security_empty(self):
+        pass
