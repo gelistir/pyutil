@@ -101,7 +101,7 @@ class ProductInterface(MyMixin, Base):
 
     @staticmethod
     def reference_frame(products):
-        d = {s: {field.name: value for field, value in s.reference.items()} for s in products}
+        d = {s.name: {field.name: value for field, value in s.reference.items()} for s in products}
         return pd.DataFrame(d).transpose()
 
 

@@ -108,7 +108,7 @@ class Owner(ProductInterface):
         reference = self.reference_securities
         position = self.__position
         volatility = self.__volatility
-        reference.index = [security.name for security in reference.index]
+        #reference.index = [security.name for security in reference.index]
 
         position_reference = position.join(reference, on="Security")
 

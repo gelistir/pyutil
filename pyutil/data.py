@@ -22,10 +22,10 @@ class Database(object):
         frame["total"] = (frame + 1).prod(axis=1) - 1
         return frame #return Database.__reindex(frame)
 
-    @staticmethod
-    def __reindex(frame):
-        frame.index = [a.name for a in frame.index]
-        return frame
+    #@staticmethod
+    #def __reindex(frame):
+    #    frame.index = [a.name for a in frame.index]
+    #    return frame
 
     @staticmethod
     def __percentage(x):
@@ -67,7 +67,7 @@ class Database(object):
 
     @property
     def reference(self):
-        return self.__reindex(Symbol.reference_frame(self.symbols))
+        return Symbol.reference_frame(self.symbols)
 
     def sector(self, total=False):
         frame = pd.DataFrame({p.name: p.sector(total=total).iloc[-1] for p in self.portfolios}).transpose()

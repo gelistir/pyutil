@@ -53,7 +53,7 @@ class TestProductInterface(TestCase):
         self.assertTrue(self.f2 in self.p1.reference.keys())
         self.assertDictEqual({self.f1: 120, self.f2: "11"}, dict(self.p1.reference))
 
-        pdt.assert_frame_equal(ProductInterface.reference_frame(products=[self.p1]).fillna(""), pd.DataFrame(index=[self.p1], columns=["x", "y"], data=[[120, "11"]]))
+        pdt.assert_frame_equal(ProductInterface.reference_frame(products=[self.p1]).fillna(""), pd.DataFrame(index=[self.p1.name], columns=["x", "y"], data=[[120, "11"]]))
 
 
         print(ProductInterface.reference_frame(products=[self.p1, self.p2]))

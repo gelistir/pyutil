@@ -60,7 +60,7 @@ class TestOwner(unittest.TestCase):
         o1 = Owner(name=200)
         x = Owner.reference_frame(products=[s1])
 
-        pdt.assert_frame_equal(x, pd.DataFrame(index=[s1], columns=["KIID"], data=[[5]]))
+        pdt.assert_frame_equal(x, pd.DataFrame(index=["410"], columns=["KIID"], data=[[5]]))
 
         o1.securities.append(s1)
         pdt.assert_frame_equal(x, o1.reference_securities, check_names=False)

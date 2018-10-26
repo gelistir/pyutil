@@ -73,4 +73,11 @@ class Strategy(ProductInterface):
     def assets(self):
         return self._portfolio.symbols
 
+    @property
+    def state(self):
+        return self._portfolio.state
+
+    @property
+    def reference_assets(self):
+        return self.reference_frame(self.assets)
 

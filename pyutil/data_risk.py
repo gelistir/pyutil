@@ -14,11 +14,6 @@ class Database(object):
         # session, sql database
         self.__session = session
 
-    @staticmethod
-    def __reindex(frame):
-        frame.index = [a.name for a in frame.index]
-        return frame
-
     def close(self):
         self.__session.close()
 
@@ -56,11 +51,11 @@ class Database(object):
 
     @property
     def reference_owners(self):
-        return self.__reindex(Owner.reference_frame(self.owners))
+        return Owner.reference_frame(self.owners)
 
     @property
     def reference_securities(self):
-        return self.__reindex(Security.reference_frame(self.securities))
+        return Security.reference_frame(self.securities)
 
     @property
     def prices(self):
