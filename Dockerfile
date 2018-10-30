@@ -5,10 +5,7 @@ COPY requirements.txt requirements.txt
 
 RUN pip install --upgrade pip && \
     conda update -y conda && \
-    apt-get -y update && \
-    apt-get install -y postgresql-client && \
     conda install -y nomkl pandas=0.23.4 requests xlrd xlsxwriter && \
-    conda install -c conda-forge && \
     pip install --no-cache-dir  -r requirements.txt && rm requirements.txt && \
     conda clean -y --all
 
