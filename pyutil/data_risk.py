@@ -1,7 +1,5 @@
 import pandas as pd
 
-#from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.owner import Owner
@@ -72,18 +70,18 @@ class Database(object):
     def securities_volatility(self, currency):
         return pd.DataFrame({security: security.volatility(currency) for security in self.securities})
 
-    def nav_security(self, name, f=lambda x: x, **kwargs):
-        security = self.security(name=name)
-        nav = fromNav(security.get_ts("price", default=pd.Series({})))
-        vola = security.get_ts("volatility", default=pd.Series({}))
-        drawdown = nav.drawdown
+    #def nav_security(self, name, f=lambda x: x, **kwargs):
+    #    security = self.security(name=name)
+    #    nav = fromNav(security.get_ts("price", default=pd.Series({})))
+    #    vola = security.get_ts("volatility", default=pd.Series({}))
+    #    drawdown = nav.drawdown
 
-        return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}
+    #    return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}
 
-    def nav_owner(self, name, f=lambda x: x, **kwargs):
-        owner = self.owner(name=name)
-        nav = fromNav(owner.get_ts("nav", default=pd.Series({})))
-        vola = owner.get_ts("volatility")
-        drawdown  = nav.drawdown
+    #def nav_owner(self, name, f=lambda x: x, **kwargs):
+    #    owner = self.owner(name=name)
+    #    nav = fromNav(owner.get_ts("nav", default=pd.Series({})))
+    #    vola = owner.get_ts("volatility")
+    #    drawdown  = nav.drawdown
 
-        return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}
+    #    return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}
