@@ -88,22 +88,5 @@ class TestDatabase(TestCase):
 
     def test_history(self):
         f = self.database.history(field="PX_LAST")
-        pdt.assert_frame_equal(f, test_portfolio().prices)
 
-    def test_nav_strategy(self):
-        f = self.database.nav_strategy(name="Peter Maffay", creator="Thomas")
-        self.assertIsInstance(f, dict)
-        self.assertEqual(f["creator"], "Thomas")
-
-    def test_nav_strategy_empty(self):
-        pass
-
-
-    def test_nav_symbol(self):
-        f = self.database.nav_asset(name="A", creator="Thomas")
-        self.assertIsInstance(f, dict)
-        self.assertEqual(f["creator"], "Thomas")
-
-    def test_nav_symbol_empty(self):
-        pass
 

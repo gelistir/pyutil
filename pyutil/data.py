@@ -20,12 +20,7 @@ class Database(object):
     def __last(frame, datefmt="%b %d"):
         frame = frame.sort_index(axis=1, ascending=False).rename(columns=lambda x: x.strftime(datefmt))
         frame["total"] = (frame + 1).prod(axis=1) - 1
-        return frame #return Database.__reindex(frame)
-
-    #@staticmethod
-    #def __reindex(frame):
-    #    frame.index = [a.name for a in frame.index]
-    #    return frame
+        return frame
 
     @staticmethod
     def __percentage(x):
@@ -99,21 +94,21 @@ class Database(object):
         g["total"] = (g + 1).prod(axis=1) - 1
         #g = self.__reindex(g)
         return g.applymap(self.__percentage)
-
-    def nav_asset(self, name, f=lambda x: x, **kwargs):
-        symbol = self.symbol(name=name)
-        nav = fromNav(symbol.ts["PX_LAST"])
-        vola = nav.ewm_volatility()
-        drawdown = nav.drawdown
-
-        return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}
-
-    def nav_strategy(self, name,  f=lambda x: x, **kwargs):
-        portfolio = self.portfolio(name=name)
-        nav = fromNav(portfolio.nav)
-        vola = nav.ewm_volatility().dropna()
-        drawdown = nav.drawdown
-
-        return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}
-
-
+    #
+    # def nav_asset(self, name, f=lambda x: x, **kwargs):
+    #     symbol = self.symbol(name=name)
+    #     nav = fromNav(symbol.ts["PX_LAST"])
+    #     vola = nav.ewm_volatility()
+    #     drawdown = nav.drawdown
+    #
+    #     return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}
+    #
+    # def nav_strategy(self, name,  f=lambda x: x, **kwargs):
+    #     portfolio = self.portfolio(name=name)
+    #     nav = fromNav(portfolio.nav)
+    #     vola = nav.ewm_volatility().dropna()
+    #     drawdown = nav.drawdown
+    #
+    #     return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}
+    #
+    #
