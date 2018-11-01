@@ -1,34 +1,15 @@
 import unittest
 
-import numpy as np
 import pandas as pd
 import pandas.util.testing as pdt
 
-#from pyserver.util import month, performance
-
-#from test.settings import read_frame, test_portfolio
-
-
 # first import settings as we define environment variables in there...
 from pyutil.performance.summary import fromNav
-from pyutil.web.util import month, performance
-from test.config import test_portfolio, read_frame
+from pyutil.web.util import performance
+from test.config import read_frame
 
 
 class TestUtil(unittest.TestCase):
-    def test_month(self):
-        p = test_portfolio()
-        print(month(p.nav))
-        print(read_frame(name="month.csv"))
-
-        x = read_frame(name="month.csv", parse_dates=False).replace(np.NaN, "")
-        x.index = ['{:d}'.format(year) for year in x.index]
-
-        pdt.assert_frame_equal(month(p.nav), x)
-
-    def test_month_empty(self):
-        self.assertTrue(month(pd.Series({})).empty)
-
     def test_performance(self):
         prices = read_frame("price.csv")["A"]
         x = performance(series=prices)
