@@ -69,6 +69,7 @@ class Portfolio(ProductInterface):
         sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
         frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
         frame["Relative Sector"] = 100 * frame["Extrapolated"] / frame["Sector Weight"]
+        frame.index.name = "Symbol"
         return frame
 
 

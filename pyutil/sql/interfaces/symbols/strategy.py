@@ -79,5 +79,5 @@ class Strategy(ProductInterface):
 
     @property
     def reference_assets(self):
-        return self.reference_frame(self.assets)
+        return self.reference_frame(self.assets, name="Symbol")
 
