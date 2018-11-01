@@ -11,7 +11,7 @@ from pyutil.sql.session import postgresql_db_test
 
 import pandas.util.testing as pdt
 
-from test.config import test_portfolio
+from test.config import test_portfolio, read_frame
 
 
 class TestDatabase(TestCase):
@@ -47,15 +47,10 @@ class TestDatabase(TestCase):
         self.assertEqual(frame["total"]["Peter Maffay"], "1.12%")
 
     def test_mtd(self):
-        frame = self.database.mtd()
-        self.assertEqual(frame["Apr 17"]["Peter Maffay"], "-0.17%")
-        self.assertEqual(frame["total"]["Peter Maffay"], "1.41%")
+        pdt.assert_frame_equal(self.database.mtd(), read_frame("mtd.csv", index_col="Portfolio"))
 
     def test_ytd(self):
-        frame = self.database.ytd()
-        print(frame)
-        self.assertEqual(frame["04"]["Peter Maffay"], "1.41%")
-        self.assertEqual(frame["total"]["Peter Maffay"], "2.17%")
+        pdt.assert_frame_equal(self.database.ytd(), read_frame("ytd.csv", index_col="Portfolio"))
 
     def test_session(self):
         self.assertIsNotNone(self.database.session)

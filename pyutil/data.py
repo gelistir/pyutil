@@ -20,6 +20,7 @@ class Database(object):
     def __last(frame, datefmt="%b %d"):
         frame = frame.sort_index(axis=1, ascending=False).rename(columns=lambda x: x.strftime(datefmt))
         frame["total"] = (frame + 1).prod(axis=1) - 1
+        frame.index.name = "Portfolio"
         return frame
 
     @staticmethod
@@ -74,7 +75,7 @@ class Database(object):
 
         # we prefer this solution as is goes through the cleaner SQL database!
         frame = pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
-        frame.index.name = "Portfolio"
+        #frame.index.name = "Portfolio"
         return frame
 
     def history(self, field="PX_LAST"):
@@ -95,6 +96,6 @@ class Database(object):
     def ytd(self):
         g = self.nav(f=lambda x: fromNav(x).ytd_series).transpose()
         g["total"] = (g + 1).prod(axis=1) - 1
-        #g = self.__reindex(g)
+        g.index.name = "Portfolio"
         return g.applymap(self.__percentage)
 
