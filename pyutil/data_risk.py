@@ -49,11 +49,11 @@ class Database(object):
 
     @property
     def reference_owners(self):
-        return Owner.reference_frame(self.owners)
+        return Owner.reference_frame(self.owners, name="Owner")
 
     @property
     def reference_securities(self):
-        return Security.reference_frame(self.securities)
+        return Security.reference_frame(self.securities, name="Security")
 
     @property
     def prices(self):

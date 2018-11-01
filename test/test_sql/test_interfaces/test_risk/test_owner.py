@@ -58,9 +58,11 @@ class TestOwner(unittest.TestCase):
         s1.reference[KIID] = 5
 
         o1 = Owner(name=200)
-        x = Owner.reference_frame(products=[s1])
+        x = Owner.reference_frame(products=[s1], name="Owner")
 
-        pdt.assert_frame_equal(x, pd.DataFrame(index=["410"], columns=["KIID"], data=[[5]]))
+        frame = pd.DataFrame(index=["410"], columns=["KIID"], data=[[5]])
+        frame.index.name = "Owner"
+        pdt.assert_frame_equal(x, frame)
 
         o1.securities.append(s1)
         pdt.assert_frame_equal(x, o1.reference_securities, check_names=False)

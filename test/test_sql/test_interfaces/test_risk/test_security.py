@@ -49,5 +49,6 @@ class TestSecurity(unittest.TestCase):
         s3 = Security(name=120, kiid=5)
 
         x = pd.DataFrame(index=["100", "110", "120"], columns=["KIID"], data=[[4],[3],[5]])
-        pdt.assert_frame_equal(x, Security.reference_frame(products=sorted([s1, s2, s3])))
+        x.index.name = "Product"
+        pdt.assert_frame_equal(x, Security.reference_frame(products=sorted([s1, s2, s3]), name="Product"))
 

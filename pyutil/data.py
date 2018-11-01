@@ -62,17 +62,20 @@ class Database(object):
 
     @property
     def reference(self):
-        return Symbol.reference_frame(self.symbols)
+        return Symbol.reference_frame(self.symbols, name="Symbol")
 
     def sector(self, total=False):
         frame = pd.DataFrame({p.name: p.sector(total=total).iloc[-1] for p in self.portfolios}).transpose()
+        frame.index.name = "Portfolio"
         return frame
 
     def nav(self, f=None):
         f = f or (lambda x: x)
 
         # we prefer this solution as is goes through the cleaner SQL database!
-        return pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
+        frame = pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
+        frame.index.name = "Portfolio"
+        return frame
 
     def history(self, field="PX_LAST"):
         return pd.DataFrame({symbol.name: symbol.ts[field] for symbol in self.symbols})
@@ -94,21 +97,4 @@ class Database(object):
         g["total"] = (g + 1).prod(axis=1) - 1
         #g = self.__reindex(g)
         return g.applymap(self.__percentage)
-    #
-    # def nav_asset(self, name, f=lambda x: x, **kwargs):
-    #     symbol = self.symbol(name=name)
-    #     nav = fromNav(symbol.ts["PX_LAST"])
-    #     vola = nav.ewm_volatility()
-    #     drawdown = nav.drawdown
-    #
-    #     return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}
-    #
-    # def nav_strategy(self, name,  f=lambda x: x, **kwargs):
-    #     portfolio = self.portfolio(name=name)
-    #     nav = fromNav(portfolio.nav)
-    #     vola = nav.ewm_volatility().dropna()
-    #     drawdown = nav.drawdown
-    #
-    #     return {**{"nav": f(nav), "drawdown": f(drawdown), "volatility": f(vola), "name": name}, **kwargs}
-    #
-    #
+

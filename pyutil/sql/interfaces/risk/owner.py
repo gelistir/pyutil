@@ -99,9 +99,8 @@ class Owner(ProductInterface):
 
     @property
     def reference_securities(self):
-        frame = Security.reference_frame(self.securities)
-        frame.index.names = ["Security"]
-        return frame
+        return Security.reference_frame(self.securities, name="Security")
+
 
     @property
     def position(self):

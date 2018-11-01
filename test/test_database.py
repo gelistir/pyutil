@@ -80,6 +80,7 @@ class TestDatabase(TestCase):
     def test_sector(self):
         f = self.database.sector(total=False)
         frame = pd.DataFrame(index=["Peter Maffay"], columns=["equities", "fixed_income"], data=[[0.135671, 0.173303]])
+        frame.index.name = "Portfolio"
         pdt.assert_frame_equal(f, frame)
 
     def test_reference(self):

@@ -100,10 +100,11 @@ class ProductInterface(MyMixin, Base):
             return None
 
     @staticmethod
-    def reference_frame(products):
+    def reference_frame(products, name):
         d = {s.name: {field.name: value for field, value in s.reference.items()} for s in products}
-        return pd.DataFrame(d).transpose()
-
+        frame = pd.DataFrame(d).transpose()
+        frame.index.name = name
+        return frame
 
 class Timeseries(Base):
     __tablename__ = "timeseries"
