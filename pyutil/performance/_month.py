@@ -19,6 +19,6 @@ def _monthlytable(nav):
     frame["STDev"] = np.sqrt(12) * frame.std(axis=1)
     # make sure that you don't include the column for the STDev in your computation
     frame["YTD"] = a
-    frame.index.name = "year"
+    frame.index.name = "Year"
     # most recent years on top
     return frame.iloc[::-1]

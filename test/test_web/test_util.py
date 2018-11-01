@@ -14,20 +14,6 @@ class TestUtil(unittest.TestCase):
         prices = read_frame("price.csv")["A"]
         x = performance(series=prices)
         pdt.assert_series_equal(x, fromNav(prices).summary())
-        #
-        # f = [{'name': 'Return', 'value': '-28.27'}, {'name': '# Events', 'value': '601'},
-        #  {'name': '# Events per year', 'value': '261'}, {'name': 'Annua Return', 'value': '-14.43'},
-        #  {'name': 'Annua Volatility', 'value': '18.03'}, {'name': 'Annua Sharpe Ratio (r_f = 0)', 'value': '-0.80'},
-        #  {'name': 'Max Drawdown', 'value': '32.61'}, {'name': 'Max % return', 'value': '4.07'},
-        #  {'name': 'Min % return', 'value': '-9.11'}, {'name': 'MTD', 'value': '1.43'}, {'name': 'YTD', 'value': '1.33'},
-        #  {'name': 'Current Nav', 'value': '1200.59'}, {'name': 'Max Nav', 'value': '1692.70'},
-        #  {'name': 'Current Drawdown', 'value': '29.07'}, {'name': 'Calmar Ratio (3Y)', 'value': '-0.44'},
-        #  {'name': '# Positive Events', 'value': '285'}, {'name': '# Negative Events', 'value': '316'},
-        #  {'name': 'Value at Risk (alpha = 95)', 'value': '1.91'},
-        #  {'name': 'Conditional Value at Risk (alpha = 95)', 'value': '2.76'},
-        #  {'name': 'First at', 'value': '2013-01-01'}, {'name': 'Last at', 'value': '2015-04-22'}]
-        #
-        # self.assertListEqual(x, f)
 
     def test_performance_empty(self):
         prices = pd.Series({})
