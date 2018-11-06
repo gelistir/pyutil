@@ -118,7 +118,9 @@ class Timeseries(Base):
     @property
     def series(self):
         try:
-            return pd.read_msgpack(self.__data).sort_index()
+            x = pd.read_msgpack(self.__data).sort_index()
+            return x[~x.index.duplicated()]
+
         except ValueError:
             return pd.Series({})
 
@@ -127,6 +129,9 @@ class Timeseries(Base):
         if len(series.index) > 0:
             if self.__data:
                 series = pd.concat((self.truncate(series.index[0]), series), sort=True)
+
+            # remove duplicated indizes
+            series = series[~series.index.duplicated()]
 
             self.__data = series.to_msgpack()
 
