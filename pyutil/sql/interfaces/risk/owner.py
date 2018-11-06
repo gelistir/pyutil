@@ -64,7 +64,7 @@ class Owner(ProductInterface):
                 yield tuple(a.split("_")[1:]), self.ts[a]
 
     @property
-    def __position(self):
+    def position_xxx(self):
 
         d = dict()
         for tags, data in self.__f("position"):
@@ -76,8 +76,8 @@ class Owner(ProductInterface):
 
 
     @property
-    def __volatility(self):
-        print({security.name: security.volatility(currency=self.currency) for security in set(self.securities)})
+    def volatility_xxx(self):
+        #print({security.name: security.volatility(currency=self.currency) for security in set(self.securities)})
 
         x = pd.DataFrame({security.name: security.volatility(currency=self.currency) for security in set(self.securities)}).stack()
         x.index.names = ["Date", "Security"]
@@ -105,8 +105,8 @@ class Owner(ProductInterface):
     @property
     def position(self):
         reference = self.reference_securities
-        position = self.__position
-        volatility = self.__volatility
+        position = self.position_xxx
+        volatility = self.volatility_xxx
         #reference.index = [security.name for security in reference.index]
 
         position_reference = position.join(reference, on="Security")
