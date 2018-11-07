@@ -130,22 +130,17 @@ class Timeseries(Base):
 
     @series.setter
     def series(self, series):
-        #if len(series.index) > 0:
-        #    if self.__data:
-        #        series = pd.concat((self.truncate(series.index[0]), series), sort=True)
-
-        #    # remove duplicated indizes
         series = series[~series.index.duplicated()]
         self.__data = series.to_msgpack()
 
-    def append(self, series):
-        print(series)
-        t0 = series.index[0]
-        print(t0)
-        ts1 = self.truncate(after=t0, include=False)
-        print(ts1)
-        self.series = pd.concat((ts1, series), sort=True)
-        return self.series
+    # def append(self, series):
+    #     print(series)
+    #     t0 = series.index[0]
+    #     print(t0)
+    #     ts1 = self.truncate(after=t0, include=False)
+    #     print(ts1)
+    #     self.series = pd.concat((ts1, series), sort=True)
+    #     return self.series
 
     def truncate(self, after, include=False):
         t = self.series
