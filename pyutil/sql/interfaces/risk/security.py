@@ -1,7 +1,7 @@
 import pandas as pd
 from sqlalchemy.ext.hybrid import hybrid_property
 
-from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.products import ProductInterface, Timeseries
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.model.ref import Field, DataType, FieldType
 
@@ -46,7 +46,10 @@ class Security(ProductInterface):
         return self.get_reference("Bloomberg Multiplier", default=1.0)
 
     def upsert_volatility(self, currency, ts):
-        self.ts["volatility_{currency}".format(currency=currency.name)] = ts
+        name = "volatility_{currency}".format(currency=currency.name)
+        self.ts[name] = Timeseries.merge(new=ts, old=self.get_ts(name))
+
+        #self.ts["volatility_{currency}".format(currency=currency.name)] = ts
         return self.volatility(currency=currency)
 
     def volatility(self, currency):

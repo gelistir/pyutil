@@ -3,7 +3,7 @@ import sqlalchemy as _sq
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 
-from pyutil.sql.interfaces.products import ProductInterface, association_table
+from pyutil.sql.interfaces.products import ProductInterface, association_table, Timeseries
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.security import Security
@@ -95,7 +95,10 @@ class Owner(ProductInterface):
 
         assert isinstance(custodian, Custodian)
 
-        self.ts["position_{sec}_{custodian}".format(sec=security.name, custodian=custodian.name)] = ts
+        name = "position_{sec}_{custodian}".format(sec=security.name, custodian=custodian.name)
+
+        self.ts[name] = Timeseries.merge(new=ts, old=self.get_ts(name))
+
 
     @property
     def reference_securities(self):
