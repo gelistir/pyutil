@@ -86,7 +86,6 @@ class ProductInterface(MyMixin, Base):
 
         return self._timeseries[field]
 
-
     def __repr__(self):
         return "{d}({name})".format(d=self.discriminator, name=self.name)
 
@@ -112,6 +111,7 @@ class ProductInterface(MyMixin, Base):
         frame = pd.DataFrame(d).transpose()
         frame.index.name = name
         return frame
+
 
 class Timeseries(Base):
     __tablename__ = "timeseries"
