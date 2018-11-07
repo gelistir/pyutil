@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship
 from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 from pyutil.sql.base import Base
-from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.products import ProductInterface, Timeseries
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 
@@ -28,8 +28,8 @@ class Portfolio(ProductInterface):
     def upsert_influx(self, portfolio, symbols):
         assert isinstance(portfolio, _Portfolio)
 
-        self.ts["weights"] = portfolio.weights
-        self.ts["prices"] = portfolio.prices
+        self.ts["weights"] = Timeseries.merge(old=self.get_ts(field="weights"), new=portfolio.weights)
+        self.ts["prices"] = Timeseries.merge(old=self.get_ts(field="prices"), new=portfolio.prices)
 
         # recompute the entire portfolio!
         portfolio_new = self.portfolio_influx

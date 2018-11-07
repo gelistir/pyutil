@@ -3,12 +3,13 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.products import ProductInterface, Timeseries
 from pyutil.sql.model.ref import Field, FieldType, DataType
 from test.test_sql.product import Product
 
 t0 = pd.Timestamp("2010-05-14")
 t1 = pd.Timestamp("2010-05-15")
+
 
 class TestProductInterface(TestCase):
     @classmethod
@@ -68,3 +69,9 @@ class TestProductInterface(TestCase):
         x = {self.p1, self.p2}
         assert self.p1 in x
 
+    def test_timeseries(self):
+        a = Timeseries.merge(pd.Series(index=[0, 1], data=[4, 5]))
+        b = pd.Series(index=[1, 3], data=[10, 12])
+        c = Timeseries.merge(old=a, new=b)
+
+        pdt.assert_series_equal(pd.Series(index=[0, 1, 3], data=[4, 10, 12]), c)

@@ -1,6 +1,8 @@
 import pandas as pd
 import pandas.util.testing as pdt
 from unittest import TestCase
+
+from pyutil.sql.interfaces.products import Timeseries
 from test.config import test_portfolio
 
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
@@ -32,6 +34,6 @@ class TestSymbol(TestCase):
         symbol = Symbol(name="B", group=SymbolType.equities, internal="Peter Maffay")
 
         symbol.ts["PX_LAST"] = pd.Series(index=[1,2], data=[5,8])
-        symbol.ts["PX_LAST"] = pd.Series(index=[2,4], data=[9,10])
+        symbol.ts["PX_LAST"] = Timeseries.merge(old=symbol.ts["PX_LAST"], new=pd.Series(index=[2,4], data=[9,10]))
 
         pdt.assert_series_equal(symbol.ts["PX_LAST"], pd.Series(index=[1,2,4], data=[5,9,10]))

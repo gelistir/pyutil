@@ -36,7 +36,8 @@ class TestTimeseries(TestCase):
         self.assertEqual(x.last, 3)
 
         a = pd.Series({2: 140, 3: 150})
-        x.series = a
+        x.append(series=a)
+
         pdt.assert_series_equal(x.series, pd.Series({1: 100.0, 2: 140.0, 3: 150.0}))
         pdt.assert_series_equal(a, pd.Series({2: 140, 3: 150}))
 
