@@ -80,6 +80,13 @@ class ProductInterface(MyMixin, Base):
         except KeyError:
             return default
 
+    def create_or_get_ts(self, field):
+        if field not in self.ts.keys():
+            self.ts[field] = pd.Series({})
+
+        return self._timeseries[field]
+
+
     def __repr__(self):
         return "{d}({name})".format(d=self.discriminator, name=self.name)
 

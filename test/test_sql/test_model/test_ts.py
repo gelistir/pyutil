@@ -102,3 +102,15 @@ class TestTimeseries(TestCase):
         x.index = [pd.Timestamp(a) for a in x.index]
         pdt.assert_series_equal(x.series, pd.Series(index=[pd.Timestamp(t0), pd.Timestamp(t1)],
                                                     data=[1, 2]))
+
+    def test_create_ts(self):
+        p = Product(name="F")
+        ts = p.create_or_get_ts(field="wurst")
+        assert isinstance(ts, Timeseries)
+        self.assertIsNone(ts.last)
+
+        p.ts["wurst"] = pd.Series(index=[0,1], data=[2,3])
+        ts = p.create_or_get_ts(field="wurst")
+
+        pdt.assert_series_equal(p.ts["wurst"], pd.Series(index=[0,1], data=[2,3]))
+        pdt.assert_series_equal(ts.series, pd.Series(index=[0,1], data=[2,3]))
