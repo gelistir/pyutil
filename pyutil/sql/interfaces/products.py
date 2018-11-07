@@ -81,7 +81,7 @@ class ProductInterface(MyMixin, Base):
             return default
 
     def create_or_get_ts(self, field):
-        if field not in self.ts.keys():
+        if field not in self._timeseries.keys():
             self.ts[field] = pd.Series({})
 
         return self._timeseries[field]
