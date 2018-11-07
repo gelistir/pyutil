@@ -48,8 +48,6 @@ class Security(ProductInterface):
     def upsert_volatility(self, currency, ts):
         name = "volatility_{currency}".format(currency=currency.name)
         self.ts[name] = Timeseries.merge(new=ts, old=self.get_ts(name))
-
-        #self.ts["volatility_{currency}".format(currency=currency.name)] = ts
         return self.volatility(currency=currency)
 
     def volatility(self, currency):
