@@ -110,6 +110,7 @@ class TestTimeseries(TestCase):
         self.assertIsNone(ts.last)
 
         p.ts["wurst"] = pd.Series(index=[0,1], data=[2,3])
+
         ts = p.create_or_get_ts(field="wurst")
 
         pdt.assert_series_equal(p.ts["wurst"], pd.Series(index=[0,1], data=[2,3]))

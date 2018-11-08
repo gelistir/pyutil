@@ -49,11 +49,15 @@ class Database(object):
 
     @property
     def reference_owners(self):
-        return Owner.reference_frame(self.owners, name="Owner")
+        frame = Owner.reference_frame(self.owners, name="Entity ID")
+        frame = frame.reset_index() #.set_index("Name")
+        return frame
 
     @property
     def reference_securities(self):
-        return Security.reference_frame(self.securities, name="Security")
+        frame = Security.reference_frame(self.securities, name="Entity ID")
+        frame = frame.reset_index() #.set_index("Name")
+        return frame
 
     @property
     def prices(self):

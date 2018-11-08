@@ -114,17 +114,17 @@ class TestDatabase(TestCase):
     def test_reference_owners(self):
         x = self.database.reference_owners
         f = pd.DataFrame(index=["102"], columns=["XXX"], data=[100])
-        f.index.name = "Owner"
-        pdt.assert_frame_equal(f, x)
+        f.index.name = "Entity ID"
+        pdt.assert_frame_equal(f.reset_index(), x)
 
     def test_reference_securities(self):
         x = self.database.reference_securities
 
         f = pd.DataFrame(index=["123", "456"], columns=["Bloomberg Ticker", "XXX"])
-        f.index.name = "Security"
+        f.index.name = "Entity ID"
         f["Bloomberg Ticker"]["123"] = "HAHA US Equity"
         f["XXX"]["123"] = 200
-        pdt.assert_frame_equal(x, f)
+        pdt.assert_frame_equal(x, f.reset_index())
 
     def test_custodian(self):
         self.assertEqual(self.database.custodian(name="UBS"), Custodian(name="UBS"))
