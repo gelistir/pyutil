@@ -9,6 +9,8 @@ from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.model.ref import Field, DataType, FieldType
 
+from pyutil.performance.summary import fromReturns
+
 _association_table = association_table(left="security", right="owner", name="security_owner")
 
 FIELDS = {
@@ -115,3 +117,8 @@ class Owner(ProductInterface):
         position_reference = position.join(reference, on="Security")
 
         return position_reference.join(volatility, on=["Security", "Date"])
+
+    def to_json(self):
+        r = owner.ts["return"]
+        ts = fromReturns(r=r)
+        return {"name": self.name, "Nav": ts, "Volatility": ts.ewm_volatility(), "Drawdown": ts.drawdown}
