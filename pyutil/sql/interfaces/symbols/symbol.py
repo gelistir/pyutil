@@ -4,6 +4,7 @@ import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.performance.summary import fromNav
 
 
 class SymbolType(_enum.Enum):
