@@ -75,9 +75,14 @@ class Strategy(ProductInterface):
 
     @property
     def state(self):
-        return self._portfolio.state
+        return pd.concat((self._portfolio.state, self.reference_assets), axis=1, sort=False)
+
+        #return self._portfolio.state
 
     @property
     def reference_assets(self):
         return self.reference_frame(self.assets, name="Symbol")
 
+    def to_json(self):
+        nav = fromNav(self.portfolio.nav)
+        return {"name": self.name, "Nav": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
