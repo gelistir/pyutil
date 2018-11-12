@@ -61,7 +61,7 @@ class Database(object):
 
     @property
     def prices(self):
-        return pd.DataFrame({security: security.get_ts("price") for security in self.securities})
+        return pd.DataFrame({security.name: security.get_ts("price") for security in self.securities})
 
     @property
     def returns(self):
@@ -72,5 +72,5 @@ class Database(object):
         return pd.DataFrame({owner: owner.ts["volatility"] for owner in self.owners})
 
     def securities_volatility(self, currency):
-        return pd.DataFrame({security.name: security.volatility(currency) for security in self.securities})
+        return pd.DataFrame({security: security.volatility(currency) for security in self.securities})
 

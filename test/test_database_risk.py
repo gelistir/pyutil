@@ -70,7 +70,7 @@ class TestDatabase(TestCase):
         security.ts["price"] = ts
 
         d = self.database.prices.sort_index(ascending=False)
-        pdt.assert_series_equal(d[security], ts.sort_index(ascending=False), check_names=False)
+        pdt.assert_series_equal(d[security.name], ts.sort_index(ascending=False), check_names=False)
 
     def test_returns(self):
         # compute returns
@@ -99,17 +99,6 @@ class TestDatabase(TestCase):
         x = self.database.securities_volatility(currency=currency)
         pdt.assert_series_equal(x[security], ts, check_names=False)
 
-    #def test_positions(self):
-    #    owner = self.database.owner(name="102")
-    #    security = self.database.security(name="123")
-    #    custodian = self.database.custodian(name="UBS")
-
-    #    ts = pd.Series({pd.Timestamp("2010-04-20"): 0.05, pd.Timestamp("2010-04-21"): 0.10})
-    #    owner.upsert_position(security=security, custodian=custodian, ts=ts)
-
-
-    #    frame = owner.position
-    #    print(frame)
 
     def test_reference_owners(self):
         x = self.database.reference_owners
