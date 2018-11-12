@@ -28,6 +28,6 @@ class Symbol(ProductInterface):
 
     def to_json(self, nav="PX_LAST"):
         nav = fromNav(self.ts[nav])
-        return {"name": name, "Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
+        return {"name": self.name, "Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
 
 
