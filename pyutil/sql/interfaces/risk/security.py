@@ -4,6 +4,8 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from pyutil.sql.interfaces.products import ProductInterface, Timeseries
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.model.ref import Field, DataType, FieldType
+from pyutil.performance.summary import fromNav
+
 
 FIELDS = {
     "Lobnek Ticker Symbol Bloomberg": Field(name="Bloomberg Ticker", result=DataType.string, type=FieldType.other),
@@ -54,3 +56,6 @@ class Security(ProductInterface):
         assert isinstance(currency, Currency)
         return self.get_ts(field="volatility_{currency}".format(currency=currency.name), default=pd.Series({}))
 
+    def to_json(self):
+        nav = fromNav(self.get_ts("price", default=pd.Series({})))
+        return {"Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown, "name": self.name}
