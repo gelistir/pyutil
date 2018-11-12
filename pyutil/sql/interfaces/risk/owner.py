@@ -119,6 +119,6 @@ class Owner(ProductInterface):
         return position_reference.join(volatility, on=["Security", "Date"])
 
     def to_json(self):
-        r = owner.ts["return"]
+        r = self.ts["return"]
         ts = fromReturns(r=r)
         return {"name": self.name, "Nav": ts, "Volatility": ts.ewm_volatility(), "Drawdown": ts.drawdown}
