@@ -72,5 +72,5 @@ class Database(object):
         return pd.DataFrame({owner: owner.ts["volatility"] for owner in self.owners})
 
     def securities_volatility(self, currency):
-        return pd.DataFrame({security: security.volatility(currency) for security in self.securities})
+        return pd.DataFrame({security.name: security.volatility(currency) for security in self.securities})
 
