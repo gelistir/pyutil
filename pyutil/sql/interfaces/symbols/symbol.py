@@ -24,3 +24,9 @@ class Symbol(ProductInterface):
         super().__init__(name)
         self.group = group
         self.internal = internal
+
+    def to_json(self, nav="PX_LAST"):
+        nav = fromNav(self.ts[nav])
+        return {"name": name, "Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
+
+
