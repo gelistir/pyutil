@@ -30,6 +30,14 @@ class TestSymbol(TestCase):
         # extract the last stamp
         self.assertEqual(symbol.last(field="PX_LAST"), pd.Timestamp("2015-04-22"))
 
+        # test json
+        a = symbol.to_json()
+        assert isinstance(a, dict)
+        self.assertEqual(a["name"], "A")
+        pdt.assert_series_equal(a["Price"], symbol.ts["PX_LAST"])
+
+
+
     def test_upsert(self):
         symbol = Symbol(name="B", group=SymbolType.equities, internal="Peter Maffay")
 
