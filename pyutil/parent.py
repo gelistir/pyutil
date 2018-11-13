@@ -1,41 +1,15 @@
 import logging
 import sys
 import time
+
 from contextlib import ExitStack
-
-import io
-
-
-def _get_stream_handler(level=None, format=None, stream=sys.stdout):
-    __format = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    __level = logging.DEBUG
-
-    formatter = logging.Formatter(fmt=format or __format)
-    level = level or __level
-
-    handler = logging.StreamHandler(stream=stream)
-    handler.setFormatter(formatter)
-    handler.setLevel(level)
-
-    return handler
-
-
-def _get_logger(name="LWM", level=None):
-    __level = logging.DEBUG
-
-    logger = logging.getLogger(name)
-    logger.setLevel(level=level or __level)
-
-    return logger
+#from pyutil.logconf import logger, stream
 
 
 class Production(ExitStack):
-    def __init__(self, name="LWM", level=None, format=None):
+    def __init__(self, log=None):
         super().__init__()
-        self.__stream = io.StringIO()
-        self.__logger = _get_logger(name=name, level=level)
-        self.__logger.addHandler(_get_stream_handler(level=level, format=format))
-        self.__logger.addHandler(_get_stream_handler(level=level, stream=self.__stream, format=format))
+        self.__logger = log or logging.getLogger(__name__)
         self.__time = time.time()
 
     @property
@@ -54,8 +28,3 @@ class Production(ExitStack):
 
         self.logger.info("Time elapsed: {0}".format(self.elapsed))
         return True
-
-    @property
-    def log_stream(self):
-        self.__stream.flush()
-        return self.__stream.getvalue()
