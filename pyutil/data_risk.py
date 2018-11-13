@@ -7,9 +7,7 @@ from pyutil.sql.interfaces.risk.security import Security
 
 
 class Database(object):
-
     def __init__(self, session):
-        # session, sql database
         self.__session = session
 
     def close(self):
@@ -49,15 +47,11 @@ class Database(object):
 
     @property
     def reference_owners(self):
-        frame = Owner.reference_frame(self.owners, name="Entity ID")
-        frame = frame.reset_index() #.set_index("Name")
-        return frame
+        return Owner.reference_frame(self.owners, name="Entity ID").reset_index()
 
     @property
     def reference_securities(self):
-        frame = Security.reference_frame(self.securities, name="Entity ID")
-        frame = frame.reset_index() #.set_index("Name")
-        return frame
+        return Security.reference_frame(self.securities, name="Entity ID").reset_index()
 
     @property
     def prices(self):
@@ -65,12 +59,12 @@ class Database(object):
 
     @property
     def returns(self):
-        return pd.DataFrame({owner: owner.get_ts("return") for owner in self.owners})
+        return pd.DataFrame({owner.name: owner.get_ts("return") for owner in self.owners})
 
     @property
     def owner_volatility(self):
-        return pd.DataFrame({owner: owner.ts["volatility"] for owner in self.owners})
+        return pd.DataFrame({owner.name: owner.ts["volatility"] for owner in self.owners})
 
     def securities_volatility(self, currency):
-        return pd.DataFrame({security: security.volatility(currency) for security in self.securities})
+        return pd.DataFrame({security.name: security.volatility(currency) for security in self.securities})
 

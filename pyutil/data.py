@@ -17,8 +17,10 @@ class Database(object):
         self.__session.close()
 
     @staticmethod
-    def __last(frame, datefmt="%b %d"):
-        frame = frame.sort_index(axis=1, ascending=False).rename(columns=lambda x: x.strftime(datefmt))
+    def __last(frame, datefmt=None): #"%b %d"):
+        frame = frame.sort_index(axis=1, ascending=False)
+        if datefmt:
+            frame = frame.rename(columns=lambda x: x.strftime(datefmt))
         frame["total"] = (frame + 1).prod(axis=1) - 1
         frame.index.name = "Portfolio"
         return frame
@@ -30,7 +32,7 @@ class Database(object):
     def recent(self, n=15):
         # define the function
         g = self.nav(f=lambda x: fromNav(x).recent(n)).tail(n).transpose()
-        return self.__last(g).applymap(self.__percentage)
+        return self.__last(g, datefmt="%b %d").applymap(self.__percentage)
 
     @property
     def session(self):
@@ -72,11 +74,7 @@ class Database(object):
 
     def nav(self, f=None):
         f = f or (lambda x: x)
-
-        # we prefer this solution as is goes through the cleaner SQL database!
-        frame = pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
-        #frame.index.name = "Portfolio"
-        return frame
+        return pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
 
     def history(self, field="PX_LAST"):
         return pd.DataFrame({symbol.name: symbol.ts[field] for symbol in self.symbols})
@@ -91,11 +89,13 @@ class Database(object):
             first_day_of_month = (today + pd.offsets.MonthBegin(-1)).date()
 
         frame = frame.truncate(before=first_day_of_month)
-        return self.__last(frame.transpose()).applymap(self.__percentage)
+        return self.__last(frame.transpose(), datefmt="%b %d").applymap(self.__percentage)
 
     def ytd(self):
         g = self.nav(f=lambda x: fromNav(x).ytd_series).transpose()
-        g["total"] = (g + 1).prod(axis=1) - 1
-        g.index.name = "Portfolio"
-        return g.applymap(self.__percentage)
+        return self.__last(g).applymap(self.__percentage)
+
+        #g["total"] = (g + 1).prod(axis=1) - 1
+        #g.index.name = "Portfolio"
+        #return g.applymap(self.__percentage)
 

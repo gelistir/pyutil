@@ -78,7 +78,7 @@ class TestDatabase(TestCase):
 
         ts = pd.Series({pd.Timestamp("2010-04-20"): 0.05, pd.Timestamp("2010-04-21"): 0.10})
         owner.ts["return"] = ts
-        pdt.assert_series_equal(self.database.returns[owner], ts, check_names=False)
+        pdt.assert_series_equal(self.database.returns["102"], ts, check_names=False)
 
     def test_owner_volatility(self):
         # compute returns
@@ -87,7 +87,7 @@ class TestDatabase(TestCase):
         ts = pd.Series({pd.Timestamp("2010-04-20"): 0.05, pd.Timestamp("2010-04-21"): 0.10})
         owner.ts["volatility"] = ts
 
-        pdt.assert_series_equal(self.database.owner_volatility[owner], ts, check_names=False)
+        pdt.assert_series_equal(self.database.owner_volatility["102"], ts, check_names=False)
 
     def test_security_volatility(self):
         security = self.database.security(name="123")
@@ -97,8 +97,7 @@ class TestDatabase(TestCase):
         security.upsert_volatility(ts=ts, currency=currency)
 
         x = self.database.securities_volatility(currency=currency)
-        pdt.assert_series_equal(x[security], ts, check_names=False)
-
+        pdt.assert_series_equal(x["123"], ts, check_names=False)
 
     def test_reference_owners(self):
         x = self.database.reference_owners
