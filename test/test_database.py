@@ -57,7 +57,7 @@ class TestDatabase(TestCase):
 
     def test_symbols(self):
         self.assertEqual(self.database.symbols.count(), 7)
-        self.assertEqual(self.database.symbol(name="A"), Symbol(name="A"))
+        self.assertEqual(self.database.symbol(name="A"), Symbol(name="A", group=SymbolType.equities))
 
     def test_portfolios(self):
         self.assertEqual(self.database.portfolios.count(), 1)

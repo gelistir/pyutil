@@ -123,6 +123,7 @@ class Timeseries(Base):
 
     @staticmethod
     def merge(new, old=None):
+        # very smart merging here, new and old merge
         x = pd.concat((new, old))
         return x.groupby(x.index).first().sort_index()
 
@@ -139,15 +140,6 @@ class Timeseries(Base):
     def series(self, series):
         series = series[~series.index.duplicated()]
         self.__data = series.to_msgpack()
-
-    # def append(self, series):
-    #     print(series)
-    #     t0 = series.index[0]
-    #     print(t0)
-    #     ts1 = self.truncate(after=t0, include=False)
-    #     print(ts1)
-    #     self.series = pd.concat((ts1, series), sort=True)
-    #     return self.series
 
     def truncate(self, after, include=False):
         t = self.series

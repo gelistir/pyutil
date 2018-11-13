@@ -6,7 +6,7 @@ from pyutil.data import Database
 from pyutil.quant.history import update_history
 from pyutil.quant.reference import update_reference
 from pyutil.sql.base import Base
-from pyutil.sql.interfaces.symbols.symbol import Symbol
+from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.sql.session import postgresql_db_test
 
@@ -19,7 +19,7 @@ class TestQuant(TestCase):
         cls.session, cls.connection_str = postgresql_db_test(base=Base)
 
         for asset, data in read_frame(resource("price.csv")).items():
-            symbol = Symbol(name=asset)
+            symbol = Symbol(name=asset, group=SymbolType.fixed_income)
             cls.session.add(symbol)
 
         field = Field(name="f1", result=DataType.string, type=FieldType.dynamic)

@@ -15,9 +15,10 @@ def module(source):
     from types import ModuleType
 
     compiled = compile(source, '', 'exec')
-    module = ModuleType("module")
-    exec(compiled, module.__dict__)
-    return module
+    mod = ModuleType("module")
+    exec(compiled, mod.__dict__)
+    return mod
+
 
 class StrategyType(_enum.Enum):
     mdt = 'mdt'
@@ -57,6 +58,7 @@ class Strategy(ProductInterface):
         if not last:
             self._portfolio.upsert_influx(portfolio=portfolio, symbols=symbols)
         else:
+            # We only take the last few days of the new portfolio
             p1 = portfolio.truncate(before=last - pd.DateOffset(days=days))
             self._portfolio.upsert_influx(portfolio=p1, symbols=symbols)
 
@@ -78,12 +80,10 @@ class Strategy(ProductInterface):
     def state(self):
         return pd.concat((self._portfolio.state, self.reference_assets), axis=1, sort=False)
 
-        #return self._portfolio.state
-
     @property
     def reference_assets(self):
         return self.reference_frame(self.assets, name="Symbol")
 
     def to_json(self):
         nav = fromNav(self.portfolio.nav)
-        return {"name": self.name, "Nav": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
+        return {"name": self.name, "Nav": nav, "Volatility": nav.ewm_volatility().dropna(), "Drawdown": nav.drawdown}

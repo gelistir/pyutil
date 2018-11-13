@@ -21,7 +21,7 @@ class Symbol(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "symbol"}
     _measurements = "symbols"
 
-    def __init__(self, name, group=None, internal=None):
+    def __init__(self, name, group, internal=None):
         super().__init__(name)
         self.group = group
         self.internal = internal

@@ -5,7 +5,7 @@ from unittest import TestCase
 from test.config import test_portfolio, resource
 
 from pyutil.sql.interfaces.symbols.strategy import Strategy
-from pyutil.sql.interfaces.symbols.symbol import Symbol
+from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 
 
 class TestStrategy(TestCase):
@@ -19,7 +19,7 @@ class TestStrategy(TestCase):
 
         # compute a portfolio
         portfolio = self.strategy.configuration(reader=None).portfolio
-        assets = {name: Symbol(name=name) for name in portfolio.assets}
+        assets = {name: Symbol(name=name, group=SymbolType.fixed_income) for name in portfolio.assets}
 
         # upsert the strategy
         self.strategy.upsert(portfolio=portfolio, symbols=assets)
@@ -27,7 +27,8 @@ class TestStrategy(TestCase):
 
         # extract the portfolio
         p = self.strategy.portfolio
-
+        print(test_portfolio().weights)
+        print(test_portfolio().weights.sum(axis=1))
         pdt.assert_frame_equal(p.weights, test_portfolio().weights, check_names=False)
         pdt.assert_frame_equal(p.prices, test_portfolio().prices, check_names=False)
 
@@ -42,3 +43,10 @@ class TestStrategy(TestCase):
         self.assertAlmostEqual(x["2015-04-13"], 1.486652, places=5)
 
         self.assertSetEqual(set(self.strategy.assets), set(assets.values()))
+
+        print(self.strategy.state)
+
+        a = self.strategy.to_json()
+        self.assertEqual(a["name"], "Peter")
+
+

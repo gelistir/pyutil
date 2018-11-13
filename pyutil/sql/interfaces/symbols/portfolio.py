@@ -63,6 +63,8 @@ class Portfolio(ProductInterface):
     @property
     def state(self):
         frame = self.portfolio_influx.state
+        #print(frame)
+
         frame["group"] = pd.Series({s.name : s.group.name for s in self.symbols})
         frame["internal"] = pd.Series({s.name : s.internal for s in self.symbols})
 
