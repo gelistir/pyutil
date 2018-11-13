@@ -17,7 +17,7 @@ class Database(object):
         self.__session.close()
 
     @staticmethod
-    def __last(frame, datefmt=None): #"%b %d"):
+    def __last(frame, datefmt=None):
         frame = frame.sort_index(axis=1, ascending=False)
         if datefmt:
             frame = frame.rename(columns=lambda x: x.strftime(datefmt))
@@ -72,8 +72,7 @@ class Database(object):
         frame.index.name = "Portfolio"
         return frame
 
-    def nav(self, f=None):
-        f = f or (lambda x: x)
+    def nav(self, f=lambda x: x):
         return pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
 
     def history(self, field="PX_LAST"):
@@ -94,8 +93,3 @@ class Database(object):
     def ytd(self):
         g = self.nav(f=lambda x: fromNav(x).ytd_series).transpose()
         return self.__last(g).applymap(self.__percentage)
-
-        #g["total"] = (g + 1).prod(axis=1) - 1
-        #g.index.name = "Portfolio"
-        #return g.applymap(self.__percentage)
-
