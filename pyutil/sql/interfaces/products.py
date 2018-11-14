@@ -148,9 +148,6 @@ class Timeseries(Base):
         else:
             return t[t.index < after]
 
-    def __erase(self):
-        self.__data = None
-
     @property
     def index(self):
         return self.series.index
@@ -158,13 +155,11 @@ class Timeseries(Base):
     @index.setter
     def index(self, index):
         # extract the series
-        x = self.series
-        # erase all existing data
-        self.__erase()
+        s = self.series
         # set the new index
-        x.index = index
+        s.index = index
         # update the series
-        self.series = x
+        self.series = s
 
     @property
     def last(self):

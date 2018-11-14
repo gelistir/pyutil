@@ -92,6 +92,9 @@ class TestTimeseries(TestCase):
         p.ts["Wurst"] = pd.Series(data=[1, 2, 3])
         pdt.assert_series_equal(p.ts["Wurst"], pd.Series(data=[1, 2, 3]))
 
+        p.ts["Wurst"] = pd.Series(index=[2,3,4], data=[5,6,7])
+        pdt.assert_series_equal(p.ts["Wurst"], pd.Series(index=[2,3,4], data=[5,6,7]))
+
     def test_index(self):
         # p = Product(name="E")
         x = Timeseries(name="Maffay")
