@@ -3,7 +3,7 @@ from unittest import TestCase
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from pyutil.sql.session import get_one_or_create, get_one_or_none, postgresql_db_test
+from pyutil.sql.session import get_one_or_create, get_one_or_none, postgresql_db_test, session
 from test.test_sql.user import User, Base
 
 
@@ -43,3 +43,11 @@ class TestSession(TestCase):
             # we are trying to add the user a second time! Verboten!
             session.add(User(name="Peter Maffay"))
             session.commit()
+
+    def test_session(self):
+        _, connection_str = postgresql_db_test(base=Base)
+        with session(connection_str=connection_str) as s:
+            s.add(User(name="Peter Maffay 2"))
+
+
+
