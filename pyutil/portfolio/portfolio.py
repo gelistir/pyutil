@@ -294,11 +294,12 @@ class Portfolio(object):
         # that's the portfolio where today has been forwarded to (from yesterday),
         p = Portfolio(prices=self.prices, weights=self.weights.copy()).forward(today)
 
-        weights = 100.0 * weights.rename(columns=lambda x: x.strftime("%d-%b-%y"))
+        weights = weights.rename(columns=lambda x: x.strftime("%d-%b-%y"))
         #weights = weights.sort_index(axis=1, ascending=False)
 
-        weights["Extrapolated"] = 100.0 * p.weights.loc[today]
-        weights["Gap"] = 100.0 * (self.weights.loc[today] - p.weights.loc[today])
+        weights["Extrapolated"] = p.weights.loc[today]
+        weights["Gap"] = self.weights.loc[today] - p.weights.loc[today]
+        weights.index.name = "Symbol"
         return weights
 
     @property

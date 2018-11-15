@@ -1,4 +1,3 @@
-
 from unittest import TestCase
 
 import numpy as np
@@ -74,15 +73,6 @@ class TestPortfolio(TestCase):
         p2 = test_portfolio().truncate(before="2014-07-01").iron_time(rule="3M")
         self.assertEqual(len(p2.trading_days), 4)
 
-
-    #def test_transaction_report(self):
-    #    p1 = test_portfolio().iron_threshold(threshold=0.05)
-    #    y = p1.transaction_report()
-    #    yy = read_frame("report.csv", index_col=[0, 1])
-    #    yy.index.names = [None, None]
-    #    pdt.assert_frame_equal(y, yy)
-
-
     def test_init_1(self):
         prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[10.0, 10.0], [15.0, 15.0], [20.0, np.nan]])
         weights = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[0.3, 0.7], [0.3, 0.7], [0.3, 0.7]])
@@ -102,20 +92,8 @@ class TestPortfolio(TestCase):
             weights = pd.DataFrame(columns=["C"], index=[1.5], data=[[0.3]])
             Portfolio(prices=prices, weights=weights)
 
-    #def test_mtd(self):
-    #    portfolio = test_portfolio()
-    #    p = portfolio.mtd(today=portfolio.index[-1])
-    #    self.assertEqual(p.index[0], pd.Timestamp("2015-04-01"))
-
-    #def test_ytd(self):
-    #    portfolio = test_portfolio()
-    #    p = portfolio.ytd(today=portfolio.index[-1])
-    #    self.assertEqual(p.index[0], pd.Timestamp("2015-01-01"))
-
     def test_state(self):
-        x = test_portfolio().state
-        self.assertAlmostEqual(x["Extrapolated"]["F"], 3.6564581863077144, places=10)
-        self.assertAlmostEqual(x["Gap"]["A"], 0.042612879799229508, places=10)
+        pdt.assert_frame_equal(test_portfolio().state, read_frame("state2.csv"))
 
     def test_mismatch_columns(self):
         with self.assertRaises(AssertionError):

@@ -62,16 +62,27 @@ class Portfolio(ProductInterface):
 
     @property
     def state(self):
-        frame = self.portfolio_influx.state
-        #print(frame)
+        def percentage(x):
+            return "{0:.2f}%".format(float(100.0 * x)).replace("nan%", "")
+
+        frame = self.portfolio_influx.state#.applymap(percentage)
 
         frame["group"] = pd.Series({s.name : s.group.name for s in self.symbols})
         frame["internal"] = pd.Series({s.name : s.internal for s in self.symbols})
 
         sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
-        frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
-        frame["Relative Sector"] = 100 * frame["Extrapolated"] / frame["Sector Weight"]
+        frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])#.apply(percentage)
+        frame["Relative Sector"] = frame["Extrapolated"] / frame["Sector Weight"]#.apply(percentage)
         frame.index.name = "Symbol"
+
+        keys = set(frame.keys())
+        keys.remove("group")
+        keys.remove("internal")
+        for k in keys:
+            frame[k] = frame[k].apply(percentage)
+
+        #frame["Sector Weight"] = frame["Sector Weight"].apply(percentage)
+        #frame["Relative Sector"] = frame["Relative Sector"].apply(percentage)
         return frame
 
 
