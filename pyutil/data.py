@@ -73,7 +73,7 @@ class Database(object):
         return frame
 
     def nav(self, f=lambda x: x):
-        return pd.DataFrame({portfolio.name: f(portfolio.nav) for portfolio in self.portfolios})
+        return pd.DataFrame({strategy.name: f(strategy.portfolio.nav) for strategy in self.strategies})
 
     def history(self, field="PX_LAST"):
         return pd.DataFrame({symbol.name: symbol.ts[field] for symbol in self.symbols})
