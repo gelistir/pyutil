@@ -68,7 +68,7 @@ class Database(object):
         return Symbol.reference_frame(self.symbols, name="Symbol")
 
     def sector(self, total=False):
-        frame = pd.DataFrame({p.name: p.sector(total=total).iloc[-1] for p in self.portfolios}).transpose()
+        frame = pd.DataFrame({strategy.name: strategy.sector(total=total).iloc[-1] for strategy in self.strategies}).transpose()
         frame.index.name = "Portfolio"
         return frame
 
