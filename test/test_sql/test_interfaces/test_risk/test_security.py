@@ -49,9 +49,23 @@ class TestSecurity(unittest.TestCase):
         # extract the last stamp
         self.assertEqual(security.last(field="price"), pd.Timestamp("2015-04-22"))
 
+    def test_ts_new(self):
+        security = Security(name="A")
+
+        self.assertIsNone(security.last_price)
+
+        # upsert series
+        security.price = test_portfolio().prices["A"]
+
+        # extract the series again
+        pdt.assert_series_equal(security.price, test_portfolio().prices["A"].dropna(), check_names=False)
+
         # test json
         a = security.to_json()
         assert isinstance(a, dict)
         self.assertEqual(a["name"], "A")
-        pdt.assert_series_equal(a["Price"], security.ts["price"])
 
+        pdt.assert_series_equal(a["Price"], security.price)
+
+        # extract the last stamp
+        self.assertEqual(security.last_price, pd.Timestamp("2015-04-22"))

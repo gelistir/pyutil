@@ -12,6 +12,18 @@ from pyutil.sql.base import Base
 from pyutil.sql.model.ref import _ReferenceData, Field
 
 
+def read_ts(data, default=None):
+    try:
+        return pd.read_msgpack(data).sort_index()
+    except ValueError:
+        return default
+
+
+def write_ts(series):
+    series = series[~series.index.duplicated()]
+    return series.to_msgpack()
+
+
 def association_table(left, right, name="association"):
     return sq.Table(name, Base.metadata,
                     sq.Column("left_id", sq.Integer, sq.ForeignKey('{left}.id'.format(left=left))),

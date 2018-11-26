@@ -1,7 +1,8 @@
 import pandas as pd
 from sqlalchemy.ext.hybrid import hybrid_property
+import sqlalchemy as sq
 
-from pyutil.sql.interfaces.products import ProductInterface, Timeseries
+from pyutil.sql.interfaces.products import ProductInterface, Timeseries, read_ts, write_ts
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.performance.summary import fromNav
@@ -23,6 +24,7 @@ FIELDS = {
 
 class Security(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Security"}
+    __price = sq.Column("price", sq.LargeBinary)
 
     def __init__(self, name, kiid=None, ticker=None):
         super().__init__(name)
@@ -57,5 +59,17 @@ class Security(ProductInterface):
         return self.get_ts(field="volatility_{currency}".format(currency=currency.name), default=pd.Series({}))
 
     def to_json(self):
-        nav = fromNav(self.get_ts("price", default=pd.Series({})))
+        nav = fromNav(self.price)
         return {"Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown, "name": self.name}
+
+    @property
+    def price(self):
+        return read_ts(data=self.__price, default=pd.Series({}))
+
+    @price.setter
+    def price(self, series):
+        self.__price = write_ts(series=series)
+
+    @property
+    def last_price_index(self):
+        return self.price.last_valid_index()
