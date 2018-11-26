@@ -3,7 +3,7 @@ import sqlalchemy as _sq
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 
-from pyutil.sql.interfaces.products import ProductInterface, association_table, Timeseries
+from pyutil.sql.interfaces.products import ProductInterface, association_table, Timeseries, read_ts, write_ts
 from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.risk.custodian import Custodian
 from pyutil.sql.interfaces.risk.security import Security
@@ -31,6 +31,9 @@ class Owner(ProductInterface):
     __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
     __custodian_id = _sq.Column("custodian_id", _sq.Integer, _sq.ForeignKey(Custodian.id), nullable=True)
     __custodian = _relationship(Custodian, foreign_keys=[__custodian_id], lazy="joined")
+
+    __returns = _sq.Column("return", _sq.LargeBinary)
+    __volatility = _sq.Column("volatility", _sq.LargeBinary)
 
     def __init__(self, name, currency=None, custodian=None):
         super().__init__(name=name)
@@ -119,6 +122,22 @@ class Owner(ProductInterface):
         return position_reference.join(volatility, on=["Security", "Date"])
 
     def to_json(self):
-        r = self.ts["return"]
+        r = self.returns
         ts = fromReturns(r=r)
         return {"name": self.name, "Nav": ts, "Volatility": ts.ewm_volatility(), "Drawdown": ts.drawdown}
+
+    @property
+    def returns(self):
+        return read_ts(data=self.__return, default=pd.Series({}))
+
+    @returns.setter
+    def returns(self, series):
+        self.__return = write_ts(series=series)
+
+    @property
+    def volatility(self):
+        return read_ts(data=self.__volatility, default=pd.Series({}))
+
+    @volatility.setter
+    def volatility(self, series):
+        self.__volatility = write_ts(series=series)

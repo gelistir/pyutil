@@ -52,7 +52,7 @@ class TestSecurity(unittest.TestCase):
     def test_ts_new(self):
         security = Security(name="A")
 
-        self.assertIsNone(security.last_price)
+        self.assertIsNone(security.last_price_index)
 
         # upsert series
         security.price = test_portfolio().prices["A"]
@@ -68,4 +68,4 @@ class TestSecurity(unittest.TestCase):
         pdt.assert_series_equal(a["Price"], security.price)
 
         # extract the last stamp
-        self.assertEqual(security.last_price, pd.Timestamp("2015-04-22"))
+        self.assertEqual(security.last_price_index, pd.Timestamp("2015-04-22"))

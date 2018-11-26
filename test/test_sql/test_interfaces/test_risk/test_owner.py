@@ -83,8 +83,13 @@ class TestOwner(unittest.TestCase):
 
     def test_json(self):
         o = Owner(name="Peter")
-        o.ts["return"] = pd.Series({t0.date(): 0.1, t1.date(): 0.0, t2.date(): -0.1})
+        o.returns = pd.Series({t0.date(): 0.1, t1.date(): 0.0, t2.date(): -0.1})
         a = o.to_json()
         self.assertEqual(a["name"], "Peter")
         pdt.assert_series_equal(a["Nav"], pd.Series({t0: 1.10, t1: 1.10, t2: 0.99}))
+
+    def test_volatility(self):
+        o = Owner(name="Peter")
+        o.volatility = pd.Series({t0.date(): 0.1, t1.date(): 0.0, t2.date(): 0.1})
+        pdt.assert_series_equal(o.volatility, pd.Series({t0.date(): 0.1, t1.date(): 0.0, t2.date(): 0.1}))
 
