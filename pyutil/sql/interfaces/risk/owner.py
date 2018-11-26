@@ -128,11 +128,11 @@ class Owner(ProductInterface):
 
     @property
     def returns(self):
-        return read_ts(data=self.__return, default=pd.Series({}))
+        return read_ts(data=self.__returns, default=pd.Series({}))
 
     @returns.setter
     def returns(self, series):
-        self.__return = write_ts(series=series)
+        self.__returns = write_ts(series=series)
 
     @property
     def volatility(self):
