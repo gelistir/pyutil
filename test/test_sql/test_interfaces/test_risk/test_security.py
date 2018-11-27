@@ -17,13 +17,14 @@ class TestSecurity(unittest.TestCase):
         c = Currency(name="USD")
         self.assertEqual(s.name, "100")
 
-        self.assertIsNone(s.get_ts("price"))
+        self.assertIsNone(s.price)
         self.assertEqual(s.discriminator, "Security")
         self.assertEqual(s.kiid, 5)
 
         self.assertEqual(s.bloomberg_ticker, "AAAAA US Equity")
         self.assertEqual(str(s), "Security(100: None)")
         self.assertEqual(s.bloomberg_scaling, 1.0)
+
 
     def test_reference_frame(self):
         s1 = Security(name=100, kiid=4)
@@ -34,25 +35,11 @@ class TestSecurity(unittest.TestCase):
         x.index.name = "Product"
         pdt.assert_frame_equal(x, Security.reference_frame(products=sorted([s1, s2, s3]), name="Product"))
 
-    def test_ts(self):
-        security = Security(name="A")
-
-        # update with a series containing a NaN
-        self.assertIsNone(security.last(field="price"))
-
-        # upsert series
-        security.ts["price"] = test_portfolio().prices["A"]
-
-        # extract the series again
-        pdt.assert_series_equal(security.ts["price"], test_portfolio().prices["A"].dropna(), check_names=False)
-
-        # extract the last stamp
-        self.assertEqual(security.last(field="price"), pd.Timestamp("2015-04-22"))
 
     def test_ts_new(self):
         security = Security(name="A")
 
-        self.assertIsNone(security.last_price_index)
+        self.assertIsNone(security.price)
 
         # upsert series
         security.price = test_portfolio().prices["A"]
@@ -68,4 +55,11 @@ class TestSecurity(unittest.TestCase):
         pdt.assert_series_equal(a["Price"], security.price)
 
         # extract the last stamp
-        self.assertEqual(security.last_price_index, pd.Timestamp("2015-04-22"))
+        self.assertEqual(security.price.last_valid_index(), pd.Timestamp("2015-04-22"))
+
+    def test_volatility(self):
+        security = Security(name="A")
+        security.vola[Currency(name="USD")] = pd.Series([30,40,50])
+        security.vola[Currency(name="CHF")] = pd.Series([10,11,12])
+
+        pdt.assert_frame_equal(security.vola_frame, pd.DataFrame({key: item for (key, item) in security.vola.items()}))

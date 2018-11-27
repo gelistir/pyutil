@@ -29,10 +29,11 @@ class TestDatabase(TestCase):
 
         # this will add a portfolio, too!
         s = Strategy(name="Peter Maffay")
+
         s.upsert(portfolio=test_portfolio(), symbols=cls.symbols)
 
         for name, ts in test_portfolio().prices.items():
-            cls.symbols[name].ts["PX_LAST"] = ts.dropna()
+            cls.symbols[name].price = ts.dropna()
 
         session.add(s)
         session.commit()
@@ -83,6 +84,6 @@ class TestDatabase(TestCase):
         self.assertTrue(f.empty)
 
     def test_history(self):
-        f = self.database.history(field="PX_LAST")
+        f = self.database.history()
 
 

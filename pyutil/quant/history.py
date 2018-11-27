@@ -1,11 +1,13 @@
 import logging
 import pandas as pd
-from pyutil.sql.interfaces.products import Timeseries
+#from pyutil.sql.interfaces.products import Timeseries
+from pyutil.timeseries.merge import merge
+
 
 def __read(symbol, reader, field="PX_LAST", t0=pd.Timestamp("2000-01-01"), offset=10, logger=None):
     offset = pd.offsets.Day(n=offset)
 
-    t = (symbol.last(field=field) or t0 + offset) - offset
+    t = (symbol.last or t0 + offset) - offset
 
     try:
         ts = reader(tickers=symbol.name, t0=t, field=field).dropna()
@@ -14,7 +16,7 @@ def __read(symbol, reader, field="PX_LAST", t0=pd.Timestamp("2000-01-01"), offse
         ts.index = [pd.Timestamp(a) for a in ts.index]
 
         # merge new data with old existing data if it exists
-        symbol.ts[field] = Timeseries.merge(new=ts, old=symbol.get_ts(field))
+        symbol.price = merge(new=ts, old=symbol.price)
 
         # return the initial time. Great for unit-testing
         return t

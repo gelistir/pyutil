@@ -67,7 +67,7 @@ class TestDatabase(TestCase):
         # add prices to the database
         security = self.database.security(name="123")
         ts = pd.Series({pd.Timestamp("2010-04-20"): 11.0, pd.Timestamp("2010-04-21"): 11.2})
-        security.ts["price"] = ts
+        security.price = ts
 
         d = self.database.prices.sort_index(ascending=False)
         pdt.assert_series_equal(d[security.name], ts.sort_index(ascending=False), check_names=False)
@@ -77,7 +77,7 @@ class TestDatabase(TestCase):
         owner = self.database.owner(name="102")
 
         ts = pd.Series({pd.Timestamp("2010-04-20"): 0.05, pd.Timestamp("2010-04-21"): 0.10})
-        owner.ts["return"] = ts
+        owner.returns = ts
         pdt.assert_series_equal(self.database.returns["102"], ts, check_names=False)
 
     def test_owner_volatility(self):
@@ -85,7 +85,7 @@ class TestDatabase(TestCase):
         owner = self.database.owner(name="102")
 
         ts = pd.Series({pd.Timestamp("2010-04-20"): 0.05, pd.Timestamp("2010-04-21"): 0.10})
-        owner.ts["volatility"] = ts
+        owner.volatility = ts
 
         pdt.assert_series_equal(self.database.owner_volatility["102"], ts, check_names=False)
 
@@ -94,7 +94,9 @@ class TestDatabase(TestCase):
         currency = self.database.currency(name="CHF")
 
         ts = pd.Series({pd.Timestamp("2010-04-20"): 0.05, pd.Timestamp("2010-04-21"): 0.10})
-        security.upsert_volatility(ts=ts, currency=currency)
+        security.vola[currency] = ts
+
+        #security.upsert_volatility(ts=ts, currency=currency)
 
         x = self.database.securities_volatility(currency=currency)
         pdt.assert_series_equal(x["123"], ts, check_names=False)

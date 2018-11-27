@@ -1,5 +1,7 @@
 import warnings
 
+import sqlalchemy as sq
+
 import pandas as pd
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -8,8 +10,10 @@ from sqlalchemy.orm import relationship
 from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 from pyutil.sql.base import Base
-from pyutil.sql.interfaces.products import ProductInterface, Timeseries
+from pyutil.sql.interfaces.products import ProductInterface #, Timeseries
+from pyutil.sql.interfaces.series import Series
 from pyutil.sql.interfaces.symbols.symbol import Symbol
+from pyutil.timeseries.merge import merge
 
 
 class Portfolio(ProductInterface):
@@ -18,24 +22,14 @@ class Portfolio(ProductInterface):
     def __init__(self, name):
         super().__init__(name)
 
-    #@property
-    #def last(self):
-    #    try:
-    #        return self.ts["prices"].index[-1]
-    #    except:
-    #        return None
-
     def upsert_influx(self, portfolio, symbols):
         assert isinstance(portfolio, _Portfolio)
 
-        self.ts["weights"] = Timeseries.merge(old=self.get_ts(field="weights"), new=portfolio.weights)
-        self.ts["prices"] = Timeseries.merge(old=self.get_ts(field="prices"), new=portfolio.prices)
+        self.weights = merge(old=self.weights, new=portfolio.weights)
+        self.prices = merge(old=self.prices, new=portfolio.prices)
 
         # recompute the entire portfolio!
         portfolio_new = self.portfolio_influx
-
-        self.ts["nav"] = portfolio_new.nav.dropna()
-        self.ts["leverage"] = portfolio_new.leverage.dropna()
 
         for asset in portfolio_new.assets:
             if symbols[asset] not in set(self.symbols):
@@ -44,17 +38,24 @@ class Portfolio(ProductInterface):
         return portfolio_new
 
     @property
+    def last(self):
+        if self.prices is not None:
+            return self.prices.last_valid_index()
+        else:
+            return None
+
+    @property
     def portfolio_influx(self):
-        return _Portfolio(prices=self.ts["prices"], weights=self.ts["weights"])
+        return _Portfolio(prices=self.prices, weights=self.weights)
 
     @property
     def nav(self):
-        return self.ts["nav"]
+        return self.portfolio_influx.nav
 
 
     @property
     def leverage(self):
-        return self.ts["leverage"]
+        return self.portfolio_influx.leverage
 
     def sector(self, total=False):
         symbolmap = {s.name : s.group.name for s in self.symbols}
@@ -71,8 +72,8 @@ class Portfolio(ProductInterface):
         frame["internal"] = pd.Series({s.name : s.internal for s in self.symbols})
 
         sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
-        frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])#.apply(percentage)
-        frame["Relative Sector"] = frame["Extrapolated"] / frame["Sector Weight"]#.apply(percentage)
+        frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
+        frame["Relative Sector"] = frame["Extrapolated"] / frame["Sector Weight"]
         frame.index.name = "Symbol"
 
         keys = set(frame.keys())
@@ -81,8 +82,6 @@ class Portfolio(ProductInterface):
         for k in keys:
             frame[k] = frame[k].apply(percentage)
 
-        #frame["Sector Weight"] = frame["Sector Weight"].apply(percentage)
-        #frame["Relative Sector"] = frame["Relative Sector"].apply(percentage)
         return frame
 
 
@@ -99,3 +98,33 @@ class PortfolioSymbol(Base):
         self.portfolio = portfolio
 
 Portfolio.symbols = association_proxy("portfolio_symbol", "symbol")
+
+
+class Price(Series):
+    __tablename__ = "portfolio_prices"
+    __mapper_args__ = {"polymorphic_identity": "price"}
+    id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
+
+    __portfolio_id = sq.Column("portfolio_id", sq.Integer, sq.ForeignKey(Portfolio.id), nullable=False)
+
+    def __init__(self, data=None):
+        self.data = data
+
+
+Portfolio._prices = relationship(Price, uselist=False, backref="portfolio")
+Portfolio.prices = association_proxy("_prices", "data", creator=lambda data: Price(data=data))
+
+
+class Weight(Series):
+    __tablename__ = "portfolio_weights"
+    __mapper_args__ = {"polymorphic_identity": "price"}
+    id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
+
+    __portfolio_id = sq.Column("portfolio_id", sq.Integer, sq.ForeignKey(Portfolio.id), nullable=False)
+
+    def __init__(self, data=None):
+        self.data = data
+
+
+Portfolio._weights = relationship(Weight, uselist=False, backref="portfolio")
+Portfolio.weights = association_proxy("_weights", "data", creator=lambda data: Weight(data=data))

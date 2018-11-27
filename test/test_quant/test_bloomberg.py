@@ -51,13 +51,13 @@ class TestQuant(TestCase):
         a = update_history(symbols=self.session.query(Symbol), reader=f, today=pd.Timestamp("2018-01-01"))
 
         for symbol in self.session.query(Symbol):
-            pdt.assert_series_equal(symbol.ts["PX_LAST"], f(symbol.name), check_names=False)
+            pdt.assert_series_equal(symbol.price, f(symbol.name), check_names=False)
 
         a = update_history(symbols=self.session.query(Symbol), reader=f, today=pd.Timestamp("2018-01-01"))
         self.assertEqual(a["D"], pd.Timestamp("2015-04-12"))
 
         for symbol in self.session.query(Symbol):
-            pdt.assert_series_equal(symbol.ts["PX_LAST"], read_frame("price.csv")[symbol.name].dropna())
+            pdt.assert_series_equal(symbol.price, read_frame("price.csv")[symbol.name].dropna())
 
     def test_history_wrong(self):
         def f(tickers, t0=None, field=None):

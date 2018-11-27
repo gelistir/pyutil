@@ -49,9 +49,6 @@ class ProductInterface(MyMixin, Base):
     __name = sq.Column("name", sq.String(200), unique=False, nullable=True)
     discriminator = sq.Column(sq.String)
 
-    # this is a static variable! The system is relying on environment variables here!
-    client = None #Client()
-
     __mapper_args__ = {"polymorphic_on": discriminator}
 
     _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
@@ -86,17 +83,17 @@ class ProductInterface(MyMixin, Base):
         else:
             return default
 
-    def get_ts(self, field, default=None):
-        try:
-            return self.ts[field]
-        except KeyError:
-            return default
-
-    def create_or_get_ts(self, field):
-        if field not in self._timeseries.keys():
-            self.ts[field] = pd.Series({})
-
-        return self._timeseries[field]
+    # def get_ts(self, field, default=None):
+    #     try:
+    #         return self.ts[field]
+    #     except KeyError:
+    #         return default
+    #
+    # def create_or_get_ts(self, field):
+    #     if field not in self._timeseries.keys():
+    #         self.ts[field] = pd.Series({})
+    #
+    #     return self._timeseries[field]
 
     def __repr__(self):
         return "{d}({name})".format(d=self.discriminator, name=self.name)
@@ -111,11 +108,11 @@ class ProductInterface(MyMixin, Base):
     def __hash__(self):
         return hash(self.name)
 
-    def last(self, field):
-        try:
-            return self.ts[field].index[-1]
-        except KeyError:
-            return None
+    # def last(self, field):
+    #     try:
+    #         return self.ts[field].index[-1]
+    #     except KeyError:
+    #         return None
 
     @staticmethod
     def reference_frame(products, name):
@@ -125,61 +122,61 @@ class ProductInterface(MyMixin, Base):
         return frame
 
 
-class Timeseries(Base):
-    __tablename__ = "timeseries"
+#class Timeseries(Base):
+#     __tablename__ = "timeseries"
+#
+#     __data = sq.Column("data", sq.LargeBinary)
+#     name = sq.Column(sq.String, primary_key=True)
+#
+#     __product_id = sq.Column("product_id", sq.Integer, sq.ForeignKey("productinterface.id"), primary_key=True, index=True)
+#
+#     @staticmethod
+#     def merge(new, old=None):
+#         # very smart merging here, new and old merge
+#         x = pd.concat((new, old))
+#         return x.groupby(x.index).first().sort_index()
+#
+#     @property
+#     def series(self):
+#         try:
+#             x = pd.read_msgpack(self.__data).sort_index()
+#             return x[~x.index.duplicated()]
+#
+#         except ValueError:
+#             return pd.Series({})
+#
+#     @series.setter
+#     def series(self, series):
+#         series = series[~series.index.duplicated()]
+#         self.__data = series.to_msgpack()
+#
+#     def truncate(self, after, include=False):
+#         t = self.series
+#         if include:
+#             return t[t.index <= after]
+#         else:
+#             return t[t.index < after]
+#
+#     @property
+#     def index(self):
+#         return self.series.index
+#
+#     @index.setter
+#     def index(self, index):
+#         # extract the series
+#         s = self.series
+#         # set the new index
+#         s.index = index
+#         # update the series
+#         self.series = s
+#
+#     @property
+#     def last(self):
+#         try:
+#             return self.series.index[-1]
+#         except IndexError:
+#             return None
 
-    __data = sq.Column("data", sq.LargeBinary)
-    name = sq.Column(sq.String, primary_key=True)
 
-    __product_id = sq.Column("product_id", sq.Integer, sq.ForeignKey("productinterface.id"), primary_key=True, index=True)
-
-    @staticmethod
-    def merge(new, old=None):
-        # very smart merging here, new and old merge
-        x = pd.concat((new, old))
-        return x.groupby(x.index).first().sort_index()
-
-    @property
-    def series(self):
-        try:
-            x = pd.read_msgpack(self.__data).sort_index()
-            return x[~x.index.duplicated()]
-
-        except ValueError:
-            return pd.Series({})
-
-    @series.setter
-    def series(self, series):
-        series = series[~series.index.duplicated()]
-        self.__data = series.to_msgpack()
-
-    def truncate(self, after, include=False):
-        t = self.series
-        if include:
-            return t[t.index <= after]
-        else:
-            return t[t.index < after]
-
-    @property
-    def index(self):
-        return self.series.index
-
-    @index.setter
-    def index(self, index):
-        # extract the series
-        s = self.series
-        # set the new index
-        s.index = index
-        # update the series
-        self.series = s
-
-    @property
-    def last(self):
-        try:
-            return self.series.index[-1]
-        except IndexError:
-            return None
-
-
-ProductInterface._timeseries = relationship(Timeseries, backref="product", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan")
-ProductInterface.ts = association_proxy('_timeseries', 'series', creator=lambda k, v: Timeseries(name=k, series=v))
+# ProductInterface._timeseries = relationship(Timeseries, backref="product", collection_class=attribute_mapped_collection('name'), cascade="all, delete-orphan")
+# ProductInterface.ts = association_proxy('_timeseries', 'series', creator=lambda k, v: Timeseries(name=k, series=v))

@@ -2,7 +2,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 from unittest import TestCase
 
-from pyutil.sql.interfaces.products import Timeseries
+from pyutil.timeseries.merge import merge
 from test.config import test_portfolio
 
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
@@ -19,29 +19,29 @@ class TestSymbol(TestCase):
         symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
 
         # update with a series containing a NaN
-        self.assertIsNone(symbol.last(field="PX_LAST"))
+        self.assertIsNone(symbol.price)
 
         # upsert series
-        symbol.ts["PX_LAST"] = test_portfolio().prices["A"]
+        symbol.price = test_portfolio().prices["A"]
 
         # extract the series again
-        pdt.assert_series_equal(symbol.ts["PX_LAST"], test_portfolio().prices["A"].dropna(), check_names=False)
+        pdt.assert_series_equal(symbol.price, test_portfolio().prices["A"].dropna(), check_names=False)
 
         # extract the last stamp
-        self.assertEqual(symbol.last(field="PX_LAST"), pd.Timestamp("2015-04-22"))
+        self.assertEqual(symbol.price.last_valid_index(), pd.Timestamp("2015-04-22"))
 
         # test json
         a = symbol.to_json()
         assert isinstance(a, dict)
         self.assertEqual(a["name"], "A")
-        pdt.assert_series_equal(a["Price"], symbol.ts["PX_LAST"])
+        pdt.assert_series_equal(a["Price"], symbol.price)
 
 
 
     def test_upsert(self):
         symbol = Symbol(name="B", group=SymbolType.equities, internal="Peter Maffay")
 
-        symbol.ts["PX_LAST"] = pd.Series(index=[1,2], data=[5,8])
-        symbol.ts["PX_LAST"] = Timeseries.merge(old=symbol.ts["PX_LAST"], new=pd.Series(index=[2,4], data=[9,10]))
+        symbol.price = pd.Series(index=[1,2], data=[5,8])
+        symbol.price = merge(old=symbol.price, new=pd.Series(index=[2,4], data=[9,10]))
 
-        pdt.assert_series_equal(symbol.ts["PX_LAST"], pd.Series(index=[1,2,4], data=[5,9,10]))
+        pdt.assert_series_equal(symbol.price, pd.Series(index=[1,2,4], data=[5,9,10]))
