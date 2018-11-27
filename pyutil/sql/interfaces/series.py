@@ -9,6 +9,9 @@ class Series(Base):
     __data = sq.Column("data", sq.LargeBinary)
     id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
 
+    discriminator = sq.Column(sq.String)
+    __mapper_args__ = {"polymorphic_on": discriminator}
+
     @property
     def data(self):
         try:
