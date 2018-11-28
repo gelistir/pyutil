@@ -1,5 +1,6 @@
 import pandas as pd
 import sqlalchemy as sq
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
@@ -21,6 +22,8 @@ class Series(Base):
     __product1 = relationship(ProductInterface, foreign_keys=[product1_id], lazy="joined")
     __product2 = relationship(ProductInterface, foreign_keys=[product2_id], lazy="joined")
     __product3 = relationship(ProductInterface, foreign_keys=[product3_id], lazy="joined")
+
+    UniqueConstraint('name', 'product1_id', 'product2_id', 'product3_id', name='uix_1')
 
     @hybrid_property
     def product_2(self):

@@ -54,15 +54,15 @@ class Database(object):
 
     @property
     def prices(self):
-        return pd.DataFrame({security.name: security.price for security in self.securities if security.price is not None})
+        return pd.DataFrame({security.name: security.price.to_dict() for security in self.securities if security.price is not None})
 
     @property
     def returns(self):
-        return pd.DataFrame({owner.name: owner.returns for owner in self.owners if owner.returns is not None})
+        return pd.DataFrame({owner.name: owner.returns.to_dict() for owner in self.owners if owner.returns is not None})
 
     @property
     def owner_volatility(self):
-        return pd.DataFrame({owner.name: owner.volatility for owner in self.owners if owner.volatility is not None})
+        return pd.DataFrame({owner.name: owner.volatility.to_dict() for owner in self.owners if owner.volatility is not None})
 
     def securities_volatility(self, currency):
         return pd.DataFrame({security.name: security.vola.get(currency, pd.Series({})) for security in self.securities})
