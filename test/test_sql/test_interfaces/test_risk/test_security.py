@@ -3,7 +3,7 @@ import unittest
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.sql.interfaces.risk.currency import Currency
+from pyutil.sql.interfaces.risk.custodian import Currency
 from pyutil.sql.interfaces.risk.security import Security
 from test.config import test_portfolio
 
@@ -56,6 +56,7 @@ class TestSecurity(unittest.TestCase):
 
         # extract the last stamp
         self.assertEqual(security.price.last_valid_index(), pd.Timestamp("2015-04-22"))
+
 
     def test_volatility(self):
         security = Security(name="A")

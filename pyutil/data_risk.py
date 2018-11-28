@@ -1,7 +1,6 @@
 import pandas as pd
 
-from pyutil.sql.interfaces.risk.currency import Currency
-from pyutil.sql.interfaces.risk.custodian import Custodian
+from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
 

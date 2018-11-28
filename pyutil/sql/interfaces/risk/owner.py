@@ -8,8 +8,8 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.performance.summary import fromReturns
 from pyutil.sql.interfaces.products import ProductInterface, association_table
-from pyutil.sql.interfaces.risk.currency import Currency
-from pyutil.sql.interfaces.risk.custodian import Custodian
+
+from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.interfaces.series import Series
 from pyutil.sql.model.ref import Field, DataType, FieldType
@@ -28,12 +28,32 @@ FIELDS = {
 
 
 class Owner(ProductInterface):
+    __tablename__ = "owner"
     __mapper_args__ = {"polymorphic_identity": "Owner"}
+    id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
+
     #__securities = _relationship(Security, secondary=_association_table, backref="owner", lazy="joined")
     __currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=True)
     __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
     __custodian_id = sq.Column("custodian_id", sq.Integer, sq.ForeignKey(Custodian.id), nullable=True)
     __custodian = _relationship(Custodian, foreign_keys=[__custodian_id], lazy="joined")
+
+
+    # returns
+    _returns = relationship(Series, uselist=False,
+                           primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='returns')")
+    returns = association_proxy("_returns", "data", creator=lambda data: Series(name="returns", data=data))
+
+
+    # volatility
+    _volatility = relationship(Series, uselist=False,
+                           primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='volatility')")
+    volatility = association_proxy("_volatility", "data", creator=lambda data: Series(name="volatility", data=data))
+
+    # position
+    _position = relationship(Series, collection_class=attribute_mapped_collection("key"), cascade="all, delete-orphan",
+                             primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='position')")
+    position = association_proxy("_position", "data", creator=lambda s, data: Series(name="position", data=data, product2=s[0], product3=s[1]))
 
 
     def __init__(self, name, currency=None, custodian=None):
@@ -105,66 +125,66 @@ class Owner(ProductInterface):
         return {"name": self.name, "Nav": ts, "Volatility": ts.ewm_volatility(), "Drawdown": ts.drawdown}
 
 
-class Returns(Series):
-    __tablename__ = "returns"
-    __mapper_args__ = {"polymorphic_identity": "returns"}
-    id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
-
-    __owner_id = sq.Column("owner_id", sq.Integer, sq.ForeignKey(Owner.id), nullable=False)
-
-    def __init__(self, data=None):
-        self.data = data
-
-
-Owner._returns = relationship(Returns, uselist=False, backref="owner")
-Owner.returns = association_proxy("_returns", "data", creator=lambda data: Returns(data=data))
-
-
-class VolatilityOwner(Series):
-    __tablename__ = "volatility_owner"
-    __mapper_args__ = {"polymorphic_identity": "volatility_owner"}
-    id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
-
-    __owner_id = sq.Column("owner_id", sq.Integer, sq.ForeignKey(Owner.id), nullable=False)
-
-    def __init__(self, data=None):
-        self.data = data
-
-
-Owner._volatility = relationship(VolatilityOwner, uselist=False, backref="owner")
-Owner.volatility = association_proxy("_volatility", "data", creator=lambda data: VolatilityOwner(data=data))
-
-
-class Position(Series):
-    __tablename__ = "position"
-    __mapper_args__ = {"polymorphic_identity": "position"}
-    id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
-
-    __owner_id = sq.Column("owner_id", sq.Integer, sq.ForeignKey(Owner.id), nullable=False)
-
-    __security_id = sq.Column("security_id", sq.Integer, sq.ForeignKey(Security.id), nullable=False)
-    __security = relationship(Security, foreign_keys=[__security_id], lazy="joined")
-
-    __custodian_id = sq.Column("custodian_id", sq.Integer, sq.ForeignKey(Custodian.id), nullable=False)
-    __custodian = relationship(Custodian, foreign_keys=[__custodian_id], lazy="joined")
-
-    @hybrid_property
-    def security(self):
-        return self.__security
-
-    @hybrid_property
-    def custodian(self):
-        return self.__custodian
-
-    @hybrid_property
-    def key(self):
-        return self.__security, self.__custodian
-
-    def __init__(self, custodian=None, security=None, data=None):
-        self.__custodian = custodian
-        self.__security = security
-        self.data = data
-
-
-Owner._position = relationship(Position, collection_class=attribute_mapped_collection("key"), cascade="all, delete-orphan", backref="owner")
-Owner.position = association_proxy("_position", "data", creator=lambda s, data: Position(data=data, security=s[0], custodian=s[1]))
+# class Returns(Series):
+#     __tablename__ = "returns"
+#     __mapper_args__ = {"polymorphic_identity": "returns"}
+#     id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
+#
+#     __owner_id = sq.Column("owner_id", sq.Integer, sq.ForeignKey(Owner.id), nullable=False)
+#
+#     def __init__(self, data=None):
+#         self.data = data
+#
+#
+# Owner._returns = relationship(Returns, uselist=False, backref="owner")
+# Owner.returns = association_proxy("_returns", "data", creator=lambda data: Returns(data=data))
+#
+#
+# class VolatilityOwner(Series):
+#     __tablename__ = "volatility_owner"
+#     __mapper_args__ = {"polymorphic_identity": "volatility_owner"}
+#     id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
+#
+#     __owner_id = sq.Column("owner_id", sq.Integer, sq.ForeignKey(Owner.id), nullable=False)
+#
+#     def __init__(self, data=None):
+#         self.data = data
+#
+#
+# Owner._volatility = relationship(VolatilityOwner, uselist=False, backref="owner")
+# Owner.volatility = association_proxy("_volatility", "data", creator=lambda data: VolatilityOwner(data=data))
+#
+#
+# class Position(Series):
+#     __tablename__ = "position"
+#     __mapper_args__ = {"polymorphic_identity": "position"}
+#     id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
+#
+#     __owner_id = sq.Column("owner_id", sq.Integer, sq.ForeignKey(Owner.id), nullable=False)
+#
+#     __security_id = sq.Column("security_id", sq.Integer, sq.ForeignKey(Security.id), nullable=False)
+#     __security = relationship(Security, foreign_keys=[__security_id], lazy="joined")
+#
+#     __custodian_id = sq.Column("custodian_id", sq.Integer, sq.ForeignKey(Custodian.id), nullable=False)
+#     __custodian = relationship(Custodian, foreign_keys=[__custodian_id], lazy="joined")
+#
+#     @hybrid_property
+#     def security(self):
+#         return self.__security
+#
+#     @hybrid_property
+#     def custodian(self):
+#         return self.__custodian
+#
+#     @hybrid_property
+#     def key(self):
+#         return self.__security, self.__custodian
+#
+#     def __init__(self, custodian=None, security=None, data=None):
+#         self.__custodian = custodian
+#         self.__security = security
+#         self.data = data
+#
+#
+# Owner._position = relationship(Position, collection_class=attribute_mapped_collection("key"), cascade="all, delete-orphan", backref="owner")
+# Owner.position = association_proxy("_position", "data", creator=lambda s, data: Position(data=data, security=s[0], custodian=s[1]))

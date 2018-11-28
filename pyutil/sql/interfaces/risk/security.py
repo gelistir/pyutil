@@ -7,7 +7,6 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.interfaces.risk.currency import Currency
 from pyutil.sql.interfaces.series import Series
 from pyutil.sql.model.ref import Field, DataType, FieldType
 
@@ -26,7 +25,22 @@ FIELDS = {
 
 
 class Security(ProductInterface):
+    __tablename__ = "security"
     __mapper_args__ = {"polymorphic_identity": "Security"}
+    id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
+
+    # define the price...
+    _price = relationship(Series, uselist=False,
+                           primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='price')")
+    price = association_proxy("_price", "data", creator=lambda data: Series(name="price", data=data))
+
+    # define the volatility (dictionary where currency is the key!)
+    _vola = relationship(Series, collection_class=attribute_mapped_collection("product_2"),
+                          primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='volatility')")
+
+    vola = association_proxy("_vola", "data",
+                             creator=lambda currency, data: Series(name="volatility", product2=currency, data=data))
+
 
     def __init__(self, name, kiid=None, ticker=None):
         super().__init__(name)
@@ -68,38 +82,7 @@ class Security(ProductInterface):
             return None
 
 
-class Price(Series):
-    __tablename__ = "price"
-    __mapper_args__ = {"polymorphic_identity": "price"}
-    id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
+Security.__vola = relationship(Series, collection_class=attribute_mapped_collection("product_2"),
+                                primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='volatility')")
 
-    __security_id = sq.Column("security_id", sq.Integer, sq.ForeignKey(Security.id), nullable=False)
-
-    def __init__(self, data=None):
-        self.data = data
-
-
-Security._price = relationship(Price, uselist=False, backref="security")
-Security.price = association_proxy("_price", "data", creator=lambda data: Price(data=data))
-
-
-class VolatilitySecurity(Series):
-    __tablename__ = "volatility_security"
-    __mapper_args__ = {"polymorphic_identity": "volatility_security"}
-    id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
-
-    __security_id = sq.Column("security_id", sq.Integer, sq.ForeignKey(Security.id), nullable=False)
-    __currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=False)
-    __currency = relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
-
-    @hybrid_property
-    def currency(self):
-        return self.__currency
-
-    def __init__(self, currency=None, data=None):
-        self.__currency = currency
-        self.data = data
-
-
-Security._vola = relationship(VolatilitySecurity, collection_class=attribute_mapped_collection("currency"), cascade="all, delete-orphan", backref="security")
-Security.vola = association_proxy('_vola', 'data', creator=lambda currency, data: VolatilitySecurity(currency=currency, data=data))
+Security.vola = association_proxy("__vola", "data", creator=lambda currency, data: Series(name="volatility", product2=currency, data=data))

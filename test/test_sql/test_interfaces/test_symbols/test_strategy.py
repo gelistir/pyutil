@@ -27,8 +27,6 @@ class TestStrategy(TestCase):
 
         # extract the portfolio
         p = self.strategy.portfolio
-        print(test_portfolio().weights)
-        print(test_portfolio().weights.sum(axis=1))
         pdt.assert_frame_equal(p.weights, test_portfolio().weights, check_names=False)
         pdt.assert_frame_equal(p.prices, test_portfolio().prices, check_names=False)
 

@@ -24,6 +24,7 @@ class TestDatabase(TestCase):
         for name in ["D", "E", "F", "G"]:
             cls.symbols[name] = Symbol(name=name, group=SymbolType.fixed_income)
 
+        # connect to a database
         session, connection_str = postgresql_db_test(base=Base)
         cls.database = Database(session=session)
 
@@ -31,12 +32,14 @@ class TestDatabase(TestCase):
         s = Strategy(name="Peter Maffay")
 
         s.upsert(portfolio=test_portfolio(), symbols=cls.symbols)
-
-        for name, ts in test_portfolio().prices.items():
-            cls.symbols[name].price = ts.dropna()
-
         session.add(s)
         session.commit()
+
+        #for name, ts in test_portfolio().prices.items():
+        #    cls.symbols[name].price = ts.dropna()
+
+        #session.add(s)
+        #session.commit()
 
     @classmethod
     def tearDownClass(cls):

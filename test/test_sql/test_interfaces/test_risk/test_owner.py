@@ -3,8 +3,7 @@ import unittest
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.sql.interfaces.risk.currency import Currency
-from pyutil.sql.interfaces.risk.custodian import Custodian
+from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner, FIELDS as FIELDSOWNER
 from pyutil.sql.interfaces.risk.security import Security, FIELDS as FIELDSSECURITY
 

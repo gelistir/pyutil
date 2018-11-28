@@ -31,22 +31,26 @@ def association_table(left, right, name="association"):
                     )
 
 # todo: MyMixin disappear and documentation for has_inherited...
-class MyMixin(object):
-    @declared_attr
-    def __tablename__(cls):
-        return cls.__name__.lower()
+#class MyMixin(object):
+#    @declared_attr
+#    def __tablename__(cls):
+#        return cls.__name__.lower()
 
-    @declared_attr.cascading
-    def id(cls):
-        if has_inherited_table(cls):
-            return sq.Column(sq.ForeignKey('productinterface.id'), primary_key=True)
-        else:
-            return sq.Column(sq.Integer, primary_key=True, autoincrement=True)
+    #@declared_attr.cascading
+    #def id(cls):
+    #    if has_inherited_table(cls):
+    #        return sq.Column(sq.ForeignKey('productinterface.id'), primary_key=True)
+    #    else:
+    #        return sq.Column(sq.Integer, primary_key=True, autoincrement=True)
 
 
-class ProductInterface(MyMixin, Base):
+class ProductInterface(Base):
+    __tablename__ = "productinterface"
+
     # note that the name should not be unique as Portfolio and Strategy can have the same name
     __name = sq.Column("name", sq.String(200), unique=False, nullable=True)
+    id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
+
     discriminator = sq.Column(sq.String)
 
     __mapper_args__ = {"polymorphic_on": discriminator}

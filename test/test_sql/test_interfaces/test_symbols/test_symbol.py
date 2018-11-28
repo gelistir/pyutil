@@ -37,7 +37,6 @@ class TestSymbol(TestCase):
         pdt.assert_series_equal(a["Price"], symbol.price)
 
 
-
     def test_upsert(self):
         symbol = Symbol(name="B", group=SymbolType.equities, internal="Peter Maffay")
 

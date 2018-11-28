@@ -17,7 +17,19 @@ from pyutil.timeseries.merge import merge
 
 
 class Portfolio(ProductInterface):
+    __tablename__ = "portfolio"
     __mapper_args__ = {"polymorphic_identity": "portfolio"}
+    id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
+
+    # define the price...
+    _price = relationship(Series, uselist=False,
+                           primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='price')")
+    prices = association_proxy("_price", "data", creator=lambda data: Series(name="price", data=data))
+
+    _weights = relationship(Series, uselist=False,
+                            primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='weight')")
+    weights = association_proxy("_weights", "data", creator=lambda data: Series(name="weight", data=data))
+
 
     def __init__(self, name):
         super().__init__(name)
@@ -98,33 +110,3 @@ class PortfolioSymbol(Base):
         self.portfolio = portfolio
 
 Portfolio.symbols = association_proxy("portfolio_symbol", "symbol")
-
-
-class Price(Series):
-    __tablename__ = "portfolio_prices"
-    __mapper_args__ = {"polymorphic_identity": "price"}
-    id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
-
-    __portfolio_id = sq.Column("portfolio_id", sq.Integer, sq.ForeignKey(Portfolio.id), nullable=False)
-
-    def __init__(self, data=None):
-        self.data = data
-
-
-Portfolio._prices = relationship(Price, uselist=False, backref="portfolio")
-Portfolio.prices = association_proxy("_prices", "data", creator=lambda data: Price(data=data))
-
-
-class Weight(Series):
-    __tablename__ = "portfolio_weights"
-    __mapper_args__ = {"polymorphic_identity": "price"}
-    id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
-
-    __portfolio_id = sq.Column("portfolio_id", sq.Integer, sq.ForeignKey(Portfolio.id), nullable=False)
-
-    def __init__(self, data=None):
-        self.data = data
-
-
-Portfolio._weights = relationship(Weight, uselist=False, backref="portfolio")
-Portfolio.weights = association_proxy("_weights", "data", creator=lambda data: Weight(data=data))

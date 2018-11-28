@@ -4,8 +4,7 @@ import pandas as pd
 from sqlalchemy.orm.exc import NoResultFound
 
 from pyutil.sql.base import Base
-from pyutil.sql.interfaces.risk.currency import Currency
-from pyutil.sql.interfaces.risk.custodian import Custodian
+from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
 

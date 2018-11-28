@@ -76,7 +76,7 @@ class Database(object):
         return pd.DataFrame({strategy.name: f(strategy.portfolio.nav) for strategy in self.strategies})
 
     def history(self):
-        return pd.DataFrame({symbol.name: symbol.price for symbol in self.symbols})
+        return pd.DataFrame({symbol.name: symbol.price for symbol in self.symbols if symbol.price is not None})
 
     def mtd(self):
         frame = self.nav(f=lambda x: fromNav(x).returns)

@@ -18,11 +18,20 @@ class SymbolType(_enum.Enum):
 
 
 class Symbol(ProductInterface):
+    __tablename__ = "symbol"
+    id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
+
     group = sq.Column("group", _Enum(SymbolType))
     internal = sq.Column(sq.String, nullable=True)
 
     __mapper_args__ = {"polymorphic_identity": "symbol"}
     _measurements = "symbols"
+
+    # define the price...
+    _price = relationship(Series, uselist=False,
+                           primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='price')")
+    price = association_proxy("_price", "data", creator=lambda data: Series(name="price", data=data))
+
 
     def __init__(self, name, group, internal=None):
         super().__init__(name)
@@ -39,18 +48,3 @@ class Symbol(ProductInterface):
             return self.price.last_valid_index()
         else:
             return None
-
-
-class Price(Series):
-    __tablename__ = "symbol_price"
-    __mapper_args__ = {"polymorphic_identity": "price"}
-    id = sq.Column(sq.ForeignKey('series.id'), primary_key=True)
-
-    __security_id = sq.Column("security_id", sq.Integer, sq.ForeignKey(Symbol.id), nullable=False)
-
-    def __init__(self, data=None):
-        self.data = data
-
-
-Symbol._price = relationship(Price, uselist=False, backref="symbol")
-Symbol.price = association_proxy("_price", "data", creator=lambda data: Price(data=data))
