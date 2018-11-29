@@ -73,16 +73,3 @@ class Security(ProductInterface):
     @property
     def vola_frame(self):
         return pd.DataFrame({key: item for (key, item) in self.vola.items()})
-
-    @property
-    def last(self):
-        if self.price is not None:
-            return self.price.last_valid_index()
-        else:
-            return None
-
-
-Security.__vola = relationship(Series, collection_class=attribute_mapped_collection("product_2"),
-                                primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='volatility')")
-
-Security.vola = association_proxy("__vola", "data", creator=lambda currency, data: Series(name="volatility", product2=currency, data=data))
