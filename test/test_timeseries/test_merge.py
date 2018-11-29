@@ -15,6 +15,7 @@ class TestMerge(TestCase):
         self.assertEqual(t, pd.Timestamp("2015-04-22"))
         self.assertIsNone(last_index(None))
         self.assertEqual(last_index(None, default=pd.Timestamp("2015-04-22")), pd.Timestamp("2015-04-22"))
+        self.assertEqual(last_index(pd.Series({}), default=pd.Timestamp("2015-04-22")), pd.Timestamp("2015-04-22"))
 
     def test_merge(self):
         x = merge(new=s)

@@ -9,6 +9,7 @@ def merge(new, old=None):
 
 def last_index(ts, default=None):
     if ts is not None:
-        return ts.last_valid_index()
+        # if the object is empty
+        return ts.last_valid_index() or default
     else:
         return default
