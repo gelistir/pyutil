@@ -7,14 +7,14 @@ from sqlalchemy.orm import relationship as _relationship, relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.performance.summary import fromReturns
-from pyutil.sql.interfaces.products import ProductInterface, association_table
+from pyutil.sql.interfaces.products import ProductInterface
 
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.interfaces.series import Series
 from pyutil.sql.model.ref import Field, DataType, FieldType
 
-_association_table = association_table(left="security", right="owner", name="security_owner")
+#_association_table = association_table(left="security", right="owner", name="security_owner")
 
 FIELDS = {
     "name": Field(name="Name", result=DataType.string, type=FieldType.other),
