@@ -9,18 +9,6 @@ from pyutil.sql.base import Base
 from pyutil.sql.model.ref import _ReferenceData, Field
 
 
-def read_ts(data, default=None):
-    try:
-        return pd.read_msgpack(data).sort_index()
-    except ValueError:
-        return default
-
-
-def write_ts(series):
-    series = series[~series.index.duplicated()]
-    return series.to_msgpack()
-
-
 def association_table(left, right, name="association"):
     return sq.Table(name, Base.metadata,
                     sq.Column("left_id", sq.Integer, sq.ForeignKey('{left}.id'.format(left=left))),
@@ -90,4 +78,9 @@ class ProductInterface(Base):
         frame = pd.DataFrame(d).transpose()
         frame.index.name = name
         return frame
+
+    @staticmethod
+    def join_series(name):
+        return "and_(ProductInterface.id==Series.product1_id, Series.name=='{name}')".format(name=name)
+
 

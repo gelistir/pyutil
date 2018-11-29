@@ -7,6 +7,7 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.risk.custodian import Currency
 from pyutil.sql.interfaces.series import Series
 from pyutil.sql.model.ref import Field, DataType, FieldType
 
@@ -24,22 +25,33 @@ FIELDS = {
 }
 
 
+#def rrr(name, *kwargs):
+#    x = relationship(Series, primaryjoin=ProductInterface.join_series(name), **kwargs)
+#    association_proxy("_{x}".format(x=name), "data")
+
 class Security(ProductInterface):
+    @staticmethod
+    def create_volatility(currency, data):
+        assert isinstance(currency, Currency)
+        assert isinstance(data, pd.Series)
+
+        return Series(name="volatility", product2=currency, data=data)
+
     __tablename__ = "security"
     __mapper_args__ = {"polymorphic_identity": "Security"}
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     # define the price...
-    _price = relationship(Series, uselist=False,
-                           primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='price')")
+    _price = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("price"))
+
     price = association_proxy("_price", "data", creator=lambda data: Series(name="price", data=data))
 
     # define the volatility (dictionary where currency is the key!)
     _vola = relationship(Series, collection_class=attribute_mapped_collection("product_2"),
-                          primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='volatility')")
+                          primaryjoin=ProductInterface.join_series("volatility"))
 
     vola = association_proxy("_vola", "data",
-                             creator=lambda currency, data: Series(name="volatility", product2=currency, data=data))
+                             creator=lambda currency, data: Security.create_volatility(currency=currency, data=data))
 
 
     def __init__(self, name, kiid=None, ticker=None):

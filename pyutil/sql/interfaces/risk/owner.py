@@ -14,8 +14,6 @@ from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.interfaces.series import Series
 from pyutil.sql.model.ref import Field, DataType, FieldType
 
-#_association_table = association_table(left="security", right="owner", name="security_owner")
-
 FIELDS = {
     "name": Field(name="Name", result=DataType.string, type=FieldType.other),
     "15. Custodian Name": Field(name="Custodian", result=DataType.string, type=FieldType.other),
@@ -28,6 +26,14 @@ FIELDS = {
 
 
 class Owner(ProductInterface):
+    @staticmethod
+    def create_position(security, custodian, data):
+        assert isinstance(security, Security)
+        assert isinstance(custodian, Custodian)
+        assert isinstance(data, pd.Series)
+
+        return Series(name="position", product2=security, product3=custodian, data=data)
+
     __tablename__ = "owner"
     __mapper_args__ = {"polymorphic_identity": "Owner"}
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
@@ -40,20 +46,20 @@ class Owner(ProductInterface):
 
 
     # returns
-    _returns = relationship(Series, uselist=False,
-                           primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='returns')")
+    _returns = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("returns"), cascade="all, delete-orphan")
     returns = association_proxy("_returns", "data", creator=lambda data: Series(name="returns", data=data))
 
-
     # volatility
-    _volatility = relationship(Series, uselist=False,
-                           primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='volatility')")
+    _volatility = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("volatility"), cascade="all, delete-orphan")
     volatility = association_proxy("_volatility", "data", creator=lambda data: Series(name="volatility", data=data))
 
     # position
     _position = relationship(Series, collection_class=attribute_mapped_collection("key"), cascade="all, delete-orphan",
-                             primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='position')")
-    position = association_proxy("_position", "data", creator=lambda s, data: Series(name="position", data=data, product2=s[0], product3=s[1]))
+                             primaryjoin=ProductInterface.join_series("position"))
+
+    position = association_proxy("_position", "data", creator=lambda s, data: Owner.create_position(security=s[0], custodian=s[1], data=data))
+
+
 
 
     def __init__(self, name, currency=None, custodian=None):

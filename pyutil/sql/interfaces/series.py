@@ -26,12 +26,15 @@ class Series(Base):
     UniqueConstraint('name', 'product1_id', 'product2_id', 'product3_id', name='uix_1')
 
     @hybrid_property
+    def product_1(self):
+        return self.__product1
+
+    @hybrid_property
     def product_2(self):
         return self.__product2
 
-
     @hybrid_property
-    def product3(self):
+    def product_3(self):
         return self.__product3
 
     @hybrid_property
@@ -53,6 +56,7 @@ class Series(Base):
 
     def __init__(self, name, product2=None, product3=None, data=None):
         self.name = name
+        #self.__product1 = product1
         self.__product2 = product2
         self.__product3 = product3
         self.data = data
