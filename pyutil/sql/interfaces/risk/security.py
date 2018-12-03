@@ -39,6 +39,8 @@ class Security(ProductInterface):
 
     __tablename__ = "security"
     __mapper_args__ = {"polymorphic_identity": "Security"}
+
+    active = sq.Column("active", sq.Boolean)
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     # define the price...
