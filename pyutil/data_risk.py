@@ -16,6 +16,9 @@ class Database(object):
     def session(self):
         return self.__session
 
+    def __repr__(self):
+        return str(self.__session)
+
     @property
     def owners(self):
         return self.__session.query(Owner)

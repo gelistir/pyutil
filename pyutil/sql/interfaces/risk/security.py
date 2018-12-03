@@ -44,13 +44,13 @@ class Security(ProductInterface):
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     # define the price...
-    _price = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("price"))
+    _price = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("price"), lazy="joined")
 
     price = association_proxy("_price", "data", creator=lambda data: Series(name="price", data=data))
 
     # define the volatility (dictionary where currency is the key!)
     _vola = relationship(Series, collection_class=attribute_mapped_collection("product_2"),
-                          primaryjoin=ProductInterface.join_series("volatility"))
+                          primaryjoin=ProductInterface.join_series("volatility"), lazy="joined")
 
     vola = association_proxy("_vola", "data",
                              creator=lambda currency, data: Security.create_volatility(currency=currency, data=data))
