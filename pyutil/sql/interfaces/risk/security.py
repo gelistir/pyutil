@@ -10,6 +10,7 @@ from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.custodian import Currency
 from pyutil.sql.interfaces.series import Series
 from pyutil.sql.model.ref import Field, DataType, FieldType
+from pyutil.timeseries.merge import merge
 
 FIELDS = {
     "Lobnek Ticker Symbol Bloomberg": Field(name="Bloomberg Ticker", result=DataType.string, type=FieldType.other),
@@ -87,3 +88,11 @@ class Security(ProductInterface):
     @property
     def vola_frame(self):
         return pd.DataFrame({key: item for (key, item) in self.vola.items()})
+
+    def upsert_volatility(self, currency, ts):
+        assert isinstance(currency, Currency)
+        try:
+            self.vola[currency] = merge(new=ts, old=self.vola[currency])
+        except KeyError:
+            self.vola[currency] = ts
+            pass
