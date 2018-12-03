@@ -54,7 +54,7 @@ class Database(object):
 
     @property
     def prices(self):
-        return pd.DataFrame({security.name: security.price.to_dict() for security in self.securities if security.price is not None})
+        return pd.DataFrame({security.name: security.price.to_dict() for security in self.securities if security.price is not None and security.active})
 
     @property
     def returns(self):
