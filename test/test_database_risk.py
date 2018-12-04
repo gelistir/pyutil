@@ -65,10 +65,14 @@ class TestDatabase(TestCase):
     def test_prices(self):
         # add prices to the database
         security = self.database.security(name="123")
+        security.active = True
+
         ts = pd.Series({pd.Timestamp("2010-04-20"): 11.0, pd.Timestamp("2010-04-21"): 11.2})
         security.price = ts
 
         d = self.database.prices.sort_index(ascending=False)
+        print(d)
+
         pdt.assert_series_equal(d[security.name], ts.sort_index(ascending=False), check_names=False)
 
     def test_returns(self):
@@ -107,13 +111,13 @@ class TestDatabase(TestCase):
         pdt.assert_frame_equal(f.reset_index(), x)
 
     def test_reference_securities(self):
-        x = self.database.reference_securities
+        x = self.database.reference_securities.set_index("Entity ID").sort_index(axis=0)
 
         f = pd.DataFrame(index=["123", "456"], columns=["Bloomberg Ticker", "XXX"])
         f.index.name = "Entity ID"
         f["Bloomberg Ticker"]["123"] = "HAHA US Equity"
         f["XXX"]["123"] = 200
-        pdt.assert_frame_equal(x, f.reset_index())
+        pdt.assert_frame_equal(x.sort_index(axis=0), f)
 
     def test_custodian(self):
         self.assertEqual(self.database.custodian(name="UBS"), Custodian(name="UBS"))

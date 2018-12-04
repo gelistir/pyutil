@@ -130,7 +130,3 @@ class Owner(ProductInterface):
         r = self.returns
         ts = fromReturns(r=r)
         return {"name": self.name, "Nav": ts, "Volatility": ts.ewm_volatility(), "Drawdown": ts.drawdown}
-
-
-    def upsert_volatility(self, currency, ts):
-        self.vola
