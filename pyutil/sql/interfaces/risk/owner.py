@@ -13,6 +13,7 @@ from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.interfaces.series import Series
 from pyutil.sql.model.ref import Field, DataType, FieldType
+from pyutil.timeseries.merge import merge
 
 FIELDS = {
     "name": Field(name="Name", result=DataType.string, type=FieldType.other),
@@ -130,3 +131,10 @@ class Owner(ProductInterface):
         r = self.returns
         ts = fromReturns(r=r)
         return {"name": self.name, "Nav": ts, "Volatility": ts.ewm_volatility(), "Drawdown": ts.drawdown}
+
+    def upsert_position(self, security, custodian, ts):
+        assert isinstance(security, Security)
+        assert isinstance(custodian, Custodian)
+
+        key = (security, custodian)
+        self.position[key] = merge(new=ts, old=self.position.get(key, default=pd.Series({})))

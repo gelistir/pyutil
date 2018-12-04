@@ -30,6 +30,7 @@ FIELDS = {
 #    x = relationship(Series, primaryjoin=ProductInterface.join_series(name), **kwargs)
 #    association_proxy("_{x}".format(x=name), "data")
 
+
 class Security(ProductInterface):
     @staticmethod
     def create_volatility(currency, data):
@@ -53,9 +54,8 @@ class Security(ProductInterface):
     _vola = relationship(Series, collection_class=attribute_mapped_collection("product_2"),
                           primaryjoin=ProductInterface.join_series("volatility"), lazy="joined")
 
-    vola = association_proxy("_vola", "data",
+    vola = association_proxy(target_collection="_vola", attr="data",
                              creator=lambda currency, data: Security.create_volatility(currency=currency, data=data))
-
 
     def __init__(self, name, kiid=None, ticker=None):
         super().__init__(name)
@@ -64,7 +64,6 @@ class Security(ProductInterface):
 
         if ticker:
             self.reference[FIELDS["Lobnek Ticker Symbol Bloomberg"]] = ticker
-
 
     def __repr__(self):
         return "Security({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
@@ -91,8 +90,4 @@ class Security(ProductInterface):
 
     def upsert_volatility(self, currency, ts):
         assert isinstance(currency, Currency)
-        try:
-            self.vola[currency] = merge(new=ts, old=self.vola[currency])
-        except KeyError:
-            self.vola[currency] = ts
-            pass
+        self.vola[currency] = merge(new=ts, old=self.vola.get(currency, default=pd.Series({})))

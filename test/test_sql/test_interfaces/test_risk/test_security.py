@@ -64,3 +64,11 @@ class TestSecurity(unittest.TestCase):
         security.vola[Currency(name="CHF")] = pd.Series([10,11,12])
 
         pdt.assert_frame_equal(security.vola_frame, pd.DataFrame({key: item for (key, item) in security.vola.items()}))
+
+
+    def test_volatility_2(self):
+        security = Security(name="B")
+        pdt.assert_series_equal(security.vola.get(Currency(name="USD"), default=pd.Series({})), pd.Series({}))
+
+        security.upsert_volatility(currency=Currency(name="CHF"), ts=pd.Series([10,20,30]))
+        pdt.assert_series_equal(security.vola[Currency(name="CHF")], pd.Series([10,20,30]))

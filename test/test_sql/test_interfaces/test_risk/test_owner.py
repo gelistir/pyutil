@@ -50,18 +50,16 @@ class TestOwner(unittest.TestCase):
         print(o.position)
         print(o.position_frame)
 
-        #assert False
+        # assert False
 
-        #o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
-        #o.upsert_position(security=s2, custodian=c2, ts=pd.Series({t1: 0.5, t2: 0.5}))
+        # o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
+        # o.upsert_position(security=s2, custodian=c2, ts=pd.Series({t1: 0.5, t2: 0.5}))
 
         s1.vola[Currency(name="USD")] = pd.Series({t1: 5, t2: 6.0})
         s2.vola[Currency(name="USD")] = pd.Series({t1: 6})
 
-
-        #s1.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 5, t2: 6.0}))
-        #s2.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 6}))
-
+        # s1.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 5, t2: 6.0}))
+        # s2.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 6}))
 
     # def test_reference_securities_frame(self):
     #     # create a security
@@ -84,16 +82,15 @@ class TestOwner(unittest.TestCase):
         x = pd.Series({t1.date(): 0.1})
         s.vola[Currency(name="USD")] = pd.Series({t1.date(): 10})
 
-        #o.upsert_position(s, ts=x)
+        # o.upsert_position(s, ts=x)
         o.position[(s, Custodian(name="UBS"))] = x
         a = o.position
 
-
-        #o.upsert_position(s, ts=x)
-        #b = o.position
-        #print(o.position)
-        #pdt.assert_frame_equal(a,b)
-        #assert False
+        # o.upsert_position(s, ts=x)
+        # b = o.position
+        # print(o.position)
+        # pdt.assert_frame_equal(a,b)
+        # assert False
 
     def test_json(self):
         o = Owner(name="Peter")
@@ -104,6 +101,13 @@ class TestOwner(unittest.TestCase):
 
     def test_volatility(self):
         o = Owner(name="Peter")
+        self.assertIsNone(o.volatility)  # , pd.Series({}))
         o.volatility = pd.Series({t0.date(): 0.1, t1.date(): 0.0, t2.date(): 0.1})
         pdt.assert_series_equal(o.volatility, pd.Series({t0.date(): 0.1, t1.date(): 0.0, t2.date(): 0.1}))
 
+    def test_position_update(self):
+        o = Owner(name="Thomas")
+        c = Custodian(name="Hans")
+        s = Security(name=123)
+        o.upsert_position(security=s, custodian=c, ts=pd.Series([10, 20, 30]))
+        pdt.assert_series_equal(o.position[(s, c)], pd.Series([10, 20, 30]))
