@@ -63,11 +63,10 @@ class Owner(ProductInterface):
 
 
 
-
-    def __init__(self, name, currency=None, custodian=None):
+    def __init__(self, name, currency=None):
         super().__init__(name=name)
         self.currency = currency
-        self.custodian = custodian
+        #self.custodian = custodian
 
     def __repr__(self):
         return "Owner({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
@@ -80,17 +79,21 @@ class Owner(ProductInterface):
     def currency(self, value):
         self.__currency = value
 
-    @hybrid_property
-    def custodian(self):
-        return self.__custodian
+    #@hybrid_property
+    #def custodian(self):
+    #    return self.__custodian
 
-    @custodian.setter
-    def custodian(self, value):
-        self.__custodian = value
+    #@custodian.setter
+    #def custodian(self, value):
+    #    self.__custodian = value
 
     @property
     def securities(self):
-        return set([x.security for x in self.position])
+        return set([x[0] for x in self.position.keys()])
+
+    @property
+    def custodians(self):
+        return set([x[1] for x in self.position.keys()])
 
 
     @property
@@ -107,14 +110,14 @@ class Owner(ProductInterface):
 
     @property
     def vola_security_frame(self):
-        x = pd.DataFrame({security.name: security.vola.get(self.currency, pd.Series({})) for security in set(self.securities)}).stack()
+        x = pd.DataFrame({security: security.vola.get(self.currency, pd.Series({})) for security in set(self.securities)}).stack()
         x.index.names = ["Date", "Security"]
         return x.swaplevel().to_frame("Volatility")
 
 
     @property
     def reference_securities(self):
-        return Security.reference_frame(self.securities, name="Security")
+        return Security.reference_frame(self.securities, name="Security").sort_index(axis=0)
 
 
     @property
@@ -128,8 +131,7 @@ class Owner(ProductInterface):
         return position_reference.join(volatility, on=["Security", "Date"])
 
     def to_json(self):
-        r = self.returns
-        ts = fromReturns(r=r)
+        ts = fromReturns(r=self.returns)
         return {"name": self.name, "Nav": ts, "Volatility": ts.ewm_volatility(), "Drawdown": ts.drawdown}
 
     def upsert_position(self, security, custodian, ts):
@@ -137,4 +139,13 @@ class Owner(ProductInterface):
         assert isinstance(custodian, Custodian)
 
         key = (security, custodian)
-        self.position[key] = merge(new=ts, old=self.position.get(key, default=pd.Series({})))
+        self.position[key] = merge(new=ts, old=self.position.get(key, default=None))
+        return self.position[key]
+
+    def upsert_returns(self, ts):
+        self.returns = merge(new=ts, old=self.returns)
+        return self.returns
+
+    def upsert_volatility(self, ts):
+        self.volatility = merge(new=ts, old=self.volatility)
+        return self.volatility

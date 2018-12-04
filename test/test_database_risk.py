@@ -27,7 +27,7 @@ class TestDatabase(TestCase):
 
         cus1 = Custodian(name="UBS")
 
-        o1 = Owner(name="102", currency=c1, custodian=cus1)
+        o1 = Owner(name="102", currency=c1)
 
         f1 = Field(name="XXX", result=DataType.integer)
         f2 = Field(name="Bloomberg Ticker", result=DataType.string, type=FieldType.other)
@@ -42,7 +42,7 @@ class TestDatabase(TestCase):
 
         c3 = Currency(name="EUR")
 
-        cls.session.add_all([c1, c2, c3, o1, f1, f2, s1, s2])
+        cls.session.add_all([c1, c2, c3, cus1, o1, f1, f2, s1, s2])
         cls.session.commit()
 
         #cls.client = test_client()

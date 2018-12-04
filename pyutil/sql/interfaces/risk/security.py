@@ -17,18 +17,15 @@ FIELDS = {
     "Lobnek Geographic Focus": Field(name="Geography", result=DataType.string, type=FieldType.other),
     "Lobnek KIID": Field(name="KIID", result=DataType.integer, type=FieldType.other),
     "Lobnek Liquidity": Field(name="Liquidity", result=DataType.string, type=FieldType.other),
-    "Lobnek Price Multiplier Bloomberg": Field(name="Bloomberg Multiplier", result=DataType.float, type=FieldType.other),
+    "Lobnek Price Multiplier Bloomberg": Field(name="Bloomberg Multiplier", result=DataType.float,
+                                               type=FieldType.other),
     "Lobnek Sub Asset Class": Field(name="Sub Asset Class", result=DataType.string, type=FieldType.other),
     "Lobnek Reporting Asset Class": Field(name="Asset Class", result=DataType.string, type=FieldType.other),
     "Currency": Field(name="Currency", result=DataType.string, type=FieldType.other),
-    "Lobnek Risk Monitoring Security Name": Field(name="Risk Security Name", result=DataType.string, type=FieldType.other),
+    "Lobnek Risk Monitoring Security Name": Field(name="Risk Security Name", result=DataType.string,
+                                                  type=FieldType.other),
     "name": Field(name="Name", result=DataType.string, type=FieldType.other)
 }
-
-
-#def rrr(name, *kwargs):
-#    x = relationship(Series, primaryjoin=ProductInterface.join_series(name), **kwargs)
-#    association_proxy("_{x}".format(x=name), "data")
 
 
 class Security(ProductInterface):
@@ -52,7 +49,7 @@ class Security(ProductInterface):
 
     # define the volatility (dictionary where currency is the key!)
     _vola = relationship(Series, collection_class=attribute_mapped_collection("product_2"),
-                          primaryjoin=ProductInterface.join_series("volatility"), lazy="joined")
+                         primaryjoin=ProductInterface.join_series("volatility"), lazy="joined")
 
     vola = association_proxy(target_collection="_vola", attr="data",
                              creator=lambda currency, data: Security.create_volatility(currency=currency, data=data))
@@ -90,4 +87,10 @@ class Security(ProductInterface):
 
     def upsert_volatility(self, currency, ts):
         assert isinstance(currency, Currency)
-        self.vola[currency] = merge(new=ts, old=self.vola.get(currency, default=pd.Series({})))
+        self.vola[currency] = merge(new=ts, old=self.vola.get(currency, default=None))
+        return self.vola[currency]
+
+    def upsert_price(self, ts):
+        # self.price will be None if not defined
+        self.price = merge(new=ts, old=self.price)
+        return self.price

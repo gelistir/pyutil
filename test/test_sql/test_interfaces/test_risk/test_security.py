@@ -25,16 +25,14 @@ class TestSecurity(unittest.TestCase):
         self.assertEqual(str(s), "Security(100: None)")
         self.assertEqual(s.bloomberg_scaling, 1.0)
 
-
     def test_reference_frame(self):
         s1 = Security(name=100, kiid=4)
         s2 = Security(name=110, kiid=3)
         s3 = Security(name=120, kiid=5)
 
-        x = pd.DataFrame(index=["100", "110", "120"], columns=["KIID"], data=[[4],[3],[5]])
+        x = pd.DataFrame(index=["100", "110", "120"], columns=["KIID"], data=[[4], [3], [5]])
         x.index.name = "Product"
         pdt.assert_frame_equal(x, Security.reference_frame(products=sorted([s1, s2, s3]), name="Product"))
-
 
     def test_ts_new(self):
         security = Security(name="A")
@@ -57,18 +55,20 @@ class TestSecurity(unittest.TestCase):
         # extract the last stamp
         self.assertEqual(security.price.last_valid_index(), pd.Timestamp("2015-04-22"))
 
+        x = security.upsert_price(ts = 2*test_portfolio().prices["A"])
+        pdt.assert_series_equal(x, 2*test_portfolio().prices["A"].dropna(), check_names=False)
 
     def test_volatility(self):
         security = Security(name="A")
-        security.vola[Currency(name="USD")] = pd.Series([30,40,50])
-        security.vola[Currency(name="CHF")] = pd.Series([10,11,12])
+        security.vola[Currency(name="USD")] = pd.Series([30, 40, 50])
+        security.vola[Currency(name="CHF")] = pd.Series([10, 11, 12])
 
         pdt.assert_frame_equal(security.vola_frame, pd.DataFrame({key: item for (key, item) in security.vola.items()}))
-
 
     def test_volatility_2(self):
         security = Security(name="B")
         pdt.assert_series_equal(security.vola.get(Currency(name="USD"), default=pd.Series({})), pd.Series({}))
 
-        security.upsert_volatility(currency=Currency(name="CHF"), ts=pd.Series([10,20,30]))
-        pdt.assert_series_equal(security.vola[Currency(name="CHF")], pd.Series([10,20,30]))
+        x = security.upsert_volatility(currency=Currency(name="CHF"), ts=pd.Series([10, 20, 30]))
+        pdt.assert_series_equal(x, pd.Series([10, 20, 30]))
+
