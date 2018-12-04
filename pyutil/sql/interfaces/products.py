@@ -73,8 +73,12 @@ class ProductInterface(Base):
         return hash(self.name)
 
     @staticmethod
-    def reference_frame(products, name):
-        d = {s.name: {field.name: value for field, value in s.reference.items()} for s in products}
+    def reference_frame(products, name, objectnotation=False):
+        if objectnotation:
+            d = {s: {field.name: value for field, value in s.reference.items()} for s in products}
+        else:
+            d = {s.name: {field.name: value for field, value in s.reference.items()} for s in products}
+
         frame = pd.DataFrame(d).transpose()
         frame.index.name = name
         return frame

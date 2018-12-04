@@ -117,12 +117,12 @@ class Owner(ProductInterface):
 
     @property
     def reference_securities(self):
-        return Security.reference_frame(self.securities, name="Security").sort_index(axis=0)
+        return Security.reference_frame(self.securities, name="Security", objectnotation=False).sort_index(axis=0)
 
 
     @property
     def position_reference(self):
-        reference = self.reference_securities
+        reference = Security.reference_frame(self.securities, name="Security", objectnotation=True).sort_index(axis=0)
         position = self.position_frame
         volatility = self.vola_security_frame
 
