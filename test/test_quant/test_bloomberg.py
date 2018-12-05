@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import pandas.util.testing as pdt
 from pyutil.data import Database
-from pyutil.quant.history import update_history
+#from pyutil.quant.history import update_history
 from pyutil.quant.reference import update_reference
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
@@ -48,7 +48,7 @@ class TestQuant(TestCase):
             return read_frame("price.csv")[tickers].dropna()
 
         for symbol in self.session.query(Symbol):
-            symbol.price = update_history(symbol=symbol, reader=f)
+            symbol.update_history(reader=f)
 
         for symbol in self.session.query(Symbol):
             pdt.assert_series_equal(symbol.price, f(symbol.name), check_names=False)
