@@ -12,6 +12,7 @@ from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.series import Series
 from pyutil.timeseries.merge import last_index, to_datetime, merge
 
+
 class SymbolType(_enum.Enum):
     alternatives = "Alternatives"
     fixed_income = "Fixed Income"

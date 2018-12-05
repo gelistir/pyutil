@@ -17,12 +17,16 @@ from test.config import test_portfolio, read_frame
 class TestDatabase(TestCase):
     @classmethod
     def setUpClass(cls):
+        p = test_portfolio().prices
+
         cls.symbols = dict()
         for name in ["A", "B", "C"]:
             cls.symbols[name] = Symbol(name=name, group=SymbolType.equities)
+            cls.symbols[name].price = p[name]
 
         for name in ["D", "E", "F", "G"]:
             cls.symbols[name] = Symbol(name=name, group=SymbolType.fixed_income)
+            cls.symbols[name].price = p[name]
 
         # connect to a database
         session, connection_str = postgresql_db_test(base=Base)
@@ -87,6 +91,8 @@ class TestDatabase(TestCase):
         self.assertTrue(f.empty)
 
     def test_history(self):
-        f = self.database.history()
+        f = self.database.history
+
+
 
 
