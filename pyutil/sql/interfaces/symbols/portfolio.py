@@ -13,7 +13,7 @@ from pyutil.sql.base import Base
 from pyutil.sql.interfaces.products import ProductInterface #, Timeseries
 from pyutil.sql.interfaces.series import Series
 from pyutil.sql.interfaces.symbols.symbol import Symbol
-from pyutil.timeseries.merge import merge
+from pyutil.timeseries.merge import merge, last_index
 
 
 class Portfolio(ProductInterface):
@@ -51,10 +51,8 @@ class Portfolio(ProductInterface):
 
     @property
     def last(self):
-        if self.prices is not None:
-            return self.prices.last_valid_index()
-        else:
-            return None
+        return last_index(self.prices)
+
 
     @property
     def portfolio_influx(self):
