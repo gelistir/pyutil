@@ -1,5 +1,5 @@
 import pandas as pd
-from pyutil.timeseries.merge import last_index, to_datetime
+from pyutil.timeseries.merge import last_index, to_datetime, merge
 
 
 def update_history(symbol, reader, t0=pd.Timestamp("2000-01-01"), offset=10):
@@ -11,6 +11,8 @@ def update_history(symbol, reader, t0=pd.Timestamp("2000-01-01"), offset=10):
     series = reader(tickers=symbol.name, t0=t)#.dropna()
     #assert isinstance(series, pd.Series)
     if series is not None:
+        return merge(new=to_datetime(series.dropna()), old=symbol.price)
+
     #if not series.empty:
-       return symbol.upsert_price(ts=to_datetime(series.dropna()))
+       #return symbol.upsert_price(ts=to_datetime(series.dropna()))
 

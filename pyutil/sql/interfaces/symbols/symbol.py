@@ -5,10 +5,9 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Enum as _Enum
 
-from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.performance.summary import fromNav
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.series import Series
-from pyutil.timeseries.merge import merge
 
 
 class SymbolType(_enum.Enum):
@@ -41,7 +40,3 @@ class Symbol(ProductInterface):
     def to_json(self):
         nav = fromNav(self.price)
         return {"name": self.name, "Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
-
-    def upsert_price(self, ts):
-        self.price = merge(new=ts, old=self.price)
-        return self.price

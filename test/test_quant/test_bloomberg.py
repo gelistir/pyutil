@@ -48,7 +48,7 @@ class TestQuant(TestCase):
             return read_frame("price.csv")[tickers].dropna()
 
         for symbol in self.session.query(Symbol):
-            update_history(symbol=symbol, reader=f)
+            symbol.price = update_history(symbol=symbol, reader=f)
 
         for symbol in self.session.query(Symbol):
             pdt.assert_series_equal(symbol.price, f(symbol.name), check_names=False)
