@@ -8,6 +8,7 @@ from sqlalchemy.types import Enum as _Enum
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.series import Series
+from pyutil.timeseries.merge import merge
 
 
 class SymbolType(_enum.Enum):
@@ -32,7 +33,6 @@ class Symbol(ProductInterface):
                            primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='price')")
     price = association_proxy("_price", "data", creator=lambda data: Series(name="price", data=data))
 
-
     def __init__(self, name, group, internal=None):
         super().__init__(name)
         self.group = group
@@ -42,9 +42,13 @@ class Symbol(ProductInterface):
         nav = fromNav(self.price)
         return {"name": self.name, "Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
 
-    @property
-    def last(self):
-        if self.price is not None:
-            return self.price.last_valid_index()
-        else:
-            return None
+    #@property
+    #def last(self):
+    #    if self.price is not None:
+    #        return self.price.last_valid_index()
+    #    else:
+    #        return None
+
+    def upsert_price(self, ts):
+        self.price = merge(new=ts, old=self.price)
+        return self.price

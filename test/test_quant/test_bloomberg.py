@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-import pandas as pd
 import pandas.util.testing as pdt
 from pyutil.data import Database
 from pyutil.quant.history import update_history
@@ -45,24 +44,11 @@ class TestQuant(TestCase):
             self.assertEqual(symbol.get_reference("f1"), "A{x}".format(x=symbol.name))
 
     def test_history(self):
-        def f(tickers, t0=None, field=None):
+        def f(tickers, t0=None):
             return read_frame("price.csv")[tickers].dropna()
 
-        a = update_history(symbols=self.session.query(Symbol), reader=f, today=pd.Timestamp("2018-01-01"))
+        for symbol in self.session.query(Symbol):
+            update_history(symbol=symbol, reader=f)
 
         for symbol in self.session.query(Symbol):
             pdt.assert_series_equal(symbol.price, f(symbol.name), check_names=False)
-
-        a = update_history(symbols=self.session.query(Symbol), reader=f, today=pd.Timestamp("2018-01-01"))
-        self.assertEqual(a["D"], pd.Timestamp("2015-04-12"))
-
-        for symbol in self.session.query(Symbol):
-            pdt.assert_series_equal(symbol.price, read_frame("price.csv")[symbol.name].dropna())
-
-    def test_history_wrong(self):
-        def f(tickers, t0=None, field=None):
-            raise AssertionError
-
-        a = update_history(symbols=self.session.query(Symbol), reader=f, today=pd.Timestamp("2018-01-01"))
-        self.assertIsNone(a["A"])
-

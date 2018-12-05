@@ -21,3 +21,8 @@ def first_index(ts, default=None):
         return ts.first_valid_index() or default
     else:
         return default
+
+
+def to_datetime(ts):
+    ts.index = pd.to_datetime(ts.index)
+    return ts
