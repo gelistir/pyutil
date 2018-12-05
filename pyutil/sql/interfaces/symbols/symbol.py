@@ -42,13 +42,6 @@ class Symbol(ProductInterface):
         nav = fromNav(self.price)
         return {"name": self.name, "Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
 
-    #@property
-    #def last(self):
-    #    if self.price is not None:
-    #        return self.price.last_valid_index()
-    #    else:
-    #        return None
-
     def upsert_price(self, ts):
         self.price = merge(new=ts, old=self.price)
         return self.price

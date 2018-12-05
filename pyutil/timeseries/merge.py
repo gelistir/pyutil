@@ -3,8 +3,18 @@ import pandas as pd
 
 def merge(new, old=None):
     # very smart merging here, new and old merge
-    x = pd.concat((new, old))
-    return x.groupby(x.index).first().sort_index()
+    if new is not None:
+        #if new.empty:
+        #    return old
+        #else:
+        if old is not None:
+            x = pd.concat((new, old))
+            return x.groupby(x.index).first().sort_index()
+        else:
+            return new
+
+    else:
+        return old
 
 
 def last_index(ts, default=None):

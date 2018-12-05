@@ -35,3 +35,12 @@ class TestMerge(TestCase):
 
         x = merge(new=5*s, old=s)
         pdt.assert_series_equal(x, 5*s)
+
+        y = merge(None)
+        self.assertIsNone(y)
+
+        y = merge(pd.Series({}), None)
+        pdt.assert_series_equal(y, pd.Series({}))
+
+        y = merge(pd.Series({}), pd.Series({}))
+        pdt.assert_series_equal(y, pd.Series({}))

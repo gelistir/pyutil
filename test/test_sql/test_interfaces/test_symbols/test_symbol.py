@@ -44,3 +44,16 @@ class TestSymbol(TestCase):
         symbol.price = merge(old=symbol.price, new=pd.Series(index=[2,4], data=[9,10]))
 
         pdt.assert_series_equal(symbol.price, pd.Series(index=[1,2,4], data=[5,9,10]))
+
+    def test_empty_price(self):
+        symbol = Symbol(name="C", group=SymbolType.fixed_income)
+        self.assertIsNone(symbol.price)
+
+        symbol.price = pd.Series({})
+        print(symbol.price)
+        pdt.assert_series_equal(symbol.price, pd.Series({}))
+
+        symbol = Symbol(name="D", group=SymbolType.currency)
+        symbol.price = None
+        self.assertIsNone(symbol.price)
+

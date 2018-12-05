@@ -8,5 +8,9 @@ def update_history(symbol, reader, t0=pd.Timestamp("2000-01-01"), offset=10):
     t = last_index(symbol.price, default=t0 + offset) - offset
 
     # merge new data with old existing data if it exists
-    return symbol.upsert_price(ts=to_datetime(reader(tickers=symbol.name, t0=t).dropna()))
+    series = reader(tickers=symbol.name, t0=t).dropna()
+    assert isinstance(series, pd.Series)
+
+    if not series.empty:
+       return symbol.upsert_price(ts=to_datetime(series))
 

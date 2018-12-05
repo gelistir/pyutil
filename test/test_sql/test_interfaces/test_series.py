@@ -19,7 +19,7 @@ class TestProductInterface(TestCase):
 
     def test(self):
         s = Series(name="wurst", product2=self.p2, product3=self.p3)
-        pdt.assert_series_equal(s.data, pd.Series({}))
+        self.assertIsNone(s.data)
         s.data = pd.Series([1,2,3])
 
         pdt.assert_series_equal(s.data, pd.Series([1,2,3]))

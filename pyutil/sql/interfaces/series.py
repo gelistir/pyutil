@@ -46,7 +46,7 @@ class Series(Base):
         try:
             return pd.read_msgpack(self.__data).sort_index()
         except ValueError:
-            return pd.Series({})
+            return None
 
     @data.setter
     def data(self, series):
