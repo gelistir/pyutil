@@ -74,8 +74,6 @@ class Strategy(ProductInterface):
     def last(self):
         return self._portfolio.last
 
-    #    return self._portfolio.last("nav")
-
     @property
     def assets(self):
         return self._portfolio.symbols
@@ -94,3 +92,9 @@ class Strategy(ProductInterface):
 
     def sector(self, total=False):
         return self._portfolio.sector(total=total)
+
+    def to_csv(self, folder=None):
+        return self.portfolio.to_csv(folder)
+
+    def read_csv(self, folder, symbols):
+        self.upsert(_Portfolio.read_csv(folder), symbols)

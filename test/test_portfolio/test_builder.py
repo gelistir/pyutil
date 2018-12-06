@@ -2,6 +2,7 @@ import pandas as pd
 from unittest import TestCase
 
 from pyutil.portfolio.portfolio import Portfolio, merge
+from pyutil.timeseries.merge import last_index
 
 
 class TestPortfolioBuilder(TestCase):
@@ -18,7 +19,7 @@ class TestPortfolioBuilder(TestCase):
         self.assertEqual(portfolio.weights["A"][1], 0.5)
         self.assertEqual(portfolio.cash[2], 0.0)
 
-        self.assertEqual(portfolio.last_valid_index, 2)
+        self.assertEqual(last_index(portfolio.prices), 2)
         self.assertEqual(str(portfolio), "Portfolio with assets: ['B', 'A']")
 
     def test_forward(self):
@@ -36,7 +37,7 @@ class TestPortfolioBuilder(TestCase):
 
     def test_empty(self):
         portfolio = Portfolio(prices = pd.DataFrame({}))
-        self.assertIsNone(portfolio.last_valid_index)
+        self.assertIsNone(last_index(portfolio.prices))
         self.assertTrue(portfolio.empty)
 
     def test_merge(self):

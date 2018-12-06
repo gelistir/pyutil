@@ -1,3 +1,5 @@
+import os
+
 import pandas as pd
 
 from ..performance.summary import fromReturns
@@ -302,9 +304,14 @@ class Portfolio(object):
         weights.index.name = "Symbol"
         return weights
 
-    @property
-    def last_valid_index(self):
-        try:
-            return self.index[-1]
-        except:
-            return None
+    def to_csv(self, folder=None):
+        if folder:
+            self.prices.to_csv(os.path.join(folder, "prices.csv"))
+            self.weights.to_csv(os.path.join(folder, "weights.csv"))
+        else:
+            return self.prices.to_csv(), self.weights.to_csv()
+
+    @staticmethod
+    def read_csv(folder):
+        return Portfolio(prices=pd.read_csv(os.path.join(folder, "prices.csv"), index_col=0, parse_dates=True),
+                  weights=pd.read_csv(os.path.join(folder, "weights.csv"), index_col=0, parse_dates=True))
