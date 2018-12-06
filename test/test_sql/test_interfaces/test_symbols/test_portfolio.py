@@ -24,10 +24,10 @@ class TestPortfolio(TestCase):
             cls.x[name] = Symbol(name=name, group=SymbolType.fixed_income)
 
 
-        cls.p.upsert_influx(portfolio=test_portfolio(), symbols=cls.x)
+        cls.p.upsert(portfolio=test_portfolio(), symbols=cls.x)
 
     def test_read_influx(self):
-        p1 = self.p.portfolio_influx
+        p1 = self.p.portfolio
         pdt.assert_frame_equal(p1.weights, test_portfolio().weights, check_names=False)
         pdt.assert_frame_equal(p1.prices, test_portfolio().prices, check_names=False)
 
@@ -39,9 +39,9 @@ class TestPortfolio(TestCase):
 
     def test_upsert(self):
         p = 5*test_portfolio().tail(10)
-        self.p.upsert_influx(p, self.x)
+        self.p.upsert(p, self.x)
 
-        x = self.p.portfolio_influx.weights.tail(12).sum(axis=1)
+        x = self.p.portfolio.weights.tail(12).sum(axis=1)
         self.assertAlmostEqual(x["2015-04-08"], 0.305048, places=5)
         self.assertAlmostEqual(x["2015-04-09"], 1.524054, places=5)
 

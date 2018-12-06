@@ -7,10 +7,9 @@ from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 
-from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 from pyutil.sql.base import Base
-from pyutil.sql.interfaces.products import ProductInterface #, Timeseries
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.series import Series
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.timeseries.merge import merge, last_index
@@ -34,14 +33,14 @@ class Portfolio(ProductInterface):
     def __init__(self, name):
         super().__init__(name)
 
-    def upsert_influx(self, portfolio, symbols):
+    def upsert(self, portfolio, symbols):
         assert isinstance(portfolio, _Portfolio)
 
         self.weights = merge(old=self.weights, new=portfolio.weights)
         self.prices = merge(old=self.prices, new=portfolio.prices)
 
         # recompute the entire portfolio!
-        portfolio_new = self.portfolio_influx
+        portfolio_new = self.portfolio
 
         for asset in portfolio_new.assets:
             if symbols[asset] not in set(self.symbols):
@@ -55,28 +54,28 @@ class Portfolio(ProductInterface):
 
 
     @property
-    def portfolio_influx(self):
+    def portfolio(self):
         return _Portfolio(prices=self.prices, weights=self.weights)
 
     @property
     def nav(self):
-        return self.portfolio_influx.nav
+        return self.portfolio.nav
 
 
     @property
     def leverage(self):
-        return self.portfolio_influx.leverage
+        return self.portfolio.leverage
 
     def sector(self, total=False):
         symbolmap = {s.name : s.group.name for s in self.symbols}
-        return self.portfolio_influx.sector_weights(symbolmap=symbolmap, total=total)
+        return self.portfolio.sector_weights(symbolmap=symbolmap, total=total)
 
     @property
     def state(self):
         def percentage(x):
             return "{0:.2f}%".format(float(100.0 * x)).replace("nan%", "")
 
-        frame = self.portfolio_influx.state#.applymap(percentage)
+        frame = self.portfolio.state#.applymap(percentage)
 
         frame["group"] = pd.Series({s.name : s.group.name for s in self.symbols})
         frame["internal"] = pd.Series({s.name : s.internal for s in self.symbols})

@@ -58,17 +58,17 @@ class Strategy(ProductInterface):
         last = self.last
 
         if not last:
-            self._portfolio.upsert_influx(portfolio=portfolio, symbols=symbols)
+            self._portfolio.upsert(portfolio=portfolio, symbols=symbols)
         else:
             # We only take the last few days of the new portfolio
             p1 = portfolio.truncate(before=last - pd.DateOffset(days=days))
-            self._portfolio.upsert_influx(portfolio=p1, symbols=symbols)
+            self._portfolio.upsert(portfolio=p1, symbols=symbols)
 
         return self.portfolio
 
     @property
     def portfolio(self):
-        return self._portfolio.portfolio_influx
+        return self._portfolio.portfolio
 
     @property
     def last(self):
