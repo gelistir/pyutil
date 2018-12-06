@@ -1,6 +1,14 @@
+import logging
+
+
 class Runner(object):
-    def __init__(self):
+    def __init__(self, logger=None):
+        self.__logger = logger or logging.getLogger(__name__)
         self.jobs = []
+
+    @property
+    def logger(self):
+        return self.__logger
 
     def run_jobs(self):
         for job in self.jobs:
