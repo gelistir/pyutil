@@ -1,4 +1,4 @@
-from pyutil.timeseries.merge import merge, last_index, first_index
+from pyutil.timeseries.merge import merge, last_index, first_index, to_datetime, to_date
 from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
@@ -44,3 +44,16 @@ class TestMerge(TestCase):
 
         y = merge(pd.Series({}), pd.Series({}))
         pdt.assert_series_equal(y, pd.Series({}))
+
+    def test_to_datetime(self):
+
+        t0 = pd.Timestamp("2015-04-22")
+        x = pd.Series(index=[t0], data=[2.0])
+
+        self.assertIsInstance(x.index[0], pd.Timestamp)
+
+        # should be safe to apply to_datetime
+        pdt.assert_series_equal(x, to_datetime(x))
+
+        y = pd.Series(index=[t0.date()], data=[2.0])
+        pdt.assert_series_equal(y, to_date(x))

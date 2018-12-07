@@ -13,7 +13,7 @@ from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.interfaces.series import Series
 from pyutil.sql.model.ref import Field, DataType, FieldType
-from pyutil.timeseries.merge import merge
+from pyutil.timeseries.merge import merge, to_datetime, to_date
 
 FIELDS = {
     "name": Field(name="Name", result=DataType.string, type=FieldType.other),
@@ -147,6 +147,6 @@ class Owner(ProductInterface):
         return self.volatility
 
     def upsert_returns(self, ts):
-        self.returns = merge(new=ts, old=self.returns)
+        self.returns = merge(new=to_date(ts), old=self.returns)
         return self.returns
 

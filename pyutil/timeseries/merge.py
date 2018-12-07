@@ -33,3 +33,7 @@ def first_index(ts, default=None):
 def to_datetime(ts):
     ts.index = pd.to_datetime(ts.index)
     return ts
+
+def to_date(ts):
+    ts.index = [a.date() for a in to_datetime(ts).index]
+    return ts
