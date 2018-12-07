@@ -1,5 +1,3 @@
-import warnings
-
 import sqlalchemy as sq
 
 import pandas as pd

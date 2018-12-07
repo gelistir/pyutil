@@ -142,10 +142,11 @@ class Owner(ProductInterface):
         self.position[key] = merge(new=ts, old=self.position.get(key, default=None))
         return self.position[key]
 
+    def upsert_volatility(self, ts):
+        self.volatility = merge(new=ts, old=self.volatility)
+        return self.volatility
+
     def upsert_returns(self, ts):
         self.returns = merge(new=ts, old=self.returns)
         return self.returns
 
-    def upsert_volatility(self, ts):
-        self.volatility = merge(new=ts, old=self.volatility)
-        return self.volatility
