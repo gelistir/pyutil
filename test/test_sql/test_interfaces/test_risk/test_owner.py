@@ -64,6 +64,13 @@ class TestOwner(unittest.TestCase):
 
         o.upsert_volatility(ts=pd.Series([10, 20]))
 
+        o.flush()
+        self.assertTrue(o.position_frame.empty)
+        self.assertTrue(o.position_reference.empty)
+
+
+
+
     def test_returns(self):
         o = Owner(name="222")
         x = o.upsert_returns(ts=pd.Series(data=[100, 200], index=[0, 1]))

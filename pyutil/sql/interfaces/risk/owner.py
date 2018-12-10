@@ -89,7 +89,9 @@ class Owner(ProductInterface):
     @property
     def position_frame(self):
         a = pd.DataFrame(dict(self._position)).transpose().stack()
-        a.index.names = ["Security", "Custodian", "Date"]
+        if not a.empty:
+            a.index.names = ["Security", "Custodian", "Date"]
+
         return a.to_frame(name="Position")
 
     @property
@@ -108,9 +110,11 @@ class Owner(ProductInterface):
         position = self.position_frame
         volatility = self.vola_security_frame
 
-        position_reference = position.join(reference, on="Security")
-
-        return position_reference.join(volatility, on=["Security", "Date"])
+        try:
+            position_reference = position.join(reference, on="Security")
+            return position_reference.join(volatility, on=["Security", "Date"])
+        except KeyError:
+            return pd.DataFrame({})
 
     def to_json(self):
         ts = fromReturns(r=self._returns)
@@ -140,6 +144,6 @@ class Owner(ProductInterface):
     def returns(self):
         return self._returns
 
-    #@property
-    #def position(self):
-    #    return self._position
+    def flush(self):
+        # delete all positions...
+        self._position.clear()
