@@ -122,7 +122,7 @@ class Owner(ProductInterface):
 
         key = (security, custodian)
         self._position[key] = merge(new=ts, old=self._position.get(key, default=None))
-        return self.position[key]
+        return self._position[key]
 
     def upsert_volatility(self, ts):
         self._volatility = merge(new=ts, old=self._volatility)
@@ -140,6 +140,6 @@ class Owner(ProductInterface):
     def returns(self):
         return self._returns
 
-    @property
-    def position(self):
-        return self._position
+    #@property
+    #def position(self):
+    #    return self._position
