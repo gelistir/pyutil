@@ -48,25 +48,24 @@ class Owner(ProductInterface):
 
 
     # returns
-    _returns = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("returns"), cascade="all, delete-orphan")
-    returns = association_proxy("_returns", "data", creator=lambda data: Series(name="returns", data=data))
+    _returns_rel = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("returns"), cascade="all, delete-orphan")
+    _returns = association_proxy("_returns_rel", "data", creator=lambda data: Series(name="returns", data=data))
 
     # volatility
-    _volatility = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("volatility"), cascade="all, delete-orphan")
-    volatility = association_proxy("_volatility", "data", creator=lambda data: Series(name="volatility", data=data))
+    _volatility_rel = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("volatility"), cascade="all, delete-orphan")
+    _volatility = association_proxy("_volatility_rel", "data", creator=lambda data: Series(name="volatility", data=data))
 
     # position
-    _position = relationship(Series, collection_class=attribute_mapped_collection("key"), cascade="all, delete-orphan",
+    _position_rel = relationship(Series, collection_class=attribute_mapped_collection("key"), cascade="all, delete-orphan",
                              primaryjoin=ProductInterface.join_series("position"))
 
-    position = association_proxy("_position", "data", creator=lambda s, data: Owner.create_position(security=s[0], custodian=s[1], data=data))
+    _position = association_proxy("_position_rel", "data", creator=lambda s, data: Owner.create_position(security=s[0], custodian=s[1], data=data))
 
 
 
     def __init__(self, name, currency=None):
         super().__init__(name=name)
         self.currency = currency
-        #self.custodian = custodian
 
     def __repr__(self):
         return "Owner({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
@@ -79,46 +78,29 @@ class Owner(ProductInterface):
     def currency(self, value):
         self.__currency = value
 
-    #@hybrid_property
-    #def custodian(self):
-    #    return self.__custodian
-
-    #@custodian.setter
-    #def custodian(self, value):
-    #    self.__custodian = value
-
     @property
     def securities(self):
-        return set([x[0] for x in self.position.keys()])
+        return set([x[0] for x in self._position.keys()])
 
     @property
     def custodians(self):
-        return set([x[1] for x in self.position.keys()])
-
+        return set([x[1] for x in self._position.keys()])
 
     @property
     def position_frame(self):
-        d = dict()
-
-        for tags, data in self.position.items():
-            d[tags] = data
-
-        a = pd.DataFrame(d).transpose().stack()
+        a = pd.DataFrame(dict(self._position)).transpose().stack()
         a.index.names = ["Security", "Custodian", "Date"]
         return a.to_frame(name="Position")
 
-
     @property
     def vola_security_frame(self):
-        x = pd.DataFrame({security: security.vola.get(self.currency, pd.Series({})) for security in set(self.securities)}).stack()
+        x = pd.DataFrame({security: security.volatility.get(self.currency, pd.Series({})) for security in set(self.securities)}).stack()
         x.index.names = ["Date", "Security"]
         return x.swaplevel().to_frame("Volatility")
-
 
     @property
     def reference_securities(self):
         return Security.reference_frame(self.securities, name="Security", objectnotation=False).sort_index(axis=0)
-
 
     @property
     def position_reference(self):
@@ -131,7 +113,7 @@ class Owner(ProductInterface):
         return position_reference.join(volatility, on=["Security", "Date"])
 
     def to_json(self):
-        ts = fromReturns(r=self.returns)
+        ts = fromReturns(r=self._returns)
         return {"name": self.name, "Nav": ts, "Volatility": ts.ewm_volatility(), "Drawdown": ts.drawdown}
 
     def upsert_position(self, security, custodian, ts):
@@ -139,14 +121,25 @@ class Owner(ProductInterface):
         assert isinstance(custodian, Custodian)
 
         key = (security, custodian)
-        self.position[key] = merge(new=ts, old=self.position.get(key, default=None))
+        self._position[key] = merge(new=ts, old=self._position.get(key, default=None))
         return self.position[key]
 
     def upsert_volatility(self, ts):
-        self.volatility = merge(new=ts, old=self.volatility)
+        self._volatility = merge(new=ts, old=self._volatility)
         return self.volatility
 
     def upsert_returns(self, ts):
-        self.returns = merge(new=ts, old=self.returns)
+        self._returns = merge(new=ts, old=self._returns)
         return self.returns
 
+    @property
+    def volatility(self):
+        return self._volatility
+
+    @property
+    def returns(self):
+        return self._returns
+
+    @property
+    def position(self):
+        return self._position

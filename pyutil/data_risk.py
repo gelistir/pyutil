@@ -68,5 +68,5 @@ class Database(object):
         return pd.DataFrame({owner.name: owner.volatility.to_dict() for owner in self.owners if owner.volatility is not None})
 
     def securities_volatility(self, currency):
-        return pd.DataFrame({security.name: security.vola.get(currency, pd.Series({})) for security in self.securities})
+        return pd.DataFrame({security.name: security.volatility.get(currency, pd.Series({})) for security in self.securities})
 

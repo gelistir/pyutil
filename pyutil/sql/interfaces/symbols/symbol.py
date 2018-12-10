@@ -31,9 +31,9 @@ class Symbol(ProductInterface):
     _measurements = "symbols"
 
     # define the price...
-    _price = relationship(Series, uselist=False,
+    _price_rel = relationship(Series, uselist=False,
                            primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='price')")
-    price = association_proxy("_price", "data", creator=lambda data: Series(name="price", data=data))
+    _price = association_proxy("_price_rel", "data", creator=lambda data: Series(name="price", data=data))
 
     def __init__(self, name, group, internal=None):
         super().__init__(name)
@@ -41,17 +41,23 @@ class Symbol(ProductInterface):
         self.internal = internal
 
     def to_json(self):
-        nav = fromNav(self.price)
+        nav = fromNav(self._price)
         return {"name": self.name, "Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
 
     def update_history(self, reader, t0=pd.Timestamp("2000-01-01"), offset=10):
         offset = pd.offsets.Day(n=offset)
 
-        t = last_index(self.price, default=t0 + offset) - offset
+        t = last_index(self._price, default=t0 + offset) - offset
 
         # merge new data with old existing data if it exists
         series = reader(tickers=self.name, t0=t)
 
         if series is not None:
-            self.price = merge(new=to_datetime(series.dropna()), old=self.price)
+            self._price = merge(new=to_datetime(series.dropna()), old=self.price)
+
+        return self.price
+
+    @property
+    def price(self):
+        return self._price
 

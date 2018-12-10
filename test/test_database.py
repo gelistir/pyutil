@@ -22,11 +22,11 @@ class TestDatabase(TestCase):
         cls.symbols = dict()
         for name in ["A", "B", "C"]:
             cls.symbols[name] = Symbol(name=name, group=SymbolType.equities)
-            cls.symbols[name].price = p[name]
+            cls.symbols[name]._price = p[name]
 
         for name in ["D", "E", "F", "G"]:
             cls.symbols[name] = Symbol(name=name, group=SymbolType.fixed_income)
-            cls.symbols[name].price = p[name]
+            cls.symbols[name]._price = p[name]
 
         # connect to a database
         session, connection_str = postgresql_db_test(base=Base)

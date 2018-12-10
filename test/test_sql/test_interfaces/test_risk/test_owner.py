@@ -42,8 +42,8 @@ class TestOwner(unittest.TestCase):
         c2 = Custodian(name="CS")
 
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
-        o.position[(s1, c1)] = pd.Series({t1: 0.1, t2: 0.4})
-        o.position[(s2, c2)] = pd.Series({t1: 0.5, t2: 0.5})
+        o._position[(s1, c1)] = pd.Series({t1: 0.1, t2: 0.4})
+        o._position[(s2, c2)] = pd.Series({t1: 0.5, t2: 0.5})
 
         self.assertSetEqual(o.securities, {s1, s2})
         pdt.assert_frame_equal(pd.DataFrame(index=["123", "211"], columns=["KIID"], data=[[5], [7]]),
@@ -104,11 +104,11 @@ class TestOwner(unittest.TestCase):
         o = Owner(name=999, currency=Currency(name="USD"))
         s = Security(name=777)
         x = pd.Series({t1.date(): 0.1})
-        s.vola[Currency(name="USD")] = pd.Series({t1.date(): 10})
+        s._vola[Currency(name="USD")] = pd.Series({t1.date(): 10})
 
         # o.upsert_position(s, ts=x)
-        o.position[(s, Custodian(name="UBS"))] = x
-        a = o.position
+        o._position[(s, Custodian(name="UBS"))] = x
+        a = o._position
 
         # o.upsert_position(s, ts=x)
         # b = o.position
@@ -118,7 +118,7 @@ class TestOwner(unittest.TestCase):
 
     def test_json(self):
         o = Owner(name="Peter")
-        o.returns = pd.Series({t0.date(): 0.1, t1.date(): 0.0, t2.date(): -0.1})
+        o._returns = pd.Series({t0.date(): 0.1, t1.date(): 0.0, t2.date(): -0.1})
         a = o.to_json()
         self.assertEqual(a["name"], "Peter")
         pdt.assert_series_equal(a["Nav"], pd.Series({t0: 1.10, t1: 1.10, t2: 0.99}))
@@ -128,4 +128,4 @@ class TestOwner(unittest.TestCase):
         c = Custodian(name="Hans")
         s = Security(name=123)
         o.upsert_position(security=s, custodian=c, ts=pd.Series([10, 20, 30]))
-        pdt.assert_series_equal(o.position[(s, c)], pd.Series([10, 20, 30]))
+        pdt.assert_series_equal(o._position[(s, c)], pd.Series([10, 20, 30]))

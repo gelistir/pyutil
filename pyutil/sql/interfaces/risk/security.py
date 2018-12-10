@@ -43,16 +43,16 @@ class Security(ProductInterface):
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     # define the price...
-    _price = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("price"), lazy="joined")
+    _price_rel = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("price"), lazy="joined")
 
-    price = association_proxy("_price", "data", creator=lambda data: Series(name="price", data=data))
+    _price = association_proxy("_price_rel", "data", creator=lambda data: Series(name="price", data=data))
 
     # define the volatility (dictionary where currency is the key!)
-    _vola = relationship(Series, collection_class=attribute_mapped_collection("product_2"),
+    _vola_rel = relationship(Series, collection_class=attribute_mapped_collection("product_2"),
                          primaryjoin=ProductInterface.join_series("volatility"), lazy="joined")
 
-    vola = association_proxy(target_collection="_vola", attr="data",
-                             creator=lambda currency, data: Security.create_volatility(currency=currency, data=data))
+    _vola = association_proxy(target_collection="_vola_rel", attr="data",
+                              creator=lambda currency, data: Security.create_volatility(currency=currency, data=data))
 
     def __init__(self, name, kiid=None, ticker=None):
         super().__init__(name)
@@ -78,19 +78,27 @@ class Security(ProductInterface):
         return self.get_reference("Bloomberg Multiplier", default=1.0)
 
     def to_json(self):
-        nav = fromNav(self.price)
+        nav = fromNav(self._price)
         return {"Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown, "name": self.name}
 
     @property
     def vola_frame(self):
-        return pd.DataFrame({key: item for (key, item) in self.vola.items()})
+        return pd.DataFrame({key: item for (key, item) in self._vola.items()})
 
     def upsert_volatility(self, currency, ts):
         assert isinstance(currency, Currency)
-        self.vola[currency] = merge(new=ts, old=self.vola.get(currency, default=None))
-        return self.vola[currency]
+        self._vola[currency] = merge(new=ts, old=self._vola.get(currency, default=None))
+        return self.volatility[currency]
 
     def upsert_price(self, ts):
         # self.price will be None if not defined
-        self.price = merge(new=ts, old=self.price)
+        self._price = merge(new=ts, old=self._price)
         return self.price
+
+    @property
+    def price(self):
+        return self._price
+
+    @property
+    def volatility(self):
+        return self._vola

@@ -17,7 +17,7 @@ class TestSecurity(unittest.TestCase):
         c = Currency(name="USD")
         self.assertEqual(s.name, "100")
 
-        self.assertIsNone(s.price)
+        self.assertIsNone(s._price)
         self.assertEqual(s.discriminator, "Security")
         self.assertEqual(s.kiid, 5)
 
@@ -37,37 +37,37 @@ class TestSecurity(unittest.TestCase):
     def test_ts_new(self):
         security = Security(name="A")
 
-        self.assertIsNone(security.price)
+        self.assertIsNone(security._price)
 
         # upsert series
-        security.price = test_portfolio().prices["A"]
+        security._price = test_portfolio().prices["A"]
 
         # extract the series again
-        pdt.assert_series_equal(security.price, test_portfolio().prices["A"].dropna(), check_names=False)
+        pdt.assert_series_equal(security._price, test_portfolio().prices["A"].dropna(), check_names=False)
 
         # test json
         a = security.to_json()
         assert isinstance(a, dict)
         self.assertEqual(a["name"], "A")
 
-        pdt.assert_series_equal(a["Price"], security.price)
+        pdt.assert_series_equal(a["Price"], security._price)
 
         # extract the last stamp
-        self.assertEqual(security.price.last_valid_index(), pd.Timestamp("2015-04-22"))
+        self.assertEqual(security._price.last_valid_index(), pd.Timestamp("2015-04-22"))
 
         x = security.upsert_price(ts = 2*test_portfolio().prices["A"])
         pdt.assert_series_equal(x, 2*test_portfolio().prices["A"].dropna(), check_names=False)
 
     def test_volatility(self):
         security = Security(name="A")
-        security.vola[Currency(name="USD")] = pd.Series([30, 40, 50])
-        security.vola[Currency(name="CHF")] = pd.Series([10, 11, 12])
+        security._vola[Currency(name="USD")] = pd.Series([30, 40, 50])
+        security._vola[Currency(name="CHF")] = pd.Series([10, 11, 12])
 
-        pdt.assert_frame_equal(security.vola_frame, pd.DataFrame({key: item for (key, item) in security.vola.items()}))
+        pdt.assert_frame_equal(security.vola_frame, pd.DataFrame({key: item for (key, item) in security._vola.items()}))
 
     def test_volatility_2(self):
         security = Security(name="B")
-        pdt.assert_series_equal(security.vola.get(Currency(name="USD"), default=pd.Series({})), pd.Series({}))
+        pdt.assert_series_equal(security._vola.get(Currency(name="USD"), default=pd.Series({})), pd.Series({}))
 
         x = security.upsert_volatility(currency=Currency(name="CHF"), ts=pd.Series([10, 20, 30]))
         pdt.assert_series_equal(x, pd.Series([10, 20, 30]))

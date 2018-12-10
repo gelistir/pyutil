@@ -19,13 +19,13 @@ class Portfolio(ProductInterface):
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     # define the price...
-    _price = relationship(Series, uselist=False,
+    _price_rel = relationship(Series, uselist=False,
                            primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='price')")
-    prices = association_proxy("_price", "data", creator=lambda data: Series(name="price", data=data))
+    _prices = association_proxy("_price_rel", "data", creator=lambda data: Series(name="price", data=data))
 
-    _weights = relationship(Series, uselist=False,
+    _weights_rel = relationship(Series, uselist=False,
                             primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='weight')")
-    weights = association_proxy("_weights", "data", creator=lambda data: Series(name="weight", data=data))
+    _weights = association_proxy("_weights_rel", "data", creator=lambda data: Series(name="weight", data=data))
 
 
     def __init__(self, name):
@@ -34,8 +34,8 @@ class Portfolio(ProductInterface):
     def upsert(self, portfolio, symbols):
         assert isinstance(portfolio, _Portfolio)
 
-        self.weights = merge(old=self.weights, new=portfolio.weights)
-        self.prices = merge(old=self.prices, new=portfolio.prices)
+        self._weights = merge(old=self._weights, new=portfolio.weights)
+        self._prices = merge(old=self._prices, new=portfolio.prices)
 
         # recompute the entire portfolio!
         portfolio_new = self.portfolio
@@ -48,12 +48,12 @@ class Portfolio(ProductInterface):
 
     @property
     def last(self):
-        return last_index(self.prices)
+        return last_index(self._prices)
 
 
     @property
     def portfolio(self):
-        return _Portfolio(prices=self.prices, weights=self.weights)
+        return _Portfolio(prices=self._prices, weights=self._weights)
 
     @property
     def nav(self):
@@ -90,6 +90,14 @@ class Portfolio(ProductInterface):
             frame[k] = frame[k].apply(percentage)
 
         return frame
+
+    @property
+    def prices(self):
+        return self._prices
+
+    @property
+    def weights(self):
+        return self._weights
 
 
 class PortfolioSymbol(Base):
