@@ -1,9 +1,7 @@
 import logging
-import sys
 import time
 
 from contextlib import ExitStack
-#from pyutil.logconf import logger, stream
 
 
 class Production(ExitStack):
