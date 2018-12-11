@@ -97,10 +97,7 @@ class Security(ProductInterface):
 
     @property
     def price(self):
-        if self._price is None:
-            return pd.Series({})
-        else:
-            return self._price
+        return self._price
 
     def volatility(self, currency):
         return self._vola.get(currency, pd.Series({}))
