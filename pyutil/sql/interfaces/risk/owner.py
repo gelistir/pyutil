@@ -96,7 +96,7 @@ class Owner(ProductInterface):
 
     @property
     def vola_security_frame(self):
-        x = pd.DataFrame({security: security.volatility.get(self.currency, pd.Series({})) for security in set(self.securities)}).stack()
+        x = pd.DataFrame({security: security.volatility(self.currency) for security in set(self.securities)}).stack()
         x.index.names = ["Date", "Security"]
         return x.swaplevel().to_frame("Volatility")
 

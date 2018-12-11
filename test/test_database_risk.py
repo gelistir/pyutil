@@ -1,6 +1,8 @@
 from unittest import TestCase
 
 import pandas as pd
+import numpy as np
+
 from sqlalchemy.orm.exc import NoResultFound
 
 from pyutil.sql.base import Base
@@ -28,6 +30,7 @@ class TestDatabase(TestCase):
         cus1 = Custodian(name="UBS")
 
         o1 = Owner(name="102", currency=c1)
+        o2 = Owner(name="103", currency=c2)
 
         f1 = Field(name="XXX", result=DataType.integer)
         f2 = Field(name="Bloomberg Ticker", result=DataType.string, type=FieldType.other)
@@ -42,7 +45,7 @@ class TestDatabase(TestCase):
 
         c3 = Currency(name="EUR")
 
-        cls.session.add_all([c1, c2, c3, cus1, o1, f1, f2, s1, s2])
+        cls.session.add_all([c1, c2, c3, cus1, o1, o2, f1, f2, s1, s2])
         cls.session.commit()
 
         #cls.client = test_client()
@@ -106,8 +109,11 @@ class TestDatabase(TestCase):
 
     def test_reference_owners(self):
         x = self.database.reference_owners
-        f = pd.DataFrame(index=["102"], columns=["XXX"], data=[100])
+        f = pd.DataFrame(index=["102","103"], columns=["XXX"], data=[100, np.nan])
         f.index.name = "Entity ID"
+        print(f)
+        print(x)
+
         pdt.assert_frame_equal(f.reset_index(), x)
 
     def test_reference_securities(self):

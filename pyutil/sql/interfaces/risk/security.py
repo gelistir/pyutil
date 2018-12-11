@@ -88,7 +88,7 @@ class Security(ProductInterface):
     def upsert_volatility(self, currency, ts):
         assert isinstance(currency, Currency)
         self._vola[currency] = merge(new=ts, old=self._vola.get(currency, default=None))
-        return self.volatility[currency]
+        return self._vola[currency]
 
     def upsert_price(self, ts):
         # self.price will be None if not defined
@@ -97,8 +97,10 @@ class Security(ProductInterface):
 
     @property
     def price(self):
-        return self._price
+        if self._price is None:
+            return pd.Series({})
+        else:
+            return self._price
 
-    @property
-    def volatility(self):
-        return self._vola
+    def volatility(self, currency):
+        return self._vola.get(currency, pd.Series({}))
