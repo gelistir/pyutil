@@ -87,7 +87,7 @@ class TestDatabase(TestCase):
         pdt.assert_frame_equal(f, frame)
 
     def test_reference(self):
-        f = self.database.reference
+        f = self.database.reference()
         self.assertTrue(f.empty)
 
     def test_history(self):

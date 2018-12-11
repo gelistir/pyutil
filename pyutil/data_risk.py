@@ -5,11 +5,12 @@ from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
 
+
 class Database(object):
     @staticmethod
     def _f(series):
         if series is not None and not series.empty:
-            return series
+            return series.dropna()
         else:
             return np.nan
 
@@ -17,30 +18,30 @@ class Database(object):
         self.__session = session
 
     def close(self):
-        self.__session.close()
+        self.session.close()
 
     @property
     def session(self):
         return self.__session
 
     def __repr__(self):
-        return str(self.__session)
+        return str(self.session)
 
     @property
     def owners(self):
-        return self.__session.query(Owner)
+        return self.session.query(Owner)
 
     @property
     def securities(self):
-        return self.__session.query(Security)
+        return self.session.query(Security)
 
     @property
     def currencies(self):
-        return self.__session.query(Currency)
+        return self.session.query(Currency)
 
     @property
     def custodians(self):
-        return self.__session.query(Custodian)
+        return self.session.query(Custodian)
 
     def owner(self, name):
         return self.owners.filter(Owner.name == name).one()
@@ -54,13 +55,13 @@ class Database(object):
     def custodian(self, name):
         return self.custodians.filter(Custodian.name == name).one()
 
-    @property
-    def reference_owners(self):
-        return Owner.reference_frame(self.owners, name="Entity ID").reset_index()
+    def reference_owners(self, owners=None):
+        owners = owners or self.owners
+        return Owner.reference_frame(owners, name="Entity ID").reset_index()
 
-    @property
-    def reference_securities(self):
-        return Security.reference_frame(self.securities, name="Entity ID").reset_index()
+    def reference_securities(self, securities=None):
+        sec = securities or self.securities
+        return Security.reference_frame(sec, name="Entity ID").reset_index()
 
     def prices(self, securities=None):
         sec = securities or self.securities

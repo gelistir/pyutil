@@ -108,7 +108,7 @@ class TestDatabase(TestCase):
         pdt.assert_series_equal(x["123"], ts, check_names=False)
 
     def test_reference_owners(self):
-        x = self.database.reference_owners
+        x = self.database.reference_owners()
         f = pd.DataFrame(index=["102","103"], columns=["XXX"], data=[100, np.nan])
         f.index.name = "Entity ID"
         print(f)
@@ -117,7 +117,7 @@ class TestDatabase(TestCase):
         pdt.assert_frame_equal(f.reset_index(), x)
 
     def test_reference_securities(self):
-        x = self.database.reference_securities.set_index("Entity ID").sort_index(axis=0)
+        x = self.database.reference_securities().set_index("Entity ID").sort_index(axis=0)
 
         f = pd.DataFrame(index=["123", "456"], columns=["Bloomberg Ticker", "XXX"])
         f.index.name = "Entity ID"

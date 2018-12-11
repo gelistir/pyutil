@@ -70,9 +70,9 @@ class Database(object):
     def strategy(self, name):
         return self.strategies.filter(Strategy.name == name).one()
 
-    @property
-    def reference(self):
-        return Symbol.reference_frame(self.symbols, name="Symbol")
+    def reference(self, symbols=None):
+        symbols = symbols or self.symbols
+        return Symbol.reference_frame(symbols, name="Symbol")
 
     def sector(self, total=False):
         frame = pd.DataFrame({strategy.name: strategy.sector(total=total).iloc[-1] for strategy in self.strategies}).transpose()
@@ -82,10 +82,9 @@ class Database(object):
     def nav(self, f=lambda x: x):
         return pd.DataFrame({strategy.name: f(strategy.portfolio.nav) for strategy in self.strategies})
 
-    @property
-    def history(self):
-        return pd.DataFrame({symbol.name: Database._f(symbol.price) for symbol in self.symbols})
-
+    def history(self, symbols=None):
+        symbols = symbols or self.symbols
+        return pd.DataFrame({symbol.name: Database._f(symbol.price) for symbol in symbols})
 
     def mtd(self):
         frame = self.nav(f=lambda x: fromNav(x).returns)
