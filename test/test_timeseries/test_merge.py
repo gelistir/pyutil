@@ -57,3 +57,7 @@ class TestMerge(TestCase):
 
         y = pd.Series(index=[t0.date()], data=[2.0])
         pdt.assert_series_equal(y, to_date(x))
+
+        self.assertIsNone(to_datetime(None))
+        self.assertIsNone(to_date(None))
+

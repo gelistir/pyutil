@@ -30,11 +30,16 @@ def first_index(ts, default=None):
         return default
 
 
-def to_datetime(ts):
-    ts.index = pd.to_datetime(ts.index)
-    return ts
+def to_datetime(ts=None):
+    try:
+        ts.index = pd.to_datetime(ts.index)
+        return ts
+    except AttributeError:
+        return None
 
-
-def to_date(ts):
-    ts.index = [a.date() for a in to_datetime(ts).index]
-    return ts
+def to_date(ts=None):
+    try:
+        ts.index = [a.date() for a in to_datetime(ts).index]
+        return ts
+    except AttributeError:
+        return None
