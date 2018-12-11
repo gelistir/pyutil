@@ -1,16 +1,14 @@
 import enum as _enum
 
-import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.performance.summary import fromNav
-
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.series import Series
-from pyutil.timeseries.merge import last_index, to_datetime, merge
+from pyutil.timeseries.merge import merge
 
 
 class SymbolType(_enum.Enum):
@@ -44,17 +42,8 @@ class Symbol(ProductInterface):
         nav = fromNav(self._price)
         return {"name": self.name, "Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
 
-    def update_history(self, reader, t0=pd.Timestamp("2000-01-01"), offset=10):
-        offset = pd.offsets.Day(n=offset)
-
-        t = last_index(self._price, default=t0 + offset) - offset
-
-        # merge new data with old existing data if it exists
-        series = reader(tickers=self.name, t0=t)
-
-        if series is not None:
-            self._price = merge(new=to_datetime(series.dropna()), old=self.price)
-
+    def upsert_price(self, ts=None):
+        self._price = merge(new=ts, old=self._price)
         return self.price
 
     @property
