@@ -1,11 +1,18 @@
 import pandas as pd
+import numpy as np
 
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
 
-
 class Database(object):
+    @staticmethod
+    def _f(series):
+        if series is not None and not series.empty:
+            return series
+        else:
+            return np.nan
+
     def __init__(self, session):
         self.__session = session
 
@@ -55,17 +62,17 @@ class Database(object):
     def reference_securities(self):
         return Security.reference_frame(self.securities, name="Entity ID").reset_index()
 
-    @property
-    def prices(self):
-        return pd.concat({security.name: security.price for security in self.securities}, axis=1)
+    def prices(self, securities=None):
+        sec = securities or self.securities
+        return pd.DataFrame({security.name: Database._f(security.price) for security in sec}).dropna(axis=1, how="all")
 
     @property
     def returns(self):
-        return pd.concat({owner.name: owner.returns for owner in self.owners}, axis=1)
+        return pd.DataFrame({owner.name: Database._f(owner.returns) for owner in self.owners}).dropna(axis=1, how="all")
 
     @property
     def owner_volatility(self):
-        return pd.concat({owner.name: owner.volatility for owner in self.owners}, axis=1)
+        return pd.DataFrame({owner.name: Database._f(owner.volatility) for owner in self.owners}).dropna(axis=1, how="all")
 
     def securities_volatility(self, currency):
-        return pd.concat({security.name: security.volatility(currency) for security in self.securities}, axis=1)
+        return pd.DataFrame({security.name: Database._f(security.volatility(currency)) for security in self.securities}).dropna(axis=1, how="all")

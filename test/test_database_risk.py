@@ -73,7 +73,7 @@ class TestDatabase(TestCase):
         ts = pd.Series({pd.Timestamp("2010-04-20"): 11.0, pd.Timestamp("2010-04-21"): 11.2})
         security.upsert_price(ts=ts)
 
-        d = self.database.prices.sort_index(ascending=False)
+        d = self.database.prices().sort_index(ascending=False)
         print(d)
 
         pdt.assert_series_equal(d[security.name], ts.sort_index(ascending=False), check_names=False)

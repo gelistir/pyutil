@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
@@ -8,6 +9,12 @@ from pyutil.sql.model.ref import Field
 
 
 class Database(object):
+    @staticmethod
+    def _f(series):
+        if series is not None and not series.empty:
+            return series
+        else:
+            return np.nan
 
     def __init__(self, session):
         # session, sql database
@@ -77,9 +84,8 @@ class Database(object):
 
     @property
     def history(self):
-        return pd.concat({symbol.name: symbol.price for symbol in self.symbols}, axis=1)
+        return pd.DataFrame({symbol.name: Database._f(symbol.price) for symbol in self.symbols})
 
-        #return pd.DataFrame({symbol.name: symbol.price for symbol in self.symbols if symbol.price is not None})
 
     def mtd(self):
         frame = self.nav(f=lambda x: fromNav(x).returns)
