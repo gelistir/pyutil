@@ -42,12 +42,3 @@ class TestQuant(TestCase):
         for symbol in self.session.query(Symbol):
             self.assertEqual(symbol.get_reference("f1"), "A{x}".format(x=symbol.name))
 
-    def test_history(self):
-        def f(tickers, t0=None):
-            return read_frame("price.csv")[tickers].dropna()
-
-        for symbol in self.session.query(Symbol):
-            symbol.update_history(reader=f)
-
-        for symbol in self.session.query(Symbol):
-            pdt.assert_series_equal(symbol.price, f(symbol.name), check_names=False)

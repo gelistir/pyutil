@@ -15,18 +15,17 @@ def merge(new, old=None):
 
 
 def last_index(ts, default=None):
-    if ts is not None:
+    try:
         # if the object is empty
         return ts.last_valid_index() or default
-    else:
+    except AttributeError:
         return default
 
 
 def first_index(ts, default=None):
-    if ts is not None:
-        # if the object is empty
+    try:
         return ts.first_valid_index() or default
-    else:
+    except AttributeError:
         return default
 
 
