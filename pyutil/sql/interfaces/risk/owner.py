@@ -40,12 +40,8 @@ class Owner(ProductInterface):
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
     active = sq.Column("active", sq.Boolean)
 
-    #__securities = _relationship(Security, secondary=_association_table, backref="owner", lazy="joined")
     __currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=True)
     __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
-    __custodian_id = sq.Column("custodian_id", sq.Integer, sq.ForeignKey(Custodian.id), nullable=True)
-    __custodian = _relationship(Custodian, foreign_keys=[__custodian_id], lazy="joined")
-
 
     # returns
     _returns_rel = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("returns"), cascade="all, delete-orphan")
@@ -60,8 +56,6 @@ class Owner(ProductInterface):
                              primaryjoin=ProductInterface.join_series("position"))
 
     _position = association_proxy("_position_rel", "data", creator=lambda s, data: Owner.create_position(security=s[0], custodian=s[1], data=data))
-
-
 
     def __init__(self, name, currency=None):
         super().__init__(name=name)
