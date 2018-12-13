@@ -19,6 +19,8 @@ class Mail(object):
         self.__files = list()
         self.__subject = ""
         self.__text = ""
+        self.__toAdr = None
+        self.__fromAdr = None
 
     def attach_file(self, name, localpath, mode="r+b"):
         """
