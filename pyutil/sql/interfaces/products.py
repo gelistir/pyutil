@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.sql.base import Base
-from pyutil.sql.model.ref import _ReferenceData, Field
+from pyutil.sql.interfaces.ref import _ReferenceData, Field
 
 
 def association_table(left, right, name="association"):

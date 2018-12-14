@@ -1,6 +1,6 @@
 from sqlalchemy.sql.elements import or_
 
-from pyutil.sql.model.ref import Field, FieldType
+from pyutil.sql.interfaces.ref import Field, FieldType
 
 
 def __read_reference(reader, tickers, fields):

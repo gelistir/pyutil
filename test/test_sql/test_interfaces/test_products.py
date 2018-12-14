@@ -4,7 +4,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.sql.interfaces.products import ProductInterface #, Timeseries
-from pyutil.sql.model.ref import Field, FieldType, DataType
+from pyutil.sql.interfaces.ref import Field, FieldType, DataType
 from pyutil.timeseries.merge import merge
 from test.test_sql.product import Product
 

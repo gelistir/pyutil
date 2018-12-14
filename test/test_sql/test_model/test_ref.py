@@ -1,5 +1,5 @@
 from unittest import TestCase
-from pyutil.sql.model.ref import Field, FieldType, DataType
+from pyutil.sql.interfaces.ref import Field, FieldType, DataType
 from test.test_sql.product import Product
 
 

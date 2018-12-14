@@ -12,7 +12,6 @@ from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.interfaces.series import Series
-from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.timeseries.merge import merge
 
 # FIELDS = {

@@ -5,7 +5,7 @@ import pandas.util.testing as pdt
 
 from pyutil.sql.interfaces.risk.custodian import Currency
 from pyutil.sql.interfaces.risk.security import Security
-from pyutil.sql.model.ref import Field, DataType, FieldType
+from pyutil.sql.interfaces.ref import Field, DataType, FieldType
 from test.config import test_portfolio
 
 t0 = pd.Timestamp("1978-11-15")

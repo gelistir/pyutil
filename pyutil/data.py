@@ -5,7 +5,7 @@ from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
-from pyutil.sql.model.ref import Field
+from pyutil.sql.interfaces.ref import Field
 
 
 class Database(object):

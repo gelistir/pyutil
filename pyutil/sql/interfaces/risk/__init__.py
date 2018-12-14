@@ -1,1 +1,1 @@
-CLIENT = None
+fields = ["KIID", "Liquidity", "Geography"]

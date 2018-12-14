@@ -14,7 +14,7 @@ from pyutil.data_risk import Database
 
 import pandas.util.testing as pdt
 
-from pyutil.sql.model.ref import DataType, Field, FieldType
+from pyutil.sql.interfaces.ref import DataType, Field, FieldType
 from pyutil.sql.session import postgresql_db_test
 
 

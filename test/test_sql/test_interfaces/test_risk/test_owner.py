@@ -8,7 +8,7 @@ import pandas.util.testing as pdt
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
-from pyutil.sql.model.ref import Field, DataType, FieldType
+from pyutil.sql.interfaces.ref import Field, DataType, FieldType
 
 t0 = pd.Timestamp("1978-11-15")
 t1 = pd.Timestamp("1978-11-16")

@@ -1,11 +1,10 @@
 from unittest import TestCase
 
-import pandas.util.testing as pdt
 from pyutil.data import Database
 from pyutil.quant.reference import update_reference
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
-from pyutil.sql.model.ref import Field, DataType, FieldType
+from pyutil.sql.interfaces.ref import Field, DataType, FieldType
 from pyutil.sql.session import postgresql_db_test
 
 from test.config import resource, read_frame
