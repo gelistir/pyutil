@@ -16,11 +16,11 @@ from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.timeseries.merge import merge
 
 FIELDS = {
-    "name": Field(name="Name", result=DataType.string, type=FieldType.other),
-    "15. Custodian Name": Field(name="Custodian", result=DataType.string, type=FieldType.other),
-    "17. Reference Currency": Field(name="Currency", result=DataType.string, type=FieldType.other),
-    "18. LWM Risk Profile": Field(name="Risk Profile", result=DataType.string, type=FieldType.other),
-    "23. LWM - AUM Type": Field(name="AUM Type", result=DataType.string, type=FieldType.other),
+    #"name": Field(name="Name", result=DataType.string, type=FieldType.other),
+    #"15. Custodian Name": Field(name="Custodian", result=DataType.string, type=FieldType.other),
+    #"17. Reference Currency": Field(name="Currency", result=DataType.string, type=FieldType.other),
+    #"18. LWM Risk Profile": Field(name="Risk Profile", result=DataType.string, type=FieldType.other),
+    #"23. LWM - AUM Type": Field(name="AUM Type", result=DataType.string, type=FieldType.other),
     "Inception Date": Field(name="Inception Date", result=DataType.string, type=FieldType.other)
     # don't use date here...
 }
@@ -38,6 +38,9 @@ class Owner(ProductInterface):
     __tablename__ = "owner"
     __mapper_args__ = {"polymorphic_identity": "Owner"}
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
+    name = sq.Column("name", sq.String, nullable=True)
+    #risk_profile = sq.Column("risk_profile", sq.String, nullable=True)
+    #aum_type = sq.Column("aum_type", sq.String, nullable=True)
 
     __currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=True)
     __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
