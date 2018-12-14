@@ -45,11 +45,18 @@ class Field(Base):
     __name = sq.Column("name", sq.String(50), unique=True)
     __type = sq.Column("type", Enum(FieldType))
     __result = sq.Column("result", Enum(DataType), nullable=False)
+    __addepar = sq.Column("addepar", sq.String(), nullable=True)
 
-    def __init__(self, name, result, type=None):
+
+    def __init__(self, name, result, type=None, addepar=None):
         self.__name = name
         self.__result = result
         self.__type = type
+        self.__addepar = addepar
+
+    @hybrid_property
+    def addepar(self):
+        return self.__addepar
 
     @hybrid_property
     def name(self):

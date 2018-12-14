@@ -9,23 +9,19 @@ from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.custodian import Currency
 from pyutil.sql.interfaces.series import Series
-from pyutil.sql.model.ref import Field, DataType, FieldType
+
 from pyutil.timeseries.merge import merge
 
-FIELDS = {
-    "Lobnek Ticker Symbol Bloomberg": Field(name="Bloomberg Ticker", result=DataType.string, type=FieldType.other),
-    "Lobnek Geographic Focus": Field(name="Geography", result=DataType.string, type=FieldType.other),
-    "Lobnek KIID": Field(name="KIID", result=DataType.integer, type=FieldType.other),
-    "Lobnek Liquidity": Field(name="Liquidity", result=DataType.string, type=FieldType.other),
-    "Lobnek Price Multiplier Bloomberg": Field(name="Bloomberg Multiplier", result=DataType.float,
-                                               type=FieldType.other),
-    "Lobnek Sub Asset Class": Field(name="Sub Asset Class", result=DataType.string, type=FieldType.other),
-    "Lobnek Reporting Asset Class": Field(name="Asset Class", result=DataType.string, type=FieldType.other),
-    "Currency": Field(name="Currency", result=DataType.string, type=FieldType.other),
-    "Lobnek Risk Monitoring Security Name": Field(name="Risk Security Name", result=DataType.string,
-                                                  type=FieldType.other),
-    "name": Field(name="Name", result=DataType.string, type=FieldType.other)
-}
+# FIELDS = [
+#     Field(name="Bloomberg Ticker", result=DataType.string, type=FieldType.other),
+#     Field(name="Geography", result=DataType.string, type=FieldType.other),
+#     Field(name="KIID", result=DataType.integer, type=FieldType.other),
+#     Field(name="Liquidity", result=DataType.string, type=FieldType.other),
+#     Field(name="Bloomberg Multiplier", result=DataType.float, type=FieldType.other),
+#     Field(name="Sub Asset Class", result=DataType.string, type=FieldType.other),
+#     Field(name="Asset Class", result=DataType.string, type=FieldType.other),
+#     Field(name="Currency", result=DataType.string, type=FieldType.other),
+#     Field(name="Risk Security Name", result=DataType.string, type=FieldType.other)]
 
 
 class Security(ProductInterface):
@@ -56,13 +52,14 @@ class Security(ProductInterface):
     _vola = association_proxy(target_collection="_vola_rel", attr="data",
                               creator=lambda currency, data: Security.create_volatility(currency=currency, data=data))
 
-    def __init__(self, name, kiid=None, ticker=None, fullname=None):
+    def __init__(self, name, fullname=None):
         super().__init__(name)
-        if kiid:
-            self.reference[FIELDS["Lobnek KIID"]] = kiid
 
-        if ticker:
-            self.reference[FIELDS["Lobnek Ticker Symbol Bloomberg"]] = ticker
+        #if kiid:
+        #    self.reference[FIELDS["Lobnek KIID"]] = kiid
+
+        #if ticker:
+        #    self.reference[FIELDS["Lobnek Ticker Symbol Bloomberg"]] = ticker
 
         self.fullname = fullname
 

@@ -6,14 +6,15 @@ import numpy as np
 import pandas.util.testing as pdt
 
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
-from pyutil.sql.interfaces.risk.owner import Owner #, FIELDS as FIELDSOWNER
-from pyutil.sql.interfaces.risk.security import Security, FIELDS as FIELDSSECURITY
+from pyutil.sql.interfaces.risk.owner import Owner
+from pyutil.sql.interfaces.risk.security import Security
+from pyutil.sql.model.ref import Field, DataType, FieldType
 
 t0 = pd.Timestamp("1978-11-15")
 t1 = pd.Timestamp("1978-11-16")
 t2 = pd.Timestamp("1978-11-18")
 
-KIID = FIELDSSECURITY["Lobnek KIID"]
+#KIID = FIELDSSECURITY["Lobnek KIID"]
 #CUSTODIAN = FIELDSOWNER["15. Custodian Name"]
 #NAME = FIELDSOWNER["name"]
 
@@ -27,16 +28,18 @@ class TestOwner(unittest.TestCase):
     def setUpClass(cls):
         # create an owner
         cls.o1 = Owner(name=100)
+        #cls.field = Field(name="KIID", )
+        cls.kiid = Field(name="KIID", result=DataType.integer, type=FieldType.other)
 
     def test_position(self):
         o = Owner(name="103", currency=Currency(name="USD"))
 
         # create a security
         s1 = Security(name="123")
-        s1.reference[KIID] = 5
+        s1.reference[self.kiid] = 5
 
         s2 = Security(name="211")
-        s2.reference[KIID] = 7
+        s2.reference[self.kiid] = 7
 
         c1 = Custodian(name="UBS")
         c2 = Custodian(name="CS")
@@ -44,6 +47,9 @@ class TestOwner(unittest.TestCase):
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
         o._position[(s1, c1)] = pd.Series({t1: 0.1, t2: 0.4})
         o._position[(s2, c2)] = pd.Series({t1: 0.5, t2: 0.5})
+
+        print(o.reference_securities)
+        #assert False
 
         self.assertSetEqual(o.securities, {s1, s2})
         pdt.assert_frame_equal(pd.DataFrame(index=["123", "211"], columns=["KIID"], data=[[5], [7]]),

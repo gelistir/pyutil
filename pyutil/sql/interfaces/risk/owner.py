@@ -15,15 +15,15 @@ from pyutil.sql.interfaces.series import Series
 from pyutil.sql.model.ref import Field, DataType, FieldType
 from pyutil.timeseries.merge import merge
 
-FIELDS = {
-    #"name": Field(name="Name", result=DataType.string, type=FieldType.other),
-    #"15. Custodian Name": Field(name="Custodian", result=DataType.string, type=FieldType.other),
-    #"17. Reference Currency": Field(name="Currency", result=DataType.string, type=FieldType.other),
-    #"18. LWM Risk Profile": Field(name="Risk Profile", result=DataType.string, type=FieldType.other),
-    #"23. LWM - AUM Type": Field(name="AUM Type", result=DataType.string, type=FieldType.other),
-    "Inception Date": Field(name="Inception Date", result=DataType.string, type=FieldType.other)
-    # don't use date here...
-}
+# FIELDS = {
+#     #"name": Field(name="Name", result=DataType.string, type=FieldType.other),
+#     #"15. Custodian Name": Field(name="Custodian", result=DataType.string, type=FieldType.other),
+#     #"17. Reference Currency": Field(name="Currency", result=DataType.string, type=FieldType.other),
+#     #"18. LWM Risk Profile": Field(name="Risk Profile", result=DataType.string, type=FieldType.other),
+#     #"23. LWM - AUM Type": Field(name="AUM Type", result=DataType.string, type=FieldType.other),
+#     "Inception Date": Field(name="Inception Date", result=DataType.string, type=FieldType.other)
+#     # don't use date here...
+# }
 
 
 class Owner(ProductInterface):
