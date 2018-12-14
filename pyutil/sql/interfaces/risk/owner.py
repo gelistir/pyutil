@@ -38,7 +38,7 @@ class Owner(ProductInterface):
     __tablename__ = "owner"
     __mapper_args__ = {"polymorphic_identity": "Owner"}
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
-    name = sq.Column("name", sq.String, nullable=True)
+    fullname = sq.Column("fullname", sq.String, nullable=True)
     #risk_profile = sq.Column("risk_profile", sq.String, nullable=True)
     #aum_type = sq.Column("aum_type", sq.String, nullable=True)
 
