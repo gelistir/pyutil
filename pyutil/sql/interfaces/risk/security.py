@@ -39,6 +39,8 @@ class Security(ProductInterface):
     __tablename__ = "security"
     __mapper_args__ = {"polymorphic_identity": "Security"}
 
+    fullname = sq.Column("fullname", sq.String, nullable=True)
+
     active = sq.Column("active", sq.Boolean)
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
 
@@ -54,13 +56,15 @@ class Security(ProductInterface):
     _vola = association_proxy(target_collection="_vola_rel", attr="data",
                               creator=lambda currency, data: Security.create_volatility(currency=currency, data=data))
 
-    def __init__(self, name, kiid=None, ticker=None):
+    def __init__(self, name, kiid=None, ticker=None, fullname=None):
         super().__init__(name)
         if kiid:
             self.reference[FIELDS["Lobnek KIID"]] = kiid
 
         if ticker:
             self.reference[FIELDS["Lobnek Ticker Symbol Bloomberg"]] = ticker
+
+        self.fullname = fullname
 
     def __repr__(self):
         return "Security({id}: {name})".format(id=self.name, name=self.get_reference("Name"))

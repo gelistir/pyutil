@@ -29,8 +29,8 @@ class TestDatabase(TestCase):
 
         cus1 = Custodian(name="UBS")
 
-        o1 = Owner(name="102", currency=c1)
-        o2 = Owner(name="103", currency=c2)
+        o1 = Owner(name="102", currency=c1, fullname="Hans Dampf")
+        o2 = Owner(name="103", currency=c2, fullname="Peter Maffay")
 
         f1 = Field(name="XXX", result=DataType.integer)
         f2 = Field(name="Bloomberg Ticker", result=DataType.string, type=FieldType.other)

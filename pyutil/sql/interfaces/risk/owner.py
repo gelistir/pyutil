@@ -59,9 +59,10 @@ class Owner(ProductInterface):
 
     _position = association_proxy("_position_rel", "data", creator=lambda s, data: Owner.create_position(security=s[0], custodian=s[1], data=data))
 
-    def __init__(self, name, currency=None):
+    def __init__(self, name, currency=None, fullname=None):
         super().__init__(name=name)
         self.currency = currency
+        self.fullname = fullname
 
     def __repr__(self):
         return "Owner({id}: {name})".format(id=self.name, name=self.get_reference("Name"))

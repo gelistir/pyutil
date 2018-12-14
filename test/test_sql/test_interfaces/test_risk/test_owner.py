@@ -6,7 +6,7 @@ import numpy as np
 import pandas.util.testing as pdt
 
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
-from pyutil.sql.interfaces.risk.owner import Owner, FIELDS as FIELDSOWNER
+from pyutil.sql.interfaces.risk.owner import Owner #, FIELDS as FIELDSOWNER
 from pyutil.sql.interfaces.risk.security import Security, FIELDS as FIELDSSECURITY
 
 t0 = pd.Timestamp("1978-11-15")
@@ -14,8 +14,8 @@ t1 = pd.Timestamp("1978-11-16")
 t2 = pd.Timestamp("1978-11-18")
 
 KIID = FIELDSSECURITY["Lobnek KIID"]
-CUSTODIAN = FIELDSOWNER["15. Custodian Name"]
-NAME = FIELDSOWNER["name"]
+#CUSTODIAN = FIELDSOWNER["15. Custodian Name"]
+#NAME = FIELDSOWNER["name"]
 
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
