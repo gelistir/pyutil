@@ -38,7 +38,6 @@ class Owner(ProductInterface):
     __tablename__ = "owner"
     __mapper_args__ = {"polymorphic_identity": "Owner"}
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
-    active = sq.Column("active", sq.Boolean)
 
     __currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=True)
     __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
