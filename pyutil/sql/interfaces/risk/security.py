@@ -37,7 +37,6 @@ class Security(ProductInterface):
 
     fullname = sq.Column("fullname", sq.String, nullable=True)
 
-    active = sq.Column("active", sq.Boolean)
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     # define the price...
