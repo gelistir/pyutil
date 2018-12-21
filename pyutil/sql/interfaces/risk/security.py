@@ -104,7 +104,7 @@ class Security(ProductInterface):
 
     @staticmethod
     def frame(securities):
-        frame = pd.DataFrame({security: {**security.reference_series, **{"Name": security.fullname}} for security in securities}).transpose()
+        frame = pd.DataFrame({security: {**security.reference_series, **{"Name": security.fullname, "Entity ID": int(security.name)}} for security in securities}).transpose()
         frame.index.name = "Security"
         frame = frame.sort_index()
         return frame
