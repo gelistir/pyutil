@@ -107,6 +107,4 @@ class Security(ProductInterface):
         frame = pd.DataFrame({security: {**security.reference_series, **{"Name": security.fullname}} for security in securities}).transpose()
         frame.index.name = "Security"
         frame = frame.sort_index()
-        print(frame)
-        print(frame.dtypes)
         return frame

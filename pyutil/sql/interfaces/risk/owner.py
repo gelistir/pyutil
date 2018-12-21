@@ -155,3 +155,5 @@ class Owner(ProductInterface):
     def frame(owners):
         frame = pd.DataFrame({owner.fullname: {**owner.reference_series, **{"EntityID": int(owner.name)}} for owner in owners}).transpose()
         frame.index.name = "Security"
+        frame = frame.sort_index()
+        return frame
