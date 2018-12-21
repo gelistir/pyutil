@@ -98,17 +98,24 @@ class Owner(ProductInterface):
 
     @property
     def reference_securities(self):
-        return Security.reference_frame(self.securities, name="Security", objectnotation=False).sort_index(axis=0)
+        print(self.securities)
+        return Security.frame(self.securities) #, name="Security", objectnotation=False).sort_index(axis=0)
 
     @property
     def position_reference(self):
-        reference = Security.reference_frame(self.securities, name="Security", objectnotation=True).sort_index(axis=0)
+        reference = Security.frame(self.securities) #., name="Security", objectnotation=True).sort_index(axis=0)
         position = self.position_frame
         volatility = self.vola_security_frame
-
+        print("*****")
+        print(position)
+        print(volatility)
+        print(reference)
         try:
             position_reference = position.join(reference, on="Security")
-            return position_reference.join(volatility, on=["Security", "Date"])
+            print(position_reference)
+            a = position_reference.join(volatility, on=["Security", "Date"])
+            print(a)
+            return a
         except KeyError:
             return pd.DataFrame({})
 
@@ -143,3 +150,8 @@ class Owner(ProductInterface):
     def flush(self):
         # delete all positions...
         self._position.clear()
+
+    @staticmethod
+    def frame(owners):
+        frame = pd.DataFrame({owner.fullname: {**owner.reference_series, **{"EntityID": int(owner.name)}} for owner in owners}).transpose()
+        frame.index.name = "Security"

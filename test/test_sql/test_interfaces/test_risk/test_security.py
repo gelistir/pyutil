@@ -26,19 +26,19 @@ class TestSecurity(unittest.TestCase):
         self.assertEqual(str(s), "Security(100: None)")
         #self.assertEqual(s.bloomberg_scaling, 1.0)
 
-    def test_reference_frame(self):
-        s1 = Security(name=100)
-        s2 = Security(name=110)
-        s3 = Security(name=120)
-        kiid = Field(name="KIID", result=DataType.integer, type=FieldType.other)
-
-        s1.reference[kiid] = 4
-        s2.reference[kiid] = 3
-        s3.reference[kiid] = 5
-
-        x = pd.DataFrame(index=["100", "110", "120"], columns=["KIID"], data=[[4], [3], [5]])
-        x.index.name = "Product"
-        pdt.assert_frame_equal(x, Security.reference_frame(products=sorted([s1, s2, s3]), name="Product"))
+    # def test_reference_frame(self):
+    #     s1 = Security(name=100)
+    #     s2 = Security(name=110)
+    #     s3 = Security(name=120)
+    #     kiid = Field(name="KIID", result=DataType.integer, type=FieldType.other)
+    #
+    #     s1.reference[kiid] = 4
+    #     s2.reference[kiid] = 3
+    #     s3.reference[kiid] = 5
+    #
+    #     x = pd.DataFrame(index=["100", "110", "120"], columns=["KIID"], data=[[4], [3], [5]])
+    #     x.index.name = "Product"
+    #     pdt.assert_frame_equal(x, Security.frame(securities=sorted([s1, s2, s3])))
 
     def test_ts_new(self):
         security = Security(name="A")

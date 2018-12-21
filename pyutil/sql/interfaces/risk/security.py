@@ -101,3 +101,12 @@ class Security(ProductInterface):
 
     def volatility(self, currency):
         return self._vola.get(currency, pd.Series({}))
+
+    @staticmethod
+    def frame(securities):
+        frame = pd.DataFrame({security: {**security.reference_series, **{"Name": security.fullname}} for security in securities}).transpose()
+        frame.index.name = "Security"
+        frame = frame.sort_index()
+        print(frame)
+        print(frame.dtypes)
+        return frame

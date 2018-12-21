@@ -72,19 +72,17 @@ class ProductInterface(Base):
     def __hash__(self):
         return hash(self.name)
 
-    @staticmethod
-    def reference_frame(products, name, objectnotation=False):
-        if objectnotation:
-            d = {s: {field.name: value for field, value in s.reference.items()} for s in products}
-        else:
-            d = {s.name: {field.name: value for field, value in s.reference.items()} for s in products}
+    #@staticmethod
+    #def reference_frame(products, name, objectnotation=False):
+    #    if objectnotation:
+    #        d = {s: {field.name: value for field, value in s.reference.items()} for s in products}
+    #    else:
+    #        d = {s.name: {field.name: value for field, value in s.reference.items()} for s in products}
 
-        frame = pd.DataFrame(d).transpose()
-        frame.index.name = name
-        return frame
+    #    frame = pd.DataFrame(d).transpose()
+    #    frame.index.name = name
+    #    return frame
 
     @staticmethod
     def join_series(name):
         return "and_(ProductInterface.id==Series.product1_id, Series.name=='{name}')".format(name=name)
-
-

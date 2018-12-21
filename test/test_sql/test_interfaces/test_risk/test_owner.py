@@ -35,10 +35,10 @@ class TestOwner(unittest.TestCase):
         o = Owner(name="103", currency=Currency(name="USD"))
 
         # create a security
-        s1 = Security(name="123")
+        s1 = Security(name="123", fullname="A")
         s1.reference[self.kiid] = 5
 
-        s2 = Security(name="211")
+        s2 = Security(name="211", fullname="B")
         s2.reference[self.kiid] = 7
 
         c1 = Custodian(name="UBS")
@@ -48,25 +48,29 @@ class TestOwner(unittest.TestCase):
         o._position[(s1, c1)] = pd.Series({t1: 0.1, t2: 0.4})
         o._position[(s2, c2)] = pd.Series({t1: 0.5, t2: 0.5})
 
-        print(o.reference_securities)
+        #x = o.reference_securities
+        #x.index = [a.name for a in x.index]
+
         #assert False
 
         self.assertSetEqual(o.securities, {s1, s2})
-        pdt.assert_frame_equal(pd.DataFrame(index=["123", "211"], columns=["KIID"], data=[[5], [7]]),
-                               o.reference_securities, check_names=False)
+        pdt.assert_frame_equal(pd.DataFrame(index=[s1, s2], columns=["KIID", "Name"], data=[[5, "A"], [7, "B"]]),
+                               o.reference_securities, check_names=False, check_dtype=False)
 
         s1.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 5, t2: 6.0}))
         s2.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 6}))
 
-        x = pd.DataFrame(data=[[s1, c1, t1, 0.1, 5, 5.0],
-                               [s1, c1, t2, 0.4, 5, 6.0],
-                               [s2, c2, t1, 0.5, 7, 6.0],
-                               [s2, c2, t2, 0.5, 7, np.nan]],
-                         columns=["Security", "Custodian", "Date", "Position", "KIID", "Volatility"])
+        x = pd.DataFrame(data=[[s1, c1, t1, 0.1, 5, "A", 5.0],
+                               [s1, c1, t2, 0.4, 5, "A", 6.0],
+                               [s2, c2, t1, 0.5, 7, "B", 6.0],
+                               [s2, c2, t2, 0.5, 7, "B", np.nan]],
+                         columns=["Security", "Custodian", "Date", "Position", "KIID", "Name", "Volatility"])
 
         x = x.set_index(keys=["Security", "Custodian", "Date"])
 
-        pdt.assert_frame_equal(x, o.position_reference)
+        print(x)
+
+        pdt.assert_frame_equal(x, o.position_reference, check_dtype=False)
 
         o.upsert_volatility(ts=pd.Series([10, 20]))
 
