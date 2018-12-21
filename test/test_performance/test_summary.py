@@ -18,18 +18,10 @@ class TestSummary(TestCase):
         y = 10000*fromNav(s, adjust=True)
         pdt.assert_series_equal(x, y)
 
-    #def test_pos_neg(self):
-    #    self.assertEqual(s.__negative_events, 164)
-    #    self.assertEqual(s.__positive_events, 176)
-    #    self.assertEqual(s.__events, 340)
-
     def test_summary(self):
         pdt.assert_series_equal(s.summary().apply(str), read_series("summary.csv").apply(str), check_names=False)
         x = fromNav(pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-02-06")], data=[1.0, 1.02]))
         self.assertAlmostEqual(float(x.summary()["Annua Return"]), 22.0, places=10)
-
-    #def test_autocorrelation(self):
-    #    self.assertAlmostEqual(s.__autocorrelation, 0.070961153249184269, places=10)
 
     def test_mtd(self):
         self.assertAlmostEqual(100 * s.mtd, 1.4133604922211385, places=10)
@@ -43,11 +35,6 @@ class TestSummary(TestCase):
 
     def test_monthly_table(self):
         self.assertAlmostEqual(100 * s.monthlytable["Nov"][2014], -0.19540358586001005, places=5)
-
-    #def test_ewm(self):
-    #    self.assertAlmostEqual(100 * s.ewm_volatility(periods=250).values[-1], 2.7714298334400818, places=6)
-    #    self.assertAlmostEqual(100 * s.ewm_ret(periods=250).values[-1], 6.0365130705403685, places=6)
-    #    self.assertAlmostEqual(s.ewm_sharpe(periods=250).values[-1], 2.1781222810347862, places=6)
 
     def test_performance(self):
         result = performance(s)

@@ -1,1 +1,0 @@
-fields = ["KIID", "Liquidity", "Geography"]
