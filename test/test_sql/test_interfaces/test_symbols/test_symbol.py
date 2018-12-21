@@ -2,6 +2,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 from unittest import TestCase
 
+from pyutil.sql.interfaces.ref import Field, DataType
 from pyutil.timeseries.merge import merge
 from test.config import test_portfolio
 
@@ -57,3 +58,14 @@ class TestSymbol(TestCase):
         symbol._price = None
         self.assertIsNone(symbol._price)
 
+    def test_upsert_price(self):
+        symbol = Symbol(name="D", group=SymbolType.currency)
+        symbol.upsert_price(ts = pd.Series(index=[pd.Timestamp("2010-04-28").date()], data=[10]))
+        pdt.assert_series_equal(symbol.price, pd.Series(index=[pd.Timestamp("2010-04-28").date()], data=[10]))
+
+    def test_frame(self):
+        symbol = Symbol(name="E", group=SymbolType.fixed_income)
+        field = Field(name="KIID", result=DataType.integer)
+        symbol.reference[field] = 2
+        print(Symbol.frame([symbol]))
+        #todo: finish test

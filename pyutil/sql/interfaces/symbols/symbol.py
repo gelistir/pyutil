@@ -40,11 +40,11 @@ class Symbol(ProductInterface):
         self.internal = internal
 
     def to_json(self):
-        nav = fromNav(self._price)
+        nav = fromNav(self.price)
         return {"name": self.name, "Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
 
     def upsert_price(self, ts=None):
-        self._price = merge(new=ts, old=self._price)
+        self._price = merge(new=ts, old=self.price)
         return self.price
 
     @property
@@ -53,7 +53,7 @@ class Symbol(ProductInterface):
 
     @staticmethod
     def frame(symbols):
-        frame = pd.DataFrame({symbol: {**symbol.reference_series, **{"Name": symbol.name}} for symbol in symbols}).transpose()
+        frame = pd.DataFrame({symbol: {**symbol.reference_series, **{"Name": symbol.name, "Sector": symbol.group.value}} for symbol in symbols}).transpose()
         frame.index.name = "Symbol"
         frame = frame.sort_index()
         return frame
