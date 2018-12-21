@@ -81,11 +81,15 @@ class Strategy(ProductInterface):
 
     @property
     def state(self):
-        return pd.concat((self._portfolio.state, self.reference_assets), axis=1, sort=False)
+        x = self._portfolio.state
+        # print(x)
+        y = self.reference_assets
+        y.index = [asset.name for asset in y.index]
+        return pd.concat((x, y), axis=1, sort=False)
 
     @property
     def reference_assets(self):
-        return Symbol.frame(symbols=self.assets)#, name="Symbol")
+        return Symbol.frame(symbols=self.assets)
 
     def to_json(self):
         nav = fromNav(self.portfolio.nav)

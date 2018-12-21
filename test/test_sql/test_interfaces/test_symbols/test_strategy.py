@@ -47,7 +47,6 @@ class TestStrategy(TestCase):
         a = self.strategy.to_json()
         self.assertEqual(a["name"], "Peter")
 
-
     def test_csv(self):
         # extract csv streams
         prices, weights = self.strategy.to_csv()
@@ -60,3 +59,8 @@ class TestStrategy(TestCase):
         self.strategy.to_csv(folder=test_dir)
         self.strategy.read_csv(folder=test_dir, symbols=self.assets)
 
+
+    def test_sector(self):
+        print(self.strategy.sector())
+        print(self.strategy.state)
+        # todo: finish test
