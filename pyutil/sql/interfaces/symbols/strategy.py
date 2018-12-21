@@ -9,6 +9,7 @@ from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 from pyutil.performance.summary import fromNav
+from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 
 def module(source):
@@ -84,7 +85,7 @@ class Strategy(ProductInterface):
 
     @property
     def reference_assets(self):
-        return self.reference_frame(self.assets, name="Symbol")
+        return Symbol.frame(symbols=self.assets)#, name="Symbol")
 
     def to_json(self):
         nav = fromNav(self.portfolio.nav)
