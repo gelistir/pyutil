@@ -38,6 +38,9 @@ class TestRunner(TestCase):
         runner.jobs.append(WorkerImpl2(name="Peter", x=10))
         runner.run_jobs()
 
+        # check the logger
+        self.assertIsNotNone(runner.logger)
+
     def test_Runner_empty(self):
         runner = Runner()
 
