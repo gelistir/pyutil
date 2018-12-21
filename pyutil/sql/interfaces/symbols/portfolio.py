@@ -65,7 +65,7 @@ class Portfolio(ProductInterface):
         return self.portfolio.leverage
 
     def sector(self, total=False):
-        symbolmap = {s.name : s.group.name for s in self.symbols}
+        symbolmap = {s.name : s.group.value for s in self.symbols}
         return self.portfolio.sector_weights(symbolmap=symbolmap, total=total)
 
     @property

@@ -49,8 +49,8 @@ class TestPortfolio(TestCase):
         self.assertEqual(self.p._prices.last_valid_index(), pd.Timestamp("2015-04-22"))
 
     def test_sector(self):
-        pdt.assert_series_equal(self.p.sector(total=False).loc["2015-04-22"], pd.Series(index=["equities","fixed_income"], data=[0.135671, 0.173303]), check_names=False)
-        pdt.assert_series_equal(self.p.sector(total=True).loc["2015-04-22"], pd.Series(index=["equities", "fixed_income", "total"], data=[0.135671, 0.173303, 0.3089738755]), check_names=False)
+        pdt.assert_series_equal(self.p.sector(total=False).loc["2015-04-22"], pd.Series(index=["Equities","Fixed Income"], data=[0.135671, 0.173303]), check_names=False)
+        pdt.assert_series_equal(self.p.sector(total=True).loc["2015-04-22"], pd.Series(index=["Equities", "Fixed Income", "Total"], data=[0.135671, 0.173303, 0.3089738755]), check_names=False)
 
     def test_state(self):
         pdt.assert_frame_equal(read_frame(name="state.csv"), self.p.state, check_names=False, check_exact=False, check_less_precise=True, check_dtype=False)

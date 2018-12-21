@@ -224,7 +224,7 @@ class Portfolio(object):
         """
         frame = self.weights.ffill().groupby(by=symbolmap, axis=1).sum()
         if total:
-            frame["total"] = frame.sum(axis=1)
+            frame["Total"] = frame.sum(axis=1)
         return frame
 
     def sector_weights_final(self, symbolmap, total=False):
