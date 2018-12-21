@@ -14,16 +14,6 @@ from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.interfaces.series import Series
 from pyutil.timeseries.merge import merge
 
-# FIELDS = {
-#     #"name": Field(name="Name", result=DataType.string, type=FieldType.other),
-#     #"15. Custodian Name": Field(name="Custodian", result=DataType.string, type=FieldType.other),
-#     #"17. Reference Currency": Field(name="Currency", result=DataType.string, type=FieldType.other),
-#     #"18. LWM Risk Profile": Field(name="Risk Profile", result=DataType.string, type=FieldType.other),
-#     #"23. LWM - AUM Type": Field(name="AUM Type", result=DataType.string, type=FieldType.other),
-#     "Inception Date": Field(name="Inception Date", result=DataType.string, type=FieldType.other)
-#     # don't use date here...
-# }
-
 
 class Owner(ProductInterface):
     @staticmethod
@@ -38,8 +28,6 @@ class Owner(ProductInterface):
     __mapper_args__ = {"polymorphic_identity": "Owner"}
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
     fullname = sq.Column("fullname", sq.String, nullable=True)
-    #risk_profile = sq.Column("risk_profile", sq.String, nullable=True)
-    #aum_type = sq.Column("aum_type", sq.String, nullable=True)
 
     __currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=True)
     __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
@@ -99,22 +87,16 @@ class Owner(ProductInterface):
     @property
     def reference_securities(self):
         print(self.securities)
-        return Security.frame(self.securities) #, name="Security", objectnotation=False).sort_index(axis=0)
+        return Security.frame(self.securities)
 
     @property
     def position_reference(self):
-        reference = Security.frame(self.securities) #., name="Security", objectnotation=True).sort_index(axis=0)
+        reference = Security.frame(self.securities)
         position = self.position_frame
         volatility = self.vola_security_frame
-        print("*****")
-        print(position)
-        print(volatility)
-        print(reference)
         try:
             position_reference = position.join(reference, on="Security")
-            print(position_reference)
             a = position_reference.join(volatility, on=["Security", "Date"])
-            print(a)
             return a
         except KeyError:
             return pd.DataFrame({})

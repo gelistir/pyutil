@@ -12,17 +12,6 @@ from pyutil.sql.interfaces.series import Series
 
 from pyutil.timeseries.merge import merge
 
-# FIELDS = [
-#     Field(name="Bloomberg Ticker", result=DataType.string, type=FieldType.other),
-#     Field(name="Geography", result=DataType.string, type=FieldType.other),
-#     Field(name="KIID", result=DataType.integer, type=FieldType.other),
-#     Field(name="Liquidity", result=DataType.string, type=FieldType.other),
-#     Field(name="Bloomberg Multiplier", result=DataType.float, type=FieldType.other),
-#     Field(name="Sub Asset Class", result=DataType.string, type=FieldType.other),
-#     Field(name="Asset Class", result=DataType.string, type=FieldType.other),
-#     Field(name="Currency", result=DataType.string, type=FieldType.other),
-#     Field(name="Risk Security Name", result=DataType.string, type=FieldType.other)]
-
 
 class Security(ProductInterface):
     @staticmethod
@@ -53,13 +42,6 @@ class Security(ProductInterface):
 
     def __init__(self, name, fullname=None):
         super().__init__(name)
-
-        #if kiid:
-        #    self.reference[FIELDS["Lobnek KIID"]] = kiid
-
-        #if ticker:
-        #    self.reference[FIELDS["Lobnek Ticker Symbol Bloomberg"]] = ticker
-
         self.fullname = fullname
 
     def __repr__(self):
