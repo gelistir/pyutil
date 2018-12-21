@@ -53,9 +53,7 @@ class Symbol(ProductInterface):
 
     @staticmethod
     def frame(symbols):
-        frame = pd.DataFrame({symbol: symbol.reference_series for symbol in symbols}).transpose()
+        frame = pd.DataFrame({symbol: {**symbol.reference_series, **{"Name": symbol.name}} for symbol in symbols}).transpose()
         frame.index.name = "Symbol"
         frame = frame.sort_index()
-        print(frame)
-        print(frame.dtypes)
         return frame
