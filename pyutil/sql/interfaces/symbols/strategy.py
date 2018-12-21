@@ -83,7 +83,7 @@ class Strategy(ProductInterface):
     def state(self):
         x = self._portfolio.state
         # print(x)
-        y = self.reference_assets
+        y = self.reference_assets.drop(columns=["Name", "Sector"])
         y.index = [asset.name for asset in y.index]
         return pd.concat((x, y), axis=1, sort=False)
 

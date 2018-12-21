@@ -73,10 +73,10 @@ class Portfolio(ProductInterface):
         def percentage(x):
             return "{0:.2f}%".format(float(100.0 * x)).replace("nan%", "")
 
-        frame = self.portfolio.state#.applymap(percentage)
+        frame = self.portfolio.state
 
-        frame["group"] = pd.Series({s.name : s.group.name for s in self.symbols})
-        frame["internal"] = pd.Series({s.name : s.internal for s in self.symbols})
+        frame["group"] = pd.Series({s.name: s.group.value for s in self.symbols})
+        frame["internal"] = pd.Series({s.name: s.internal for s in self.symbols})
 
         sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
         frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
