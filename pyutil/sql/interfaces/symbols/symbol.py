@@ -1,5 +1,6 @@
 import enum as _enum
 
+import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
@@ -50,3 +51,11 @@ class Symbol(ProductInterface):
     def price(self):
         return self._price
 
+    @staticmethod
+    def frame(symbols):
+        frame = pd.DataFrame({symbol: symbol.reference_series for symbol in symbols}).transpose()
+        frame.index.name = "Symbol"
+        frame = frame.sort_index()
+        print(frame)
+        print(frame.dtypes)
+        return frame

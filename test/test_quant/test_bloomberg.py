@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from pyutil.data import Database
+#from pyutil.data import Database
 from pyutil.quant.reference import update_reference
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
@@ -25,18 +25,18 @@ class TestQuant(TestCase):
         cls.session.commit()
 
         # proper database connection!
-        cls.data = Database(session=cls.session)
+        #cls.data = Database(session=cls.session)
 
     @classmethod
     def tearDownClass(cls):
-        cls.data.close()
+        cls.session.close()
 
     def test_reference(self):
         def f(tickers, fields):
             return read_frame(resource("refdata.csv")).reset_index()
 
-        data = Database(session=self.session)
-        update_reference(symbols=data.symbols, fields=data.fields, reader=f)
+        #data = Database(session=self.session)
+        update_reference(symbols=self.session.query(Symbol), fields=self.session.query(Field), reader=f)
 
         for symbol in self.session.query(Symbol):
             self.assertEqual(symbol.get_reference("f1"), "A{x}".format(x=symbol.name))

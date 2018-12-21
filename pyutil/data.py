@@ -5,7 +5,7 @@ from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
-from pyutil.sql.interfaces.ref import Field
+#from pyutil.sql.interfaces.ref import Field
 
 
 class Database(object):
@@ -45,46 +45,46 @@ class Database(object):
     def session(self):
         return self.__session
 
-    @property
-    def symbols(self):
-        return self.__session.query(Symbol)
+    #@property
+    #def symbols(self):
+    #    return self.__session.query(Symbol)
 
-    @property
-    def portfolios(self):
-        return self.__session.query(Portfolio)
+    #@property
+    #def portfolios(self):
+    #    return self.__session.query(Portfolio)
 
-    @property
-    def strategies(self):
-        return self.__session.query(Strategy)
+    #@property
+    #def strategies(self):
+    #    return self.__session.query(Strategy)
+    #
+    # @property
+    # def fields(self):
+    #     return self.__session.query(Field)
 
-    @property
-    def fields(self):
-        return self.__session.query(Field)
+    #def symbol(self, name):
+    #    return self.session.query(Symbol).filter(Symbol.name == name).one()
 
-    def symbol(self, name):
-        return self.symbols.filter(Symbol.name == name).one()
+    #def portfolio(self, name):
+    #    return self.session.query(Portfolio).filter(Portfolio.name == name).one()
 
-    def portfolio(self, name):
-        return self.portfolios.filter(Portfolio.name == name).one()
+    #def strategy(self, name):
+    #    return self.session.query(Strategy).filter(Strategy.name == name).one()
 
-    def strategy(self, name):
-        return self.strategies.filter(Strategy.name == name).one()
-
-    def reference(self, symbols=None):
-        symbols = symbols or self.symbols
-        return Symbol.reference_frame(symbols, name="Symbol")
+    #def reference(self, symbols=None):
+    #    symbols = symbols or self.symbols
+    #    return Symbol.reference_frame(symbols, name="Symbol")
 
     def sector(self, total=False):
-        frame = pd.DataFrame({strategy.name: strategy.sector(total=total).iloc[-1] for strategy in self.strategies}).transpose()
+        frame = pd.DataFrame({strategy.name: strategy.sector(total=total).iloc[-1] for strategy in self.session.query(Strategy)}).transpose()
         frame.index.name = "Portfolio"
         return frame
 
     def nav(self, f=lambda x: x):
-        return pd.DataFrame({strategy.name: f(strategy.portfolio.nav) for strategy in self.strategies})
+        return pd.DataFrame({strategy.name: f(strategy.portfolio.nav) for strategy in self.session.query(Strategy)})
 
-    def history(self, symbols=None):
-        symbols = symbols or self.symbols
-        return pd.DataFrame({symbol.name: Database._f(symbol.price) for symbol in symbols})
+    # def history(self, symbols=None):
+    #     symbols = symbols or self.symbols
+    #     return pd.DataFrame({symbol.name: Database._f(symbol.price) for symbol in symbols})
 
     def mtd(self):
         frame = self.nav(f=lambda x: fromNav(x).returns)

@@ -29,15 +29,15 @@ class TestDatabase(TestCase):
             cls.symbols[name]._price = p[name]
 
         # connect to a database
-        session, connection_str = postgresql_db_test(base=Base)
-        cls.database = Database(session=session)
+        cls.session, connection_str = postgresql_db_test(base=Base)
+        cls.database = Database(session=cls.session)
 
         # this will add a portfolio, too!
         s = Strategy(name="Peter Maffay")
 
         s.upsert(portfolio=test_portfolio(), symbols=cls.symbols)
-        session.add(s)
-        session.commit()
+        cls.session.add(s)
+        cls.session.commit()
 
         #for name, ts in test_portfolio().prices.items():
         #    cls.symbols[name].price = ts.dropna()
@@ -47,7 +47,7 @@ class TestDatabase(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.database.close()
+        cls.session.close()
 
     def test_recent(self):
         frame = self.database.recent()
@@ -64,16 +64,16 @@ class TestDatabase(TestCase):
         self.assertIsNotNone(self.database.session)
 
     def test_symbols(self):
-        self.assertEqual(self.database.symbols.count(), 7)
-        self.assertEqual(self.database.symbol(name="A"), Symbol(name="A", group=SymbolType.equities))
+        self.assertEqual(self.session.query(Symbol).count(), 7)
+        self.assertEqual(self.session.query(Symbol).filter(Symbol.name=="A").one(), Symbol(name="A", group=SymbolType.equities))
 
     def test_portfolios(self):
-        self.assertEqual(self.database.portfolios.count(), 1)
-        self.assertEqual(self.database.portfolio(name="Peter Maffay"), Portfolio(name="Peter Maffay"))
+        self.assertEqual(self.session.query(Portfolio).count(), 1)
+        self.assertEqual(self.session.query(Portfolio).filter(Portfolio.name=="Peter Maffay").one(), Portfolio(name="Peter Maffay"))
 
     def test_strategies(self):
-        self.assertEqual(self.database.strategies.count(), 1)
-        self.assertEqual(self.database.strategy(name="Peter Maffay"), Strategy(name="Peter Maffay"))
+        self.assertEqual(self.session.query(Strategy).count(), 1)
+        self.assertEqual(self.session.query(Strategy).filter(Strategy.name=="Peter Maffay").one(), Strategy(name="Peter Maffay"))
 
     def test_nav(self):
         f = self.database.nav()
@@ -90,8 +90,8 @@ class TestDatabase(TestCase):
     #    f = self.database.reference()
     #    self.assertTrue(f.empty)
 
-    def test_history(self):
-        f = self.database.history
+    #def test_history(self):
+    #    f = self.database.history
 
 
 
