@@ -3,7 +3,6 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.sql.interfaces.products import ProductInterface #, Timeseries
 from pyutil.sql.interfaces.ref import Field, FieldType, DataType
 from pyutil.timeseries.merge import merge
 from test.test_sql.product import Product
@@ -50,7 +49,6 @@ class TestProductInterface(TestCase):
 
         frame = pd.DataFrame(index=[self.p1.name], columns=["x", "y"], data=[[120, "11"]])
         frame.index.name = "Product"
-        #pdt.assert_frame_equal(ProductInterface.reference_frame(products=[self.p1], name="Product").fillna(""), frame)
 
     def test_with_unknown_fields(self):
         f = Field(name="z", type=FieldType.dynamic, result=DataType.integer)
@@ -60,11 +58,6 @@ class TestProductInterface(TestCase):
 
     def test_discriminator(self):
         self.assertEqual(self.p1.discriminator, "Test-Product")
-
-    #def test_empty_ts(self):
-    #    p = Product(name="CCC")
-    #    self.assertIsNone(p.get_ts(field="PX_LAST"))
-    #    self.assertIsNone(p.last(field="PX_LAST"))
 
     def test_hash(self):
         x = {self.p1, self.p2}

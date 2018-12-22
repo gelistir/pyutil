@@ -14,14 +14,13 @@ class Series(Base):
     id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
     name = sq.Column("name", sq.String)
 
-    product1_id = sq.Column("product1_id", sq.Integer, sq.ForeignKey(ProductInterface.id), nullable=False)
-    product2_id = sq.Column("product2_id", sq.Integer, sq.ForeignKey(ProductInterface.id), nullable=True)
-    product3_id = sq.Column("product3_id", sq.Integer, sq.ForeignKey(ProductInterface.id), nullable=True)
+    _product1_id = sq.Column("product1_id", sq.Integer, sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    _product2_id = sq.Column("product2_id", sq.Integer, sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
+    _product3_id = sq.Column("product3_id", sq.Integer, sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=True)
 
-
-    __product1 = relationship(ProductInterface, foreign_keys=[product1_id], lazy="joined")
-    __product2 = relationship(ProductInterface, foreign_keys=[product2_id], lazy="joined")
-    __product3 = relationship(ProductInterface, foreign_keys=[product3_id], lazy="joined")
+    __product1 = relationship(ProductInterface, foreign_keys=[_product1_id], lazy="joined")
+    __product2 = relationship(ProductInterface, foreign_keys=[_product2_id], lazy="joined")
+    __product3 = relationship(ProductInterface, foreign_keys=[_product3_id], lazy="joined")
 
     UniqueConstraint('name', 'product1_id', 'product2_id', 'product3_id', name='uix_1')
 
@@ -56,7 +55,6 @@ class Series(Base):
 
     def __init__(self, name, product2=None, product3=None, data=None):
         self.name = name
-        #self.__product1 = product1
         self.__product2 = product2
         self.__product3 = product3
         self.data = data

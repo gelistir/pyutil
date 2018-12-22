@@ -13,7 +13,7 @@ from sqlalchemy.orm import relationship
 
 class Future(ProductInterface):
     __tablename__ = "future"
-    id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
+    id = sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
 
     internal = sq.Column(sq.String(200), unique=True)
     quandl = sq.Column(sq.String(200), nullable=True)

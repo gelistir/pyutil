@@ -10,6 +10,7 @@ from test.test_sql.product import Product
 
 import pandas.util.testing as pdt
 
+
 class TestProductInterface(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -37,3 +38,5 @@ class TestProductInterface(TestCase):
 
         pdt.assert_series_equal(p._price.data, pd.Series([1,2,3]))
         pdt.assert_series_equal(p.price, pd.Series([1,2,3]))
+        #self.assertEqual(Product._price.product1, p)
+

@@ -9,13 +9,6 @@ from pyutil.sql.base import Base
 from pyutil.sql.interfaces.ref import _ReferenceData, Field
 
 
-# def association_table(left, right, name="association"):
-#     return sq.Table(name, Base.metadata,
-#                     sq.Column("left_id", sq.Integer, sq.ForeignKey('{left}.id'.format(left=left))),
-#                     sq.Column("right_id", sq.Integer, sq.ForeignKey('{right}.id'.format(right=right)))
-#                     )
-
-
 class ProductInterface(Base):
     __tablename__ = "productinterface"
 
@@ -47,6 +40,7 @@ class ProductInterface(Base):
 
     @hybrid_method
     def get_reference(self, field, default=None):
+        # Here field can be a Field object or a string (e.g. the name of Field object)
         if isinstance(field, Field):
             pass
         else:
@@ -72,17 +66,6 @@ class ProductInterface(Base):
     def __hash__(self):
         return hash(self.name)
 
-    #@staticmethod
-    #def reference_frame(products, name, objectnotation=False):
-    #    if objectnotation:
-    #        d = {s: {field.name: value for field, value in s.reference.items()} for s in products}
-    #    else:
-    #        d = {s.name: {field.name: value for field, value in s.reference.items()} for s in products}
-
-    #    frame = pd.DataFrame(d).transpose()
-    #    frame.index.name = name
-    #    return frame
-
     @staticmethod
     def join_series(name):
-        return "and_(ProductInterface.id==Series.product1_id, Series.name=='{name}')".format(name=name)
+        return "and_(ProductInterface.id==Series._product1_id, Series.name=='{name}')".format(name=name)

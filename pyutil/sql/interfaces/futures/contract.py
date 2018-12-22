@@ -11,7 +11,7 @@ from pyutil.sql.interfaces.products import ProductInterface
 
 class Contract(ProductInterface):
     __tablename__ = "contract"
-    id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
+    id = sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
 
     _future_id = sq.Column("future_id", sq.Integer, sq.ForeignKey("future.id"))
     _future = relationship("Future", foreign_keys=[_future_id], back_populates="contracts")

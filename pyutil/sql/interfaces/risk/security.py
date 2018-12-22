@@ -13,20 +13,19 @@ from pyutil.sql.interfaces.series import Series
 from pyutil.timeseries.merge import merge
 
 
+def _create_volatility(currency, data):
+    assert isinstance(currency, Currency)
+    assert isinstance(data, pd.Series)
+
+    return Series(name="volatility", product2=currency, data=data)
+
 class Security(ProductInterface):
-    @staticmethod
-    def create_volatility(currency, data):
-        assert isinstance(currency, Currency)
-        assert isinstance(data, pd.Series)
-
-        return Series(name="volatility", product2=currency, data=data)
-
     __tablename__ = "security"
     __mapper_args__ = {"polymorphic_identity": "Security"}
 
     fullname = sq.Column("fullname", sq.String, nullable=True)
 
-    id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
+    id = sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
 
     # define the price...
     _price_rel = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("price"), lazy="joined")
@@ -38,7 +37,7 @@ class Security(ProductInterface):
                          primaryjoin=ProductInterface.join_series("volatility"), lazy="joined")
 
     _vola = association_proxy(target_collection="_vola_rel", attr="data",
-                              creator=lambda currency, data: Security.create_volatility(currency=currency, data=data))
+                              creator=lambda currency, data: _create_volatility(currency=currency, data=data))
 
     def __init__(self, name, fullname=None):
         super().__init__(name)

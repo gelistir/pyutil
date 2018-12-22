@@ -24,8 +24,6 @@ class TestQuant(TestCase):
 
         cls.session.commit()
 
-        # proper database connection!
-        #cls.data = Database(session=cls.session)
 
     @classmethod
     def tearDownClass(cls):
@@ -35,7 +33,6 @@ class TestQuant(TestCase):
         def f(tickers, fields):
             return read_frame(resource("refdata.csv")).reset_index()
 
-        #data = Database(session=self.session)
         update_reference(symbols=self.session.query(Symbol), fields=self.session.query(Field), reader=f)
 
         for symbol in self.session.query(Symbol):

@@ -31,7 +31,7 @@ class StrategyType(_enum.Enum):
 class Strategy(ProductInterface):
     __tablename__ = "strategy"
     __mapper_args__ = {"polymorphic_identity": "strategy"}
-    id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
+    id = sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)
     _portfolio_id = sq.Column("portfolio_id", sq.Integer, sq.ForeignKey("portfolio.id"), nullable=False)

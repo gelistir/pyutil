@@ -21,7 +21,7 @@ class SymbolType(_enum.Enum):
 
 class Symbol(ProductInterface):
     __tablename__ = "symbol"
-    id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
+    id = sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
 
     group = sq.Column("group", _Enum(SymbolType))
     internal = sq.Column(sq.String, nullable=True)
@@ -30,8 +30,7 @@ class Symbol(ProductInterface):
     _measurements = "symbols"
 
     # define the price...
-    _price_rel = relationship(Series, uselist=False,
-                           primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='price')")
+    _price_rel = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("price"))
     _price = association_proxy("_price_rel", "data", creator=lambda data: Series(name="price", data=data))
 
     def __init__(self, name, group, internal=None):

@@ -19,14 +19,11 @@ class Portfolio(ProductInterface):
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     # define the price...
-    _price_rel = relationship(Series, uselist=False,
-                           primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='price')")
+    _price_rel = relationship(Series, uselist=False, primaryjoin = ProductInterface.join_series("price"))
     _prices = association_proxy("_price_rel", "data", creator=lambda data: Series(name="price", data=data))
 
-    _weights_rel = relationship(Series, uselist=False,
-                            primaryjoin="and_(ProductInterface.id==Series.product1_id, Series.name=='weight')")
+    _weights_rel = relationship(Series, uselist=False, primaryjoin = ProductInterface.join_series("weight"))
     _weights = association_proxy("_weights_rel", "data", creator=lambda data: Series(name="weight", data=data))
-
 
     def __init__(self, name):
         super().__init__(name)
@@ -50,7 +47,6 @@ class Portfolio(ProductInterface):
     def last(self):
         return last_index(self._prices)
 
-
     @property
     def portfolio(self):
         return _Portfolio(prices=self.prices, weights=self.weights)
@@ -58,7 +54,6 @@ class Portfolio(ProductInterface):
     @property
     def nav(self):
         return self.portfolio.nav
-
 
     @property
     def leverage(self):
@@ -102,8 +97,8 @@ class Portfolio(ProductInterface):
 
 class PortfolioSymbol(Base):
     __tablename__ = 'portfolio_symbol'
-    portfolio_id = Column(Integer, ForeignKey('portfolio.id'), primary_key=True)
-    symbol_id = Column(Integer, ForeignKey('symbol.id'), primary_key=True)
+    _portfolio_id = Column(Integer, ForeignKey('portfolio.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
+    _symbol_id = Column(Integer, ForeignKey('symbol.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
 
     symbol = relationship(Symbol, lazy="joined")
     portfolio = relationship(Portfolio, backref="portfolio_symbol", lazy="joined")
@@ -111,5 +106,6 @@ class PortfolioSymbol(Base):
     def __init__(self, symbol=None, portfolio=None):
         self.symbol = symbol
         self.portfolio = portfolio
+
 
 Portfolio.symbols = association_proxy("portfolio_symbol", "symbol")
