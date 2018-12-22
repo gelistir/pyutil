@@ -52,7 +52,7 @@ class Owner(ProductInterface):
         self.fullname = fullname
 
     def __repr__(self):
-        return "Owner({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
+        return "Owner({id}: {fullname}, {currency})".format(id=self.name, fullname=self.fullname, currency=self.currency.name)
 
     @hybrid_property
     def currency(self):
@@ -135,7 +135,7 @@ class Owner(ProductInterface):
 
     @staticmethod
     def frame(owners):
-        frame = pd.DataFrame({owner: {**owner.reference_series, **{"Entity ID": int(owner.name), "Name": owner.fullname}} for owner in owners}).transpose()
+        frame = pd.DataFrame({owner: {**owner.reference_series, **{"Entity ID": int(owner.name), "Name": owner.fullname, "Currency": owner.currency.name}} for owner in owners}).transpose()
         frame.index.name = "Security"
         frame = frame.sort_index()
         return frame

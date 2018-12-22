@@ -59,3 +59,7 @@ class TestSecurity(unittest.TestCase):
         pdt.assert_frame_equal(security.vola_frame, pd.DataFrame({Currency(name="CHF"): pd.Series([10,20,30])}))
         pdt.assert_series_equal(x, pd.Series([10, 20, 30]))
 
+    def test_standard_bloomberg_scaling(self):
+        o = Security(name="Thomas")
+        self.assertEqual(o.bloomberg_scaling, 1)
+        self.assertIsNone(o.bloomberg_ticker)
