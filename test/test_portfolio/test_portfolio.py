@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.portfolio.portfolio import Portfolio
+from pyutil.portfolio.portfolio import Portfolio, similar
 from test.config import test_portfolio, read_frame
 
 portfolio = test_portfolio()
@@ -141,3 +141,14 @@ class TestPortfolio(TestCase):
         p = test_portfolio()
         w = p.apply(lambda x: 2*x)
         pdt.assert_frame_equal(w.weights, 2*p.weights)
+
+    def test_similar(self):
+        p = test_portfolio()
+        self.assertFalse(similar(p, 5))
+        self.assertFalse(similar(p, p.subportfolio(assets=["A","B","C"])))
+        self.assertFalse(similar(p, p.tail(100)))
+        x = test_portfolio()
+        p2 = Portfolio(weights=2*x.weights, prices=x.prices)
+        self.assertFalse(similar(p, p2))
+
+        self.assertTrue(similar(p, p))
