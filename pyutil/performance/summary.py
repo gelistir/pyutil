@@ -38,6 +38,11 @@ class NavSeries(pd.Series):
             if isinstance(self.index[0], date):
                 self.rename(index=lambda x: pd.Timestamp(x), inplace=True)
 
+            # check that all indices are increasing
+            assert self.index.is_monotonic_increasing
+            # make sure all entries non-negative
+            assert not (self < 0).any()
+
     @property
     def series(self):
         return pd.Series({t: v for t, v in self.items()})
