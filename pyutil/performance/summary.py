@@ -11,8 +11,6 @@ from ._var import _VaR
 
 
 # from addict import Dict
-
-
 def fromReturns(r, adjust=False):
     x = NavSeries((1 + r.dropna()).cumprod())
     if adjust:
@@ -45,7 +43,7 @@ class NavSeries(pd.Series):
         return pd.Series({t: v for t, v in self.items()})
 
     @property
-    def __periods_per_year(self):
+    def periods_per_year(self):
         if len(self.index) >= 2:
             x = pd.Series(data=self.index)
             return np.round(365 * 24 * 60 * 60 / x.diff().mean().total_seconds(), decimals=0)
@@ -53,7 +51,7 @@ class NavSeries(pd.Series):
             return 256
 
     def annualized_volatility(self, periods=None):
-        t = periods or self.__periods_per_year
+        t = periods or self.periods_per_year
         return np.sqrt(t) * self.dropna().pct_change().std()
 
     @staticmethod
@@ -107,7 +105,7 @@ class NavSeries(pd.Series):
 
     def __mean_r(self, periods=None, r_f=0):
         # annualized performance over a risk_free rate r_f (annualized)
-        periods = periods or self.__periods_per_year
+        periods = periods or self.periods_per_year
         return periods * (self.__gmean(self.returns + 1.0) - 1.0) - r_f
 
     @property
@@ -115,7 +113,7 @@ class NavSeries(pd.Series):
         return _Drawdown(self).drawdown
 
     def sortino_ratio(self, periods=None, r_f=0):
-        periods = periods or self.__periods_per_year
+        periods = periods or self.periods_per_year
         # cover the unrealistic case of 0 drawdown
         m = self.drawdown.max()
         if m == 0:
@@ -124,72 +122,27 @@ class NavSeries(pd.Series):
             return self.__mean_r(periods, r_f=r_f) / m
 
     def calmar_ratio(self, periods=None, r_f=0):
-        periods = periods or self.__periods_per_year
+        periods = periods or self.periods_per_year
         start = self.index[-1] - pd.DateOffset(years=3)
         # truncate the nav
         x = self.truncate(before=start)
         return fromNav(x).sortino_ratio(periods=periods, r_f=r_f)
 
-    # @property
-    # def __autocorrelation(self):
-    #     """
-    #     Compute the autocorrelation of returns
-    #     :return:
-    #     """
-    #    return self.returns.autocorr(lag=1)
-
     @property
     def mtd(self):
         """
-        Compute the return in the last available month, note that you need at least one point in the previous month, too. Otherwise Last/First - 1
+        Compute the return in the last available month
         :return:
         """
-        x = self.resample("M").last().dropna()
-
-        if len(x) <= 1:
-            return self.dropna().tail(1).values[0] / self.dropna().head(1).values[0] - 1.0
-        else:
-            return x.pct_change().dropna().tail(1).values[0]
+        return self.monthly.pct_change().tail(1).values[0]
 
     @property
     def ytd(self):
         """
-        Compute the return in the last available year, note that you need at least one point in the previous year, too. Otherwise Last/First - 1
+        Compute the return in the last available year
         :return:
         """
-        x = self.resample("A").last().dropna()
-
-        if len(x) <= 1:
-            return self.dropna().tail(1).values[0] / self.dropna().head(1).values[0] - 1.0
-        else:
-            return x.pct_change().dropna().tail(1).values[0]
-
-    # @property
-    # def mtd_series(self):
-    #     """
-    #     Extract the series of returns in the current month
-    #     :return:
-    #     """
-    #     return self.__mtd(self.returns, today=self.index[-1])
-    #
-    # @staticmethod
-    # def __mtd(ts: pd.Series, today=None) -> pd.Series:
-    #     """
-    #     Extract month to date of a series or a frame
-    #
-    #     :param ts: series or frame
-    #     :param today: today, relevant for testing
-    #
-    #     :return: ts or frame starting at the first day of today's month
-    #     """
-    #     today = today or pd.Timestamp("today")
-    #     first_day_of_month = (today + pd.offsets.MonthBegin(-1)).date()
-    #     x = ts.truncate(before=first_day_of_month, after=today)
-    #     if len(x.index) < 10:
-    #         first_day_of_month = (today + pd.offsets.MonthBegin(-2)).date()
-    #         x = ts.truncate(before=first_day_of_month, after=today)
-    #
-    #     return x
+        return self.annual.pct_change().tail(1).values[0]
 
     @staticmethod
     def __ytd(ts: pd.Series, today=None) -> pd.Series:
@@ -224,7 +177,7 @@ class NavSeries(pd.Series):
         return _VaR(series=self, alpha=alpha).cvar
 
     def summary(self, alpha=0.95, periods=None, r_f=0):
-        periods = periods or self.__periods_per_year
+        periods = periods or self.periods_per_year
 
         d = OrderedDict()
         # d = Dict()
@@ -264,16 +217,8 @@ class NavSeries(pd.Series):
         return x
 
     def ewm_volatility(self, com=50, min_periods=50, periods=None):
-        periods = periods or self.__periods_per_year
+        periods = periods or self.periods_per_year
         return np.sqrt(periods) * self.returns.fillna(0.0).ewm(com=com, min_periods=min_periods).std(bias=False)
-
-    #def ewm_ret(self, com=50, min_periods=50, periods=None):
-    #    periods = periods or self.__periods_per_year
-    #    return periods * self.returns.fillna(0.0).ewm(com=com, min_periods=min_periods).mean()
-
-    #def ewm_sharpe(self, com=50, min_periods=50, periods=None):
-    #    periods = periods or self.__periods_per_year
-    #    return self.ewm_ret(com, min_periods, periods) / self.ewm_volatility(com, min_periods, periods)
 
     @property
     def period_returns(self):
@@ -288,7 +233,7 @@ class NavSeries(pd.Series):
 
     @property
     def monthly(self):
-        return NavSeries(self.__res("M"))
+        return fromNav(self.__res("M"))
 
     @property
     def annual(self):
@@ -308,7 +253,7 @@ class NavSeries(pd.Series):
         return _Drawdown(self).periods
 
     def __res(self, rule="M"):
-        ### refactor NAV at the end but keep the first element. Important for return computations!
+        # refactor NAV at the end but keep the first element. Important for return computations!
 
         a = pd.concat((self.head(1), self.resample(rule).last()), axis=0)
         # overwrite the last index with the trust last index

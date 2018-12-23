@@ -50,6 +50,7 @@ class TestOwner(unittest.TestCase):
         self.assertSetEqual(o.securities, {s1, s2})
         self.assertSetEqual(o.custodians, {c1, c2})
 
+        pdt.assert_series_equal(o.position(s1, c1), pd.Series({t1: 0.1, t2: 0.4}))
         pdt.assert_frame_equal(pd.DataFrame(index=[s1, s2], columns=["Entity ID","KIID", "Name"], data=[[123, 5, "A"], [211, 7, "B"]]),
                                o.reference_securities, check_names=False, check_dtype=False)
 
@@ -74,7 +75,6 @@ class TestOwner(unittest.TestCase):
 
         frame = Owner.frame(owners=[o])
         pdt.assert_frame_equal(frame, pd.DataFrame(index=pd.Index([o], name="Security"), columns=["Currency", "Entity ID", "Name"], data=[["USD",103,"Peter Maffay"]]), check_dtype=False)
-
 
     def test_returns(self):
         o = Owner(name="222")
@@ -107,22 +107,6 @@ class TestOwner(unittest.TestCase):
         self.assertEqual(o.name, "222")
         self.assertEqual(str(o), "Owner(222: Peter Maffay, CHF)")
 
-    def test_double_position(self):
-        o = Owner(name=999, currency=Currency(name="USD"))
-        s = Security(name=777)
-        x = pd.Series({t1.date(): 0.1})
-        s._vola[Currency(name="USD")] = pd.Series({t1.date(): 10})
-
-        # o.upsert_position(s, ts=x)
-        o._position[(s, Custodian(name="UBS"))] = x
-        a = o._position
-
-        # o.upsert_position(s, ts=x)
-        # b = o.position
-        # print(o.position)
-        # pdt.assert_frame_equal(a,b)
-        # assert False
-
     def test_json(self):
         o = Owner(name="Peter")
         o._returns = pd.Series({t0.date(): 0.1, t1.date(): 0.0, t2.date(): -0.1})
@@ -130,10 +114,10 @@ class TestOwner(unittest.TestCase):
         self.assertEqual(a["name"], "Peter")
         pdt.assert_series_equal(a["Nav"], pd.Series({t0: 1.10, t1: 1.10, t2: 0.99}))
 
-    def test_position_update(self):
-        o = Owner(name="Thomas")
-        c = Custodian(name="Hans")
-        s = Security(name=123)
-        o.upsert_position(security=s, custodian=c, ts=pd.Series([10, 20, 30]))
-        pdt.assert_series_equal(o._position[(s, c)], pd.Series([10, 20, 30]))
+    # def test_position_update(self):
+    #     o = Owner(name="Thomas")
+    #     c = Custodian(name="Hans")
+    #     s = Security(name=123)
+    #     o.upsert_position(security=s, custodian=c, ts=pd.Series([10, 20, 30]))
+    #     pdt.assert_series_equal(o._position[(s, c)], pd.Series([10, 20, 30]))
 

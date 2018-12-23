@@ -2,12 +2,13 @@ from unittest import TestCase
 import pandas as pd
 import numpy as np
 
-from pyutil.performance.summary import performance, fromNav
+from pyutil.performance.summary import performance, fromNav, fromReturns
 from test.config import read_series
 
 import pandas.util.testing as pdt
 
-s = fromNav(read_series("ts.csv", parse_dates=True))
+
+s = fromNav(read_series("ts.csv", parse_dates=True), adjust=True)
 
 
 class TestSummary(TestCase):
@@ -19,6 +20,7 @@ class TestSummary(TestCase):
         pdt.assert_series_equal(x, y)
 
     def test_summary(self):
+        print(s.summary().apply(str).to_csv())
         pdt.assert_series_equal(s.summary().apply(str), read_series("summary.csv").apply(str), check_names=False)
         x = fromNav(pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-02-06")], data=[1.0, 1.02]))
         self.assertAlmostEqual(float(x.summary()["Annua Return"]), 22.0, places=10)
@@ -32,6 +34,7 @@ class TestSummary(TestCase):
         self.assertAlmostEqual(100 * s.ytd, 2.1718996734564122, places=10)
         x = pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-03-06")], data=[1.0, 1.6])
         self.assertAlmostEqual(fromNav(x).mtd, 0.6, places=10)
+        self.assertAlmostEqual(fromNav(x).ytd, 0.6, places=10)
 
     def test_monthly_table(self):
         self.assertAlmostEqual(100 * s.monthlytable["Nov"][2014], -0.19540358586001005, places=5)
@@ -47,10 +50,10 @@ class TestSummary(TestCase):
         self.assertAlmostEqual(x[x.index[-1]], 1.0116455798589048, places=5)
 
     def test_monthly(self):
-        self.assertAlmostEqual(s.monthly[pd.Timestamp("2014-11-30")], 1.2935771592500624, places=5)
+        self.assertAlmostEqual(s.monthly[pd.Timestamp("2014-11-30")], 0.9902211463174124, places=5)
 
     def test_annual(self):
-        self.assertAlmostEqual(s.annual[pd.Timestamp("2014-12-31")], 1.2934720900884369, places=5)
+        self.assertAlmostEqual(s.annual[pd.Timestamp("2014-12-31")], 0.9901407168626069, places=5)
 
     def test_weekly(self):
         self.assertEqual(len(s.weekly.index), 70)
@@ -87,11 +90,8 @@ class TestSummary(TestCase):
 
         n = fromNav(a)
 
-        # returns in Feb 2012, 50% on the 13th, 1.0/3.0 on the 14th
-        # pdt.assert_series_equal(n.mtd_series, pd.Series({pd.Timestamp("2012-02-13"): 0.5, pd.Timestamp("2012-02-14"): 1.0 / 3.0}))
-
         # no return in Jan 2012, 100% in Feb (from 2.0 to 4.0)
-        pdt.assert_series_equal(n.ytd_series, pd.Series({"02": 1.0, "01": 0.0}))
+        pdt.assert_series_equal(n.ytd_series, pd.Series({"02": 1.0}))
 
         # we made 100% in Feb
         self.assertEqual(n.mtd, 1.0)
@@ -101,10 +101,20 @@ class TestSummary(TestCase):
         n = fromNav(pd.Series({}))
         self.assertTrue(n.adjust().empty)
 
-
     def test_sortino_ratio_no_drawdown(self):
         x = pd.Series({pd.Timestamp("2012-02-13"): 1.0, pd.Timestamp("2012-02-14"): 1.0})
         n = fromNav(x)
 
         self.assertEqual(n.sortino_ratio(), np.inf)
 
+    def test_recent(self):
+        pdt.assert_series_equal(s.recent(2), s.pct_change().tail(2))
+
+    def test_short(self):
+        n = fromNav(ts=pd.Series({pd.Timestamp("30-Nov-2016"): 112}))
+        self.assertEqual(n.periods_per_year, 256)
+
+    def test_from_returns(self):
+        x = pd.Series(data=[0.0, 0.1, -0.1])
+        r = fromReturns(x, adjust=True)
+        pdt.assert_series_equal(r.series, pd.Series([1.0, 1.1, 0.99]))

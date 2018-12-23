@@ -12,6 +12,22 @@ def merge(portfolios, axis=0):
     return Portfolio(prices, weights.fillna(0.0))
 
 
+def similar(a, b, eps=1e-6):
+    if not (isinstance(a, Portfolio) and isinstance(b, Portfolio)):
+        return False
+
+    if not (list(a.index) == list(b.index) and list(a.assets) == list(b.assets)):
+        return False
+
+    delta_w = (a.weights - b.weights).abs().max().max()
+    delta_p = (a.prices - b.prices).abs().max().max()
+
+    if not (delta_w < eps and delta_p < eps):
+        return False
+
+    return True
+
+
 class Portfolio(object):
     def copy(self):
         return Portfolio(prices=self.prices.copy(), weights=self.weights.copy())

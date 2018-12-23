@@ -15,14 +15,16 @@ from pyutil.sql.interfaces.series import Series
 from pyutil.timeseries.merge import merge
 
 
-class Owner(ProductInterface):
-    @staticmethod
-    def create_position(security, custodian, data):
-        assert isinstance(security, Security)
-        assert isinstance(custodian, Custodian)
-        assert isinstance(data, pd.Series)
+#@staticmethod
+def _create_position(security, custodian, data):
+    assert isinstance(security, Security)
+    assert isinstance(custodian, Custodian)
+    assert isinstance(data, pd.Series)
 
-        return Series(name="position", product2=security, product3=custodian, data=data)
+    return Series(name="position", product2=security, product3=custodian, data=data)
+
+class Owner(ProductInterface):
+
 
     __tablename__ = "owner"
     __mapper_args__ = {"polymorphic_identity": "Owner"}
@@ -44,7 +46,7 @@ class Owner(ProductInterface):
     _position_rel = relationship(Series, collection_class=attribute_mapped_collection("key"), cascade="all, delete-orphan",
                              primaryjoin=ProductInterface.join_series("position"))
 
-    _position = association_proxy("_position_rel", "data", creator=lambda s, data: Owner.create_position(security=s[0], custodian=s[1], data=data))
+    _position = association_proxy("_position_rel", "data", creator=lambda s, data: _create_position(security=s[0], custodian=s[1], data=data))
 
     def __init__(self, name, currency=None, fullname=None):
         super().__init__(name=name)
@@ -86,18 +88,16 @@ class Owner(ProductInterface):
 
     @property
     def reference_securities(self):
-        print(self.securities)
         return Security.frame(self.securities)
 
     @property
     def position_reference(self):
-        reference = Security.frame(self.securities)
+        reference = self.reference_securities
         position = self.position_frame
         volatility = self.vola_security_frame
         try:
             position_reference = position.join(reference, on="Security")
-            a = position_reference.join(volatility, on=["Security", "Date"])
-            return a
+            return position_reference.join(volatility, on=["Security", "Date"])
         except KeyError:
             return pd.DataFrame({})
 
@@ -111,7 +111,7 @@ class Owner(ProductInterface):
 
         key = (security, custodian)
         self._position[key] = merge(new=ts, old=self._position.get(key, default=None))
-        return self._position[key]
+        return self.position(security=security, custodian=custodian)
 
     def upsert_volatility(self, ts):
         self._volatility = merge(new=ts, old=self._volatility)
@@ -128,6 +128,9 @@ class Owner(ProductInterface):
     @property
     def returns(self):
         return self._returns
+
+    def position(self, security, custodian):
+        return self._position[(security, custodian)]
 
     def flush(self):
         # delete all positions...
