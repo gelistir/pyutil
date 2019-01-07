@@ -97,8 +97,8 @@ class Portfolio(ProductInterface):
 
 class PortfolioSymbol(Base):
     __tablename__ = 'portfolio_symbol'
-    _portfolio_id = Column(Integer, ForeignKey('portfolio.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
-    _symbol_id = Column(Integer, ForeignKey('symbol.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
+    _portfolio_id = Column("portfolio_id", Integer, ForeignKey('portfolio.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
+    _symbol_id = Column("symbol_id", Integer, ForeignKey('symbol.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
 
     symbol = relationship(Symbol, lazy="joined")
     portfolio = relationship(Portfolio, backref="portfolio_symbol", lazy="joined")
