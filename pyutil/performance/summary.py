@@ -12,7 +12,6 @@ from ._var import _VaR
 
 # from addict import Dict
 def fromReturns(r, adjust=False):
-    #todo: r is None
     if r is None:
         return NavSeries(pd.Series({}))
 
@@ -43,13 +42,14 @@ class NavSeries(pd.Series):
     def __init__(self, *args, **kwargs):
         super(NavSeries, self).__init__(*args, **kwargs)
         if not self.empty:
+            # change to DateTime
             if isinstance(self.index[0], date):
                 self.rename(index=lambda x: pd.Timestamp(x), inplace=True)
 
             # check that all indices are increasing
             assert self.index.is_monotonic_increasing
             # make sure all entries non-negative
-            assert not (self < 0).any()
+            assert not (self < 0).any(), "Problem with data:\n{x}".format(x=self.series)
 
     @property
     def series(self):

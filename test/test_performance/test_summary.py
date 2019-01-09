@@ -76,6 +76,10 @@ class TestSummary(TestCase):
         x = fromNav(ts=None)
         pdt.assert_series_equal(x.series, pd.Series({}))
 
+        with self.assertRaises(AssertionError):
+            # you can't set a negative Nav value:
+            fromNav(ts = pd.Series(data=[1,2,-10]))
+
     def test_periods(self):
         p = s.period_returns
         self.assertAlmostEqual(p.loc["Three Years"], 0.011645579858904798, places=10)
