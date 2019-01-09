@@ -12,6 +12,10 @@ from ._var import _VaR
 
 # from addict import Dict
 def fromReturns(r, adjust=False):
+    #todo: r is None
+    if r is None:
+        return NavSeries(pd.Series({}))
+
     x = NavSeries((1 + r.dropna()).cumprod())
     if adjust:
         return x.adjust(value=1.0)
@@ -20,6 +24,10 @@ def fromReturns(r, adjust=False):
 
 
 def fromNav(ts, adjust=False):
+    #todo: ts is None
+    if ts is None:
+        return NavSeries(pd.Series({}))
+
     x = NavSeries(ts.dropna())
     if adjust:
         return x.adjust(value=1.0)

@@ -71,8 +71,10 @@ class TestSummary(TestCase):
 
     def test_fromNav(self):
         x = fromNav(ts=read_series("ts.csv", parse_dates=True))
+        pdt.assert_series_equal(x.series, read_series("ts.csv", parse_dates=True))
 
-        #self.assertAlmostEqual(x.__autocorrelation, 0.070961153249184269, places=10)
+        x = fromNav(ts=None)
+        pdt.assert_series_equal(x.series, pd.Series({}))
 
     def test_periods(self):
         p = s.period_returns
@@ -118,3 +120,6 @@ class TestSummary(TestCase):
         x = pd.Series(data=[0.0, 0.1, -0.1])
         r = fromReturns(x, adjust=True)
         pdt.assert_series_equal(r.series, pd.Series([1.0, 1.1, 0.99]))
+
+        r = fromReturns(None, adjust=True)
+        pdt.assert_series_equal(r.series, pd.Series({}))
