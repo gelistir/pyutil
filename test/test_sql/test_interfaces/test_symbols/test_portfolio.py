@@ -2,7 +2,9 @@ from unittest import TestCase
 
 import pandas as pd
 import pandas.util.testing as pdt
-from test.config import test_portfolio, read_frame
+
+from pyutil.test.aux import read_frame
+from test.config import test_portfolio, resource
 
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
@@ -53,5 +55,5 @@ class TestPortfolio(TestCase):
         pdt.assert_series_equal(self.p.sector(total=True).loc["2015-04-22"], pd.Series(index=["Equities", "Fixed Income", "Total"], data=[0.135671, 0.173303, 0.3089738755]), check_names=False)
 
     def test_state(self):
-        pdt.assert_frame_equal(read_frame(name="state.csv"), self.p.state, check_names=False, check_exact=False, check_less_precise=True, check_dtype=False)
+        pdt.assert_frame_equal(read_frame(resource("state.csv")), self.p.state, check_names=False, check_exact=False, check_less_precise=True, check_dtype=False)
 

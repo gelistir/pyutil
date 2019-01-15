@@ -5,7 +5,8 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.portfolio.portfolio import Portfolio, similar
-from test.config import test_portfolio, read_frame
+from pyutil.test.aux import read_frame
+from test.config import test_portfolio, resource
 
 portfolio = test_portfolio()
 
@@ -38,12 +39,12 @@ class TestPortfolio(TestCase):
         x = portfolio.sector_weights(symbolmap=pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
                                                 "E": "C", "F": "C", "G": "C"}), total=True)
 
-        pdt.assert_frame_equal(x.tail(10), read_frame("sector_weights.csv", parse_dates=True))
+        pdt.assert_frame_equal(x.tail(10), read_frame(resource("sector_weights.csv"), parse_dates=True))
 
         x = portfolio.sector_weights_final(symbolmap=pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
                                                 "E": "C", "F": "C", "G": "C"}), total=True)
 
-        pdt.assert_series_equal(x, read_frame("sector_weights.csv", parse_dates=True).iloc[-1])
+        pdt.assert_series_equal(x, read_frame(resource("sector_weights.csv"), parse_dates=True).iloc[-1])
 
 
     def test_position(self):
@@ -93,7 +94,7 @@ class TestPortfolio(TestCase):
             Portfolio(prices=prices, weights=weights)
 
     def test_state(self):
-        pdt.assert_frame_equal(test_portfolio().state, read_frame("state2.csv"))
+        pdt.assert_frame_equal(test_portfolio().state, read_frame(resource("state2.csv")))
 
     def test_mismatch_columns(self):
         with self.assertRaises(AssertionError):

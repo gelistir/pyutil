@@ -16,6 +16,7 @@ from pyutil.timeseries.merge import merge, last_index
 class Portfolio(ProductInterface):
     __tablename__ = "portfolio"
     __mapper_args__ = {"polymorphic_identity": "portfolio"}
+    __searchable__ = ["name"]
     id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
 
     # define the price...
@@ -97,6 +98,7 @@ class Portfolio(ProductInterface):
 
 class PortfolioSymbol(Base):
     __tablename__ = 'portfolio_symbol'
+    __searchable__ = ["symbol"]
     _portfolio_id = Column("portfolio_id", Integer, ForeignKey('portfolio.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
     _symbol_id = Column("symbol_id", Integer, ForeignKey('symbol.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
 

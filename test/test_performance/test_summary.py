@@ -3,12 +3,15 @@ import pandas as pd
 import numpy as np
 
 from pyutil.performance.summary import performance, fromNav, fromReturns
-from test.config import read_series
+#from test.config import read_series
 
 import pandas.util.testing as pdt
 
+from pyutil.test.aux import read_series
+from test.config import resource
 
-s = fromNav(read_series("ts.csv", parse_dates=True), adjust=True)
+ts = read_series(resource("ts.csv"), parse_dates=True)
+s = fromNav(ts, adjust=True)
 
 
 class TestSummary(TestCase):
@@ -21,7 +24,7 @@ class TestSummary(TestCase):
 
     def test_summary(self):
         print(s.summary().apply(str).to_csv())
-        pdt.assert_series_equal(s.summary().apply(str), read_series("summary.csv").apply(str), check_names=False)
+        pdt.assert_series_equal(s.summary().apply(str), read_series(resource("summary.csv")).apply(str), check_names=False, check_exact=False)
         x = fromNav(pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-02-06")], data=[1.0, 1.02]))
         self.assertAlmostEqual(float(x.summary()["Annua Return"]), 22.0, places=10)
 
@@ -70,8 +73,8 @@ class TestSummary(TestCase):
         self.assertEqual(x.index[0], pd.Timestamp("2015-01-01"))
 
     def test_fromNav(self):
-        x = fromNav(ts=read_series("ts.csv", parse_dates=True))
-        pdt.assert_series_equal(x.series, read_series("ts.csv", parse_dates=True))
+        x = fromNav(ts=read_series(resource("ts.csv"), parse_dates=True))
+        pdt.assert_series_equal(x.series, read_series(resource("ts.csv"), parse_dates=True))
 
         x = fromNav(ts=None)
         pdt.assert_series_equal(x.series, pd.Series({}))

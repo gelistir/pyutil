@@ -21,6 +21,8 @@ class SymbolType(_enum.Enum):
 
 class Symbol(ProductInterface):
     __tablename__ = "symbol"
+    __searchable__ = ['internal', 'name', 'group']
+
     id = sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
 
     group = sq.Column("group", _Enum(SymbolType))

@@ -4,30 +4,23 @@ import pandas as pd
 
 from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio
+from pyutil.test.aux import resource_folder, read_series, read_frame
 
 pd.options.display.width = 300
 
-def resource(name):
-    base_dir = os.path.dirname(__file__)
-    return os.path.join(base_dir, "resources", name)
-
-
-def read_frame(name, parse_dates=True, index_col=0):
-    return pd.read_csv(resource(name), index_col=index_col, header=0, parse_dates=parse_dates)
-
-
-def read_series(name, parse_dates=True, index_col=0, cname=None):
-    return pd.read_csv(resource(name), index_col=index_col, header=None, squeeze=True, parse_dates=parse_dates,
-                       names=[cname])
+# this is a function mapping name of a file to its path...
+resource = resource_folder(folder=os.path.dirname(__file__))
 
 
 def test_portfolio():
-    return Portfolio(prices=read_frame("price.csv"), weights=read_frame("weight.csv"))
+    return Portfolio(prices=read_frame(resource("price.csv")), weights=read_frame(resource("weight.csv")))
 
 
 if __name__ == '__main__':
-    ts = fromNav(read_series("ts.csv"))
-    ts.drawdown.to_csv(resource("drawdown.csv"))
+    ts = fromNav(read_series(file=resource("ts.csv")))
+    print(ts)
+
+    ts.drawdown.to_csv(resource(name="drawdown.csv"))
 
     ts.summary(alpha=0.95).to_csv(resource("summary.csv"))
     ts.monthlytable.to_csv(resource("monthtable.csv"))

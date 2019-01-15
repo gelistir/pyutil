@@ -3,8 +3,10 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from test.config import read_series
-s = read_series("ts.csv")
+from pyutil.test.aux import read_series
+from test.config import resource
+
+s = read_series(resource("ts.csv"))
 
 index = pd.Timestamp("2015-04-14")
 

@@ -1,16 +1,19 @@
 import pandas as pd
 from pyutil.performance._drawdown import _Drawdown
-from test.config import read_series
+#from test.config import read_series
 from unittest import TestCase
 
-ts = read_series("ts.csv", parse_dates=True)
+from pyutil.test.aux import read_series
+from test.config import resource
+
+ts = read_series(resource("ts.csv"), parse_dates=True)
 
 import pandas.util.testing as pdt
 
 
 class TestDrawdown(TestCase):
     def test_drawdown(self):
-        pdt.assert_series_equal(_Drawdown(ts).drawdown, read_series("drawdown.csv", parse_dates=True), check_names=False)
+        pdt.assert_series_equal(_Drawdown(ts).drawdown, read_series(resource("drawdown.csv"), parse_dates=True), check_names=False)
 
     def test_periods(self):
         x = _Drawdown(ts).periods
