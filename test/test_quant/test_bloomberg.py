@@ -5,15 +5,17 @@ from pyutil.quant.reference import update_reference
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.sql.interfaces.ref import Field, DataType, FieldType
-from pyutil.sql.session import postgresql_db_test
 
-from test.config import resource, read_frame
+#from pyutil.sql.session import postgresql_db_test
+
+from pyutil.test.aux import read_frame, postgresql_db_test
+from test.config import resource
 
 
 class TestQuant(TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.session, cls.connection_str = postgresql_db_test(base=Base)
+        cls.session, _ = postgresql_db_test(base=Base)
 
         for asset, data in read_frame(resource("price.csv")).items():
             symbol = Symbol(name=asset, group=SymbolType.fixed_income)

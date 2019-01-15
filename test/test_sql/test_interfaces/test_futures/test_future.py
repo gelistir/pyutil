@@ -12,7 +12,8 @@ from pyutil.sql.base import Base
 
 import pandas.util.testing as pdt
 
-from pyutil.sql.session import postgresql_db_test
+#from pyutil.sql.session import postgresql_db_test
+from pyutil.test.aux import postgresql_db_test
 
 
 def future():
