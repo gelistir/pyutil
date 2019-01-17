@@ -5,6 +5,7 @@
   <settings>
     <options>
       <option name="artifactRules" value="artifacts =&gt; artifacts" />
+      <option name="checkoutMode" value="ON_AGENT" />
       <option name="cleanBuild" value="true" />
     </options>
     <parameters />
