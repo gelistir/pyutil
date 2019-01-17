@@ -33,6 +33,7 @@
     </build-runners>
     <vcs-settings>
       <vcs-entry-ref root-id="Pyutil_HttpsGithubComLobnekPyutilRefsHeadsMaster" />
+      <vcs-entry-ref root-id="Pyutil_Pyutil" />
     </vcs-settings>
     <requirements />
     <build-triggers>
