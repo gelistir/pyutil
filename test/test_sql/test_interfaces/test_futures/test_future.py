@@ -1,75 +1,64 @@
-from unittest import TestCase
-
 import pandas as pd
+import pandas.util.testing as pdt
+import pytest
 
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
 from pyutil.sql.interfaces.futures.future import Future
 
-from pyutil.sql.base import Base
 
-
-import pandas.util.testing as pdt
-
-#from pyutil.sql.session import postgresql_db_test
-from pyutil.testing.aux import postgresql_db_test
-
-
+@pytest.fixture(scope="module")
 def future():
     # define an exchange
     e = Exchange(name="Chicago Mercantile Exchange")
     # define a category
     c = FuturesCategory(name="Equity Index")
     # define the future
-    return Future(name="ES1 Index", internal="S&P 500 E-Mini Futures", quandl="CME/ES", exchange=e, category=c)
+    future = Future(name="ES1 Index", internal="S&P 500 E-Mini Futures", quandl="CME/ES", exchange=e, category=c)
+
+    c1 = Contract(figi="BB1", notice=pd.Timestamp("2010-01-01").date(), fut_month_yr="JAN 10")
+    c2 = Contract(figi="BB2", notice=pd.Timestamp("2009-03-01").date(), fut_month_yr="MAR 09")
+
+    #future.contracts.append(c1)
+    #future.contracts.append(c2)
+    future.contracts.extend([c2, c1])
+
+    return future
 
 
-class TestFuture(TestCase):
-    def test_future(self):
-        f = future()
-        self.assertEqual(f.name, "ES1 Index")
-        self.assertEqual(f.category.name, "Equity Index")
-        self.assertEqual(f.exchange.name, "Chicago Mercantile Exchange")
-        self.assertEqual(f.internal, "S&P 500 E-Mini Futures")
-        self.assertEqual(f.quandl, "CME/ES")
-        self.assertEqual(str(f), "Future(ES1 Index)")
+class TestFuture(object):
+    def test_future(self, future):
+        assert future.name == "ES1 Index"
+        assert future.category.name == "Equity Index"
+        assert future.exchange.name == "Chicago Mercantile Exchange"
+        assert future.internal == "S&P 500 E-Mini Futures"
+        assert future.quandl == "CME/ES"
+        assert str(future) == "Future(ES1 Index)"
 
     def test_future_no_contracts(self):
         # define an exchange
-        f = future()
-        self.assertIsNone(f.max_notice)
-        self.assertListEqual(f.contracts, [])
+        f = Future(name="ES1 Index", internal="S&P 500 E-Mini Futures", quandl="CME/ES")
+        assert not f.max_notice
+        assert f.contracts == []
 
-    def test_future_with_contracts(self):
-        session, _ = postgresql_db_test(Base)
-
-        f = future()
-
-        c1 = Contract(figi="BB1", notice=pd.Timestamp("2010-01-01").date(), fut_month_yr="JAN 10")
-        c2 = Contract(figi="BB2", notice=pd.Timestamp("2009-03-01").date(), fut_month_yr="MAR 09")
-
-        f.contracts.append(c1)
-        f.contracts.append(c2)
-        session.add(f)
-        session.commit()
-
-        self.assertTrue(f.contracts[0].notice < f.contracts[1].notice)
-        self.assertEqual(f.contracts[0].future, f)
-        self.assertEqual(f.contracts[1].future, f)
+    def test_future_with_contracts(self, future):
+        assert future.contracts[0].notice < future.contracts[1].notice
+        assert future.contracts[0].future == future
+        assert future.contracts[1].future == future
 
         # You can not modify the underlying future of a contract!
-        with self.assertRaises(AttributeError):
-            c = f.contracts[0]
-            c.future = f
+        with pytest.raises(AttributeError):
+            c = future.contracts[0]
+            c.future = future
 
-        self.assertEqual(f.max_notice, pd.Timestamp("2010-01-01").date())
-        self.assertListEqual(f.figis, ["BB2", "BB1"])
-        self.assertEqual(f.contracts[0].quandl, "CME/ESH2009")
-        self.assertTrue(f.contracts[0] < f.contracts[1])
+        assert future.max_notice == pd.Timestamp("2010-01-01").date()
+        assert future.figis, ["BB2", "BB1"]
+        assert future.contracts[0].quandl == "CME/ESH2009"
+        assert future.contracts[0] < future.contracts[1]
 
     def test_rollmap(self):
-        f = future()
+        f = Future(name="AZ1 Comdty", internal="HaHa", quandl="CME/ES")
 
         # add the contracts
         c1 = Contract(notice=pd.Timestamp("2014-01-01").date(), figi="A1",
