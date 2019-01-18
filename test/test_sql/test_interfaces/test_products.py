@@ -8,7 +8,9 @@ from test.test_sql.product import Product
 t0 = pd.Timestamp("2010-05-14")
 t1 = pd.Timestamp("2010-05-15")
 
+
 import pytest
+
 
 class TestProductInterface(object):
     def test_name(self):
