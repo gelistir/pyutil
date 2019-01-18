@@ -1,5 +1,3 @@
-import unittest
-
 import pandas as pd
 import pandas.util.testing as pdt
 
@@ -11,55 +9,28 @@ t0 = pd.Timestamp("1978-11-15")
 t1 = pd.Timestamp("1978-11-16")
 
 
-class TestSecurity(unittest.TestCase):
+class TestSecurity(object):
     def test_name(self):
         s = Security(name=100)
-        self.assertEqual(s.name, "100")
+        assert s.name == "100"
 
-        self.assertIsNone(s._price)
-        self.assertEqual(s.discriminator, "Security")
-        self.assertEqual(str(s), "Security(100: None)")
+        #self.assertEqual(s.name, "100")
+        assert not s._price
+        assert s.discriminator == "Security"
+        assert str(s) == "Security(100: None)"
 
-    def test_ts_new(self):
-        security = Security(name="A")
-        self.assertIsNone(security._price)
+        s.upsert_price(test_portfolio().prices["A"])
 
-        # upsert series
-        security._price = test_portfolio().prices["A"]
-
-        # extract the series again
-        pdt.assert_series_equal(security._price, test_portfolio().prices["A"].dropna(), check_names=False)
-
-        # test json
-        a = security.to_json()
+        a = s.to_json()
         assert isinstance(a, dict)
-        self.assertEqual(a["name"], "A")
+        assert a["name"] == "100"
 
-        pdt.assert_series_equal(a["Price"], security._price)
+        pdt.assert_series_equal(a["Price"], s.price)
 
-        # extract the last stamp
-        self.assertEqual(security._price.last_valid_index(), pd.Timestamp("2015-04-22"))
+        s.upsert_volatility(Currency(name="USD"), ts=pd.Series([30, 40, 50]))
+        s.upsert_volatility(Currency(name="CHF"), ts=pd.Series([10, 11, 12]))
 
-        x = security.upsert_price(ts = 2*test_portfolio().prices["A"])
-        pdt.assert_series_equal(x, 2*test_portfolio().prices["A"].dropna(), check_names=False)
+        pdt.assert_frame_equal(s.vola_frame, pd.DataFrame({key: item for (key, item) in s._vola.items()}))
 
-    def test_volatility(self):
-        security = Security(name="A")
-        # short cut using protected variables, don't do it...
-        security._vola[Currency(name="USD")] = pd.Series([30, 40, 50])
-        security._vola[Currency(name="CHF")] = pd.Series([10, 11, 12])
-
-        pdt.assert_frame_equal(security.vola_frame, pd.DataFrame({key: item for (key, item) in security._vola.items()}))
-
-    def test_volatility(self):
-        security = Security(name="B")
-        pdt.assert_series_equal(security._vola.get(Currency(name="USD"), default=pd.Series({})), pd.Series({}))
-
-        x = security.upsert_volatility(currency=Currency(name="CHF"), ts=pd.Series([10, 20, 30]))
-        pdt.assert_frame_equal(security.vola_frame, pd.DataFrame({Currency(name="CHF"): pd.Series([10,20,30])}))
-        pdt.assert_series_equal(x, pd.Series([10, 20, 30]))
-
-    def test_standard_bloomberg_scaling(self):
-        o = Security(name="Thomas")
-        self.assertEqual(o.bloomberg_scaling, 1)
-        self.assertIsNone(o.bloomberg_ticker)
+        assert s.bloomberg_scaling == 1
+        assert not s.bloomberg_ticker

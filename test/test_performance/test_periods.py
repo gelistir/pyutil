@@ -10,8 +10,6 @@ from test.config import read
 def returns():
     return read("ts.csv", squeeze=True, index_col=0, header=None, parse_dates=True).pct_change().dropna()
 
-
-
 class TestPeriods(object):
     def test_periods(self):
         p = periods(today=pd.Timestamp("2015-05-01"))

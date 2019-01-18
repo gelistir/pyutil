@@ -1,15 +1,12 @@
-from unittest import TestCase
-from pyutil.testing.aux import read_series
-from test.config import resource
-
-ts = read_series(resource("ts.csv"), parse_dates=True)
+import pytest
 
 from pyutil.performance._var import _VaR
+from test.config import read
 
-
-class TestVar(TestCase):
+class TestVar(object):
     def test_class(self):
-        #s = read_series("ts.csv", parse_dates=True)
+        ts = read("ts.csv", parse_dates=True, index_col=0, header=None, squeeze=True)
+
         v = _VaR(ts, alpha=0.99)
-        self.assertAlmostEqual(100*v.cvar, 0.51218385609772821, places=10)
-        self.assertAlmostEqual(100*v.var, 0.47550914363392316, places=10)
+        assert 100*v.cvar == pytest.approx(0.51218385609772821, 1e-10)
+        assert 100*v.var == pytest.approx(0.47550914363392316, 1e-10)

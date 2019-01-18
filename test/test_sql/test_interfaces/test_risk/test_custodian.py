@@ -1,5 +1,3 @@
-import unittest
-
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 

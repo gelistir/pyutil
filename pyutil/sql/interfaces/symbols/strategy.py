@@ -51,7 +51,7 @@ class Strategy(ProductInterface):
         # Reader is a function taking the name of an asset as a parameter
         return module(self.source).Configuration(reader=reader)
 
-    def upsert(self, portfolio, symbols, days=0):
+    def upsert(self, portfolio, symbols=None, days=0):
         assert isinstance(portfolio, _Portfolio)
 
         assert self._portfolio
@@ -100,7 +100,11 @@ class Strategy(ProductInterface):
         return self._portfolio.sector(total=total)
 
     def to_csv(self, folder=None):
-        return self.portfolio.to_csv(folder)
+        return self._portfolio.to_csv(folder)
 
     def read_csv(self, folder, symbols):
         self.upsert(_Portfolio.read_csv(folder), symbols)
+
+    @property
+    def symbols(self):
+        return self._portfolio.symbols

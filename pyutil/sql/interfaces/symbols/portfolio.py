@@ -1,3 +1,5 @@
+import os
+
 import sqlalchemy as sq
 
 import pandas as pd
@@ -29,7 +31,7 @@ class Portfolio(ProductInterface):
     def __init__(self, name):
         super().__init__(name)
 
-    def upsert(self, portfolio, symbols):
+    def upsert(self, portfolio, symbols=None):
         assert isinstance(portfolio, _Portfolio)
 
         self._weights = merge(old=self._weights, new=portfolio.weights)
@@ -38,11 +40,18 @@ class Portfolio(ProductInterface):
         # recompute the entire portfolio!
         portfolio_new = self.portfolio
 
+        symbols = symbols or {s.name : s for s in self.symbols}
+
         for asset in portfolio_new.assets:
+            assert isinstance(asset, str)
+            assert asset in symbols.keys(), "The asset {asset} is not known.".format(asset=asset)
+
             if symbols[asset] not in set(self.symbols):
+                # append the symbol to the symbols of the portfolio
                 self.symbols.append(symbols[asset])
 
-        return portfolio_new
+
+        return self
 
     @property
     def last(self):
@@ -94,6 +103,15 @@ class Portfolio(ProductInterface):
     @property
     def weights(self):
         return self._weights
+
+    def to_csv(self, folder=None):
+        if folder:
+            if not os.path.exits(folder):
+                os.makedirs(folder)
+            self.weights.to_csv(os.path.join(folder, "weights.csv"))
+            self.prices.to_csv(os.path.join(folder, "prices.csv"))
+            self.symbols
+
 
 
 class PortfolioSymbol(Base):

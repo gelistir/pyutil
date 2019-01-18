@@ -13,47 +13,51 @@ t1 = pd.Timestamp("2010-04-24")
 t2 = pd.Timestamp("2010-04-25")
 
 
-class TestPortfolio(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.p = Portfolio(name="Maffay")
+import pytest
 
-        cls.x = dict()
-        for name in ["A", "B", "C"]:
-            cls.x[name] = Symbol(name=name, group=SymbolType.equities)
+@pytest.fixture
+def portfolio():
+    p = Portfolio(name="Maffay")
 
-        for name in ["D","E","F","G"]:
-            cls.x[name] = Symbol(name=name, group=SymbolType.fixed_income)
+    x = dict()
+    for name in ["A", "B", "C"]:
+        x[name] = Symbol(name=name, group=SymbolType.equities)
+
+    for name in ["D", "E", "F", "G"]:
+        x[name] = Symbol(name=name, group=SymbolType.fixed_income)
+
+    p.upsert(portfolio=test_portfolio(), symbols=x)
+
+    return p
+
+class TestPortfolio(object):
+    def test_read(self, portfolio):
+        p = test_portfolio()
+
+        pdt.assert_frame_equal(portfolio.weights, p.weights, check_names=False)
+        pdt.assert_frame_equal(portfolio.prices, p.prices, check_names=False)
+
+        pdt.assert_series_equal(portfolio.nav, p.nav.series, check_names=False)
+        pdt.assert_series_equal(portfolio.leverage, p.leverage, check_names=False)
+
+    def test_upsert(self, portfolio):
+        p = 5*portfolio.portfolio.tail(10)
+        pp = portfolio.upsert(p, symbols=None)
+        print(type(pp))
+        assert isinstance(pp, Portfolio)
 
 
-        cls.p.upsert(portfolio=test_portfolio(), symbols=cls.x)
+        x = portfolio.weights.tail(12).sum(axis=1)
+        assert x["2015-04-08"] == pytest.approx(0.305048, 1e-5)
+        assert x["2015-04-09"] == pytest.approx(1.524054, 1e-5)
 
-    def test_read_influx(self):
-        p1 = self.p.portfolio
-        pdt.assert_frame_equal(p1.weights, test_portfolio().weights, check_names=False)
-        pdt.assert_frame_equal(p1.prices, test_portfolio().prices, check_names=False)
+    def test_last(self, portfolio):
+        assert portfolio.prices.last_valid_index() == pd.Timestamp("2015-04-22")
 
-    def test_nav(self):
-        pdt.assert_series_equal(self.p.nav, test_portfolio().nav.series, check_names=False)
+    def test_sector(self, portfolio):
+        pdt.assert_series_equal(portfolio.sector(total=False).loc["2015-04-22"], pd.Series(index=["Equities","Fixed Income"], data=[0.135671, 0.173303]), check_names=False)
+        pdt.assert_series_equal(portfolio.sector(total=True).loc["2015-04-22"], pd.Series(index=["Equities", "Fixed Income", "Total"], data=[0.135671, 0.173303, 0.3089738755]), check_names=False)
 
-    def test_leverage(self):
-        pdt.assert_series_equal(self.p.leverage, test_portfolio().leverage, check_names=False)
-
-    def test_upsert(self):
-        p = 5*test_portfolio().tail(10)
-        self.p.upsert(p, self.x)
-
-        x = self.p.portfolio.weights.tail(12).sum(axis=1)
-        self.assertAlmostEqual(x["2015-04-08"], 0.305048, places=5)
-        self.assertAlmostEqual(x["2015-04-09"], 1.524054, places=5)
-
-    def test_last(self):
-        self.assertEqual(self.p._prices.last_valid_index(), pd.Timestamp("2015-04-22"))
-
-    def test_sector(self):
-        pdt.assert_series_equal(self.p.sector(total=False).loc["2015-04-22"], pd.Series(index=["Equities","Fixed Income"], data=[0.135671, 0.173303]), check_names=False)
-        pdt.assert_series_equal(self.p.sector(total=True).loc["2015-04-22"], pd.Series(index=["Equities", "Fixed Income", "Total"], data=[0.135671, 0.173303, 0.3089738755]), check_names=False)
-
-    def test_state(self):
-        pdt.assert_frame_equal(read_frame(resource("state.csv")), self.p.state, check_names=False, check_exact=False, check_less_precise=True, check_dtype=False)
+    def test_state(self, portfolio):
+        pdt.assert_frame_equal(read_frame(resource("state.csv")), portfolio.state, check_names=False, check_exact=False, check_less_precise=True, check_dtype=False)
 

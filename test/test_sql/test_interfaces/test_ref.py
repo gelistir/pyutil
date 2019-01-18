@@ -5,7 +5,6 @@ from test.test_sql.product import Product
 
 class TestReference(object):
     def test_reference(self):
-        #assert field == FieldType.dynamic
         field = Field(name="Peter", type=FieldType.dynamic, result=DataType.integer)
         product = Product(name="A")
 

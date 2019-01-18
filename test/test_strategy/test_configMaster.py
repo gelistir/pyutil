@@ -1,5 +1,3 @@
-from unittest import TestCase
-
 from pyutil.portfolio.portfolio import similar
 from pyutil.strategy.config import ConfigMaster
 from pyutil.testing.aux import read_frame
@@ -22,7 +20,7 @@ class Strategy(ConfigMaster):
         return test_portfolio().subportfolio(assets=self.names)
 
 
-class TestConfigMaster(TestCase):
+class TestConfigMaster(object):
     def test_run_strategy(self):
         prices = read_frame(resource("price.csv"))
 
@@ -36,12 +34,14 @@ class TestConfigMaster(TestCase):
         s["Hans"] = 35
 
         pdt.assert_frame_equal(s.history(), prices[["A", "B", "C"]])
-        self.assertListEqual(s.names, ["A", "B", "C"])
-        self.assertIsNotNone(s.reader)
+        assert s.names == ["A", "B", "C"]
+        assert s.reader
+
+        #self.assertIsNotNone(s.reader)
 
         parameter = {key: value for key, value in s.items()}
-        self.assertDictEqual(parameter, {"Peter Maffay": 20, "Hans": 35, "Dampf": 40})
+        assert parameter == {"Peter Maffay": 20, "Hans": 35, "Dampf": 40}
 
         pdt.assert_series_equal(s.reader("A"), prices["A"])
 
-        self.assertTrue(similar(s.portfolio, test_portfolio().subportfolio(assets=s.names)))
+        assert similar(s.portfolio, test_portfolio().subportfolio(assets=s.names))
