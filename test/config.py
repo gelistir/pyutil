@@ -15,6 +15,8 @@ resource = resource_folder(folder=os.path.dirname(__file__))
 def test_portfolio():
     return Portfolio(prices=read_frame(resource("price.csv")), weights=read_frame(resource("weight.csv")))
 
+def read(name, **kwargs):
+    return pd.read_csv(resource(name), **kwargs)
 
 if __name__ == '__main__':
     ts = fromNav(read_series(file=resource("ts.csv")))
