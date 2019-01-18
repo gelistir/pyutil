@@ -1,6 +1,5 @@
 import pytest
 
-#from pyutil.data import Database
 from pyutil.quant.reference import update_reference
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
@@ -19,7 +18,6 @@ def session():
 
     field = Field(name="f1", result=DataType.string, type=FieldType.dynamic)
     db.session.add(field)
-
     db.session.commit()
 
     yield db.session

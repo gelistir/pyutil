@@ -1,6 +1,4 @@
 import pandas as pd
-from unittest import TestCase
-
 import pytest
 
 from pyutil.portfolio.portfolio import Portfolio, merge
