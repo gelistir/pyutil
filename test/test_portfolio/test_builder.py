@@ -1,11 +1,13 @@
 import pandas as pd
 from unittest import TestCase
 
+import pytest
+
 from pyutil.portfolio.portfolio import Portfolio, merge
 from pyutil.timeseries.merge import last_index
 
 
-class TestPortfolioBuilder(TestCase):
+class TestPortfolioBuilder(object):
 
     def test_builder(self):
         prices = pd.DataFrame(columns=["B", "A"], index=[1, 2], data=100)
@@ -14,13 +16,13 @@ class TestPortfolioBuilder(TestCase):
         portfolio.weights.loc[1] = {"A": 0.5, "B": 0.5}
         portfolio.weights.loc[2] = {"A": 0.3, "B": 0.7}
 
-        self.assertEqual(portfolio.prices["A"][2], 100)
-        self.assertEqual(portfolio.asset_returns["A"][2], 0.0)
-        self.assertEqual(portfolio.weights["A"][1], 0.5)
-        self.assertEqual(portfolio.cash[2], 0.0)
+        assert portfolio.prices["A"][2] == 100
+        assert portfolio.asset_returns["A"][2] == 0.0
+        assert portfolio.weights["A"][1] == 0.5
+        assert portfolio.cash[2] == 0.0
 
-        self.assertEqual(last_index(portfolio.prices), 2)
-        self.assertEqual(str(portfolio), "Portfolio with assets: ['B', 'A']")
+        assert last_index(portfolio.prices) == 2
+        assert str(portfolio) == "Portfolio with assets: ['B', 'A']"
 
     def test_forward(self):
         prices = pd.DataFrame(columns=["A", "B"], index=[1,2,3], data=[[100,120],[110, 110],[130,120]])
@@ -33,12 +35,13 @@ class TestPortfolioBuilder(TestCase):
         portfolio.forward(2)
         portfolio.forward(3)
 
-        self.assertAlmostEqual(portfolio.weights["A"][3], 0.56521739130434789, places=5)
+        assert portfolio.weights["A"][3] == pytest.approx(0.56521739130434789, 1e-5)
 
     def test_empty(self):
         portfolio = Portfolio(prices = pd.DataFrame({}))
-        self.assertIsNone(last_index(portfolio.prices))
-        self.assertTrue(portfolio.empty)
+        #self.assertIsNone(last_index(portfolio.prices))
+        assert not last_index(portfolio.prices)
+        assert portfolio.empty
 
     def test_merge(self):
         prices1 = pd.DataFrame(columns=["B", "A"], index=[1, 2], data=100)
@@ -55,8 +58,7 @@ class TestPortfolioBuilder(TestCase):
 
         portfolio = merge(portfolios=[portfolio1, portfolio2], axis=1)
 
-        self.assertListEqual(portfolio.assets, ["A","B","C","D"])
-
+        assert portfolio.assets == ["A","B","C","D"]
 
         prices3 = pd.DataFrame(columns=["A", "B"], index=[1, 2], data=200)
 
@@ -64,7 +66,7 @@ class TestPortfolioBuilder(TestCase):
         portfolio3.weights.loc[1] = {"A": 0.5, "B": 0.5}
         portfolio3.weights.loc[2] = {"A": 0.3, "B": 0.7}
 
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             # overlapping columns!
             merge(portfolios=[portfolio1, portfolio3], axis=1)
 
