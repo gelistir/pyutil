@@ -10,6 +10,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker, scoped_session
 
+import collections
+Database = collections.namedtuple("Database", ["session", "connection"])
 
 def post(client, data, url):
     response = client.post(url, data=data)
@@ -74,4 +76,4 @@ def postgresql_db_test(base, name=None, echo=False):
     # create some tables
     base.metadata.create_all(engine)
 
-    return scoped_session(sessionmaker(bind=engine)), str_name
+    return Database(session=scoped_session(sessionmaker(bind=engine)), connection=str_name)
