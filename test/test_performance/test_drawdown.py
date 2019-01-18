@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 from pyutil.performance._drawdown import _Drawdown
-from pyutil.test.aux import read_series
+from pyutil.testing.aux import read_series
 from test.config import resource, read
 
 ts = read_series(resource("ts.csv"), parse_dates=True)

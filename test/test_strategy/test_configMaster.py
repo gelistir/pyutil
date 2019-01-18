@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from pyutil.portfolio.portfolio import similar
 from pyutil.strategy.config import ConfigMaster
-from pyutil.test.aux import read_frame
+from pyutil.testing.aux import read_frame
 from test.config import test_portfolio, resource
 
 import pandas.util.testing as pdt

@@ -4,7 +4,7 @@ import pandas as pd
 
 from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio
-from pyutil.test.aux import resource_folder, read_series, read_frame
+from pyutil.testing.aux import resource_folder, read_series, read_frame
 
 pd.options.display.width = 300
 

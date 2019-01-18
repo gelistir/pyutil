@@ -7,7 +7,7 @@ from pyutil.performance.summary import performance, fromNav, fromReturns
 
 import pandas.util.testing as pdt
 
-from pyutil.test.aux import read_series
+from pyutil.testing.aux import read_series
 from test.config import resource
 
 ts = read_series(resource("ts.csv"), parse_dates=True)

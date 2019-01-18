@@ -6,7 +6,7 @@ from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.sql.interfaces.ref import Field, DataType, FieldType
 
-from pyutil.test.aux import read_frame, postgresql_db_test
+from pyutil.testing.aux import read_frame, postgresql_db_test
 from test.config import resource
 
 @pytest.fixture

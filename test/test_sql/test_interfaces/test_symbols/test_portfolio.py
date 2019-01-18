@@ -3,7 +3,7 @@ from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.test.aux import read_frame
+from pyutil.testing.aux import read_frame
 from test.config import test_portfolio, resource
 
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio

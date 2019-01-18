@@ -5,7 +5,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 
 from pyutil.portfolio.portfolio import Portfolio, similar
-from pyutil.test.aux import read_frame
+from pyutil.testing.aux import read_frame
 from test.config import test_portfolio, resource
 
 portfolio = test_portfolio()
