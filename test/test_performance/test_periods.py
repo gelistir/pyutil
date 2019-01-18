@@ -1,34 +1,32 @@
-from unittest import TestCase
-
 import pandas as pd
-
-#from test.config import read_series
+import pandas.util.testing as pdt
+import pytest
 
 from pyutil.performance.periods import periods, period_returns
-import pandas.util.testing as pdt
-
-from pyutil.test.aux import read_series
-from test.config import resource
+from test.config import read
 
 
-class TestPeriods(TestCase):
+@pytest.fixture(scope="module")
+def returns():
+    return read("ts.csv", squeeze=True, index_col=0, header=None, parse_dates=True).pct_change().dropna()
+
+
+
+class TestPeriods(object):
     def test_periods(self):
         p = periods(today=pd.Timestamp("2015-05-01"))
-        self.assertEqual(p["Two weeks"].start, pd.Timestamp("2015-04-17"))
-        self.assertEqual(p["Two weeks"].end, pd.Timestamp("2015-05-01"))
+        assert p["Two weeks"].start == pd.Timestamp("2015-04-17")
+        assert p["Two weeks"].end == pd.Timestamp("2015-05-01")
 
-    def test_period_returns(self):
+    def test_period_returns(self, returns):
         p = periods(today=pd.Timestamp("2015-05-01"))
-        s = read_series(resource("ts.csv"), parse_dates=True).pct_change().dropna()
-        x = 100*period_returns(returns=s, offset=p)
-        self.assertAlmostEqual(x["Three Years"], 1.1645579858904798 , places=10)
+        x = 100*period_returns(returns=returns, offset=p)
+        assert x["Three Years"] == pytest.approx(1.1645579858904798, 1e-10)
 
-    def test_periods_more(self):
-        s = read_series(resource("ts.csv"), parse_dates=True).pct_change().dropna()
-        y = period_returns(s, offset=periods(today=s.index[-1]))
-        pdt.assert_series_equal(y, read_series(resource("periods.csv"), parse_dates=False), check_names=False)
+    def test_periods_more(self, returns):
+        y = period_returns(returns, offset=periods(today=returns.index[-1]))
+        pdt.assert_series_equal(y, read("periods.csv", parse_dates=False, header=None, index_col=0, squeeze=True), check_names=False)
 
-    def test_period_returns_without_periods(self):
-        s = read_series(resource("ts.csv"), parse_dates=True).pct_change().dropna()
-        x = 100*period_returns(returns=s, today=pd.Timestamp("2015-05-01"))
-        self.assertAlmostEqual(x["Three Years"], 1.1645579858904798 , places=10)
+    def test_period_returns_without_periods(self, returns):
+        x = 100*period_returns(returns=returns, today=pd.Timestamp("2015-05-01"))
+        assert x["Three Years"] == pytest.approx(1.1645579858904798 , 1e-10)

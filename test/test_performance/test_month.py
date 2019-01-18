@@ -1,14 +1,14 @@
-from unittest import TestCase
+import pandas.util.testing as pdt
+import pytest
 
 from pyutil.performance._month import _monthlytable
-
-import pandas.util.testing as pdt
-
-from pyutil.test.aux import read_series, read_frame
-from test.config import resource
+from test.config import read
 
 
-class TestMonth(TestCase):
-    def test_table(self):
-        s = read_series(resource("ts.csv"))
-        pdt.assert_almost_equal(_monthlytable(s), read_frame(resource("monthtable.csv"), parse_dates=False))
+@pytest.fixture(scope="module")
+def ts():
+    return read("ts.csv", squeeze=True, index_col=0, header=None, parse_dates=True)
+
+class TestMonth(object):
+    def test_table(self, ts):
+        pdt.assert_almost_equal(_monthlytable(ts), read("monthtable.csv", parse_dates=False, index_col=0, header=0))
