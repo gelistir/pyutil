@@ -1,16 +1,14 @@
-from pyutil.timeseries.signal import trend
-from unittest import TestCase
 import pandas as pd
+import pytest
 
-from pyutil.test.aux import read_series
-from test.config import resource
+from pyutil.timeseries.signal import trend
+from test.config import read
 
-s = read_series(resource("ts.csv"))
-
+s = read("ts.csv", squeeze=True, index_col=0, header=None, parse_dates=True)
 
 index = pd.Timestamp("2015-04-14")
 
 
-class TestSignal(TestCase):
+class TestSignal(object):
     def test_trend(self):
-        self.assertAlmostEqual(trend(s)[index], -0.06181926927450359, places=5)
+        assert trend(s)[index] == pytest.approx(-0.06181926927450359, 1e-5)

@@ -1,14 +1,13 @@
 import tempfile
-from unittest import TestCase
 
+import httpretty
 import pandas as pd
+import pytest
 
 from pyutil.message import Mail
 
-import httpretty
 
-
-class TestMessage(TestCase):
+class TestMessage(object):
     @httpretty.activate
     def test_warning(self):
         httpretty.register_uri(
@@ -27,19 +26,19 @@ class TestMessage(TestCase):
             m.fromAdr = "Peter Maffay"
             m.toAdr = "David Hasselhoff"
             m.subject = "From Peter with love"
-            self.assertEqual(m.fromAdr, "Peter Maffay")
-            self.assertEqual(m.toAdr, "David Hasselhoff")
-            self.assertEqual(m.subject, "From Peter with love")
+            assert m.fromAdr == "Peter Maffay"
+            assert m.toAdr == "David Hasselhoff"
+            assert m.subject == "From Peter with love"
 
             m.send(html=True)
 
             x = m.files
-            self.assertEqual(len(x), 4)
+            assert len(x) == 4
 
     def test_empty_text(self):
         m = Mail()
         m.fromAdr = "Peter Maffay"
         m.toAdr = "David Hasselhoff"
         # you can't send anything with fake mailgunapi and mailgunkey
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             m.send()

@@ -1,14 +1,15 @@
-from unittest import TestCase
+import pytest
+
 from pyutil.parent import Production
 
 
-class TestDecorator(TestCase):
+class TestDecorator(object):
     def test_production(self):
         with Production() as p:
-            self.assertIsNotNone(p.logger)
+            assert p.logger
             p.logger.warning("Hello Peter Maffay")
 
     def test_production_error(self):
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             with Production() as p:
                 raise AssertionError

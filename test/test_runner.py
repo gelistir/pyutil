@@ -1,6 +1,8 @@
 import multiprocessing
 from unittest import TestCase
 
+import pytest
+
 from pyutil.runner import Runner
 
 
@@ -22,12 +24,12 @@ class WorkerImpl2(multiprocessing.Process):
         assert True
 
 
-class TestRunner(TestCase):
+class TestRunner(object):
     def test_Runner_Faulty(self):
         runner = Runner()
 
         # worker will raise an Exception!
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             runner.jobs.append(WorkerImpl1(name="Peter", x=10))
             runner.run_jobs()
 
@@ -39,12 +41,12 @@ class TestRunner(TestCase):
         runner.run_jobs()
 
         # check the logger
-        self.assertIsNotNone(runner.logger)
+        assert runner.logger
 
     def test_Runner_empty(self):
         runner = Runner()
 
-        self.assertListEqual(runner.jobs, [])
+        assert runner.jobs == []
         # this won't do any harm
         runner.run_jobs()
 

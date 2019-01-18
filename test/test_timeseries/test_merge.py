@@ -1,45 +1,49 @@
-from pyutil.timeseries.merge import merge, last_index, first_index, to_datetime, to_date
-from unittest import TestCase
 import pandas as pd
 import pandas.util.testing as pdt
+import pytest
 
-from pyutil.test.aux import read_series
-from test.config import resource
+from pyutil.timeseries.merge import merge, last_index, first_index, to_datetime, to_date
+from test.config import read
 
-s = read_series(resource("ts.csv"))
+
+@pytest.fixture()
+def ts():
+    return read("ts.csv", squeeze=True, index_col=0, header=None, parse_dates=True)
+#s = read_series(resource("ts.csv"))
 
 index = pd.Timestamp("2015-04-14")
 
 
-class TestMerge(TestCase):
-    def test_last_index(self):
-        t = last_index(s)
+class TestMerge(object):
+    def test_last_index(self, ts):
+        t = last_index(ts)
         t0 = pd.Timestamp("2015-04-22")
-        self.assertEqual(t, t0)
-        self.assertIsNone(last_index(None))
-        self.assertEqual(last_index(None, default=t0), t0)
-        self.assertEqual(last_index(pd.Series({}), default=t0), t0)
+        assert t == t0
+        assert not last_index(None)
+        assert last_index(None, default=t0) == t0
+        assert last_index(pd.Series({}), default=t0) == t0
 
-    def test_first_index(self):
-        t = first_index(s)
+    def test_first_index(self, ts):
+        t = first_index(ts)
         t0 = pd.Timestamp("2014-01-01")
-        self.assertEqual(t, t0)
-        self.assertIsNone(first_index(None))
-        self.assertEqual(first_index(None, default=t0), t0)
-        self.assertEqual(first_index(pd.Series({}), default=t0), t0)
+        assert t == t0
+        assert not first_index(None)
+        assert first_index(None, default=t0) == t0
+        assert first_index(pd.Series({}), default=t0) == t0
 
-    def test_merge(self):
-        x = merge(new=s)
-        pdt.assert_series_equal(x, s)
+    def test_merge(self, ts):
+        x = merge(new=ts)
+        pdt.assert_series_equal(x, ts)
 
-        x = merge(new=s, old=s)
-        pdt.assert_series_equal(x, s)
+        x = merge(new=ts, old=ts)
+        pdt.assert_series_equal(x, ts)
 
-        x = merge(new=5*s, old=s)
-        pdt.assert_series_equal(x, 5*s)
+        x = merge(new=5*ts, old=ts)
+        pdt.assert_series_equal(x, 5*ts)
 
         y = merge(None)
-        self.assertIsNone(y)
+        assert not y
+
 
         y = merge(pd.Series({}), None)
         pdt.assert_series_equal(y, pd.Series({}))
@@ -52,7 +56,7 @@ class TestMerge(TestCase):
         t0 = pd.Timestamp("2015-04-22")
         x = pd.Series(index=[t0], data=[2.0])
 
-        self.assertIsInstance(x.index[0], pd.Timestamp)
+        assert isinstance(x.index[0], pd.Timestamp)
 
         # should be safe to apply to_datetime
         pdt.assert_series_equal(x, to_datetime(x))
@@ -60,6 +64,7 @@ class TestMerge(TestCase):
         y = pd.Series(index=[t0.date()], data=[2.0])
         pdt.assert_series_equal(y, to_date(x))
 
-        self.assertIsNone(to_datetime(None))
-        self.assertIsNone(to_date(None))
+        assert not to_datetime(None)
+        assert not to_date(None)
+
 

@@ -1,57 +1,46 @@
-from unittest import TestCase
-
+import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from pyutil.sql.session import get_one_or_create, get_one_or_none, session
+from pyutil.sql.session import get_one_or_create, get_one_or_none
 from pyutil.test.aux import postgresql_db_test
 from test.test_sql.user import User, Base
 
+@pytest.fixture()
+def session():
+    db = postgresql_db_test(Base)
+    return db.session
 
-class TestSession(TestCase):
-    def test_get_one_or_create(self):
-        session, _ = postgresql_db_test(base=Base)
 
+class TestSession(object):
+    def test_get_one_or_create(self, session):
         # exists is False, as the user "B" does not exist yet
         x, exists = get_one_or_create(session, User, name="B")
-        self.assertFalse(exists)
+        assert not exists
         session.commit()
 
         # The user has been created before...
         y, exists = get_one_or_create(session, User, name="B")
-        self.assertTrue(exists)
+        assert exists
+        assert x == y
 
-        self.assertEqual(x, y)
+    def test_get_one_or_none(self, session):
+        assert not get_one_or_none(session, User, name="C")
 
-    def test_get_one_or_none(self):
-        session, _ = postgresql_db_test(base=Base)
-        self.assertIsNone(get_one_or_none(session, User, name="C"))
-
-    def test_session_scope(self):
-        session, _ = postgresql_db_test(base=Base)
-
+    def test_session_scope(self, session):
         session.add(User(name="Peter Maffay"))
         session.commit()
         u = session.query(User).filter_by(name="Peter Maffay").one()
 
-        self.assertEqual(u.name, "Peter Maffay")
+        assert u.name == "Peter Maffay"
 
-        with self.assertRaises(NoResultFound):
+        with pytest.raises(NoResultFound):
             session.query(User).filter_by(name="Wurst").one()
 
-    def test_throw_error(self):
-        session, _ = postgresql_db_test(base=Base)
-        with self.assertRaises(IntegrityError):
+    def test_throw_error(self, session):
+        with pytest.raises(IntegrityError):
             session.add(User(name="Peter Maffay"))
             session.commit()
             # we are trying to add the user a second time! Verboten!
             session.add(User(name="Peter Maffay"))
             session.commit()
-
-    #def test_session(self):
-    #    _, connection_str = postgresql_db_test(base=Base)
-    #    with session(connection_str=connection_str) as s:
-    #        s.add(User(name="Peter Maffay 2"))
-
-
-
