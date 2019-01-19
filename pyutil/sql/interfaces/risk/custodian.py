@@ -19,5 +19,3 @@ class Currency(ProductInterface):
 
     def __init__(self, name):
         super().__init__(name=name)
-
-

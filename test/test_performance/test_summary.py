@@ -1,95 +1,108 @@
-from unittest import TestCase
 import pandas as pd
 import numpy as np
+import pytest
 
 from pyutil.performance.summary import performance, fromNav, fromReturns
-#from test.config import read_series
 
 import pandas.util.testing as pdt
 
-from pyutil.testing.aux import read_series
-from test.config import resource
-
-ts = read_series(resource("ts.csv"), parse_dates=True)
-s = fromNav(ts, adjust=True)
+from test.config import read
 
 
-class TestSummary(TestCase):
-    def test_adjust(self):
-        x = s.adjust(value=10000)
-        self.assertAlmostEqual(x.loc[0], 10000.0, places=10)
+@pytest.fixture()
+def ts():
+    ts = read("ts.csv", parse_dates=True, squeeze=True, header=None)
+    ts.name = None
+    ts.index.name = None
+    return ts
 
-        y = 10000*fromNav(s, adjust=True)
+
+@pytest.fixture()
+def nav(ts):
+    return fromNav(ts, adjust=True)
+
+
+@pytest.fixture()
+def summary():
+    return read("summary.csv", header=None, index_col=0, squeeze=True).apply(str)
+
+
+class TestSummary(object):
+    def test_adjust(self, nav):
+        x = nav.adjust(value=10000)
+        assert x.loc[0] == 10000.0
+
+        y = 10000 * fromNav(nav, adjust=True)
         pdt.assert_series_equal(x, y)
 
-    def test_summary(self):
-        print(s.summary().apply(str).to_csv())
-        pdt.assert_series_equal(s.summary().apply(str), read_series(resource("summary.csv")).apply(str), check_names=False, check_exact=False)
-        x = fromNav(pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-02-06")], data=[1.0, 1.02]))
-        self.assertAlmostEqual(float(x.summary()["Annua Return"]), 22.0, places=10)
+    def test_summary(self, nav, summary):
+        pdt.assert_series_equal(nav.summary().apply(str), summary, check_names=False, check_exact=False)
 
-    def test_mtd(self):
-        self.assertAlmostEqual(100 * s.mtd, 1.4133604922211385, places=10)
+    def test_mtd(self, nav):
+        assert 100 * nav.mtd == pytest.approx(1.4133604922211385, 1e-10)
+
         x = pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-01-06")], data=[1.0, 1.6])
-        self.assertAlmostEqual(fromNav(x).mtd, 0.6, places=10)
+        assert fromNav(x).mtd == pytest.approx(0.6, 1e-10)
 
-    def test_ytd(self):
-        self.assertAlmostEqual(100 * s.ytd, 2.1718996734564122, places=10)
+    def test_ytd(self, nav):
+        assert 100 * nav.ytd == pytest.approx(2.1718996734564122, 1e-10)
+
         x = pd.Series(index=[pd.Timestamp("2017-01-04"), pd.Timestamp("2017-03-06")], data=[1.0, 1.6])
-        self.assertAlmostEqual(fromNav(x).mtd, 0.6, places=10)
-        self.assertAlmostEqual(fromNav(x).ytd, 0.6, places=10)
+        assert fromNav(x).mtd == pytest.approx(0.6, 1e-10)
+        assert fromNav(x).ytd == pytest.approx(0.6, 1e-10)
 
-    def test_monthly_table(self):
-        self.assertAlmostEqual(100 * s.monthlytable["Nov"][2014], -0.19540358586001005, places=5)
+    def test_monthly_table(self, nav):
+        assert 100 * nav.monthlytable["Nov"][2014] == pytest.approx(-0.19540358586001005, 1e-10)
 
-    def test_performance(self):
-        result = performance(s)
-        self.assertAlmostEqual(result["Max Drawdown"], 3.9885756705666631, places=10)
+    def test_performance(self, nav):
+        result = performance(nav)
+        assert result["Max Drawdown"] == pytest.approx(3.9885756705666631, 1e-10)
 
-    def test_fee(self):
-        x = s.fee(0.5)
-        self.assertAlmostEqual(x[x.index[-1]], 0.99454336215760819, places=5)
-        x = s.fee(0.0)
-        self.assertAlmostEqual(x[x.index[-1]], 1.0116455798589048, places=5)
+    def test_fee(self, nav):
+        x = nav.fee(0.5)
+        assert x[x.index[-1]] == pytest.approx(0.99454336215760819, 1e-10)
 
-    def test_monthly(self):
-        self.assertAlmostEqual(s.monthly[pd.Timestamp("2014-11-30")], 0.9902211463174124, places=5)
+        x = nav.fee(0.0)
+        assert x[x.index[-1]] == pytest.approx(1.0116455798589048, 1e-10)
 
-    def test_annual(self):
-        self.assertAlmostEqual(s.annual[pd.Timestamp("2014-12-31")], 0.9901407168626069, places=5)
+    def test_monthly(self, nav):
+        assert nav.monthly[pd.Timestamp("2014-11-30")] == pytest.approx(0.9902211463174124, 1e-10)
 
-    def test_weekly(self):
-        self.assertEqual(len(s.weekly.index), 70)
-        # print(s.daily)
-        # self.assertEqual(len(s.daily.index), 477)
+    def test_annual(self, nav):
+        assert nav.annual[pd.Timestamp("2014-12-31")] == pytest.approx(0.9901407168626069, 1e-10)
 
-    def test_annual_returns(self):
-        x = s.returns_annual
-        self.assertAlmostEqual(x[2014], -0.009859283137393149)
-        self.assertAlmostEqual(x[2015],  0.021718996734564122)
+    def test_weekly(self, nav):
+        assert len(nav.weekly.index) == 70
 
-    def test_truncate(self):
-        x = s.truncate(before="2015-01-01")
-        self.assertEqual(x.index[0], pd.Timestamp("2015-01-01"))
+    def test_annual_returns(self, nav):
+        x = nav.returns_annual
+        assert x[2014] == pytest.approx(-0.009859283137393149, 1e-7)
+        assert x[2015] == pytest.approx(+0.021718996734564122, 1e-7)
 
-    def test_fromNav(self):
-        x = fromNav(ts=read_series(resource("ts.csv"), parse_dates=True))
-        pdt.assert_series_equal(x.series, read_series(resource("ts.csv"), parse_dates=True))
+    def test_truncate(self, nav):
+        x = nav.truncate(before="2015-01-01")
+        assert x.index[0] == pd.Timestamp("2015-01-01")
+
+    def test_fromNav(self, ts):
+        x = fromNav(ts)
+        print(x.series)
+        print(ts)
+        pdt.assert_series_equal(x.series, ts)
 
         x = fromNav(ts=None)
         pdt.assert_series_equal(x.series, pd.Series({}))
 
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             # you can't set a negative Nav value:
-            fromNav(ts = pd.Series(data=[1,2,-10]))
+            fromNav(ts=pd.Series(data=[1, 2, -10]))
 
-    def test_periods(self):
-        p = s.period_returns
-        self.assertAlmostEqual(p.loc["Three Years"], 0.011645579858904798, places=10)
+    def test_periods(self, nav):
+        p = nav.period_returns
+        assert p.loc["Three Years"] == pytest.approx(0.011645579858904798, 1e-10)
 
-    def test_drawdown_periods(self):
-        p = s.drawdown_periods
-        self.assertEqual(p.loc[pd.Timestamp("2014-03-07").date()], pd.Timedelta(days=66))
+    def test_drawdown_periods(self, nav):
+        p = nav.drawdown_periods
+        assert p.loc[pd.Timestamp("2014-03-07").date()] == pd.Timedelta(days=66)
 
     def test_with_dates(self):
         a = pd.Series({pd.Timestamp("2010-01-05").date(): 2.0,
@@ -103,25 +116,25 @@ class TestSummary(TestCase):
         pdt.assert_series_equal(n.ytd_series, pd.Series({"02": 1.0}))
 
         # we made 100% in Feb
-        self.assertEqual(n.mtd, 1.0)
-        self.assertEqual(n.ytd, 1.0)
+        assert n.mtd == 1.0
+        assert n.ytd == 1.0
 
     def test_adjust(self):
         n = fromNav(pd.Series({}))
-        self.assertTrue(n.adjust().empty)
+        assert n.adjust().empty
 
     def test_sortino_ratio_no_drawdown(self):
         x = pd.Series({pd.Timestamp("2012-02-13"): 1.0, pd.Timestamp("2012-02-14"): 1.0})
         n = fromNav(x)
 
-        self.assertEqual(n.sortino_ratio(), np.inf)
+        assert n.sortino_ratio() == np.inf
 
-    def test_recent(self):
-        pdt.assert_series_equal(s.recent(2), s.pct_change().tail(2))
+    def test_recent(self, nav):
+        pdt.assert_series_equal(nav.recent(2), nav.pct_change().tail(2))
 
     def test_short(self):
         n = fromNav(ts=pd.Series({pd.Timestamp("30-Nov-2016"): 112}))
-        self.assertEqual(n.periods_per_year, 256)
+        assert n.periods_per_year == 256
 
     def test_from_returns(self):
         x = pd.Series(data=[0.0, 0.1, -0.1])

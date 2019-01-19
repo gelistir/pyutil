@@ -1,12 +1,15 @@
 import pandas as pd
 
 import pandas.util.testing as pdt
+
+from pyutil.portfolio.portfolio import similar
 from test.config import test_portfolio, resource
 
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 
 import pytest
+
 
 @pytest.fixture
 def strategy():
@@ -20,6 +23,12 @@ def strategy():
 
 
 class TestStrategy(object):
+    def test_module(self):
+        with open(resource("source.py"), "r") as f:
+            strategy = Strategy(name="Peter", source=f.read(), active=True)
+            x = strategy.configuration(reader=None)
+            assert similar(x.portfolio, test_portfolio())
+
     def test_upsert(self, strategy):
         assert strategy.last == pd.Timestamp("2015-04-22")
 
@@ -54,7 +63,6 @@ class TestStrategy(object):
     #    test_dir = tempfile.mkdtemp()
     #    strategy.to_csv(folder=test_dir)
     #    strategy.read_csv(folder=test_dir, symbols=strategy.symbols)
-
 
     def test_sector(self, strategy):
         print(strategy.sector())

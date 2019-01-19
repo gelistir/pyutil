@@ -16,8 +16,8 @@ if __name__ == '__main__':
     file_prices = "data/price.csv"
     file_weights = "data/weight.csv"
 
-    prices = pd.read_csv(file_prices, index_col=0, parse_dates=True)
-    weights = pd.read_csv(file_weights, index_col=0, parse_dates=True)
+    prices = pd.read_csv(file_prices, index_col=0, parse_dates=True, header=0)
+    weights = pd.read_csv(file_weights, index_col=0, parse_dates=True, header=0)
 
     portfolio = Portfolio(prices, weights)
     f = portfolio.plot()

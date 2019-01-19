@@ -313,21 +313,20 @@ class Portfolio(object):
         p = Portfolio(prices=self.prices, weights=self.weights.copy()).forward(today)
 
         weights = weights.rename(columns=lambda x: x.strftime("%d-%b-%y"))
-        #weights = weights.sort_index(axis=1, ascending=False)
 
         weights["Extrapolated"] = p.weights.loc[today]
         weights["Gap"] = self.weights.loc[today] - p.weights.loc[today]
         weights.index.name = "Symbol"
         return weights
-
-    def to_csv(self, folder=None):
-        if folder:
-            self.prices.to_csv(os.path.join(folder, "prices.csv"))
-            self.weights.to_csv(os.path.join(folder, "weights.csv"))
-        else:
-            return self.prices.to_csv(), self.weights.to_csv()
-
-    @staticmethod
-    def read_csv(folder):
-        return Portfolio(prices=pd.read_csv(os.path.join(folder, "prices.csv"), index_col=0, parse_dates=True),
-                  weights=pd.read_csv(os.path.join(folder, "weights.csv"), index_col=0, parse_dates=True))
+    #
+    # def to_csv(self, folder=None):
+    #     if folder:
+    #         self.prices.to_csv(os.path.join(folder, "prices.csv"))
+    #         self.weights.to_csv(os.path.join(folder, "weights.csv"))
+    #     else:
+    #         return self.prices.to_csv(), self.weights.to_csv()
+    #
+    # @staticmethod
+    # def read_csv(folder):
+    #     return Portfolio(prices=pd.read_csv(os.path.join(folder, "prices.csv"), index_col=0, parse_dates=True),
+    #               weights=pd.read_csv(os.path.join(folder, "weights.csv"), index_col=0, parse_dates=True))

@@ -50,7 +50,6 @@ class Portfolio(ProductInterface):
                 # append the symbol to the symbols of the portfolio
                 self.symbols.append(symbols[asset])
 
-
         return self
 
     @property
@@ -103,15 +102,14 @@ class Portfolio(ProductInterface):
     @property
     def weights(self):
         return self._weights
-
-    def to_csv(self, folder=None):
-        if folder:
-            if not os.path.exits(folder):
-                os.makedirs(folder)
-            self.weights.to_csv(os.path.join(folder, "weights.csv"))
-            self.prices.to_csv(os.path.join(folder, "prices.csv"))
-            self.symbols
-
+    #
+    # def to_csv(self, folder=None):
+    #     if folder:
+    #         if not os.path.exits(folder):
+    #             os.makedirs(folder)
+    #         self.weights.to_csv(os.path.join(folder, "weights.csv"))
+    #         self.prices.to_csv(os.path.join(folder, "prices.csv"))
+    #         self.symbols
 
 
 class PortfolioSymbol(Base):

@@ -1,4 +1,3 @@
-
 import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -15,7 +14,6 @@ from pyutil.sql.interfaces.series import Series
 from pyutil.timeseries.merge import merge
 
 
-#@staticmethod
 def _create_position(security, custodian, data):
     assert isinstance(security, Security)
     assert isinstance(custodian, Custodian)
@@ -23,9 +21,8 @@ def _create_position(security, custodian, data):
 
     return Series(name="position", product2=security, product3=custodian, data=data)
 
+
 class Owner(ProductInterface):
-
-
     __tablename__ = "owner"
     __mapper_args__ = {"polymorphic_identity": "Owner"}
     id = sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
@@ -140,5 +137,4 @@ class Owner(ProductInterface):
     def frame(owners):
         frame = pd.DataFrame({owner: {**owner.reference_series, **{"Entity ID": int(owner.name), "Name": owner.fullname, "Currency": owner.currency.name}} for owner in owners}).transpose()
         frame.index.name = "Security"
-        frame = frame.sort_index()
-        return frame
+        return frame.sort_index()

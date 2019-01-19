@@ -4,13 +4,16 @@ import pandas.util.testing as pdt
 import pytest
 
 from pyutil.portfolio.portfolio import Portfolio, similar
-from pyutil.testing.aux import read_frame
-from test.config import test_portfolio, resource
+from test.config import test_portfolio, read
+
 
 @pytest.fixture(scope="module")
 def portfolio():
     return test_portfolio()
 
+@pytest.fixture(scope="module")
+def sector_weights():
+    return read("sector_weights.csv", parse_dates=True)
 
 class TestPortfolio(object):
     def test_leverage(self, portfolio):
@@ -38,16 +41,16 @@ class TestPortfolio(object):
         assert len(x.index) == 5
         assert x.index[0] == pd.Timestamp("2015-04-16")
 
-    def test_sector_weights(self, portfolio):
+    def test_sector_weights(self, portfolio, sector_weights):
         x = portfolio.sector_weights(symbolmap=pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
                                                 "E": "C", "F": "C", "G": "C"}), total=True)
 
-        pdt.assert_frame_equal(x.tail(10), read_frame(resource("sector_weights.csv"), parse_dates=True))
+        pdt.assert_frame_equal(x.tail(10), sector_weights)
 
         x = portfolio.sector_weights_final(symbolmap=pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
                                                 "E": "C", "F": "C", "G": "C"}), total=True)
 
-        pdt.assert_series_equal(x, read_frame(resource("sector_weights.csv"), parse_dates=True).iloc[-1])
+        pdt.assert_series_equal(x, sector_weights.iloc[-1])
 
 
     def test_position(self, portfolio):
@@ -97,7 +100,7 @@ class TestPortfolio(object):
             Portfolio(prices=prices, weights=weights)
 
     def test_state(self, portfolio):
-        pdt.assert_frame_equal(portfolio.state, read_frame(resource("state2.csv")))
+        pdt.assert_frame_equal(portfolio.state, read("state2.csv", squeeze=False, header=0))
 
     def test_mismatch_columns(self):
         with pytest.raises(AssertionError):

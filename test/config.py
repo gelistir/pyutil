@@ -4,22 +4,25 @@ import pandas as pd
 
 from pyutil.performance.summary import fromNav
 from pyutil.portfolio.portfolio import Portfolio
-from pyutil.testing.aux import resource_folder, read_series, read_frame
+from pyutil.testing.aux import resource_folder
 
 pd.options.display.width = 300
 
 # this is a function mapping name of a file to its path...
+
 resource = resource_folder(folder=os.path.dirname(__file__))
 
 
-def test_portfolio():
-    return Portfolio(prices=read_frame(resource("price.csv")), weights=read_frame(resource("weight.csv")))
+def read(name, index_col=0, parse_dates=False, header=0, squeeze=False, **kwargs):
+    return pd.read_csv(resource(name), index_col=index_col, parse_dates=parse_dates, header=header, squeeze=squeeze, **kwargs)
 
-def read(name, **kwargs):
-    return pd.read_csv(resource(name), **kwargs)
+
+def test_portfolio():
+    return Portfolio(prices=read("price.csv", parse_dates=True), weights=read("weight.csv", parse_dates=True))
+
 
 if __name__ == '__main__':
-    ts = fromNav(read_series(file=resource("ts.csv")))
+    ts = fromNav(read("ts.csv", squeeze=True, header=None, parse_dates=True))
     print(ts)
 
     ts.drawdown.to_csv(resource(name="drawdown.csv"))

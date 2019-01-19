@@ -1,9 +1,8 @@
+import pandas.util.testing as pdt
+
 from pyutil.portfolio.portfolio import similar
 from pyutil.strategy.config import ConfigMaster
-from pyutil.testing.aux import read_frame
-from test.config import test_portfolio, resource
-
-import pandas.util.testing as pdt
+from test.config import test_portfolio, read
 
 
 class Strategy(ConfigMaster):
@@ -22,7 +21,7 @@ class Strategy(ConfigMaster):
 
 class TestConfigMaster(object):
     def test_run_strategy(self):
-        prices = read_frame(resource("price.csv"))
+        prices = read("price.csv", parse_dates=True)
 
         s = Strategy(names=["A", "B", "C"],             # Assets used by the strategy
                      reader=lambda name: prices[name],  # simple function to read prices

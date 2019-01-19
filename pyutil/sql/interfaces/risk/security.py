@@ -19,6 +19,7 @@ def _create_volatility(currency, data):
 
     return Series(name="volatility", product2=currency, data=data)
 
+
 class Security(ProductInterface):
     __tablename__ = "security"
     __mapper_args__ = {"polymorphic_identity": "Security"}
@@ -87,5 +88,4 @@ class Security(ProductInterface):
     def frame(securities):
         frame = pd.DataFrame({security: {**security.reference_series, **{"Name": security.fullname, "Entity ID": int(security.name)}} for security in securities}).transpose()
         frame.index.name = "Security"
-        frame = frame.sort_index()
-        return frame
+        return frame.sort_index()

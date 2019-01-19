@@ -12,15 +12,6 @@ from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 
-def module(source):
-    from types import ModuleType
-
-    compiled = compile(source, '', 'exec')
-    mod = ModuleType("module")
-    exec(compiled, mod.__dict__)
-    return mod
-
-
 class StrategyType(_enum.Enum):
     mdt = 'mdt'
     conservative = 'conservative'
@@ -46,10 +37,19 @@ class Strategy(ProductInterface):
         self.source = source
         self.type = type
 
+    @staticmethod
+    def __module(source):
+        from types import ModuleType
+
+        compiled = compile(source, '', 'exec')
+        mod = ModuleType("module")
+        exec(compiled, mod.__dict__)
+        return mod
+
     def configuration(self, reader=None):
         # Configuration only needs a reader to access the symbols...
         # Reader is a function taking the name of an asset as a parameter
-        return module(self.source).Configuration(reader=reader)
+        return Strategy.__module(self.source).Configuration(reader=reader)
 
     def upsert(self, portfolio, symbols=None, days=0):
         assert isinstance(portfolio, _Portfolio)
@@ -98,12 +98,12 @@ class Strategy(ProductInterface):
 
     def sector(self, total=False):
         return self._portfolio.sector(total=total)
-
-    def to_csv(self, folder=None):
-        return self._portfolio.to_csv(folder)
-
-    def read_csv(self, folder, symbols):
-        self.upsert(_Portfolio.read_csv(folder), symbols)
+    #
+    # def to_csv(self, folder=None):
+    #     return self._portfolio.to_csv(folder)
+    #
+    # def read_csv(self, folder, symbols):
+    #     self.upsert(_Portfolio.read_csv(folder), symbols)
 
     @property
     def symbols(self):

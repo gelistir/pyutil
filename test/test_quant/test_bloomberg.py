@@ -5,14 +5,15 @@ from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.sql.interfaces.ref import Field, DataType, FieldType
 
-from pyutil.testing.aux import read_frame, postgresql_db_test
-from test.config import resource
+from pyutil.testing.aux import postgresql_db_test
+from test.config import read
+
 
 @pytest.fixture
 def session():
     db = postgresql_db_test(base=Base)
 
-    for asset, data in read_frame(resource("price.csv")).items():
+    for asset, data in read("price.csv", parse_dates=True).items():
         symbol = Symbol(name=asset, group=SymbolType.fixed_income)
         db.session.add(symbol)
 
@@ -29,7 +30,7 @@ class TestQuant(object):
     def test_reference(self, session):
 
         def f(tickers, fields):
-            return read_frame(resource("refdata.csv")).reset_index()
+            return read("refdata.csv").reset_index()
 
         update_reference(symbols=session.query(Symbol), fields=session.query(Field), reader=f)
 
