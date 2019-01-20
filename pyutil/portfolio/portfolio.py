@@ -330,3 +330,16 @@ class Portfolio(object):
     # def read_csv(folder):
     #     return Portfolio(prices=pd.read_csv(os.path.join(folder, "prices.csv"), index_col=0, parse_dates=True),
     #               weights=pd.read_csv(os.path.join(folder, "weights.csv"), index_col=0, parse_dates=True))
+
+if __name__ == "__main__":
+    idx = pd.DatetimeIndex(start=pd.Timestamp("2018-10-28"), periods=100, freq="D")
+    print(idx)
+
+    x = pd.Series(data=idx, index=idx)
+    print(x)
+
+    # monthly
+    print(sorted(x.groupby([idx.year, idx.month]).last().values))
+
+    # weekly
+    print(sorted(x.groupby(idx.map(lambda x: x.isocalendar()[0:2])).last().values))
