@@ -10,3 +10,7 @@ env
 *.dot
 *.svg
 artifacts
+
+pyutil.egg-info
+dist
+build

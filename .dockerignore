@@ -32,3 +32,6 @@ env
 **/__pycache__
 *.dot
 *.svg
+
+pyutil.egg-info
+dist
