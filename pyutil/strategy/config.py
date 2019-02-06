@@ -3,11 +3,11 @@ import logging
 import pandas as pd
 
 
-def reader(session):
-    from pyutil.sql.interfaces.symbols.symbol import Symbol
-
-    with session as session:
-        return lambda name: session.query(Symbol).filter(Symbol.name == name).one().price
+# def reader(session):
+#     from pyutil.sql.interfaces.symbols.symbol import Symbol
+#
+#     with session as session:
+#         return lambda name: session.query(Symbol).filter(Symbol.name == name).one().price
 
 
 class ConfigMaster(dict):

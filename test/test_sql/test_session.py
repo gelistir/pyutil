@@ -50,5 +50,6 @@ class TestSession(object):
     def test_scope(self):
         connection_str = "sqlite+pysqlite:///{path}".format(path=resource("test.db"))
         with s_session(connection_str=connection_str) as s:
-            x = s.query(User).filter_by(name="Hans Dampf").one()
-            assert x
+            assert s.query(User).filter_by(name="Hans Dampf").one()
+            with pytest.raises(NoResultFound):
+                s.query(User).filter_by(name="Peter Maffay").one()
