@@ -109,7 +109,7 @@ class Owner(ProductInterface):
         try:
             position_reference = position.join(reference, on="Security")
             return position_reference.join(volatility, on=["Security", "Date"])
-        except KeyError:
+        except (KeyError, ValueError):
             return pd.DataFrame({})
 
     def to_json(self):
