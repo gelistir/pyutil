@@ -19,6 +19,15 @@ class StrategyType(_enum.Enum):
     dynamic = 'dynamic'
 
 
+def module(source):
+    from types import ModuleType
+
+    compiled = compile(source, '', 'exec')
+    mod = ModuleType("module")
+    exec(compiled, mod.__dict__)
+    return mod
+
+
 class Strategy(ProductInterface):
     __tablename__ = "strategy"
     __mapper_args__ = {"polymorphic_identity": "strategy"}
@@ -37,19 +46,10 @@ class Strategy(ProductInterface):
         self.source = source
         self.type = type
 
-    @staticmethod
-    def __module(source):
-        from types import ModuleType
-
-        compiled = compile(source, '', 'exec')
-        mod = ModuleType("module")
-        exec(compiled, mod.__dict__)
-        return mod
-
     def configuration(self, reader=None):
         # Configuration only needs a reader to access the symbols...
         # Reader is a function taking the name of an asset as a parameter
-        return Strategy.__module(self.source).Configuration(reader=reader)
+        return module(self.source).Configuration(reader=reader)
 
     def upsert(self, portfolio, symbols=None, days=0):
         assert isinstance(portfolio, _Portfolio)
