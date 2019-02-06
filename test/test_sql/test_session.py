@@ -2,9 +2,11 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
-from pyutil.sql.session import get_one_or_create, get_one_or_none
+from pyutil.sql.session import get_one_or_create, get_one_or_none, session as s_session
 from pyutil.testing.aux import postgresql_db_test
+from test.config import resource
 from test.test_sql.user import User, Base
+
 
 @pytest.fixture()
 def session():
@@ -44,3 +46,9 @@ class TestSession(object):
             # we are trying to add the user a second time! Verboten!
             session.add(User(name="Peter Maffay"))
             session.commit()
+
+    def test_scope(self):
+        connection_str = "sqlite+pysqlite:///{path}".format(path=resource("test.db"))
+        with s_session(connection_str=connection_str) as s:
+            x = s.query(User).filter_by(name="Hans Dampf").one()
+            assert x
