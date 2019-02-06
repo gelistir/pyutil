@@ -3,7 +3,6 @@ import random
 import string
 from time import sleep
 
-import pandas as pd
 from functools import partial
 
 from sqlalchemy import create_engine
@@ -30,15 +29,6 @@ def resource_folder(folder):
         return os.path.join(folder, "resources", name)
 
     return partial(__resource, folder=folder)
-
-
-# def read_frame(file, header=0, parse_dates=True, index_col=0, **kwargs):
-#     return pd.read_csv(file, index_col=index_col, header=header, parse_dates=parse_dates, **kwargs)
-
-#
-# def read_series(file, parse_dates=True, index_col=0, cname=None, **kwargs):
-#     return pd.read_csv(file, index_col=index_col, header=None, squeeze=True, parse_dates=parse_dates,
-#                        names=[cname], **kwargs)
 
 def connection_str(user, password, host, database):
     return 'postgresql+psycopg2://{user}:{password}@{host}/{db}'.format(user=user, password=password,

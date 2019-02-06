@@ -5,7 +5,7 @@ COPY requirements.txt requirements.txt
 
 RUN pip install --upgrade pip && \
     conda update -y conda && \
-    conda install -y nomkl pandas=0.23.4 requests xlrd xlsxwriter && \
+    conda install -y nomkl pandas=0.24.0 requests xlrd xlsxwriter && \
     pip install --no-cache-dir  -r requirements.txt && rm requirements.txt && \
     conda clean -y --all
 
@@ -19,7 +19,8 @@ WORKDIR pyutil
 
 FROM builder as test
 
-RUN pip install --no-cache-dir httpretty pytest pytest-cov pytest-html sphinx
+# We install flask here to test some
+RUN pip install --no-cache-dir httpretty pytest pytest-cov pytest-html sphinx flask==1.0.2
 
 COPY ./test            /pyutil/test
 COPY ./sphinx.sh       /pyutil/sphinx.sh

@@ -1,4 +1,4 @@
-import unittest
+import pytest
 
 import pandas as pd
 import numpy as np
@@ -17,45 +17,49 @@ t2 = pd.Timestamp("1978-11-18")
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
-#todo: change object
-class TestOwner(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        # create an owner
-        cls.o1 = Owner(name=100)
-        cls.kiid = Field(name="KIID", result=DataType.integer, type=FieldType.other)
+@pytest.fixture()
+def owner():
+    return Owner(name=100, currency=Currency(name="USD"), fullname="Peter Maffay")
 
-    def test_position(self):
-        o = Owner(name="103", currency=Currency(name="USD"), fullname="Peter Maffay")
+@pytest.fixture()
+def kiid():
+    return Field(name="KIID", result=DataType.integer, type=FieldType.other)
 
+class TestOwner(object):
+    def test_position(self, owner, kiid):
         # create a security
         s1 = Security(name="123", fullname="A")
-        s1.reference[self.kiid] = 5
-        self.assertEqual(s1.kiid, 5)
+        s1.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 5, t2: 6.0}))
+        s1.reference[kiid] = 5
+        assert s1.kiid == 5
 
+        # create a 2nd security
         s2 = Security(name="211", fullname="B")
-        s2.reference[self.kiid] = 7
+        s2.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 6}))
+        s2.reference[kiid] = 7
+        assert s2.kiid == 7
 
-        self.assertSetEqual(o.custodians, set([]))
-        self.assertSetEqual(o.securities, set([]))
+        assert owner.custodians == set([])
+        assert owner.securities == set([])
 
+        # one owner can have multiple custodians
         c1 = Custodian(name="UBS")
         c2 = Custodian(name="CS")
 
         # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
-        o.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
-        o.upsert_position(security=s2, custodian=c2, ts=pd.Series({t1: 0.5, t2: 0.5}))
+        owner.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
+        owner.upsert_position(security=s2, custodian=c2, ts=pd.Series({t1: 0.5, t2: 0.5}))
 
-        self.assertSetEqual(o.securities, {s1, s2})
-        self.assertSetEqual(o.custodians, {c1, c2})
+        assert owner.securities == {s1, s2}
+        assert owner.custodians == {c1, c2}
 
-        pdt.assert_series_equal(o.position(s1, c1), pd.Series({t1: 0.1, t2: 0.4}))
+        pdt.assert_series_equal(owner.position(s1, c1), pd.Series({t1: 0.1, t2: 0.4}))
         pdt.assert_frame_equal(pd.DataFrame(index=[s1, s2], columns=["Entity ID","KIID", "Name"], data=[[123, 5, "A"], [211, 7, "B"]]),
-                               o.reference_securities, check_names=False, check_dtype=False)
+                               owner.reference_securities, check_names=False, check_dtype=False)
 
-        s1.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 5, t2: 6.0}))
-        s2.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 6}))
+        #s1.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 5, t2: 6.0}))
+        #s2.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 6}))
 
         x = pd.DataFrame(data=[[s1, c1, t1, 0.1, 123, 5, "A", 5.0],
                                [s1, c1, t2, 0.4, 123, 5, "A", 6.0],
@@ -65,16 +69,17 @@ class TestOwner(unittest.TestCase):
 
         x = x.set_index(keys=["Security", "Custodian", "Date"])
 
-        pdt.assert_frame_equal(x, o.position_reference, check_dtype=False)
+        pdt.assert_frame_equal(x, owner.position_reference, check_dtype=False)
 
-        o.upsert_volatility(ts=pd.Series([10, 20]))
+        owner.upsert_volatility(ts=pd.Series([10, 20]))
 
-        o.flush()
-        self.assertTrue(o.position_frame.empty)
-        self.assertTrue(o.position_reference.empty)
+        owner.flush()
 
-        frame = Owner.frame(owners=[o])
-        pdt.assert_frame_equal(frame, pd.DataFrame(index=pd.Index([o], name="Security"), columns=["Currency", "Entity ID", "Name"], data=[["USD",103,"Peter Maffay"]]), check_dtype=False)
+        assert owner.position_frame.empty
+        assert owner.position_reference.empty
+
+        frame = Owner.frame(owners=[owner])
+        pdt.assert_frame_equal(frame, pd.DataFrame(index=pd.Index([owner], name="Security"), columns=["Currency", "Entity ID", "Name"], data=[["USD",100,"Peter Maffay"]]), check_dtype=False)
 
     def test_returns(self):
         o = Owner(name="222")
@@ -92,26 +97,26 @@ class TestOwner(unittest.TestCase):
         x = o.upsert_volatility(ts=pd.Series(data=[250, 300], index=[1, 2]))
         pdt.assert_series_equal(x, pd.Series(data=[100, 250, 300], index=[0, 1, 2]))
 
-    def test_currency(self):
-        o = Owner(name="222")
-        o.currency = Currency(name="CHFX")
-        self.assertEqual(o.currency, Currency(name="CHFX"))
+    def test_currency(self, owner):
+        #o = Owner(name="222")
+        owner.currency = Currency(name="CHFX")
+        assert owner.currency == Currency(name="CHFX")
 
-    def test_custodian(self):
-        o = Owner(name="222")
-        o.custodian = Custodian(name="UBS")
-        self.assertEqual(o.custodian, Custodian(name="UBS"))
+    def test_custodian(self, owner):
+        #o = Owner(name="222")
+        owner.custodian = Custodian(name="UBS")
+        assert owner.custodian == Custodian(name="UBS")
 
     def test_name(self):
         o = Owner(name="222", currency=Currency(name="CHF"), fullname="Peter Maffay")
-        self.assertEqual(o.name, "222")
-        self.assertEqual(str(o), "Owner(222: Peter Maffay, CHF)")
+        assert o.name == "222"
+        assert str(o) == "Owner(222: Peter Maffay, CHF)"
 
     def test_json(self):
         o = Owner(name="Peter")
         o._returns = pd.Series({t0.date(): 0.1, t1.date(): 0.0, t2.date(): -0.1})
         a = o.to_json()
-        self.assertEqual(a["name"], "Peter")
+        assert a["name"] == "Peter"
         pdt.assert_series_equal(a["Nav"], pd.Series({t0: 1.10, t1: 1.10, t2: 0.99}))
 
     # def test_position_update(self):

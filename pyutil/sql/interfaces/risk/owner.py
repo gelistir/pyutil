@@ -71,17 +71,26 @@ class Owner(ProductInterface):
 
     @property
     def position_frame(self):
-        a = pd.DataFrame(dict(self._position)).transpose().stack()
+        a = pd.DataFrame(dict(self._position))
         if not a.empty:
-            a.index.names = ["Security", "Custodian", "Date"]
+            a = a.transpose().stack()
 
-        return a.to_frame(name="Position")
+            a.index.names = ["Security", "Custodian", "Date"]
+            return a.to_frame(name="Position")
+        else:
+            return a
 
     @property
     def vola_security_frame(self):
-        x = pd.DataFrame({security: security.volatility(self.currency) for security in set(self.securities)}).stack()
-        x.index.names = ["Date", "Security"]
-        return x.swaplevel().to_frame("Volatility")
+        assert self.currency, "The currency for the owner is not specified!"
+        x = pd.DataFrame({security: security.volatility(self.currency) for security in set(self.securities)})\
+
+        if not x.empty:
+            x = x.stack()
+            x.index.names = ["Date", "Security"]
+            return x.swaplevel().to_frame("Volatility")
+
+        return x
 
     @property
     def reference_securities(self):
@@ -92,6 +101,11 @@ class Owner(ProductInterface):
         reference = self.reference_securities
         position = self.position_frame
         volatility = self.vola_security_frame
+
+        print(reference)
+        print(position)
+        print(volatility)
+
         try:
             position_reference = position.join(reference, on="Security")
             return position_reference.join(volatility, on=["Security", "Date"])
