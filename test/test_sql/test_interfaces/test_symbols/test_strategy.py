@@ -49,8 +49,8 @@ class TestStrategy(object):
         assert x["2015-04-08"] == pytest.approx(0.3050477980398519, 1e-5)
         assert x["2015-04-13"] == pytest.approx(1.486652, 1e-5)
 
-        a = strategy.to_json()
-        assert a["name"] == "Peter"
+    #    a = strategy.to_json()
+    #    assert a["name"] == "Peter"
 
     #def test_csv(self, strategy):
     #    # extract csv streams

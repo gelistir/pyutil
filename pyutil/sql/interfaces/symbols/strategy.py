@@ -92,9 +92,9 @@ class Strategy(ProductInterface):
     def reference_assets(self):
         return Symbol.frame(symbols=self.assets)
 
-    def to_json(self):
-        nav = fromNav(self.portfolio.nav)
-        return {"name": self.name, "Nav": nav, "Volatility": nav.ewm_volatility().dropna(), "Drawdown": nav.drawdown}
+    # def to_json(self):
+    #     nav = fromNav(self.portfolio.nav)
+    #     return {"name": self.name, "Nav": nav, "Volatility": nav.ewm_volatility().dropna(), "Drawdown": nav.drawdown}
 
     def sector(self, total=False):
         return self._portfolio.sector(total=total)

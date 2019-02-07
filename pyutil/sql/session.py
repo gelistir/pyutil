@@ -10,9 +10,7 @@ def session(connection_str, echo=False):
     """Provide a transactional scope around a series of operations."""
     try:
         engine = create_engine(connection_str, echo=echo)
-        print(engine)
         connection = engine.connect()
-        print(connection)
         s = Session(bind=connection)
         yield s
         s.commit()

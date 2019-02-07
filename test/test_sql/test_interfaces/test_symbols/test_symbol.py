@@ -32,10 +32,10 @@ class TestSymbol(TestCase):
         self.assertEqual(symbol._price.last_valid_index(), pd.Timestamp("2015-04-22"))
 
         # test json
-        a = symbol.to_json()
-        assert isinstance(a, dict)
-        self.assertEqual(a["name"], "A")
-        pdt.assert_series_equal(a["Price"], symbol._price)
+        #a = symbol.to_json()
+        #assert isinstance(a, dict)
+        #self.assertEqual(a["name"], "A")
+        #pdt.assert_series_equal(a["Price"], symbol._price)
 
 
     def test_upsert(self):

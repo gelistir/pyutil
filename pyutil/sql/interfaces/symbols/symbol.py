@@ -40,9 +40,9 @@ class Symbol(ProductInterface):
         self.group = group
         self.internal = internal
 
-    def to_json(self):
-        nav = fromNav(self.price)
-        return {"name": self.name, "Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
+    # def to_json(self):
+    #     nav = fromNav(self.price)
+    #     return {"name": self.name, "Price": nav, "Volatility": nav.ewm_volatility(), "Drawdown": nav.drawdown}
 
     def upsert_price(self, ts=None):
         self._price = merge(new=ts, old=self.price)
