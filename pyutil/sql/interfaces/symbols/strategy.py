@@ -8,7 +8,6 @@ from sqlalchemy.types import Enum as _Enum
 from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.portfolio.portfolio import Portfolio as _Portfolio
-from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 
@@ -92,18 +91,8 @@ class Strategy(ProductInterface):
     def reference_assets(self):
         return Symbol.frame(symbols=self.assets)
 
-    # def to_json(self):
-    #     nav = fromNav(self.portfolio.nav)
-    #     return {"name": self.name, "Nav": nav, "Volatility": nav.ewm_volatility().dropna(), "Drawdown": nav.drawdown}
-
     def sector(self, total=False):
         return self._portfolio.sector(total=total)
-    #
-    # def to_csv(self, folder=None):
-    #     return self._portfolio.to_csv(folder)
-    #
-    # def read_csv(self, folder, symbols):
-    #     self.upsert(_Portfolio.read_csv(folder), symbols)
 
     @property
     def symbols(self):

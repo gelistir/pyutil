@@ -3,13 +3,6 @@ import logging
 import pandas as pd
 
 
-# def reader(session):
-#     from pyutil.sql.interfaces.symbols.symbol import Symbol
-#
-#     with session as session:
-#         return lambda name: session.query(Symbol).filter(Symbol.name == name).one().price
-
-
 class ConfigMaster(dict):
     """ Every strategy is described by a configuration object. Each such object inherits from the ConfigMaster class."""
     __metaclass__ = abc.ABCMeta
