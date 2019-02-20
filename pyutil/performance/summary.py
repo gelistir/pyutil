@@ -276,7 +276,7 @@ class NavSeries(pd.Series):
     def to_frame(self, name=None):
         if name:
             frame = self.series.to_frame("{name}.nav".format(name=name))
-            frame["{name}.drawdown"] = self.drawdown
+            frame["{name}.drawdown".format(name=name)] = self.drawdown
 
         else:
             frame = self.series.to_frame("nav")

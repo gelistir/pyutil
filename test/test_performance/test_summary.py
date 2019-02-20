@@ -143,3 +143,15 @@ class TestSummary(object):
 
         r = fromReturns(None, adjust=True)
         pdt.assert_series_equal(r.series, pd.Series({}))
+
+    def test_to_frame(self, nav):
+        frame = nav.to_frame(name="Maffay")
+        pdt.assert_series_equal(frame["Maffay.nav"], nav.series, check_names=False)
+        pdt.assert_series_equal(frame["Maffay.drawdown"], nav.drawdown, check_names=False)
+        frame = nav.to_frame()
+        pdt.assert_series_equal(frame["nav"], nav.series, check_names=False)
+        pdt.assert_series_equal(frame["drawdown"], nav.drawdown, check_names=False)
+
+        #assert False
+
+
