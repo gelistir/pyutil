@@ -4,7 +4,7 @@ from datetime import date
 import pandas as pd
 import numpy as np
 
-from ._month import _monthlytable
+from .month import monthlytable
 from .periods import period_returns
 from .drawdown import Drawdown
 from ._var import _VaR
@@ -81,7 +81,7 @@ class NavSeries(pd.Series):
 
     @property
     def monthlytable(self):
-        return _monthlytable(self)
+        return monthlytable(self)
 
     @property
     def returns(self):
