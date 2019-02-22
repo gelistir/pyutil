@@ -1,7 +1,12 @@
 import pandas as pd
 
 
-class _Drawdown(object):
+def drawdown(series):
+    return Drawdown(series).drawdown
+
+
+
+class Drawdown(object):
     def __init__(self, series: pd.Series, eps: float = 0) -> object:
         """
         Drawdown for a given series

@@ -6,7 +6,7 @@ import numpy as np
 
 from ._month import _monthlytable
 from .periods import period_returns
-from ._drawdown import _Drawdown
+from .drawdown import Drawdown
 from ._var import _VaR
 
 
@@ -123,7 +123,7 @@ class NavSeries(pd.Series):
 
     @property
     def drawdown(self):
-        return _Drawdown(self).drawdown
+        return Drawdown(self).drawdown
 
     def sortino_ratio(self, periods=None, r_f=0):
         periods = periods or self.periods_per_year
@@ -263,7 +263,7 @@ class NavSeries(pd.Series):
 
     @property
     def drawdown_periods(self):
-        return _Drawdown(self).periods
+        return Drawdown(self).periods
 
     def __res(self, rule="M"):
         # refactor NAV at the end but keep the first element. Important for return computations!
