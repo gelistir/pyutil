@@ -1,5 +1,11 @@
 import numpy as np
 
+def var(series, alpha=0.99):
+    return VaR(series, alpha).var
+
+def cvar(series, alpha=0.99):
+    return VaR(series, alpha).cvar
+
 
 class VaR(object):
     def __init__(self, series, alpha = 0.99):
