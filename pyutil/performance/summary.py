@@ -7,7 +7,7 @@ import numpy as np
 from .month import monthlytable
 from .periods import period_returns
 from .drawdown import Drawdown
-from ._var import _VaR
+from .var import VaR
 
 
 # from addict import Dict
@@ -184,10 +184,10 @@ class NavSeries(pd.Series):
         return self.returns.tail(n).dropna()
 
     def var(self, alpha=0.95):
-        return _VaR(series=self, alpha=alpha).var
+        return VaR(series=self, alpha=alpha).var
 
     def cvar(self, alpha=0.95):
-        return _VaR(series=self, alpha=alpha).cvar
+        return VaR(series=self, alpha=alpha).cvar
 
     def summary(self, alpha=0.95, periods=None, r_f=0):
         periods = periods or self.periods_per_year

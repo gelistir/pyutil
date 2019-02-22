@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class _VaR(object):
+class VaR(object):
     def __init__(self, series, alpha = 0.99):
         self.__series = series.dropna()
         self.__alpha = alpha
