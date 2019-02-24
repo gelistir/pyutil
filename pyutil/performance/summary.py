@@ -1,12 +1,12 @@
 from collections import OrderedDict
 from datetime import date
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
-from .month import monthlytable
-from .periods import period_returns
 from .drawdown import Drawdown
+from .month import monthlytable
+from .periods import period_prices
 from .var import VaR
 
 
@@ -235,14 +235,14 @@ class NavSeries(pd.Series):
 
     @property
     def period_returns(self):
-        return period_returns(self.returns, today=self.index[-1])
+        return period_prices(self.series, today=self.index[-1])
 
     def adjust(self, value=100.0):
         if self.empty:
             return NavSeries(pd.Series({}))
         else:
             first = self[self.dropna().index[0]]
-            return NavSeries(self * value / first)
+            return NavSeries(self.series * value / first)
 
     @property
     def monthly(self):

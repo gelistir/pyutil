@@ -85,8 +85,6 @@ class TestSummary(object):
 
     def test_fromNav(self, ts):
         x = fromNav(ts)
-        print(x.series)
-        print(ts)
         pdt.assert_series_equal(x.series, ts)
 
         x = fromNav(ts=None)

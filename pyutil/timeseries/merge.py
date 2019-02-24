@@ -36,6 +36,7 @@ def to_datetime(ts=None):
     except AttributeError:
         return None
 
+
 def to_date(ts=None):
     try:
         ts.index = [a.date() for a in to_datetime(ts).index]

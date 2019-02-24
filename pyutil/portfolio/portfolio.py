@@ -252,8 +252,7 @@ class Portfolio(object):
         :param n:
         :return:
         """
-        today = self.index[-1]
-        offsets = periods(today)
+        offsets = periods(today=self.index[-1])
 
         a = self.weighted_returns.apply(period_returns, offset=offsets).transpose()[
             ["Month-to-Date", "Year-to-Date"]]

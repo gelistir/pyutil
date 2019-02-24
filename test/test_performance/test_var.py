@@ -3,9 +3,11 @@ import pytest
 from pyutil.performance.var import VaR
 from test.config import read
 
+
 @pytest.fixture(scope="module")
 def ts():
     return read("ts.csv", squeeze=True, header=None, parse_dates=True)
+
 
 class TestVar(object):
     def test_class(self, ts):
