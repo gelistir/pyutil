@@ -1,5 +1,4 @@
-# Set the base image to beakerx
-FROM lobnek/jupyter:v1.0
+FROM lobnek/jupyter:v1.1
 
 COPY ./work /home/${NB_USER}/work
 COPY ./pyutil /home/${NB_USER}/work/pyutil

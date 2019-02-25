@@ -13,6 +13,13 @@ def merge(portfolios, axis=0):
 
 
 def similar(a, b, eps=1e-6):
+    """
+    Useful for unit-testing
+    :param a: portfolio a
+    :param b: portfolio b
+    :param eps: maximal difference in weights and prices tolerated
+    :return: True (if index, assets, prices and weights are similar) otherwise False
+    """
     if not (isinstance(a, Portfolio) and isinstance(b, Portfolio)):
         return False
 
@@ -245,21 +252,6 @@ class Portfolio(object):
 
     def sector_weights_final(self, symbolmap, total=False):
         return self.sector_weights(symbolmap=symbolmap, total=total).iloc[-1]
-
-    # def snapshot(self, n=5):
-    #     """
-    #     Give a snapshot of the portfolio, e.g. MTD, YTD and the weights at the last n trading days for each asset
-    #     :param n:
-    #     :return:
-    #     """
-    #     offsets = periods(today=self.index[-1])
-    #
-    #     a = self.weighted_returns.apply(period_returns, offset=offsets).transpose()[
-    #         ["Month-to-Date", "Year-to-Date"]]
-    #     t = self.trading_days[-n:]
-    #
-    #     b = self.weights.ffill().loc[t].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
-    #     return pd.concat((a, b), axis=1)
 
     def top_flop_ytd(self, n=5, day_final=pd.Timestamp("today")):
         return self.__f(n=n, day_final=day_final, term="Year-to-Date")
