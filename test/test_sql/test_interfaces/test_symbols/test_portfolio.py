@@ -56,5 +56,6 @@ class TestPortfolio(object):
         pdt.assert_series_equal(portfolio.sector(total=True).loc["2015-04-22"], pd.Series(index=["Equities", "Fixed Income", "Total"], data=[0.135671, 0.173303, 0.3089738755]), check_names=False)
 
     def test_state(self, portfolio):
+        portfolio.state.to_csv("state.csv")
         pdt.assert_frame_equal(read("state.csv"), portfolio.state, check_names=False, check_exact=False, check_less_precise=True, check_dtype=False)
 

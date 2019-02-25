@@ -246,20 +246,20 @@ class Portfolio(object):
     def sector_weights_final(self, symbolmap, total=False):
         return self.sector_weights(symbolmap=symbolmap, total=total).iloc[-1]
 
-    def snapshot(self, n=5):
-        """
-        Give a snapshot of the portfolio, e.g. MTD, YTD and the weights at the last n trading days for each asset
-        :param n:
-        :return:
-        """
-        offsets = periods(today=self.index[-1])
-
-        a = self.weighted_returns.apply(period_returns, offset=offsets).transpose()[
-            ["Month-to-Date", "Year-to-Date"]]
-        t = self.trading_days[-n:]
-
-        b = self.weights.ffill().loc[t].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
-        return pd.concat((a, b), axis=1)
+    # def snapshot(self, n=5):
+    #     """
+    #     Give a snapshot of the portfolio, e.g. MTD, YTD and the weights at the last n trading days for each asset
+    #     :param n:
+    #     :return:
+    #     """
+    #     offsets = periods(today=self.index[-1])
+    #
+    #     a = self.weighted_returns.apply(period_returns, offset=offsets).transpose()[
+    #         ["Month-to-Date", "Year-to-Date"]]
+    #     t = self.trading_days[-n:]
+    #
+    #     b = self.weights.ffill().loc[t].rename(index=lambda x: x.strftime("%d-%b-%y")).transpose()
+    #     return pd.concat((a, b), axis=1)
 
     def top_flop_ytd(self, n=5, day_final=pd.Timestamp("today")):
         return self.__f(n=n, day_final=day_final, term="Year-to-Date")
@@ -305,6 +305,11 @@ class Portfolio(object):
         if today not in trade_events:
             trade_events.append(today)
 
+        offsets = periods(today=self.index[-1])
+
+        a = self.weighted_returns.apply(period_returns, offset=offsets).transpose()[
+            ["Month-to-Date", "Year-to-Date"]]
+
         # extract the weights at all those trade events
         weights = self.weights.ffill().loc[trade_events].transpose()
 
@@ -316,7 +321,7 @@ class Portfolio(object):
         weights["Extrapolated"] = p.weights.loc[today]
         weights["Gap"] = self.weights.loc[today] - p.weights.loc[today]
         weights.index.name = "Symbol"
-        return weights
+        return pd.concat((a, weights), axis=1)
     #
     # def to_csv(self, folder=None):
     #     if folder:
