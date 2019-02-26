@@ -13,10 +13,11 @@ class ProductInterface(Base):
     __tablename__ = "productinterface"
 
     # note that the name should not be unique as Portfolio and Strategy can have the same name
-    __name = sq.Column("name", sq.String(200), unique=False, nullable=True)
+    __name = sq.Column("name", sq.String(200), nullable=True)
     id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
 
     discriminator = sq.Column(sq.String)
+    __table_args__ = (sq.UniqueConstraint('discriminator', 'name', name="uix_1"),)
 
     __mapper_args__ = {"polymorphic_on": discriminator}
 
@@ -24,8 +25,6 @@ class ProductInterface(Base):
                             cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id], lazy="joined")
 
     reference = association_proxy('_refdata', 'value', creator=lambda k, v: _ReferenceData(field=k, content=v))
-
-    sq.UniqueConstraint('discriminator', 'name')
 
     def __init__(self, name, **kwargs):
         self.__name = str(name)
