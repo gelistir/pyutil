@@ -1,16 +1,16 @@
 version: '3.6'
 services:
   pyutil:
-     build:
-       context: .
-       dockerfile: Dockerfile
-       target: builder
-     volumes:
-        - ./pyutil:/pyutil/pyutil:ro
-     extra_hosts:
-        - quantsrv:192.168.100.15
-     env_file:
-       - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - ./pyutil:/pyutil/pyutil:ro
+    extra_hosts:
+      - quantsrv:192.168.100.15
+    env_file:
+      - .env
 
   jupyter:
     build:
@@ -23,25 +23,3 @@ services:
       - quantsrv:192.168.100.15
     env_file:
       - .env
-
-  test:
-     build:
-       context: .
-       dockerfile: Dockerfile
-       target: test
-
-     volumes:
-        - ./pyutil:/pyutil/pyutil:ro
-        - ./test:/pyutil/test:ro
-        - ./artifacts:/pyutil/artifacts
-        - ./source:/source
-        - ./helpers:/opt/.pycharm_helpers/pycharm:ro
-
-     env_file:
-       - test/.env-test
-
-     links:
-       - test-postgresql
-
-  test-postgresql:
-    image: postgres:9.6
