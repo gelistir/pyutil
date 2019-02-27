@@ -6,6 +6,3 @@ Base = declarative_base()
 class User(Base):
     __tablename__ = "user"
     name = Column(String, primary_key=True, unique=True)
-
-    def __init__(self, name):
-        self.name = name

@@ -4,7 +4,6 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from pyutil.sql.session import get_one_or_create, get_one_or_none, session as s_session
 from pyutil.testing.aux import postgresql_db_test
-from test.config import resource
 from test.test_sql.user import User, Base
 
 
@@ -48,8 +47,14 @@ class TestSession(object):
             session.commit()
 
     def test_scope(self):
-        connection_str = "sqlite+pysqlite:///{path}".format(path=resource("test.db"))
-        with s_session(connection_str=connection_str) as s:
+        connection_str = "sqlite:///:memory:"
+        with s_session(connection_str=connection_str, base=Base) as s:
+            # add the user Hans Dampf
+            s.add(User(name="Hans Dampf"))
+
+            ## find the user Hans Dampf
             assert s.query(User).filter_by(name="Hans Dampf").one()
+            # do not find the user Peter Maffay
             with pytest.raises(NoResultFound):
                 s.query(User).filter_by(name="Peter Maffay").one()
+

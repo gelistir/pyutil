@@ -6,10 +6,14 @@ from sqlalchemy.orm.exc import NoResultFound
 
 
 @contextmanager
-def session(connection_str, echo=False):
+def session(connection_str, echo=False, base=None):
     """Provide a transactional scope around a series of operations."""
     try:
         engine = create_engine(connection_str, echo=echo)
+        # if the user has specified a base
+        if base:
+            base.metadata.create_all(engine)
+
         connection = engine.connect()
         s = Session(bind=connection)
         yield s
@@ -18,7 +22,7 @@ def session(connection_str, echo=False):
         s.rollback()
         raise e
     finally:
-         s.close()
+        s.close()
 
 
 def get_one_or_create(session, model, **kwargs):
