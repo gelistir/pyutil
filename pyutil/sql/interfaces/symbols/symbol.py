@@ -53,3 +53,9 @@ class Symbol(ProductInterface):
         frame.index.name = "Symbol"
         frame = frame.sort_index()
         return frame
+
+    @staticmethod
+    def history(symbols):
+        frame = pd.DataFrame({symbol: symbol.price for symbol in symbols})
+        print(frame)
+        return pd.DataFrame({symbol: symbol.price for symbol in symbols})
