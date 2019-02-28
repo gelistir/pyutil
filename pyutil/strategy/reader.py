@@ -9,4 +9,7 @@ def assets(session, names):
     return [session.query(Symbol).filter(Symbol.name == name).one() for name in names]
 
 def portfolio(session, name):
-    return session.query(Portfolio).filter(Portfolio.name == name).one()
+    return session.query(Portfolio).filter(Portfolio.name == name).one().portfolio
+
+def symbolmap(session, names):
+    return {asset.name : asset.group.name for asset in assets(session, names)}

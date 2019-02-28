@@ -100,7 +100,7 @@ class Portfolio(ProductInterface):
     @property
     def weights(self):
         return self._weights
-    #
+
     # def to_csv(self, folder=None):
     #     if folder:
     #         if not os.path.exits(folder):
