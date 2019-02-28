@@ -6,7 +6,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 
 @contextmanager
-def session(connection_str, echo=False, base=None):
+def session(connection_str, echo=False, base=None, expire_on_commit=True):
     """Provide a transactional scope around a series of operations."""
     try:
         engine = create_engine(connection_str, echo=echo)
@@ -15,7 +15,7 @@ def session(connection_str, echo=False, base=None):
             base.metadata.create_all(engine)
 
         connection = engine.connect()
-        s = Session(bind=connection)
+        s = Session(bind=connection, expire_on_commit=expire_on_commit)
         yield s
         s.commit()
     except Exception as e:

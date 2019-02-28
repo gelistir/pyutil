@@ -101,11 +101,6 @@ class Owner(ProductInterface):
         reference = self.reference_securities
         position = self.position_frame
         volatility = self.vola_security_frame
-
-        #print(reference)
-        #print(position)
-        #print(volatility)
-
         try:
             position_reference = position.join(reference, on="Security")
             return position_reference.join(volatility, on=["Security", "Date"])
