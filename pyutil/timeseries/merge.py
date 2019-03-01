@@ -13,7 +13,7 @@ def merge(new, old=None):
     else:
         return old
 
-
+# also works for frames, etc.
 def last_index(ts, default=None):
     try:
         # if the object is empty

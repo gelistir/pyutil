@@ -46,13 +46,13 @@ class TestPortfolio(object):
         assert x.index[0] == pd.Timestamp("2015-04-16")
 
     def test_sector_weights(self, portfolio, sector_weights):
-        x = portfolio.sector_weights(symbolmap=pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
-                                                "E": "C", "F": "C", "G": "C"}), total=True)
+        x = portfolio.sector_weights(symbolmap={"A": "A", "B": "A", "C": "B", "D": "B",
+                                                "E": "C", "F": "C", "G": "C"}, total=True)
 
         pdt.assert_frame_equal(x.tail(10), sector_weights)
 
-        x = portfolio.sector_weights_final(symbolmap=pd.Series({"A": "A", "B": "A", "C": "B", "D": "B",
-                                                "E": "C", "F": "C", "G": "C"}), total=True)
+        x = portfolio.sector_weights_final(symbolmap={"A": "A", "B": "A", "C": "B", "D": "B",
+                                                "E": "C", "F": "C", "G": "C"}, total=True)
 
         pdt.assert_series_equal(x, sector_weights.iloc[-1])
 

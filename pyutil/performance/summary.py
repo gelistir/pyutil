@@ -274,14 +274,9 @@ class NavSeries(pd.Series):
         return a
 
     def to_frame(self, name=""):
-        #if name:
         frame = self.series.to_frame("{name}nav".format(name=name))
         frame["{name}drawdown".format(name=name)] = self.drawdown
-
-        #else:
-        #    frame = self.series.to_frame("nav")
-        #    frame["drawdown"] = self.drawdown
-
         return frame
+
 
 

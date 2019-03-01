@@ -254,8 +254,10 @@ class Portfolio(object):
         :param total:
         :return:
         """
-        symbolmap = symbolmap or self.symbolmap
-        assert symbolmap
+        if symbolmap is None:
+            symbolmap = self.symbolmap
+
+        assert isinstance(symbolmap, dict)
 
         frame = self.weights.ffill().groupby(by=symbolmap, axis=1).sum()
         if total:
