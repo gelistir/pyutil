@@ -1,4 +1,5 @@
 import os
+from collections import namedtuple
 
 import pandas as pd
 
@@ -257,7 +258,7 @@ class Portfolio(object):
         if symbolmap is None:
             symbolmap = self.symbolmap
 
-        assert isinstance(symbolmap, dict)
+        assert isinstance(symbolmap, dict), "Symbolmap is type {t} and {s}".format(t=type(symbolmap), s=symbolmap)
 
         frame = self.weights.ffill().groupby(by=symbolmap, axis=1).sum()
         if total:
@@ -267,15 +268,16 @@ class Portfolio(object):
     def sector_weights_final(self, symbolmap=None, total=False):
         return self.sector_weights(symbolmap=symbolmap, total=total).iloc[-1]
 
-    def top_flop_ytd(self, n=5, day_final=pd.Timestamp("today")):
-        return self.__f(n=n, day_final=day_final, term="Year-to-Date")
+    def top_flop(self, n=5, day_final=pd.Timestamp("today")):
+        TopFlop = namedtuple("TopFlop", ["mtd", "ytd"])
+
+        return TopFlop(mtd=self.__f(n=n, day_final=day_final, term="Month-to-Date"),
+                       ytd=self.__f(n=n, day_final=day_final, term="Year-to-Date"))
 
     def __f(self, n=5, term="Month-to-Date", day_final=pd.Timestamp("today")):
+        TopFlop = namedtuple("TopFlop", ["top", "flop"])
         s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()[term]
-        return {"top": s.sort_values(ascending=False).head(n), "flop": s.sort_values(ascending=True).head(n)}
-
-    def top_flop_mtd(self, n=5, day_final=pd.Timestamp("today")):
-        return self.__f(n=n, day_final=day_final, term="Month-to-Date")
+        return TopFlop(top=pd.Series(s.sort_values(ascending=False).head(n)), flop=pd.Series(s.sort_values(ascending=True).head(n)))
 
     def tail(self, n=10):
         w = self.weights.tail(n)
