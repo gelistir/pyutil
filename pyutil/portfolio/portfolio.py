@@ -247,19 +247,22 @@ class Portfolio(object):
         a.index.name = "weight"
         return a
 
-    def sector_weights(self, symbolmap, total=False):
+    def sector_weights(self, symbolmap=None, total=False):
         """
         weights per sector, symbolmap is a dictionary
         :param symbolmap:
         :param total:
         :return:
         """
+        symbolmap = symbolmap or self.symbolmap
+        assert symbolmap
+
         frame = self.weights.ffill().groupby(by=symbolmap, axis=1).sum()
         if total:
             frame["Total"] = frame.sum(axis=1)
         return frame
 
-    def sector_weights_final(self, symbolmap, total=False):
+    def sector_weights_final(self, symbolmap=None, total=False):
         return self.sector_weights(symbolmap=symbolmap, total=total).iloc[-1]
 
     def top_flop_ytd(self, n=5, day_final=pd.Timestamp("today")):
