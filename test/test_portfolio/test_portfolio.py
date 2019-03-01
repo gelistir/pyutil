@@ -30,9 +30,13 @@ class TestPortfolio(object):
 
     def test_top_flop(self, portfolio):
         x = portfolio.top_flop_ytd(day_final=pd.Timestamp("2014-12-31"))
+        print(x)
+
         assert x["top"].values[0] == pytest.approx(0.024480763822820828, 1e-10)
 
         y = portfolio.top_flop_mtd(day_final=pd.Timestamp("2014-12-31"))
+        print(y)
+
         assert y["flop"].values[0] == pytest.approx(-0.0040598440397091595, 1e-10)
 
 

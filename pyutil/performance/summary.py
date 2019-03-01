@@ -273,14 +273,14 @@ class NavSeries(pd.Series):
         a.index = a.index[:-1].append(pd.DatetimeIndex([self.index[-1]]))
         return a
 
-    def to_frame(self, name=None):
-        if name:
-            frame = self.series.to_frame("{name}.nav".format(name=name))
-            frame["{name}.drawdown".format(name=name)] = self.drawdown
+    def to_frame(self, name=""):
+        #if name:
+        frame = self.series.to_frame("{name}nav".format(name=name))
+        frame["{name}drawdown".format(name=name)] = self.drawdown
 
-        else:
-            frame = self.series.to_frame("nav")
-            frame["drawdown"] = self.drawdown
+        #else:
+        #    frame = self.series.to_frame("nav")
+        #    frame["drawdown"] = self.drawdown
 
         return frame
 

@@ -226,8 +226,7 @@ class Portfolio(object):
         :param after:
         :return:
         """
-        return Portfolio(prices=self.prices.truncate(before=before, after=after),
-                    weights=self.weights.truncate(before=before, after=after))
+        return Portfolio(prices=self.prices.truncate(before=before, after=after), weights=self.weights.truncate(before=before, after=after))
 
     @property
     def empty(self):
@@ -340,6 +339,10 @@ class Portfolio(object):
         frame.index.name = "Symbol"
         return frame
 
+    @property
+    def last_dates(self):
+        return self.prices.apply(lambda x: x.last_valid_index()).sort_values(ascending=True)
+
     #
     # def to_csv(self, folder=None):
     #     if folder:
@@ -352,6 +355,11 @@ class Portfolio(object):
     # def read_csv(folder):
     #     return Portfolio(prices=pd.read_csv(os.path.join(folder, "prices.csv"), index_col=0, parse_dates=True),
     #               weights=pd.read_csv(os.path.join(folder, "weights.csv"), index_col=0, parse_dates=True))
+
+    def to_frame(self, name=""):
+        frame = self.nav.to_frame(name)
+        frame["{n}leverage".format(n=name)] = self.leverage
+        frame["{n}cash".format(n=name)] = self.cash
 
 if __name__ == "__main__":
     idx = pd.DatetimeIndex(start=pd.Timestamp("2018-10-28"), periods=100, freq="D")
