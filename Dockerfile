@@ -5,7 +5,7 @@ COPY requirements.txt requirements.txt
 
 RUN pip install --upgrade pip && \
     conda update -y conda && \
-    conda install -y nomkl pandas=0.24.1 requests=2.21.0 xlrd xlsxwriter && \
+    conda install -y -c conda-forge nomkl pandas=0.24.1 requests=2.21.0 xlrd xlsxwriter cvxpy=1.0.14 && \
     pip install --no-cache-dir  -r requirements.txt && rm requirements.txt && \
     conda clean -y --all
 

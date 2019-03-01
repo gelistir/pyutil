@@ -75,7 +75,7 @@ class Portfolio(ProductInterface):
         return {s.name: s.internal for s in self.symbols}
 
     def sector(self, total=False):
-        return self.portfolio.sector_weights(symbolmap=self.symbolmap, total=total)
+        return self.portfolio.sector_weights(total=total)
 
     @property
     def state(self):
