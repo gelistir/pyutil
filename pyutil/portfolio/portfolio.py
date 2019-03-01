@@ -367,6 +367,7 @@ class Portfolio(object):
         frame = self.nav.to_frame(name)
         frame["{n}leverage".format(n=name)] = self.leverage
         frame["{n}cash".format(n=name)] = self.cash
+        return frame
 
 if __name__ == "__main__":
     idx = pd.DatetimeIndex(start=pd.Timestamp("2018-10-28"), periods=100, freq="D")
