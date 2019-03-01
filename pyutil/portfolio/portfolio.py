@@ -90,7 +90,7 @@ class Portfolio(object):
 
         return self
 
-    def __init__(self, prices, weights=None):
+    def __init__(self, prices, weights=None, symbolmap=None, internal=None):
         # if you don't specify any weights, we initialize them with nan
         if weights is None:
             weights = pd.DataFrame(index=prices.index, columns=prices.keys(), data=0.0)
@@ -132,9 +132,19 @@ class Portfolio(object):
 
         self.__before = {today : yesterday for today, yesterday in zip(prices.index[1:], prices.index[:-1])}
         self.__r = self.__prices.pct_change()
+        self.__symbolmap = symbolmap
+        self.__internal = internal
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
+
+    @property
+    def symbolmap(self):
+        return self.__symbolmap
+
+    @property
+    def internal(self):
+        return self.__internal
 
     @property
     def cash(self):
@@ -289,6 +299,7 @@ class Portfolio(object):
         days = (__fundsize * self.position).diff().abs().sum(axis=1)
         return sorted(list(days[days > 1].index))
 
+
     @property
     def state(self):
         # get the last 5 trading days
@@ -313,7 +324,22 @@ class Portfolio(object):
         weights["Extrapolated"] = p.weights.loc[today]
         weights["Gap"] = self.weights.loc[today] - p.weights.loc[today]
         weights.index.name = "Symbol"
-        return pd.concat((a, weights), axis=1)
+        frame = pd.concat((a, weights), axis=1)
+
+        if self.symbolmap:
+            frame["group"] = pd.Series(self.symbolmap)
+
+        if self.internal:
+            frame["internal"] = pd.Series(self.internal)
+
+        if "group" in frame:
+            sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
+            frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
+            frame["Relative Sector"] = frame["Extrapolated"] / frame["Sector Weight"]
+
+        frame.index.name = "Symbol"
+        return frame
+
     #
     # def to_csv(self, folder=None):
     #     if folder:

@@ -56,7 +56,7 @@ class Portfolio(ProductInterface):
 
     @property
     def portfolio(self):
-        return _Portfolio(prices=self.prices, weights=self.weights)
+        return _Portfolio(prices=self.prices, weights=self.weights, symbolmap=self.symbolmap, internal=self.internal)
 
     @property
     def nav(self):
@@ -66,30 +66,23 @@ class Portfolio(ProductInterface):
     def leverage(self):
         return self.portfolio.leverage
 
+    @property
+    def symbolmap(self):
+        return {s.name: s.group.value for s in self.symbols}
+
+    @property
+    def internal(self):
+        return {s.name: s.internal for s in self.symbols}
+
     def sector(self, total=False):
-        symbolmap = {s.name : s.group.value for s in self.symbols}
-        return self.portfolio.sector_weights(symbolmap=symbolmap, total=total)
+        return self.portfolio.sector_weights(symbolmap=self.symbolmap, total=total)
 
     @property
     def state(self):
-        def percentage(x):
-            return "{0:.2f}%".format(float(100.0 * x)).replace("nan%", "")
-
         frame = self.portfolio.state
 
-        frame["group"] = pd.Series({s.name: s.group.value for s in self.symbols})
-        frame["internal"] = pd.Series({s.name: s.internal for s in self.symbols})
-
-        sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
-        frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
-        frame["Relative Sector"] = frame["Extrapolated"] / frame["Sector Weight"]
-        frame.index.name = "Symbol"
-
-        keys = set(frame.keys())
-        keys.remove("group")
-        keys.remove("internal")
-        for k in keys:
-            frame[k] = frame[k].apply(percentage)
+        for k in set(frame.keys()).difference({"group", "internal"}):
+            frame[k] = frame[k].apply(lambda x: "{0:.2f}%".format(float(100.0 * x)).replace("nan%", ""))
 
         return frame
 
