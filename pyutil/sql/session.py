@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.orm.exc import NoResultFound
 
 
@@ -9,13 +9,7 @@ from sqlalchemy.orm.exc import NoResultFound
 def session(connection_str, echo=False, base=None, expire_on_commit=True):
     """Provide a transactional scope around a series of operations."""
     try:
-        engine = create_engine(connection_str, echo=echo)
-        # if the user has specified a base
-        if base:
-            base.metadata.create_all(engine)
-
-        connection = engine.connect()
-        s = Session(bind=connection, expire_on_commit=expire_on_commit)
+        s = session_factory(connection_str, echo=echo, base=base, expire_on_commit=expire_on_commit)
         yield s
         s.commit()
     except Exception as e:
@@ -23,6 +17,15 @@ def session(connection_str, echo=False, base=None, expire_on_commit=True):
         raise e
     finally:
         s.close()
+
+
+def session_factory(connection_str, echo=False, base=None, expire_on_commit=True):
+    engine = create_engine(connection_str, echo=echo)
+    if base:
+        base.metadata.create_all(engine)
+
+    factory = sessionmaker(engine, expire_on_commit=expire_on_commit)
+    return factory()
 
 
 def get_one_or_create(session, model, **kwargs):

@@ -48,25 +48,26 @@ class Symbol(ProductInterface):
         return self._price
 
     @staticmethod
-    def frame(symbols, name=False):
-        if name:
-            frame = pd.DataFrame({symbol.name: {**symbol.reference_series, **{"Name": symbol.name, "Sector": symbol.group.value}} for symbol in symbols}).transpose()
-        else:
-            frame = pd.DataFrame({symbol: {**symbol.reference_series, **{"Name": symbol.name, "Sector": symbol.group.value}} for symbol in symbols}).transpose()
+    def reference_frame(symbols):
+        #if name:
+        #    frame = pd.DataFrame({symbol.name: {**symbol.reference_series, **{"Name": symbol.name, "Sector": symbol.group.value}} for symbol in symbols}).transpose()
+        #else:
+        frame = pd.DataFrame({symbol: {**symbol.reference_series, **{"Name": symbol.name, "Sector": symbol.group.value}} for symbol in symbols}).transpose()
 
         frame.index.name = "Symbol"
         frame = frame.sort_index()
         return frame
 
     @staticmethod
-    def history(symbols, name=False):
-        if name:
-            return pd.DataFrame({symbol.name: symbol.price for symbol in symbols})
-        else:
-            return pd.DataFrame({symbol: symbol.price for symbol in symbols})
+    def history(symbols):
+        #if name:
+        #    return pd.DataFrame({symbol.name: symbol.price for symbol in symbols})
+        #else:
+        return pd.DataFrame({symbol: symbol.price for symbol in symbols})
 
-    @staticmethod
-    def symbols(session, symbols):
-        # shouldn't that be better a yield?
-        return session.query(Symbol).filter(Symbol.name.in_(symbols)).all()
+    #@staticmethod
+    #def symbols(session, symbols):
+    #    # shouldn't that be better a yield?
+    #    return session.query(Symbol).filter(Symbol.name.in_(symbols)).all()
 
+2

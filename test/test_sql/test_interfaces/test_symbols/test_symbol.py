@@ -67,5 +67,5 @@ class TestSymbol(TestCase):
         symbol = Symbol(name="E", group=SymbolType.fixed_income)
         field = Field(name="KIID", result=DataType.integer)
         symbol.reference[field] = 2
-        print(Symbol.frame([symbol]))
+        print(Symbol.reference_frame([symbol]))
         #todo: finish test

@@ -89,7 +89,7 @@ class Strategy(ProductInterface):
 
     @property
     def reference_assets(self):
-        return Symbol.frame(symbols=self.assets)
+        return Symbol.reference_frame(symbols=self.assets)
 
     def sector(self, total=False):
         return self._portfolio.sector(total=total)
