@@ -53,7 +53,7 @@ class ProductInterface(Base):
             return default
 
     def __repr__(self):
-        return "{d}({name})".format(d=self.discriminator, name=self.name)
+        return "{name}".format(name=self.name)
 
     def __lt__(self, other):
         return self.name < other.name

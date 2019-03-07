@@ -34,7 +34,7 @@ class TestFuture(object):
         assert future.exchange.name == "Chicago Mercantile Exchange"
         assert future.internal == "S&P 500 E-Mini Futures"
         assert future.quandl == "CME/ES"
-        assert str(future) == "Future(ES1 Index)"
+        assert str(future) == "ES1 Index"
 
     def test_future_no_contracts(self):
         # define an exchange

@@ -31,7 +31,7 @@ class TestContract(object):
         assert c.month_xyz == "MAR"
         assert c.month_x == "H"
         assert c.year == 2000
-        assert str(c) == "Contract(B3BB5)"
+        assert str(c) == "B3BB5"
 
 
         c = Contract(figi="B3BB5", notice=pd.Timestamp("1960-01-01").date(), bloomberg_symbol="AAA", fut_month_yr="MAR 60")
