@@ -38,7 +38,11 @@ def similar(a, b, eps=1e-6):
 
 class Portfolio(object):
     def copy(self):
-        return Portfolio(prices=self.prices.copy(), weights=self.weights.copy(), symbolmap=self.symbolmap, internal=self.internal)
+        return Portfolio(prices=self.prices.copy(),
+                         weights=self.weights.copy(),
+                         symbolmap=self.symbolmap,
+                         internal=self.internal,
+                         name=self.name)
 
     def iron_threshold(self, threshold=0.02):
         """
@@ -91,7 +95,7 @@ class Portfolio(object):
 
         return self
 
-    def __init__(self, prices, weights=None, symbolmap=None, internal=None):
+    def __init__(self, prices, weights=None, symbolmap=None, internal=None, name=None):
         # if you don't specify any weights, we initialize them with nan
         if weights is None:
             weights = pd.DataFrame(index=prices.index, columns=prices.keys(), data=0.0)
@@ -135,6 +139,11 @@ class Portfolio(object):
         self.__r = self.__prices.pct_change()
         self.__smap = symbolmap
         self.__internal = internal
+        self.__name = name
+
+    @property
+    def name(self):
+        return self.__name
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
@@ -232,7 +241,7 @@ class Portfolio(object):
         :param after:
         :return:
         """
-        return Portfolio(prices=self.prices.truncate(before=before, after=after), weights=self.weights.truncate(before=before, after=after), symbolmap=self.symbolmap, internal=self.internal)
+        return Portfolio(prices=self.prices.truncate(before=before, after=after), weights=self.weights.truncate(before=before, after=after), symbolmap=self.symbolmap, internal=self.internal, name=self.name)
 
     @property
     def empty(self):
@@ -283,23 +292,23 @@ class Portfolio(object):
 
     def tail(self, n=10):
         w = self.weights.tail(n)
-        return Portfolio(prices=self.prices.loc[w.index], weights=w, symbolmap=self.symbolmap, internal=self.internal)
+        return Portfolio(prices=self.prices.loc[w.index], weights=w, symbolmap=self.symbolmap, internal=self.internal, name=self.name)
 
     @property
     def position(self):
         return pd.DataFrame({k: self.weights[k] * self.nav / self.prices[k] for k in self.assets})
 
     def subportfolio(self, assets):
-        return Portfolio(prices=self.prices[assets], weights=self.weights[assets], symbolmap=self.symbolmap, internal=self.internal)
+        return Portfolio(prices=self.prices[assets], weights=self.weights[assets], symbolmap=self.symbolmap, internal=self.internal, name=self.name)
 
     def __mul__(self, other):
-        return Portfolio(prices=self.prices, weights=other * self.weights, symbolmap=self.symbolmap, internal=self.internal)
+        return Portfolio(prices=self.prices, weights=other * self.weights, symbolmap=self.symbolmap, internal=self.internal, name=self.name)
 
     def __rmul__(self, other):
         return self.__mul__(other)
 
     def apply(self, function, axis=0):
-        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis), symbolmap=self.symbolmap, internal=self.internal)
+        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis), symbolmap=self.symbolmap, internal=self.internal, name=self.name)
 
     @property
     def trading_days(self):

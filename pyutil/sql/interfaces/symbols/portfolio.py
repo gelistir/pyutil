@@ -56,7 +56,7 @@ class Portfolio(ProductInterface):
 
     @property
     def portfolio(self):
-        return _Portfolio(prices=self.prices, weights=self.weights, symbolmap=self.symbolmap, internal=self.internal)
+        return _Portfolio(prices=self.prices, weights=self.weights, symbolmap=self.symbolmap, internal=self.internal, name=self.name)
 
     @property
     def nav(self):

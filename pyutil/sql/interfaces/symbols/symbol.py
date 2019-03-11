@@ -59,11 +59,11 @@ class Symbol(ProductInterface):
         return frame
 
     @staticmethod
-    def history(symbols):
-        #if name:
-        #    return pd.DataFrame({symbol.name: symbol.price for symbol in symbols})
-        #else:
-        return pd.DataFrame({symbol: symbol.price for symbol in symbols})
+    def history(symbols, use_name=False):
+        if use_name:
+            return pd.DataFrame({symbol.name: symbol.price for symbol in symbols}).dropna(how="all", axis=0)
+        else:
+            return pd.DataFrame({symbol: symbol.price for symbol in symbols})
 
     #@staticmethod
     #def symbols(session, symbols):
