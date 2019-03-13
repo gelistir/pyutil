@@ -1,6 +1,9 @@
 # Set the base image to Ubuntu, use a public image
 FROM continuumio/miniconda3 as builder
 
+# File Author / Maintainer
+MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
+
 COPY requirements.txt requirements.txt
 
 RUN pip install --upgrade pip && \
