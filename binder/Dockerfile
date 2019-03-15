@@ -1,10 +1,10 @@
-FROM lobnek/jupyter:v2.3
+FROM lobnek/jupyter:v2.5
 
 # File Author / Maintainer
 MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
 
-COPY ./work /home/${NB_USER}/work
-COPY ./pyutil /home/${NB_USER}/work/pyutil
+COPY ./work ${WORK}
+COPY ./pyutil ${WORK}/pyutil
 
 USER root
 RUN conda install -y -c conda-forge xlrd xlsxwriter
