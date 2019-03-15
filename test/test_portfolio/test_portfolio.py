@@ -16,6 +16,14 @@ def sector_weights():
     return read("sector_weights.csv", parse_dates=True)
 
 class TestPortfolio(object):
+    def test_from_position(self):
+        prices = pd.DataFrame(index=[1, 2, 3], columns=["A", "B"], data=[[1, 1], [1.1, 1.2], [1.1, 1.4]])
+        position = pd.Series(index=["A", "B"], data=[100, 200])
+        p = Portfolio.fromPosition(prices=prices, position=position, cash=5)
+
+        assert p.cash.iloc[-1] == pytest.approx(0.012658227848101222, 1e-10)
+
+
     def test_leverage(self, portfolio):
         assert portfolio.leverage["2013-07-19"] == pytest.approx(0.25505730106555635, 1e-10)
         assert portfolio.nav["2013-07-19"] == pytest.approx(0.9849066065468487, 1e-10)

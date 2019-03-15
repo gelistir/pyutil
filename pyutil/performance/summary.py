@@ -246,15 +246,15 @@ class NavSeries(pd.Series):
 
     @property
     def monthly(self):
-        return fromNav(self.__res("M"))
+        return fromNav(self.resample("M"))
 
     @property
     def annual(self):
-        return fromNav(self.__res("A"))
+        return fromNav(self.resample("A"))
 
     @property
     def weekly(self):
-        return fromNav(self.__res("W"))
+        return fromNav(self.resample("W"))
 
     def fee(self, daily_fee_basis_pts=0.5, adjust=False):
         ret = self.pct_change().fillna(0.0) - daily_fee_basis_pts / 10000.0
@@ -265,11 +265,13 @@ class NavSeries(pd.Series):
     def drawdown_periods(self):
         return Drawdown(self).periods
 
-    def __res(self, rule="M"):
+    def resample(self, rule="M"):
         # refactor NAV at the end but keep the first element. Important for return computations!
 
-        a = pd.concat((self.head(1), self.resample(rule).last()), axis=0)
+        a = pd.concat((self.head(1), self.series.resample(rule).last()), axis=0)
+
         # overwrite the last index with the trust last index
+
         a.index = a.index[:-1].append(pd.DatetimeIndex([self.index[-1]]))
         return a
 
@@ -278,5 +280,8 @@ class NavSeries(pd.Series):
         frame["{name}drawdown".format(name=name)] = self.drawdown
         return frame
 
+    #def resample(self, rule="W"):
+    #    # little resample which keeps the first point
+    #    return NavSeries(pd.concat((self.head(1), self.series.resample(rule).last(), self.tail(1))))
 
 

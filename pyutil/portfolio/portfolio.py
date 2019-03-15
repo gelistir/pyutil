@@ -36,7 +36,48 @@ def similar(a, b, eps=1e-6):
     return True
 
 
+def __series2frame(index, series):
+    f = pd.DataFrame(index=index, columns=series.index)
+    for key in series.index:
+        f[key] = series[key]
+
+    return f
+
+
 class Portfolio(object):
+    @staticmethod
+    def __series2frame(index, series):
+        f = pd.DataFrame(index=index, columns=series.index)
+        for key in series.index:
+            f[key] = series[key]
+
+        return f
+
+    @staticmethod
+    def fromPosition(prices, position=None, symbolmap=None, internal=None, name=None, cash=None):
+        cash = cash or 0
+
+        if position is None:
+            position = pd.DataFrame(index=prices.index, columns=prices.keys(), data=0.0)
+
+        if isinstance(position, pd.Series):
+            position = Portfolio.__series2frame(index=prices.index, series=position)
+
+        frame = position*prices
+        value = frame.sum(axis=1) + cash
+        #print(value)
+
+        weight = frame.apply(lambda x: x / value)
+        #print(weight)
+
+        return Portfolio(prices=prices, weights=weight, symbolmap=symbolmap, internal=internal, name=name)
+
+        #print(p.position)
+        #print(p.cash + weight.sum(axis=1))
+
+        #value = value + cash
+
+
     def copy(self):
         return Portfolio(prices=self.prices.copy(),
                          weights=self.weights.copy(),
@@ -102,11 +143,7 @@ class Portfolio(object):
 
         # If weights is a Series, each weight per asset!
         if isinstance(weights, pd.Series):
-            w = pd.DataFrame(index=prices.index, columns=weights.keys())
-            for t in w.index:
-                w.loc[t] = weights
-
-            weights = w
+            weights = self.__series2frame(index=prices.index, series=weights)
 
         # make sure the keys are matching
         assert set(weights.keys()) <= set(prices.keys()), "Key for weights not subset of keys for prices"
