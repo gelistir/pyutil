@@ -65,17 +65,10 @@ class Portfolio(object):
 
         frame = position*prices
         value = frame.sum(axis=1) + cash
-        #print(value)
 
         weight = frame.apply(lambda x: x / value)
-        #print(weight)
 
         return Portfolio(prices=prices, weights=weight, symbolmap=symbolmap, internal=internal, name=name)
-
-        #print(p.position)
-        #print(p.cash + weight.sum(axis=1))
-
-        #value = value + cash
 
 
     def copy(self):
