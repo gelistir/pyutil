@@ -45,6 +45,12 @@ def __series2frame(index, series):
 
 
 class Portfolio(object):
+    def rename(self, names):
+        """ names is a dictionary """
+        self.weights.rename(columns=names, inplace=True)
+        self.prices.rename(columns=names, inplace=True)
+        return self
+
     @staticmethod
     def __series2frame(index, series):
         f = pd.DataFrame(index=index, columns=series.index)

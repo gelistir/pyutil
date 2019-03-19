@@ -22,6 +22,12 @@ class TestPortfolioBuilder(object):
         assert last_index(portfolio.prices) == 2
         assert str(portfolio) == "Portfolio with assets: ['B', 'A']"
 
+    def test_rename(self):
+        prices = pd.DataFrame(columns=["B", "A"], index=[1, 2], data=100)
+        portfolio = Portfolio(prices=prices)
+        portfolio = portfolio.rename(names={"A": "AA", "B": "BB"})
+        assert str(portfolio) == "Portfolio with assets: ['BB', 'AA']"
+
     def test_forward(self):
         prices = pd.DataFrame(columns=["A", "B"], index=[1,2,3], data=[[100,120],[110, 110],[130,120]])
 
