@@ -172,7 +172,7 @@ class Portfolio(object):
         self.__weights = weights
 
         self.__before = {today : yesterday for today, yesterday in zip(prices.index[1:], prices.index[:-1])}
-        self.__r = self.__prices.pct_change()
+        #self.__r = self.__prices.pct_change()
         self.__smap = symbolmap
         self.__internal = internal
         self.__name = name
@@ -235,7 +235,7 @@ class Portfolio(object):
         frame of returns
         :return:
         """
-        return self.__r
+        return self.prices.pct_change()
 
     @property
     def nav(self) -> NavSeries:
