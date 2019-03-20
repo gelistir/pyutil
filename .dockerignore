@@ -5,10 +5,12 @@
 
 !requirements.txt
 !sphinx.sh
+!graph.sh
 
 !work
 !test
 !pyutil
+!setup.py
 
 
 **/__pycache__

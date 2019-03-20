@@ -7,7 +7,7 @@ services:
       target: test
 
     volumes:
-      - ./pyutil:/pyutil/pyutil:ro
+      #- ./pyutil:/opt/conda/lib/python3.7/site-packages/pyutil:ro
       - ./test:/pyutil/test:ro
       - ./artifacts:/pyutil/artifacts
       - ./source:/source

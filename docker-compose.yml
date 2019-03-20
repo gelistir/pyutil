@@ -5,8 +5,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
-    volumes:
-      - ./pyutil:/pyutil/pyutil:ro
+    #volumes:
+    #  - ./pyutil:/pyutil/pyutil:ro
     extra_hosts:
       - quantsrv:192.168.100.15
     env_file:
@@ -18,7 +18,7 @@ services:
       dockerfile: ./binder/Dockerfile
     volumes:
       - ./work:/home/${NB_USER}/work
-      - ./pyutil:/home/${NB_USER}/work/pyutil:ro
+      #- ./pyutil:/home/${NB_USER}/work/pyutil:ro
     extra_hosts:
       - quantsrv:192.168.100.15
     env_file:
