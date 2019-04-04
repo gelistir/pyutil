@@ -1,6 +1,6 @@
 version: '3.6'
 services:
-  test:
+  sut:
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,7 +11,6 @@ services:
       - ./test:/pyutil/test:ro
       - ./artifacts:/pyutil/artifacts
       - ./source:/source
-      - ./helpers:/opt/.pycharm_helpers/pycharm:ro
 
     env_file:
       - test/.env-test

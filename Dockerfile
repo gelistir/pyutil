@@ -16,10 +16,7 @@ RUN conda install -y -c conda-forge nomkl pandas=0.24.2 requests=2.21.0 xlrd xls
 FROM builder as test
 
 # We install flask here to test some
-RUN pip install --no-cache-dir httpretty pytest pytest-cov pytest-html sphinx flask==1.0.2
-
-COPY ./sphinx.sh       /pyutil/sphinx.sh
-COPY ./graph.sh        /pyutil/graph.sh
+RUN pip install --no-cache-dir httpretty pytest==4.3.1 pytest-cov pytest-html sphinx flask==1.0.2
 
 WORKDIR /pyutil
 
