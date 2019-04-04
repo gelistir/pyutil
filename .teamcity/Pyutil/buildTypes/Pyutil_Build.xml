@@ -12,7 +12,7 @@
     <build-runners>
       <runner id="RUNNER_11" name="Test" type="simpleRunner">
         <parameters>
-          <param name="script.content" value="sh test.sh" />
+          <param name="script.content" value="make teamcity" />
           <param name="teamcity.step.mode" value="default" />
           <param name="use.custom.script" value="true" />
         </parameters>
