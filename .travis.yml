@@ -19,7 +19,7 @@ services:
   - docker
 
 script:
-  - ./test.sh
+  - make test
 
 after_success:
   - coveralls
