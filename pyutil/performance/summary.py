@@ -224,7 +224,7 @@ class NavSeries(pd.Series):
         d["Conditional Value at Risk (alpha = {alpha})".format(alpha=int(100 * alpha))] = 100 * self.cvar(alpha=alpha)
         d["First at"] = self.index[0].date()
         d["Last at"] = self.index[-1].date()
-
+        d["Kurtosis"] = self.pct_change().kurtosis()
         x = pd.Series(d)
         x.index.name = "Performance number"
         return x
