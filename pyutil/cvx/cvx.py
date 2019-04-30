@@ -22,6 +22,7 @@ def elasticNet(matrix, w0, lamb_balance=0, lamb_trades=0):
     minimize(objective=objective, constraints=[0 <= w, cvx.sum(w) == 1])
     return pd.Series(index=matrix.keys(), data=w.value)
 
+
 def mean_variation(ts):
     return ts.diff().abs().mean()
 
