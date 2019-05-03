@@ -1,6 +1,7 @@
 import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.declarative import declared_attr, has_inherited_table
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
@@ -8,18 +9,36 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.ref import _ReferenceData, Field
 
+class HasIdMixin(object):
+    @declared_attr.cascading
+    def id(cls):
+        if has_inherited_table(cls):
+            return sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
 
-class ProductInterface(Base):
-    __tablename__ = "productinterface"
+            #return sq.Column(sq.ForeignKey('person.id'), primary_key=True)
+        else:
+            return sq.Column(sq.Integer, primary_key=True, autoincrement=True)
 
+class MapperArgs(object):
+    @declared_attr
+    def __mapper_args__(cls):
+        if has_inherited_table(cls):
+            return {"polymorphic_identity": cls.__name__.lower()}
+        else:
+            return {"polymorphic_on": "discriminator"}
+
+class TableName(object):
+    @declared_attr
+    def __tablename__(cls):
+        return cls.__name__.lower()
+
+
+class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
     # note that the name should not be unique as Portfolio and Strategy can have the same name
     __name = sq.Column("name", sq.String(200), nullable=True)
-    id = sq.Column(sq.Integer, primary_key=True, autoincrement=True)
 
     discriminator = sq.Column(sq.String)
-    __table_args__ = (sq.UniqueConstraint('discriminator', 'name', name="uix_1"),)
-
-    __mapper_args__ = {"polymorphic_on": discriminator}
+    __table_args__ = (sq.UniqueConstraint('discriminator', 'name'),)
 
     _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
                             cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id], lazy="joined")

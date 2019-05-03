@@ -12,9 +12,6 @@ from sqlalchemy.orm import relationship
 
 
 class Future(ProductInterface):
-    __tablename__ = "future"
-    id = sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
-
     internal = sq.Column(sq.String(200), unique=True)
     quandl = sq.Column(sq.String(200), nullable=True)
     _category_id = sq.Column("category_id", sq.Integer, sq.ForeignKey(FuturesCategory.id))
@@ -24,7 +21,7 @@ class Future(ProductInterface):
     fut_gen_month = sq.Column(sq.String(200), nullable=True)
     contracts = relationship("Contract", back_populates="_future", foreign_keys=[Contract._future_id], order_by="Contract.notice", collection_class=ordering_list("notice"))
     # todo: test the ordering
-    __mapper_args__ = {"polymorphic_identity": "Future"}
+
 
     def __init__(self, name, fut_gen_month=None, quandl=None, internal=None, exchange=None, category=None):
         super().__init__(name)

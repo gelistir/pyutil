@@ -1,6 +1,5 @@
 import pandas as pd
 import pandas.util.testing as pdt
-from unittest import TestCase
 
 from pyutil.sql.interfaces.ref import Field, DataType
 from pyutil.timeseries.merge import merge
@@ -9,18 +8,21 @@ from test.config import test_portfolio
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 
 
-class TestSymbol(TestCase):
+class TestSymbol(object):
     def test_init(self):
         symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
-        self.assertEqual(symbol.internal, "Peter Maffay")
-        self.assertEqual(symbol.group, SymbolType.equities)
-        self.assertEqual(symbol.discriminator, "symbol")
+        assert symbol.internal == "Peter Maffay"
+        assert symbol.group == SymbolType.equities
+        assert symbol.discriminator == "symbol"
+        assert symbol.__tablename__ == "symbol"
+        assert symbol.__mapper_args__ == {'polymorphic_identity': 'symbol'}
+
 
     def test_ts(self):
         symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
 
         # update with a series containing a NaN
-        self.assertIsNone(symbol._price)
+        assert not symbol._price
 
         # upsert series
         symbol._price = test_portfolio().prices["A"]
@@ -29,7 +31,7 @@ class TestSymbol(TestCase):
         pdt.assert_series_equal(symbol._price, test_portfolio().prices["A"].dropna(), check_names=False)
 
         # extract the last stamp
-        self.assertEqual(symbol._price.last_valid_index(), pd.Timestamp("2015-04-22"))
+        assert symbol._price.last_valid_index() == pd.Timestamp("2015-04-22")
 
         # test json
         #a = symbol.to_json()
@@ -48,15 +50,14 @@ class TestSymbol(TestCase):
 
     def test_empty_price(self):
         symbol = Symbol(name="C", group=SymbolType.fixed_income)
-        self.assertIsNone(symbol._price)
+        assert not symbol._price
 
         symbol._price = pd.Series({})
-        print(symbol._price)
         pdt.assert_series_equal(symbol._price, pd.Series({}))
 
         symbol = Symbol(name="D", group=SymbolType.currency)
         symbol._price = None
-        self.assertIsNone(symbol._price)
+        assert not symbol._price
 
     def test_upsert_price(self):
         symbol = Symbol(name="D", group=SymbolType.currency)

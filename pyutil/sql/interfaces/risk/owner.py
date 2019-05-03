@@ -23,9 +23,6 @@ def _create_position(security, custodian, data):
 
 
 class Owner(ProductInterface):
-    __tablename__ = "owner"
-    __mapper_args__ = {"polymorphic_identity": "Owner"}
-    id = sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
     fullname = sq.Column("fullname", sq.String, nullable=True)
 
     __currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=True)

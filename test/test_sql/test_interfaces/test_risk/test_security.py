@@ -16,7 +16,7 @@ class TestSecurity(object):
 
         #self.assertEqual(s.name, "100")
         assert not s._price
-        assert s.discriminator == "Security"
+        assert s.discriminator == "security"
         assert str(s) == "Security(100: None)"
 
         s.upsert_price(test_portfolio().prices["A"])

@@ -21,12 +21,7 @@ def _create_volatility(currency, data):
 
 
 class Security(ProductInterface):
-    __tablename__ = "security"
-    __mapper_args__ = {"polymorphic_identity": "Security"}
-
     fullname = sq.Column("fullname", sq.String, nullable=True)
-
-    id = sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
 
     # define the price...
     _price_rel = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("price"), lazy="joined")
@@ -40,8 +35,8 @@ class Security(ProductInterface):
     _vola = association_proxy(target_collection="_vola_rel", attr="data",
                               creator=lambda currency, data: _create_volatility(currency=currency, data=data))
 
-    def __init__(self, name, fullname=None):
-        super().__init__(name)
+    def __init__(self, name, fullname=None, **kwargs):
+        super().__init__(name, **kwargs)
         self.fullname = fullname
 
     def __repr__(self):

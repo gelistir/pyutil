@@ -1,6 +1,3 @@
-import sqlalchemy as sq
-
-import pandas as pd
 from sqlalchemy import Column, Integer, ForeignKey
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
@@ -14,11 +11,7 @@ from pyutil.timeseries.merge import merge, last_index
 
 
 class Portfolio(ProductInterface):
-    __tablename__ = "portfolio"
-    __mapper_args__ = {"polymorphic_identity": "portfolio"}
     __searchable__ = ["name"]
-    id = sq.Column(sq.ForeignKey(ProductInterface.id), primary_key=True)
-
     # define the price...
     _price_rel = relationship(Series, uselist=False, primaryjoin = ProductInterface.join_series("price"))
     _prices = association_proxy("_price_rel", "data", creator=lambda data: Series(name="price", data=data))

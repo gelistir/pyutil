@@ -10,9 +10,6 @@ from pyutil.sql.interfaces.products import ProductInterface
 
 
 class Contract(ProductInterface):
-    __tablename__ = "contract"
-    id = sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
-
     _future_id = sq.Column("future_id", sq.Integer, sq.ForeignKey("future.id"))
     _future = relationship("Future", foreign_keys=[_future_id], back_populates="contracts")
     _notice = sq.Column("notice", sq.Date)
@@ -20,8 +17,6 @@ class Contract(ProductInterface):
     _figi = sq.Column("figi", sq.String(200), unique=True)
     bloomberg_symbol = sq.Column(sq.String(200))
     fut_month_yr = sq.Column(sq.String(200))
-
-    __mapper_args__ = {"polymorphic_identity": "Contract"}
 
     def alive(self, today=None):
         today = today or _pd.Timestamp("today").date()

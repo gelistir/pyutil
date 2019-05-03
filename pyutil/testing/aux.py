@@ -12,6 +12,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 import collections
 Database = collections.namedtuple("Database", ["session", "connection"])
 
+
 def post(client, data, url):
     response = client.post(url, data=data)
     assert response.status_code == 200, "The return code is {r}".format(r=response.status_code)
@@ -30,9 +31,11 @@ def resource_folder(folder):
 
     return partial(__resource, folder=folder)
 
+
 def connection_str(user, password, host, database):
     return 'postgresql+psycopg2://{user}:{password}@{host}/{db}'.format(user=user, password=password,
                                                                         host=host, db=database)
+
 
 def postgresql_db_test(base, name=None, echo=False):
     # session object
