@@ -42,7 +42,7 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
     __table_args__ = (sq.UniqueConstraint('discriminator', 'name'),)
 
     _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
-                            cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id], lazy="joined")
+                           cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id], lazy="joined")
 
     reference = association_proxy('_refdata', 'value', creator=lambda k, v: _ReferenceData(field=k, content=v))
 
@@ -55,7 +55,7 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
 
     @property
     def reference_series(self):
-        return pd.Series(dict(self.reference)).rename(index=lambda x: x.name)
+       return pd.Series(dict(self.reference)).rename(index=lambda x: x.name)
 
     @hybrid_method
     def get_reference(self, field, default=None):

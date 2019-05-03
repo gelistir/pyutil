@@ -14,6 +14,8 @@ class FieldType(enum.Enum):
     static = "static"
     other = "other"
 
+FieldTypes = {s.value: s for s in FieldType}
+
 
 class DataType(enum.Enum):
     string = ("string", lambda x: x)
@@ -38,6 +40,8 @@ class DataType(enum.Enum):
     def __call__(self, *args):
         return self.__fct(*args)
 
+
+DataTypes = {s.value : s for s in DataType}
 
 class Field(Base):
     __tablename__ = "reference_field"

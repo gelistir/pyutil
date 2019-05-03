@@ -17,6 +17,7 @@ class StrategyType(_enum.Enum):
     balanced = 'balanced'
     dynamic = 'dynamic'
 
+StrategyTypes = {s.value: s for s in StrategyType}
 
 def module(source):
     from types import ModuleType
