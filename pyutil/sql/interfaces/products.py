@@ -9,15 +9,15 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.ref import _ReferenceData, Field
 
+
 class HasIdMixin(object):
     @declared_attr.cascading
     def id(cls):
         if has_inherited_table(cls):
             return sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
-
-            #return sq.Column(sq.ForeignKey('person.id'), primary_key=True)
         else:
             return sq.Column(sq.Integer, primary_key=True, autoincrement=True)
+
 
 class MapperArgs(object):
     @declared_attr
@@ -26,6 +26,7 @@ class MapperArgs(object):
             return {"polymorphic_identity": cls.__name__.lower()}
         else:
             return {"polymorphic_on": "discriminator"}
+
 
 class TableName(object):
     @declared_attr
