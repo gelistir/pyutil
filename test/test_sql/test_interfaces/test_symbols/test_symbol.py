@@ -5,7 +5,7 @@ from pyutil.sql.interfaces.ref import Field, DataType
 from pyutil.timeseries.merge import merge
 from test.config import test_portfolio
 
-from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
+from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType, SymbolTypes
 
 
 class TestSymbol(object):
@@ -70,3 +70,6 @@ class TestSymbol(object):
         symbol.reference[field] = 2
         print(Symbol.reference_frame([symbol]))
         #todo: finish test
+
+    def test_type(self):
+        assert "Alternatives" in SymbolTypes.keys()

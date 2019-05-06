@@ -17,7 +17,9 @@ class SymbolType(_enum.Enum):
     currency = "Currency"
     equities = "Equities"
 
+
 SymbolTypes = {s.value: s for s in SymbolType}
+
 
 class Symbol(ProductInterface):
     __searchable__ = ['internal', 'name', 'group']

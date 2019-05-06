@@ -51,6 +51,10 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
 
     @hybrid_property
     def name(self):
+        # the traditional way would be to make the __name public, but then it can be changed on the fly (which we would like to avoid)
+        # if we make it a standard property stuff like session.query(Symbol).filter(Symbol.name == "Maffay").one() won't work
+        # Thanks to this hybrid annotation sqlalchemy translates self.__name into proper sqlcode
+        # print(session.query(Symbol).filter(Symbol.name == "Maffay"))
         return self.__name
 
     @property
