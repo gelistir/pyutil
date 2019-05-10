@@ -42,7 +42,7 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
     __table_args__ = (sq.UniqueConstraint('discriminator', 'name'),)
 
     _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
-                           cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id], lazy="joined")
+                           cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id], lazy="select")
 
     reference = association_proxy('_refdata', 'value', creator=lambda k, v: _ReferenceData(field=k, content=v))
 

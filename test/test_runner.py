@@ -1,5 +1,4 @@
 import multiprocessing
-from unittest import TestCase
 
 import pytest
 

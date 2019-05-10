@@ -17,8 +17,8 @@ class TestMessage(object):
         )
 
         m = Mail(mailgunapi="https://api.mailgun.net/v2/maffay.com/messages")
-        m.attach_stream("test.csv", pd.Series(index=[1, 2], data=[3, 4]).to_csv())
-        m.inline_stream("test.csv", pd.Series(index=[1, 2], data=[3, 4]).to_csv())
+        m.attach_stream("test.csv", pd.Series(index=[1, 2], data=[3, 4]).to_csv(header=False))
+        m.inline_stream("test.csv", pd.Series(index=[1, 2], data=[3, 4]).to_csv(header=False))
         with tempfile.NamedTemporaryFile(delete=True) as file:
             m.inline_file(name="Peter", localpath=file.name)
             m.attach_file(name="Maffay", localpath=file.name)

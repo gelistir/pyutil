@@ -9,7 +9,6 @@ from test.config import read
 @pytest.fixture()
 def ts():
     return read("ts.csv", squeeze=True, header=None, parse_dates=True)
-#s = read_series(resource("ts.csv"))
 
 index = pd.Timestamp("2015-04-14")
 
