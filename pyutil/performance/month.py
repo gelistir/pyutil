@@ -2,9 +2,6 @@ import calendar
 import numpy as np
 
 
-def _cumulate(x):
-    return (1 + x).prod() - 1.0
-
 def monthlytable(nav):
     """
     Get a table of monthly returns
@@ -13,6 +10,9 @@ def monthlytable(nav):
 
     :return:
     """
+    def _cumulate(x):
+        return (1 + x).prod() - 1.0
+
     r = nav.pct_change().dropna()
     # Works better in the first month
     # Compute all the intramonth-returns, instead of reapplying some monthly resampling of the NAV

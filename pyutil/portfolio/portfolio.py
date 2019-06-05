@@ -75,7 +75,6 @@ class Portfolio(object):
 
         return Portfolio(prices=prices, weights=weight, symbolmap=symbolmap, internal=internal, name=name)
 
-
     def copy(self):
         return Portfolio(prices=self.prices.copy(),
                          weights=self.weights.copy(),
@@ -171,7 +170,6 @@ class Portfolio(object):
         self.__weights = weights
 
         self.__before = {today : yesterday for today, yesterday in zip(prices.index[1:], prices.index[:-1])}
-        #self.__r = self.__prices.pct_change()
         self.__smap = symbolmap
         self.__internal = internal
         self.__name = name
@@ -399,34 +397,8 @@ class Portfolio(object):
     def last_dates(self):
         return self.prices.apply(lambda x: x.last_valid_index()).sort_values(ascending=True)
 
-    #
-    # def to_csv(self, folder=None):
-    #     if folder:
-    #         self.prices.to_csv(os.path.join(folder, "prices.csv"))
-    #         self.weights.to_csv(os.path.join(folder, "weights.csv"))
-    #     else:
-    #         return self.prices.to_csv(), self.weights.to_csv()
-    #
-    # @staticmethod
-    # def read_csv(folder):
-    #     return Portfolio(prices=pd.read_csv(os.path.join(folder, "prices.csv"), index_col=0, parse_dates=True),
-    #               weights=pd.read_csv(os.path.join(folder, "weights.csv"), index_col=0, parse_dates=True))
-
     def to_frame(self, name=""):
         frame = self.nav.to_frame(name)
         frame["{n}leverage".format(n=name)] = self.leverage
         frame["{n}cash".format(n=name)] = self.cash
         return frame
-
-if __name__ == "__main__":
-    idx = pd.DatetimeIndex(start=pd.Timestamp("2018-10-28"), periods=100, freq="D")
-    print(idx)
-
-    x = pd.Series(data=idx, index=idx)
-    print(x)
-
-    # monthly
-    print(sorted(x.groupby([idx.year, idx.month]).last().values))
-
-    # weekly
-    print(sorted(x.groupby(idx.map(lambda x: x.isocalendar()[0:2])).last().values))

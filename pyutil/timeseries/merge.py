@@ -24,6 +24,12 @@ def last_index(ts, default=None):
 
 
 def first_index(ts, default=None):
+    """
+    Return the first valid index of a Series or DataFrame
+    :param ts:
+    :param default: Use if the series has no valid entries or if the argument is None
+    :return:
+    """
     try:
         return ts.first_valid_index() or default
     except AttributeError:
