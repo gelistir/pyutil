@@ -43,7 +43,6 @@ class TestMerge(object):
         y = merge(None)
         assert not y
 
-
         y = merge(pd.Series({}), None)
         pdt.assert_series_equal(y, pd.Series({}))
 
@@ -51,19 +50,19 @@ class TestMerge(object):
         pdt.assert_series_equal(y, pd.Series({}))
 
     def test_to_datetime(self):
+        assert not to_datetime(None)
 
         t0 = pd.Timestamp("2015-04-22")
         x = pd.Series(index=[t0], data=[2.0])
 
-        assert isinstance(x.index[0], pd.Timestamp)
-
         # should be safe to apply to_datetime
         pdt.assert_series_equal(x, to_datetime(x))
 
-        y = pd.Series(index=[t0.date()], data=[2.0])
-        pdt.assert_series_equal(y, to_date(x))
-
-        assert not to_datetime(None)
+    def test_to_date(self):
         assert not to_date(None)
 
+        t0 = pd.Timestamp("2015-04-22")
+        x = pd.Series(index=[t0], data=[2.0])
 
+        pdt.assert_series_equal(pd.Series(index=[t0.date()], data=[2.0]), to_date(x))
+        pdt.assert_series_equal(to_date(ts=x, format="%Y%m%d"), pd.Series(index=["20150422"], data=[2.0]))

@@ -6,7 +6,7 @@ MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
 
 COPY . /tmp/pyutil
 
-RUN conda install -y -c conda-forge nomkl pandas=0.24.2 cvxpy=1.0.15 requests=2.21.0 xlrd xlsxwriter && \
+RUN conda install -y -c conda-forge nomkl pandas=0.24.2 cvxpy=1.0.15 requests=2.21.0 && \
     conda clean -y --all && \
     pip install --no-cache-dir -r /tmp/pyutil/requirements.txt && \
     pip install --no-cache-dir /tmp/pyutil && \

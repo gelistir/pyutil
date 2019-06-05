@@ -13,6 +13,7 @@ def merge(new, old=None):
     else:
         return old
 
+
 # also works for frames, etc.
 def last_index(ts, default=None):
     try:
@@ -37,9 +38,12 @@ def to_datetime(ts=None):
         return None
 
 
-def to_date(ts=None):
+def to_date(ts=None, format=None):
     try:
-        ts.index = [a.date() for a in to_datetime(ts).index]
+        if format:
+            ts.index = [t.strftime(format) for t in to_datetime(ts).index]
+        else:
+            ts.index = [t.date() for t in to_datetime(ts).index]
         return ts
     except AttributeError:
         return None
