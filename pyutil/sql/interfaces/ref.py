@@ -52,10 +52,10 @@ class Field(Base):
     __addepar = sq.Column("addepar", sq.String(), nullable=True)
 
 
-    def __init__(self, name, result, type=None, addepar=None):
+    def __init__(self, name, result=None, type=None, addepar=None):
         self.__name = name
-        self.__result = result
-        self.__type = type
+        self.__result = result or DataType.string
+        self.__type = type or FieldType.dynamic
         self.__addepar = addepar
 
     @hybrid_property
