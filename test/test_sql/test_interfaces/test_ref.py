@@ -6,11 +6,22 @@ from test.test_sql.product import Product
 class TestReference(object):
     def test_reference(self):
         field = Field(name="Peter", type=FieldType.dynamic, result=DataType.integer)
+        field_no = Field(name="Hans", type=FieldType.dynamic, result=DataType.integer)
         product = Product(name="A")
 
         product.reference[field] = "100"
         # does the conversion for me...
         assert product.reference[field] == 100
+        # you can also use a string to get to the field...
+        #assert product.get_reference(field="Peter") == 100
+
+        assert product.reference.get(field) == 100
+
+
+        # this field is not in the dictionary
+        assert product.reference.get(field_no, 120) == 120
+        assert product.reference == {field: 100}
+        #assert False
 
         product.reference[field] = "120"
         assert product.reference[field] == 120

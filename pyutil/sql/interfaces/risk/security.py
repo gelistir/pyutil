@@ -7,6 +7,7 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.performance.summary import fromNav
 from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.ref import Field, FieldType, DataType
 from pyutil.sql.interfaces.risk.custodian import Currency
 from pyutil.sql.interfaces.series import Series
 
@@ -18,6 +19,12 @@ def _create_volatility(currency, data):
     assert isinstance(data, pd.Series)
 
     return Series(name="volatility", product2=currency, data=data)
+
+
+Field_BMulti = Field(name="Bloomberg Multiplier", type=FieldType.dynamic, result=DataType.float)
+Field_KIID = Field(name="KIID", type=FieldType.dynamic, result=DataType.integer)
+Field_Ticker = Field(name="Bloomberg Ticker", type=FieldType.dynamic, result=DataType.string)
+Field_Name = Field(name="Name", type=FieldType.dynamic, result=DataType.string)
 
 
 class Security(ProductInterface):
@@ -40,19 +47,22 @@ class Security(ProductInterface):
         self.fullname = fullname
 
     def __repr__(self):
-        return "Security({id}: {name})".format(id=self.name, name=self.get_reference("Name"))
+        return "Security({id}: {name})".format(id=self.name, name=self.reference.get(Field_Name))
 
     @hybrid_property
     def kiid(self):
-        return self.get_reference("KIID")
+        return self.reference.get(Field_KIID)
+        #return self.get_reference("KIID")
 
     @hybrid_property
     def bloomberg_ticker(self):
-        return self.get_reference("Bloomberg Ticker", default=None)
+        return self.reference.get(Field_Ticker, None)
+
+        #return self.get_reference("Bloomberg Ticker", default=None)
 
     @hybrid_property
     def bloomberg_scaling(self):
-        return self.get_reference("Bloomberg Multiplier", default=1.0)
+        return self.reference.get(Field_BMulti, 1.0)
 
     def to_json(self):
         nav = fromNav(self._price)

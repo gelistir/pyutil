@@ -89,12 +89,12 @@ class Field(Base):
 
 class _ReferenceData(Base):
     __tablename__ = "reference_data"
-    field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey(Field.id), primary_key=True)
+    field_id = sq.Column("field_id", sq.Integer, sq.ForeignKey(Field.id,  onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
     field = relationship(Field)
 
     content = sq.Column(sq.String(200), nullable=False)
 
-    product_id = sq.Column("product_id", sq.Integer, sq.ForeignKey("productinterface.id"), primary_key=True, index=True)
+    product_id = sq.Column("product_id", sq.Integer, sq.ForeignKey("productinterface.id",  onupdate="CASCADE", ondelete="CASCADE"), primary_key=True, index=True)
     product = relationship("ProductInterface", foreign_keys=[product_id], back_populates="_refdata")
 
     @property
@@ -104,3 +104,8 @@ class _ReferenceData(Base):
     @value.setter
     def value(self, value):
         self.content = str(value)
+
+    #def get(self, field, default):
+    #    try:
+    #        return self.field.result(self.content)
+        #assert field==self.field

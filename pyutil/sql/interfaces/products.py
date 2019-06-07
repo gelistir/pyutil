@@ -44,7 +44,7 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
     _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
                            cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id], lazy="select")
 
-    reference = association_proxy('_refdata', 'value', creator=lambda k, v: _ReferenceData(field=k, content=v))
+    reference = association_proxy('_refdata', 'value', creator=lambda field, v: _ReferenceData(field=field, content=v))
 
     def __init__(self, name, **kwargs):
         self.__name = str(name)
@@ -59,22 +59,21 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
 
     @property
     def reference_series(self):
-       return pd.Series(dict(self.reference)).rename(index=lambda x: x.name)
+        return pd.Series(dict(self.reference)).rename(index=lambda x: x.name)
 
-    @hybrid_method
-    def get_reference(self, field, default=None):
-        # Here field can be a Field object or a string (e.g. the name of Field object)
-        if isinstance(field, Field):
-            pass
-        else:
-            # loop over all fields
-            fields = {f.name: f for f in self._refdata.keys()}
-            field = fields.get(field)
+    #todo: delete
+    #@hybrid_method
+    #def get_reference(self, field, default=None):
+    #    # Here field can be a Field object or a string (e.g. the name of Field object)
+    #    if isinstance(field, Field):
+    #        pass
+    #    else:
+    #        # loop over all fields
+    #        fields = {f.name: f for f in self._refdata.keys()}
+    #        field = fields.get(field)
 
-        if field in self._refdata.keys():
-            return self._refdata[field].value
-        else:
-            return default
+    #    return self.reference.get(field, default)
+
 
     def __repr__(self):
         return "{name}".format(name=self.name)

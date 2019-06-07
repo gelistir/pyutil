@@ -27,13 +27,13 @@ class TestProductInterface(object):
     def test_reference(self):
         f = Field(name="z", type=FieldType.dynamic, result=DataType.integer)
         p = Product(name="A")
-        assert p.get_reference(field=f, default=5) == 5
-        assert not p.get_reference(field=f)
-        assert p.get_reference(field="z", default=5) == 5
-        assert p.get_reference(field="zzz", default=5) == 5
+        assert p.reference.get(f, 5) == 5
+        assert not p.reference.get(f)
+        #assert p.get_reference(field="z", default=5) == 5
+        #assert p.get_reference(field="zzz", default=5) == 5
 
         p.reference[f] = "120"
-        assert p.get_reference(field=f) == 120
+        assert p.reference[f] == 120
 
     def test_timeseries(self):
         a = pd.Series(index=[0, 1], data=[4, 5])
