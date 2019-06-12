@@ -9,7 +9,6 @@ from pyutil.testing.aux import resource_folder
 pd.options.display.width = 300
 
 # this is a function mapping name of a file to its path...
-
 resource = resource_folder(folder=os.path.dirname(__file__))
 
 
