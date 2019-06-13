@@ -1,4 +1,5 @@
 import enum as _enum
+import os
 
 import pandas as pd
 import sqlalchemy as sq
@@ -11,6 +12,23 @@ from pyutil.portfolio.portfolio import Portfolio as _Portfolio
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 
+def _module(source):
+    from types import ModuleType
+
+    compiled = compile(source, '', 'exec')
+    mod = ModuleType("module")
+    exec(compiled, mod.__dict__)
+    return mod
+
+
+def strategies(folder):
+    for file in os.listdir(folder):
+        with open(os.path.join(folder, file), "r") as f:
+            source = f.read()
+            m = _module(source=source)
+            yield m.name, source
+
+
 class StrategyType(_enum.Enum):
     mdt = 'mdt'
     conservative = 'conservative'
@@ -18,14 +36,6 @@ class StrategyType(_enum.Enum):
     dynamic = 'dynamic'
 
 StrategyTypes = {s.value: s for s in StrategyType}
-
-def module(source):
-    from types import ModuleType
-
-    compiled = compile(source, '', 'exec')
-    mod = ModuleType("module")
-    exec(compiled, mod.__dict__)
-    return mod
 
 
 class Strategy(ProductInterface):
@@ -46,7 +56,7 @@ class Strategy(ProductInterface):
     def configuration(self, reader=None):
         # Configuration only needs a reader to access the symbols...
         # Reader is a function taking the name of an asset as a parameter
-        return module(self.source).Configuration(reader=reader)
+        return _module(self.source).Configuration(reader=reader)
 
     def upsert(self, portfolio, symbols=None, days=0):
         assert isinstance(portfolio, _Portfolio)
