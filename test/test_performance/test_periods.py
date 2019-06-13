@@ -8,7 +8,7 @@ from test.config import read
 
 @pytest.fixture(scope="module")
 def prices():
-    return read("ts.csv", squeeze=True, header=None, parse_dates=True)
+    return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
 
 
 class TestPeriods(object):
@@ -24,7 +24,7 @@ class TestPeriods(object):
 
     def test_periods_more(self, prices):
         y = period_prices(prices, offset=periods(today=prices.index[-1]))
-        pdt.assert_series_equal(y, read("periods.csv", header=None, squeeze=True), check_names=False)
+        pdt.assert_series_equal(y, read("periods.csv", header=None, squeeze=True, index_col=0), check_names=False)
 
     def test_period_returns_without_periods(self, prices):
         x = 100*period_prices(prices, today=pd.Timestamp("2015-05-01"))

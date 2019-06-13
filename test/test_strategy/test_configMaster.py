@@ -21,7 +21,7 @@ class Strategy(ConfigMaster):
 
 class TestConfigMaster(object):
     def test_run_strategy(self):
-        prices = read("price.csv", parse_dates=True)
+        prices = read("price.csv", parse_dates=True, index_col=0)
 
         s = Strategy(names=["A", "B", "C"],             # Assets used by the strategy
                      reader=lambda name: prices[name],  # simple function to read prices

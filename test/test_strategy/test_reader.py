@@ -1,30 +1,29 @@
 import pytest
 from sqlalchemy.orm.exc import NoResultFound
 
-from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.strategy.reader import reader, assets
-from pyutil.testing.aux import postgresql_db_test
+from pyutil.testing.database import database
 from test.config import read
 
 import pandas.util.testing as pdt
-
+from pyutil.sql.base import Base
 
 @pytest.fixture()
 def session():
-    db = postgresql_db_test(Base)
-
-    session = db.session
+    db = database(base=Base)
 
     s = Symbol(name="Maffay", group=SymbolType.fixed_income)
-    session.add(s)
-    session.commit()
+    db.session.add(s)
+    db.session.commit()
 
-    return session
+    yield db.session
+    db.session.close()
 
 @pytest.fixture()
 def price():
-    return read("ts.csv", squeeze=True, header=None, parse_dates=True)
+    return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
+
 
 def test_reader(session, price):
     s = session.query(Symbol).filter(Symbol.name == "Maffay").one()

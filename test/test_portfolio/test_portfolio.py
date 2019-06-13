@@ -13,7 +13,7 @@ def portfolio():
 
 @pytest.fixture(scope="module")
 def sector_weights():
-    return read("sector_weights.csv", parse_dates=True)
+    return read("sector_weights.csv", parse_dates=True, index_col=0)
 
 class TestPortfolio(object):
     def test_from_position(self):
@@ -107,7 +107,7 @@ class TestPortfolio(object):
 
     def test_state(self, portfolio):
         portfolio.state.to_csv("state2.csv")
-        pdt.assert_frame_equal(portfolio.state, read("state2.csv", squeeze=False, header=0))
+        pdt.assert_frame_equal(portfolio.state, read("state2.csv", squeeze=False, header=0, index_col=0))
 
     def test_mismatch_columns(self):
         with pytest.raises(AssertionError):

@@ -3,14 +3,15 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 
 from pyutil.sql.session import get_one_or_create, get_one_or_none, session as s_session
-from pyutil.testing.aux import postgresql_db_test
+from pyutil.testing.database import database
 from test.test_sql.user import User, Base
 
 
 @pytest.fixture()
 def session():
-    db = postgresql_db_test(Base)
-    return db.session
+    db = database(base=Base)
+    yield db.session
+    db.session.close()
 
 
 class TestSession(object):

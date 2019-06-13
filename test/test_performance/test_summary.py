@@ -11,7 +11,7 @@ from test.config import read
 
 @pytest.fixture()
 def ts():
-    ts = read("ts.csv", parse_dates=True, squeeze=True, header=None)
+    ts = read("ts.csv", parse_dates=True, squeeze=True, header=None, index_col=0)
     ts.name = None
     ts.index.name = None
     return ts

@@ -57,5 +57,5 @@ class TestPortfolio(object):
 
     def test_state(self, portfolio):
         portfolio.state.to_csv("state.csv")
-        pdt.assert_frame_equal(read("state.csv"), portfolio.state, check_names=False, check_exact=False, check_less_precise=True, check_dtype=False)
+        pdt.assert_frame_equal(read("state.csv", index_col=0), portfolio.state, check_names=False, check_exact=False, check_less_precise=True, check_dtype=False)
 

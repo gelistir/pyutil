@@ -8,12 +8,12 @@ from test.config import read
 
 @pytest.fixture(scope="module")
 def ts():
-    return read("ts.csv", squeeze=True, header=None, parse_dates=True)
+    return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
 
 
 class TestDrawdown(object):
     def test_drawdown(self, ts):
-        pdt.assert_series_equal(Drawdown(ts).drawdown, read("drawdown.csv", squeeze=True, parse_dates=True, header=None), check_names=False)
+        pdt.assert_series_equal(Drawdown(ts).drawdown, read("drawdown.csv", squeeze=True, parse_dates=True, header=None, index_col=0), check_names=False)
 
     def test_periods(self, ts):
         x = Drawdown(ts).periods
