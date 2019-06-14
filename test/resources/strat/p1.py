@@ -3,9 +3,10 @@ from test.config import test_portfolio
 
 name = "P1"
 
+
 class Configuration(ConfigMaster):
     def __init__(self, reader=None, **kwargs):
-        super().__init__(["A","B"], reader=reader, **kwargs)
+        super().__init__(["A", "B"], reader=reader, **kwargs)
 
     @property
     def portfolio(self):
