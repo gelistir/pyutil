@@ -41,7 +41,7 @@ test:
 	#docker-compose -f docker-compose.test.yml build sut
 	docker-compose -f docker-compose.test.yml run sut
 
-teamcity: test graph doc
+teamcity: test doc
 
 jupyter: build
 	echo "http://localhost:${PORT}"
