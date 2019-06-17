@@ -34,14 +34,17 @@ class __StrategyRunner(Runner):
     def target(self, strategy_id):
         from pyutil.sql.session import session
 
+        # do a read is enough...
         with session(connection_str=self.__connection_str) as session:
+
             # get all symbols into a big dictionary
             symbols = {s.name: s for s in session.query(Symbol)}
 
-            # extract the strategy
+            # extract the strategy you need
             strategy = session.query(Strategy).filter_by(id=strategy_id).one()
 
             self.logger.info("Last timestamp {t} for {s}".format(t=strategy.last, s=strategy))
+
 
             configuration = strategy.configuration(reader=self.reader(session))
             strategy.upsert(portfolio=configuration.portfolio, symbols=symbols, days=5)
