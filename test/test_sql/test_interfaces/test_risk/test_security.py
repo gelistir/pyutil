@@ -15,22 +15,22 @@ class TestSecurity(object):
         assert s.name == "100"
 
         #self.assertEqual(s.name, "100")
-        assert not s._price
+        #assert not s._price
         assert s.discriminator == "security"
         assert str(s) == "Security(100: None)"
 
-        s.upsert_price(test_portfolio().prices["A"])
+        #s.upsert_price(test_portfolio().prices["A"])
 
-        a = s.to_json()
-        assert isinstance(a, dict)
-        assert a["name"] == "100"
+        #a = s.to_json()
+        #assert isinstance(a, dict)
+        #assert a["name"] == "100"
 
-        pdt.assert_series_equal(a["Price"], s.price)
+        #pdt.assert_series_equal(a["Price"], s.price)
 
-        s.upsert_volatility(Currency(name="USD"), ts=pd.Series([30, 40, 50]))
-        s.upsert_volatility(Currency(name="CHF"), ts=pd.Series([10, 11, 12]))
+        #s.upsert_volatility(Currency(name="USD"), ts=pd.Series([30, 40, 50]))
+        #s.upsert_volatility(Currency(name="CHF"), ts=pd.Series([10, 11, 12]))
 
-        pdt.assert_frame_equal(s.vola_frame, pd.DataFrame({key: item for (key, item) in s._vola.items()}))
+        #pdt.assert_frame_equal(s.vola_frame, pd.DataFrame({key: item for (key, item) in s._vola.items()}))
 
         assert s.bloomberg_scaling == 1
         assert not s.bloomberg_ticker

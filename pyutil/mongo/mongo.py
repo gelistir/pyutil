@@ -56,3 +56,6 @@ class Collection(object):
 
     def __repr__(self):
         return self.__collection.__repr__()
+
+    def frame(self, key, **kwargs):
+        return pd.DataFrame({x[key]: Collection.parse(x) for x in self.find(**kwargs)})

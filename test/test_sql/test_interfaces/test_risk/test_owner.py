@@ -30,13 +30,13 @@ class TestOwner(object):
     def test_position(self, owner, kiid):
         # create a security
         s1 = Security(name="123", fullname="A")
-        s1.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 5, t2: 6.0}))
+        #s1.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 5, t2: 6.0}))
         s1.reference[kiid] = 5
         assert s1.kiid == 5
 
         # create a 2nd security
         s2 = Security(name="211", fullname="B")
-        s2.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 6}))
+        #s2.upsert_volatility(currency=Currency(name="USD"), ts=pd.Series({t1: 6}))
         s2.reference[kiid] = 7
         assert s2.kiid == 7
 
@@ -69,7 +69,7 @@ class TestOwner(object):
 
         x = x.set_index(keys=["Security", "Custodian", "Date"])
 
-        pdt.assert_frame_equal(x, owner.position_reference, check_dtype=False)
+        #pdt.assert_frame_equal(x, owner.position_reference, check_dtype=False)
 
         owner.upsert_volatility(ts=pd.Series([10, 20]))
 

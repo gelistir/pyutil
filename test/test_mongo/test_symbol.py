@@ -1,7 +1,7 @@
 from pyutil.mongo.mongo import Collection, client
 import pytest
 
-from pyutil.mongo.xsymbols import prices
+from pyutil.mongo.xsymbols import read_prices, read_price, write_price
 from test.config import read
 import pandas.util.testing as pdt
 
@@ -16,13 +16,18 @@ def collection(ts):
     db = client('test-mongo', 27017)['test-database']
     c = Collection(collection=db.test_collection)
 
-    c.insert(p_obj=ts, kind="PX_LAST", name="Dampf")
-    c.insert(p_obj=ts, kind="PX_LAST", name="Maffay")
+    write_price(collection=c, data=ts, name="Dampf")
+    write_price(collection=c, data=ts, name="Maffay")
 
     return c
 
 
 class TestPrices(object):
-    def test_find_one(self, ts, collection):
-        frame = prices(collection=collection, kind="PX_LAST")
+    def test_read_prces(self, ts, collection):
+        frame = read_prices(collection=collection, kind="PX_LAST")
         pdt.assert_series_equal(ts, frame["Dampf"], check_names=False)
+
+    def test_read_price(self, ts, collection):
+        x = read_price(collection=collection, name="Dampf")
+        pdt.assert_series_equal(ts, x, check_names=False)
+
