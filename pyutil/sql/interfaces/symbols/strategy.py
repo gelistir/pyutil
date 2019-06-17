@@ -1,15 +1,10 @@
 import enum as _enum
 import os
 
-import pandas as pd
 import sqlalchemy as sq
-from sqlalchemy.orm import relationship
 from sqlalchemy.types import Enum as _Enum
 
-from pyutil.sql.interfaces.symbols.portfolio import Portfolio
 from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.portfolio.portfolio import Portfolio as _Portfolio
-from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 
 def _module(source):
@@ -43,13 +38,10 @@ class Strategy(ProductInterface):
     __searchable__ = ["name", "type"]
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)
-    _portfolio_id = sq.Column("portfolio_id", sq.Integer, sq.ForeignKey("portfolio.id"), nullable=False)
-    _portfolio = relationship(Portfolio, uselist=False, foreign_keys=[_portfolio_id], lazy="joined")
     type = sq.Column(_Enum(StrategyType))
 
     def __init__(self, name, active=True, source="", type=StrategyType.conservative):
         super().__init__(name)
-        self._portfolio = Portfolio(name=self.name)
         self.active = active
         self.source = source
         self.type = type
@@ -59,50 +51,50 @@ class Strategy(ProductInterface):
         # Reader is a function taking the name of an asset as a parameter
         return _module(self.source).Configuration(reader=reader)
 
-    def upsert(self, portfolio, symbols=None, days=0):
-        assert isinstance(portfolio, _Portfolio)
+    # def upsert(self, portfolio, symbols=None, days=0):
+    #     assert isinstance(portfolio, _Portfolio)
+    #
+    #     assert self._portfolio
+    #
+    #     # find the last stamp of weights...
+    #     last = self.last
+    #
+    #     if not last:
+    #         self._portfolio.upsert(portfolio=portfolio, symbols=symbols)
+    #     else:
+    #         # We only take the last few days of the new portfolio
+    #         p1 = portfolio.truncate(before=last - pd.DateOffset(days=days))
+    #         self._portfolio.upsert(portfolio=p1, symbols=symbols)
+    #
+    #     return self.portfolio
 
-        assert self._portfolio
-
-        # find the last stamp of weights...
-        last = self.last
-
-        if not last:
-            self._portfolio.upsert(portfolio=portfolio, symbols=symbols)
-        else:
-            # We only take the last few days of the new portfolio
-            p1 = portfolio.truncate(before=last - pd.DateOffset(days=days))
-            self._portfolio.upsert(portfolio=p1, symbols=symbols)
-
-        return self.portfolio
-
-    @property
-    def portfolio(self):
-        return self._portfolio.portfolio
-
-    @property
-    def last(self):
-        return self._portfolio.last
-
-    @property
-    def assets(self):
-        return self._portfolio.symbols
-
-    @property
-    def state(self):
-        x = self._portfolio.state
-        # print(x)
-        y = self.reference_assets.drop(columns=["Name", "Sector"])
-        y.index = [asset.name for asset in y.index]
-        return pd.concat((x, y), axis=1, sort=False)
-
-    @property
-    def reference_assets(self):
-        return Symbol.reference_frame(symbols=self.assets)
-
-    def sector(self, total=False):
-        return self._portfolio.sector(total=total)
-
-    @property
-    def symbols(self):
-        return self._portfolio.symbols
+    # @property
+    # def portfolio(self):
+    #     return self._portfolio.portfolio
+    #
+    # @property
+    # def last(self):
+    #     return self._portfolio.last
+    #
+    # @property
+    # def assets(self):
+    #     return self._portfolio.symbols
+    #
+    # @property
+    # def state(self):
+    #     x = self._portfolio.state
+    #     # print(x)
+    #     y = self.reference_assets.drop(columns=["Name", "Sector"])
+    #     y.index = [asset.name for asset in y.index]
+    #     return pd.concat((x, y), axis=1, sort=False)
+    #
+    # @property
+    # def reference_assets(self):
+    #     return Symbol.reference_frame(symbols=self.assets)
+    #
+    # def sector(self, total=False):
+    #     return self._portfolio.sector(total=total)
+    #
+    # @property
+    # def symbols(self):
+    #     return self._portfolio.symbols

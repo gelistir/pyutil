@@ -3,7 +3,16 @@ from pyutil.portfolio.portfolio import Portfolio
 
 
 
-def portfolio(collection, name):
+def read_portfolio(collection, name):
     prices = Collection.parse(collection.find_one(name=name, kind="PRICES"))
     weights = Collection.parse(collection.find_one(name=name, kind="WEIGHTS"))
-    return Portfolio(prices=prices, weights=weights)
+
+    if prices is None and weights is None:
+        return None
+    else:
+        return Portfolio(prices=prices, weights=weights)
+
+
+def write_portfolio(collection, name, portfolio):
+    collection.insert(portfolio.weights, name=name, kind="WEIGHTS")
+    collection.insert(portfolio.prices, name=name, kind="PRICES")
