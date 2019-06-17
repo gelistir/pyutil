@@ -22,6 +22,9 @@ def collection(ts):
 
 
 class TestMongo(object):
+    def test_parse(self):
+        assert not Collection.parse(None)
+
     def test_find_one(self, ts, collection):
         x = Collection.parse(collection.find_one(First="Hans", Last="Dampf"))
         pdt.assert_series_equal(ts, x)
@@ -30,9 +33,9 @@ class TestMongo(object):
             # there are two Hans
             collection.find_one(First="Hans")
 
-        with pytest.raises(AssertionError):
-            # there is no Peter
-            collection.find_one(First="Peter")
+
+        # there is no Peter
+        collection.find_one(First="Peter") == None
 
     def test_assert_insert(self, ts, collection):
         with pytest.raises(AssertionError):

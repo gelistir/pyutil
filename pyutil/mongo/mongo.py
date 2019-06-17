@@ -1,6 +1,9 @@
 import pandas as pd
 from pymongo import MongoClient
 
+from pyutil.timeseries.merge import merge
+
+
 def client(host, port=27017):
     return MongoClient(host, port)
 
@@ -14,12 +17,16 @@ class Collection(object):
         n = self.__collection.count_documents({**kwargs})
 
         if n == 0:
-            return self.__collection.insert_one({"data": p_obj.to_msgpack(), **kwargs})
+            self.__collection.insert_one({"data": p_obj.to_msgpack(), **kwargs})
+            return p_obj
 
         if n == 1:
             # do a merge... here...
             r = self.__collection.find_one({**kwargs})
-            r["data"] = p_obj.to_msgpack()
+            # extract the old data and merge with the new data coming in
+            data = merge(old=self.parse(r["data"]), new=p_obj)
+            r["data"] = data.to_msgpack()
+            return data
 
         if n > 1:
             assert False, "Identifier not unique"
@@ -30,12 +37,18 @@ class Collection(object):
 
     def find_one(self, **kwargs):
         n = self.__collection.count_documents({**kwargs})
-        assert n == 1, "Found {n} documents".format(n=n)
+        assert n <= 1, "Found {n} documents".format(n=n)
+        if n == 0:
+            return None
+
         return self.__collection.find_one({**kwargs})
 
     @staticmethod
-    def parse(x):
-        return pd.read_msgpack(x["data"])
+    def parse(x=None):
+        try:
+            return pd.read_msgpack(x["data"])
+        except TypeError:
+            return None
 
     @property
     def collection(self):
