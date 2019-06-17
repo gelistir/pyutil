@@ -17,6 +17,10 @@ services:
 
     links:
       - test-postgresql
+      - test-mongo
 
   test-postgresql:
     image: postgres:9.6
+
+  test-mongo:
+    image: mongo
