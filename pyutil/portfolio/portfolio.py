@@ -59,7 +59,7 @@ class Portfolio(object):
         return f
 
     @staticmethod
-    def fromPosition(prices, position=None, symbolmap=None, internal=None, name=None, cash=None):
+    def fromPosition(prices, position=None, internal=None, name=None, cash=None):
         cash = cash or 0
 
         if position is None:
@@ -73,14 +73,10 @@ class Portfolio(object):
 
         weight = frame.apply(lambda x: x / value)
 
-        return Portfolio(prices=prices, weights=weight, symbolmap=symbolmap, internal=internal, name=name)
+        return Portfolio(prices=prices, weights=weight)
 
     def copy(self):
-        return Portfolio(prices=self.prices.copy(),
-                         weights=self.weights.copy(),
-                         symbolmap=self.symbolmap,
-                         internal=self.internal,
-                         name=self.name)
+        return Portfolio(prices=self.prices.copy(), weights=self.weights.copy())
 
     def iron_threshold(self, threshold=0.02):
         """
@@ -133,7 +129,7 @@ class Portfolio(object):
 
         return self
 
-    def __init__(self, prices, weights=None, symbolmap=None, internal=None, name=None):
+    def __init__(self, prices, weights=None):
         # if you don't specify any weights, we initialize them with nan
         if weights is None:
             weights = pd.DataFrame(index=prices.index, columns=prices.keys(), data=0.0)
@@ -170,25 +166,25 @@ class Portfolio(object):
         self.__weights = weights
 
         self.__before = {today : yesterday for today, yesterday in zip(prices.index[1:], prices.index[:-1])}
-        self.__smap = symbolmap
-        self.__internal = internal
-        self.__name = name
+        #self.__smap = symbolmap
+        #self.__internal = internal
+        #self.__name = name
 
-    @property
-    def name(self):
-        return self.__name
+    #@property
+    #def name(self):
+    #    return self.__name
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
 
-    @property
-    def symbolmap(self) -> dict:
-        return self.__smap
-
-    @symbolmap.setter
-    def symbolmap(self, x: dict):
-        assert isinstance(x, dict)
-        self.__smap = x
+    # @property
+    # def symbolmap(self) -> dict:
+    #     return self.__smap
+    #
+    # @symbolmap.setter
+    # def symbolmap(self, x: dict):
+    #     assert isinstance(x, dict)
+    #     self.__smap = x
 
     @property
     def internal(self) -> dict:
@@ -274,7 +270,8 @@ class Portfolio(object):
         :param after:
         :return:
         """
-        return Portfolio(prices=self.prices.truncate(before=before, after=after), weights=self.weights.truncate(before=before, after=after), symbolmap=self.symbolmap, internal=self.internal, name=self.name)
+        return Portfolio(prices=self.prices.truncate(before=before, after=after),
+                         weights=self.weights.truncate(before=before, after=after))
 
     @property
     def empty(self):
@@ -295,53 +292,53 @@ class Portfolio(object):
         a.index.name = "weight"
         return a
 
-    def sector_weights(self, total=False):
-        """
-        weights per sector,
-        :param total:
-        :return:
-        """
-        assert isinstance(self.symbolmap, dict), "Symbolmap is type {t} and {s}".format(t=type(self.symbolmap), s=self.symbolmap)
-        w = self.weights.ffill()
+    # def sector_weights(self, total=False):
+    #     """
+    #     weights per sector,
+    #     :param total:
+    #     :return:
+    #     """
+    #     assert isinstance(self.symbolmap, dict), "Symbolmap is type {t} and {s}".format(t=type(self.symbolmap), s=self.symbolmap)
+    #     w = self.weights.ffill()
+    #
+    #     frame = w.groupby(by=self.symbolmap, axis=1).sum()
+    #     if total:
+    #         frame["Total"] = frame.sum(axis=1)
+    #     return frame
+    #
+    # def sector_weights_final(self, total=False):
+    #     return self.sector_weights(total=total).iloc[-1]
 
-        frame = w.groupby(by=self.symbolmap, axis=1).sum()
-        if total:
-            frame["Total"] = frame.sum(axis=1)
-        return frame
-
-    def sector_weights_final(self, total=False):
-        return self.sector_weights(total=total).iloc[-1]
-
-    def top_flop(self, n=5, day_final=pd.Timestamp("today")):
-        TopFlop = namedtuple("TopFlop", ["mtd", "ytd"])
-
-        return TopFlop(mtd=self.__f(n=n, day_final=day_final, term="Month-to-Date"),
-                       ytd=self.__f(n=n, day_final=day_final, term="Year-to-Date"))
-
-    def __f(self, n=5, term="Month-to-Date", day_final=pd.Timestamp("today")):
-        TopFlop = namedtuple("TopFlop", ["top", "flop"])
-        s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()[term]
-        return TopFlop(top=pd.Series(s.sort_values(ascending=False).head(n)), flop=pd.Series(s.sort_values(ascending=True).head(n)))
+    # def top_flop(self, n=5, day_final=pd.Timestamp("today")):
+    #     TopFlop = namedtuple("TopFlop", ["mtd", "ytd"])
+    #
+    #     return TopFlop(mtd=self.__f(n=n, day_final=day_final, term="Month-to-Date"),
+    #                    ytd=self.__f(n=n, day_final=day_final, term="Year-to-Date"))
+    #
+    # def __f(self, n=5, term="Month-to-Date", day_final=pd.Timestamp("today")):
+    #     TopFlop = namedtuple("TopFlop", ["top", "flop"])
+    #     s = self.weighted_returns.apply(period_returns, offset=periods(today=day_final)).transpose()[term]
+    #     return TopFlop(top=pd.Series(s.sort_values(ascending=False).head(n)), flop=pd.Series(s.sort_values(ascending=True).head(n)))
 
     def tail(self, n=10):
         w = self.weights.tail(n)
-        return Portfolio(prices=self.prices.loc[w.index], weights=w, symbolmap=self.symbolmap, internal=self.internal, name=self.name)
+        return Portfolio(prices=self.prices.loc[w.index], weights=w)
 
     @property
     def position(self):
         return pd.DataFrame({k: self.weights[k] * self.nav / self.prices[k] for k in self.assets})
 
     def subportfolio(self, assets):
-        return Portfolio(prices=self.prices[assets], weights=self.weights[assets], symbolmap=self.symbolmap, internal=self.internal, name=self.name)
+        return Portfolio(prices=self.prices[assets], weights=self.weights[assets])
 
     def __mul__(self, other):
-        return Portfolio(prices=self.prices, weights=other * self.weights, symbolmap=self.symbolmap, internal=self.internal, name=self.name)
+        return Portfolio(prices=self.prices, weights=other * self.weights)
 
     def __rmul__(self, other):
         return self.__mul__(other)
 
     def apply(self, function, axis=0):
-        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis), symbolmap=self.symbolmap, internal=self.internal, name=self.name)
+        return Portfolio(prices=self.prices, weights=self.weights.apply(function, axis=axis))
 
     @property
     def trading_days(self):
@@ -379,16 +376,16 @@ class Portfolio(object):
         weights.index.name = "Symbol"
         frame = pd.concat((a, weights), axis=1)
 
-        if self.symbolmap:
-            frame["group"] = pd.Series(self.symbolmap)
+        #if self.symbolmap:
+        #    frame["group"] = pd.Series(self.symbolmap)
 
-        if self.internal:
-            frame["internal"] = pd.Series(self.internal)
+        #if self.internal:
+        #    frame["internal"] = pd.Series(self.internal)
 
-        if "group" in frame:
-            sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
-            frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
-            frame["Relative Sector"] = frame["Extrapolated"] / frame["Sector Weight"]
+        #if "group" in frame:
+        #    sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
+        #    frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
+        #    frame["Relative Sector"] = frame["Extrapolated"] / frame["Sector Weight"]
 
         frame.index.name = "Symbol"
         return frame
