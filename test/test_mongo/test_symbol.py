@@ -31,3 +31,6 @@ class TestPrices(object):
         x = read_price(collection=collection, name="Dampf")
         pdt.assert_series_equal(ts, x, check_names=False)
 
+    def test_read_price_bad(self, collection):
+        x = read_price(collection=collection, name="NONONO")
+        assert x is None

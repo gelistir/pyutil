@@ -2,7 +2,6 @@ from pyutil.mongo.mongo import Collection
 from pyutil.portfolio.portfolio import Portfolio
 
 
-
 def read_portfolio(collection, name):
     prices = Collection.parse(collection.find_one(name=name, kind="PRICES"))
     weights = Collection.parse(collection.find_one(name=name, kind="WEIGHTS"))

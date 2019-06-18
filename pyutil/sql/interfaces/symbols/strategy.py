@@ -1,9 +1,9 @@
 import enum as _enum
 import os
-
 import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
+from pyutil.mongo.xportfolio import write_portfolio, read_portfolio
 from pyutil.sql.interfaces.products import ProductInterface
 
 
@@ -22,6 +22,13 @@ def strategies(folder):
             source = f.read()
             m = _module(source=source)
             yield m.name, source
+
+
+def strategies_from_db(session, reader=None):
+    """ this opens the door for parallel execution """
+    strategies = session.query(Strategy).filter(Strategy.active).all()
+    for strategy in strategies:
+        yield strategy, strategy.configuration(reader=reader)
 
 
 class StrategyType(_enum.Enum):
@@ -50,6 +57,16 @@ class Strategy(ProductInterface):
         # Configuration only needs a reader to access the symbols...
         # Reader is a function taking the name of an asset as a parameter
         return _module(self.source).Configuration(reader=reader)
+
+    def read_portfolio(self, collection):
+        return read_portfolio(collection=collection, name=self.name)
+
+    def write_portfolio(self, portfolio, collection):
+        write_portfolio(collection=collection, name=self.name, portfolio=portfolio)
+
+    def assets(self):
+        return self.configuration(reader=None).names
+
 
     # def upsert(self, portfolio, symbols=None, days=0):
     #     assert isinstance(portfolio, _Portfolio)
