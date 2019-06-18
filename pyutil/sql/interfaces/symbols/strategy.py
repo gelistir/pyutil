@@ -64,6 +64,7 @@ class Strategy(ProductInterface):
     def write_portfolio(self, portfolio, collection):
         write_portfolio(collection=collection, name=self.name, portfolio=portfolio)
 
+    @property
     def assets(self):
         return self.configuration(reader=None).names
 
