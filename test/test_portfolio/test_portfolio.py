@@ -105,7 +105,7 @@ class TestPortfolio(object):
             weights = pd.DataFrame(columns=["C"], index=[1.5], data=[[0.3]])
             Portfolio(prices=prices, weights=weights)
 
-    @pytest.disable()
+    @pytest.mark.skip(reason="no way of currently testing this")
     def test_state(self, portfolio):
         portfolio.state.to_csv("state2.csv")
         pdt.assert_frame_equal(portfolio.state, read("state2.csv", squeeze=False, header=0, index_col=0))
