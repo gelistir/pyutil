@@ -88,6 +88,6 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
     def __hash__(self):
         return hash(self.name)
 
-    @staticmethod
-    def join_series(name):
-        return "and_(ProductInterface.id==Series._product1_id, Series.name=='{name}')".format(name=name)
+    #@staticmethod
+    #def join_series(name):
+    #    return "and_(ProductInterface.id==Series._product1_id, Series.name=='{name}')".format(name=name)

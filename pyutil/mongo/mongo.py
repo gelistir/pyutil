@@ -31,17 +31,26 @@ class Collection(object):
         if n > 1:
             assert False, "Identifier not unique"
 
-    def find(self, **kwargs):
+    def find(self, parse=False, **kwargs):
         for a in self.__collection.find({**kwargs}):
-            yield a
+            if parse:
+                yield Collection.parse(a)
+            else:
+                yield a
 
-    def find_one(self, **kwargs):
+    def find_one(self, parse=False, **kwargs):
         n = self.__collection.count_documents({**kwargs})
-        assert n <= 1, "Found {n} documents".format(n=n)
+        assert n <= 1, "Found multiple {n} documents".format(n=n)
         if n == 0:
             return None
 
-        return self.__collection.find_one({**kwargs})
+        a = self.__collection.find_one({**kwargs})
+
+        # you may want to parse
+        if parse:
+            a = Collection.parse(a)
+
+        return a
 
     @staticmethod
     def parse(x=None):

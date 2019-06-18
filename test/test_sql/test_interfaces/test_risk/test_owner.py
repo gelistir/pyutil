@@ -26,6 +26,7 @@ def owner():
 def kiid():
     return Field(name="KIID", result=DataType.integer, type=FieldType.other)
 
+
 class TestOwner(object):
     def test_position(self, owner, kiid):
         # create a security
