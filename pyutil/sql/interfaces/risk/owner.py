@@ -59,55 +59,55 @@ class Owner(ProductInterface):
     def currency(self, value):
         self.__currency = value
 
-    @property
-    def securities(self):
-        return set([x[0] for x in self._position.keys()])
+    #@property
+    #def securities(self):
+    #    return set([x[0] for x in self._position.keys()])
 
-    @property
-    def custodians(self):
-        return set([x[1] for x in self._position.keys()])
+    #@property
+    #def custodians(self):
+    #    return set([x[1] for x in self._position.keys()])
 
-    @property
-    def position_frame(self):
-        a = pd.DataFrame(dict(self._position))
-        if not a.empty:
-            a = a.transpose().stack()
-
-            a.index.names = ["Security", "Custodian", "Date"]
-            return a.to_frame(name="Position")
-        else:
-            return a
-
-    @property
-    def vola_security_frame(self):
-        assert self.currency, "The currency for the owner is not specified!"
-        x = pd.DataFrame({security: security.volatility(self.currency) for security in set(self.securities)}) \
- \
-        if not x.empty:
-            x = x.stack()
-            x.index.names = ["Date", "Security"]
-            return x.swaplevel().to_frame("Volatility")
-
-        return x
+    # @property
+    # def position_frame(self):
+    #     a = pd.DataFrame(dict(self._position))
+    #     if not a.empty:
+    #         a = a.transpose().stack()
+    #
+    #         a.index.names = ["Security", "Custodian", "Date"]
+    #         return a.to_frame(name="Position")
+    #     else:
+    #         return a
+    #
+    # @property
+    # def vola_security_frame(self):
+    #     assert self.currency, "The currency for the owner is not specified!"
+    #     x = pd.DataFrame({security: security.volatility(self.currency) for security in set(self.securities)}) \
+    #
+    #     if not x.empty:
+    #         x = x.stack()
+    #         x.index.names = ["Date", "Security"]
+    #         return x.swaplevel().to_frame("Volatility")
+    #
+    #     return x
 
     @property
     def reference_securities(self):
         return Security.frame(self.securities)
 
-    @property
-    def position_reference(self):
-        reference = self.reference_securities
-        position = self.position_frame
-        volatility = self.vola_security_frame
-        try:
-            position_reference = position.join(reference, on="Security")
-            return position_reference.join(volatility, on=["Security", "Date"])
-        except (KeyError, ValueError):
-            return pd.DataFrame({})
+    #@property
+    #def position_reference(self):
+    #    reference = self.reference_securities
+    #    position = self.position_frame
+    #    volatility = self.vola_security_frame
+    #    try:
+    #        position_reference = position.join(reference, on="Security")
+    #        return position_reference.join(volatility, on=["Security", "Date"])
+    #    except (KeyError, ValueError):
+    #        return pd.DataFrame({})
 
-    def to_json(self):
-        ts = fromReturns(r=self._returns)
-        return {"name": self.name, "Nav": ts, "Volatility": ts.ewm_volatility(), "Drawdown": ts.drawdown}
+    #def to_json(self):
+    #    ts = fromReturns(r=self._returns)
+    #    return {"name": self.name, "Nav": ts, "Volatility": ts.ewm_volatility(), "Drawdown": ts.drawdown}
 
     # def upsert_position(self, security, custodian, ts):
     #    assert isinstance(security, Security)

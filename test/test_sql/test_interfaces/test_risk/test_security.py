@@ -1,21 +1,31 @@
 import pandas as pd
 import pandas.util.testing as pdt
+import pytest
 
-from pyutil.sql.interfaces.risk.custodian import Currency
+from pyutil.mongo.mongo import client, Collection
 from pyutil.sql.interfaces.risk.security import Security
-from test.config import test_portfolio
+from test.config import read
 
 t0 = pd.Timestamp("1978-11-15")
 t1 = pd.Timestamp("1978-11-16")
+
+
+@pytest.fixture(scope="module")
+def collection():
+    db = client('test-mongo', 27017)['test-database']
+    c = Collection(collection=db.test_collection)
+    return c
+
+
+@pytest.fixture(scope="module")
+def ts():
+    return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
 
 
 class TestSecurity(object):
     def test_name(self):
         s = Security(name=100)
         assert s.name == "100"
-
-        #self.assertEqual(s.name, "100")
-        #assert not s._price
         assert s.discriminator == "security"
         assert str(s) == "Security(100: None)"
 
@@ -34,3 +44,19 @@ class TestSecurity(object):
 
         assert s.bloomberg_scaling == 1
         assert not s.bloomberg_ticker
+
+    def test_write(self, collection, ts):
+        s = Security(name=100)
+        s.write(collection=collection, kind="PRICE", data=ts)
+        x = s.read(collection=collection, kind="PRICE", parse=True)
+        pdt.assert_series_equal(x, ts, check_names=False)
+
+    def test_write_volatility(self, collection, ts):
+        s = Security(name=100)
+        s.write(collection=collection, kind="VOLATILITY", data=ts, currency="USD")
+        x = s.read(collection=collection, parse=True, kind="VOLATILITY")
+        pdt.assert_series_equal(x, ts, check_names=False)
+
+    def test_vola_frame(self):
+        assert False
+        # send collection ...
