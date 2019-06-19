@@ -2,13 +2,10 @@ import os
 import pandas as pd
 from pymongo import MongoClient
 
-from pyutil.timeseries.merge import merge
-
 _mongo = MongoClient(host=os.environ["MONGO_HOST"], port=27017)[os.environ["MONGO_DATABASE"]]
 
 
 def collection(name):
-    print("HAHAHA")
     return _Collection(_mongo[name])
 
 
@@ -25,13 +22,10 @@ class _Collection(object):
         n = self.__collection.count_documents({**kwargs})
 
         if n == 0:
-            print("n==0")
             self.__collection.insert_one({"data": p_obj.to_msgpack(), **kwargs})
             return p_obj
 
         if n == 1:
-            print("n==1")
-            print({**kwargs})
             self.__collection.update_one({**kwargs}, {"$set": {"data": p_obj.to_msgpack()}}, upsert=False)
             return p_obj
 
