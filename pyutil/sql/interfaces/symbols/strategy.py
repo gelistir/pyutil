@@ -3,7 +3,7 @@ import os
 import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
-from pyutil.mongo.xportfolio import write_portfolio, read_portfolio
+from pyutil.portfolio.portfolio import Portfolio
 from pyutil.sql.interfaces.products import ProductInterface
 
 
@@ -41,6 +41,7 @@ class StrategyType(_enum.Enum):
 StrategyTypes = {s.value: s for s in StrategyType}
 
 
+
 class Strategy(ProductInterface):
     __searchable__ = ["name", "type"]
     active = sq.Column(sq.Boolean)
@@ -58,11 +59,18 @@ class Strategy(ProductInterface):
         # Reader is a function taking the name of an asset as a parameter
         return _module(self.source).Configuration(reader=reader)
 
-    def read_portfolio(self, collection):
-        return read_portfolio(collection=collection, name=self.name)
+    def read_portfolio(self):
+        prices = self.read(kind="PRICES")
+        weights = self.read(kind="WEIGHTS")
 
-    def write_portfolio(self, portfolio, collection):
-        write_portfolio(collection=collection, name=self.name, portfolio=portfolio)
+        if prices is None and weights is None:
+            return None
+        else:
+            return Portfolio(prices=prices, weights=weights)
+
+    def write_portfolio(self, portfolio):
+        self.write(data=portfolio.weights, kind="WEIGHTS")
+        self.write(data=portfolio.prices, kind="PRICES")
 
     @property
     def assets(self):

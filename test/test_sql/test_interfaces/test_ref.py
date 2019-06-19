@@ -2,7 +2,6 @@ from pyutil.sql.interfaces.ref import Field, FieldType, DataType
 from test.test_sql.product import Product
 
 
-
 class TestReference(object):
     def test_reference(self):
         field = Field(name="Peter", type=FieldType.dynamic, result=DataType.integer)
@@ -21,7 +20,6 @@ class TestReference(object):
         # this field is not in the dictionary
         assert product.reference.get(field_no, 120) == 120
         assert product.reference == {field: 100}
-        #assert False
 
         product.reference[field] = "120"
         assert product.reference[field] == 120

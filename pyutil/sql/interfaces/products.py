@@ -6,6 +6,7 @@ from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
+from pyutil.mongo.mongo import collection
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.ref import _ReferenceData, Field
 
@@ -34,7 +35,13 @@ class TableName(object):
         return cls.__name__.lower()
 
 
-class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
+class Mongo(object):
+    @declared_attr
+    def __collection__(cls):
+        return collection(name=cls.__name__.lower())
+
+
+class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     # note that the name should not be unique as Portfolio and Strategy can have the same name
     __name = sq.Column("name", sq.String(200), nullable=True)
 
@@ -88,6 +95,8 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
     def __hash__(self):
         return hash(self.name)
 
-    #@staticmethod
-    #def join_series(name):
-    #    return "and_(ProductInterface.id==Series._product1_id, Series.name=='{name}')".format(name=name)
+    def read(self, parse=True, **kwargs):
+        return self.__collection__.find_one(parse=parse, name=self.name, **kwargs)
+
+    def write(self, data, **kwargs):
+        self.__collection__.upsert(p_obj=data, name=self.name, **kwargs)

@@ -1,7 +1,7 @@
 import pytest
 import pandas.util.testing as pdt
 
-from pyutil.mongo.mongo import client, Collection
+
 from pyutil.sql.interfaces.ref import Field, DataType
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType, SymbolTypes
 from test.config import read
@@ -10,13 +10,6 @@ from test.config import read
 @pytest.fixture(scope="module")
 def ts():
     return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
-
-
-@pytest.fixture(scope="module")
-def collection():
-    db = client('test-mongo', 27017)['test-database']
-    c = Collection(collection=db.test_collection)
-    return c
 
 
 class TestSymbol(object):
@@ -38,11 +31,10 @@ class TestSymbol(object):
     def test_type(self):
         assert "Alternatives" in SymbolTypes.keys()
 
-    def test_prices(self, ts, collection):
-        symbol = Symbol(name="Thomas", group=SymbolType.alternatives)
-        symbol.write_price(collection=collection, data=ts)
-        x = symbol.read_price(collection=collection)
-        pdt.assert_series_equal(x, ts)
+    def test_prices(self, ts):
+        symbol = Symbol(name="Thomas")
+        symbol.write(data=ts, kind="PX_LAST")
+        pdt.assert_series_equal(symbol.read(kind="PX_LAST"), ts)
 
-        frame = Symbol.read_prices(collection=collection)
+        frame = Symbol.read_prices(kind="PX_LAST")
         pdt.assert_series_equal(frame["Thomas"], ts, check_names=False)

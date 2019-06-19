@@ -2,6 +2,7 @@ import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.hybrid import hybrid_property
 
+#from pyutil.mongo.mongo import collection
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.ref import Field, FieldType, DataType
 
@@ -88,9 +89,8 @@ class Security(ProductInterface):
         frame.index.name = "Security"
         return frame.sort_index()
 
-    def write(self, collection, data, kind="PX_LAST", **kwargs):
-        collection.insert(p_obj=data, kind=kind, name=self.name, **kwargs)
+    #def write(self, data, kind="PX_LAST", **kwargs):
+    #    self.__collection__.insert(p_obj=data, kind=kind, name=self.name, **kwargs)
 
-    def read(self, collection, parse, **kwargs):
-        return collection.find_one(parse=parse, **kwargs)
-
+    #def read(self, parse, **kwargs):
+    #    return self.__collection__.find_one(parse=parse, **kwargs)

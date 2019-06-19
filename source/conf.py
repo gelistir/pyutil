@@ -10,7 +10,7 @@ import os
 #sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 #sys.path.insert(0, "/pylobnek/pylobnek")
-sys.path.insert(0, "/pyutil/")
+sys.path.upsert(0, "/pyutil/")
 
 # -- General configuration ------------------------------------------------
 

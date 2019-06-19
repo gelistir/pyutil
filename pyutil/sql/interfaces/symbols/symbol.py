@@ -39,11 +39,5 @@ class Symbol(ProductInterface):
         return frame
 
     @staticmethod
-    def read_prices(collection, kind="PX_LAST"):
-        return collection.frame(key="name", kind=kind)
-
-    def read_price(self, collection, kind="PX_LAST"):
-        return collection.find_one(parse=True, kind=kind, name=self.name)
-
-    def write_price(self, collection, data, kind="PX_LAST"):
-        collection.insert(p_obj = data, kind=kind, name=self.name)
+    def read_prices(**kwargs):
+        return Symbol.__collection__.frame(key="name", **kwargs)

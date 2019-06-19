@@ -3,7 +3,7 @@ import sqlalchemy as sq
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship, relationship
-from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.orm.collections import attribute_mapped_collection, collection
 
 from pyutil.performance.summary import fromReturns
 from pyutil.sql.interfaces.products import ProductInterface
@@ -12,6 +12,7 @@ from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.security import Security
 # from pyutil.sql.interfaces.series import Series
 from pyutil.timeseries.merge import merge
+#from pyutil.mongo.mongo import collection as create_collection
 
 
 # def _create_position(security, custodian, data):
@@ -20,6 +21,7 @@ from pyutil.timeseries.merge import merge
 # assert isinstance(data, pd.Series)
 
 # return Series(name="position", product2=security, product3=custodian, data=data)
+
 
 
 class Owner(ProductInterface):
@@ -148,5 +150,5 @@ class Owner(ProductInterface):
         frame.index.name = "Security"
         return frame.sort_index()
 
-    def write(self, collection, data, kind):
-        collection.insert(p_obj=data, kind=kind, name=self.name)
+    #def write(self, data, kind):
+    #    self.__collection__.insert(p_obj=data, kind=kind, name=self.name)
