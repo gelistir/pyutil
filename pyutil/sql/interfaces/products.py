@@ -2,13 +2,13 @@ import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr, has_inherited_table
-from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
 from pyutil.mongo.mongo import collection
 from pyutil.sql.base import Base
-from pyutil.sql.interfaces.ref import _ReferenceData, Field
+from pyutil.sql.interfaces.ref import _ReferenceData
 
 
 class HasIdMixin(object):
@@ -67,20 +67,6 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     @property
     def reference_series(self):
         return pd.Series(dict(self.reference)).rename(index=lambda x: x.name)
-
-    #todo: delete
-    #@hybrid_method
-    #def get_reference(self, field, default=None):
-    #    # Here field can be a Field object or a string (e.g. the name of Field object)
-    #    if isinstance(field, Field):
-    #        pass
-    #    else:
-    #        # loop over all fields
-    #        fields = {f.name: f for f in self._refdata.keys()}
-    #        field = fields.get(field)
-
-    #    return self.reference.get(field, default)
-
 
     def __repr__(self):
         return "{name}".format(name=self.name)
