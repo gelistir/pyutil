@@ -1,8 +1,7 @@
-import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.hybrid import hybrid_property
 
-#from pyutil.mongo.mongo import collection
+
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.ref import Field, FieldType, DataType
 
@@ -64,33 +63,18 @@ class Security(ProductInterface):
     # def vola_frame(self):
     #    return pd.DataFrame({key: item for (key, item) in self._vola.items()})
 
-    # def upsert_volatility(self, currency, ts):
-    #    assert isinstance(currency, Currency)
-    #    self._vola[currency] = merge(new=ts, old=self._vola.get(currency, default=None))
-    #    return self._vola[currency]
+    #@staticmethod
+    #def frame(securities):
+    #    frame = pd.DataFrame(
+    #        {security: {**security.reference_series, **{"Name": security.fullname, "Entity ID": int(security.name)}} for
+    #         security in securities}).transpose()
+    #    frame.index.name = "Security"
+    #    return frame.sort_index()
 
-    # def upsert_price(self, ts):
-    #    # self.price will be None if not defined
-    #    self._price = merge(new=ts, old=self._price)
-    #    return self.price
+    #@staticmethod
+    #def read_prices(**kwargs):
+    #    return Security.__collection__.frame(key="name", **kwargs)
 
-    # @property
-    # def price(self):
-    #    return self._price
-
-    # def volatility(self, currency):
-    #    return self._vola.get(currency, pd.Series({}))
-
-    @staticmethod
-    def frame(securities):
-        frame = pd.DataFrame(
-            {security: {**security.reference_series, **{"Name": security.fullname, "Entity ID": int(security.name)}} for
-             security in securities}).transpose()
-        frame.index.name = "Security"
-        return frame.sort_index()
-
-    #def write(self, data, kind="PX_LAST", **kwargs):
-    #    self.__collection__.insert(p_obj=data, kind=kind, name=self.name, **kwargs)
-
-    #def read(self, parse, **kwargs):
-    #    return self.__collection__.find_one(parse=parse, **kwargs)
+    #@staticmethod
+    #def frame(**kwargs):
+    #    return Security.__collection__.frame(key="name", **kwargs)

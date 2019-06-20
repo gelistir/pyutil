@@ -57,9 +57,14 @@ class TestSecurity(object):
         x = s.read(parse=True, kind="VOLATILITY")
         pdt.assert_series_equal(x, ts, check_names=False)
 
-    def test_vola_frame(self):
-        # todo: write a test
-        pass
-
-        #assert False
-        # send collection ...
+    def test_frame(self, ts):
+        s1 = Security(name="A")
+        s2 = Security(name="B")
+        s3 = Security(name="C")
+        s1.write(kind="PRICE2", data=ts)
+        s2.write(kind="PRICE2", data=ts)
+        s3.write(kind="PRICE2", data=None)
+        frame = Security.frame(kind="PRICE2")
+        pdt.assert_series_equal(ts, frame["A"], check_names=False)
+        pdt.assert_series_equal(ts, frame["B"], check_names=False)
+        assert set(frame.keys()) == {"A", "B"}

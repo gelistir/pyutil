@@ -30,13 +30,15 @@ class _Collection(object):
     def name(self):
         return self.collection.name
 
-    def upsert(self, p_obj, **kwargs):
+    def upsert(self, p_obj=None, **kwargs):
         assert self.write, "It is forbidden to write into this collection"
 
         # check it's either unique or not there
         assert self.__collection.count_documents({**kwargs}) <= 1, "Identifier not unique"
 
-        self.__collection.update_one({**kwargs}, {"$set": {"data": p_obj.to_msgpack()}}, upsert=True)
+        if p_obj is not None:
+            self.__collection.update_one({**kwargs}, {"$set": {"data": p_obj.to_msgpack()}}, upsert=True)
+
         return p_obj
 
     def find(self, parse=False, **kwargs):

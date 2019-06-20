@@ -36,5 +36,5 @@ class TestSymbol(object):
         symbol.write(data=ts, kind="PX_LAST")
         pdt.assert_series_equal(symbol.read(kind="PX_LAST"), ts)
 
-        frame = Symbol.read_prices(kind="PX_LAST")
+        frame = Symbol.frame(kind="PX_LAST")
         pdt.assert_series_equal(frame["Thomas"], ts, check_names=False)

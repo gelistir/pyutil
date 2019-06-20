@@ -38,6 +38,6 @@ class Symbol(ProductInterface):
         frame = frame.sort_index()
         return frame
 
-    @staticmethod
-    def read_prices(**kwargs):
-        return Symbol.__collection__.frame(key="name", **kwargs)
+    #@staticmethod
+    #def read_prices(**kwargs):
+    #    return Symbol.__collection__.frame(key="name", **kwargs)
