@@ -43,7 +43,8 @@ class _Collection(object):
         for a in self.__collection.find({**kwargs}):
             yield self.__parse(a, parse=parse)
 
-    def __parse(self, a, parse=True):
+    @staticmethod
+    def __parse(a, parse=True):
         if parse:
             try:
                 return pd.read_msgpack(a["data"])
