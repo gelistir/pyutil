@@ -67,3 +67,8 @@ class TestMongo(object):
     def test_frame(self, col, ts1):
         frame = col.frame(key="Last")
         pdt.assert_frame_equal(frame, pd.DataFrame({"Maffay": ts1, "Dampf": ts1})[frame.keys()])
+
+    def test_name(self, col):
+        assert col.name
+        # we just the same repr function in col...
+        assert str(col) == str(col.collection)
