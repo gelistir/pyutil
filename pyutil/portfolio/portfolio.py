@@ -59,6 +59,18 @@ class Portfolio(object):
         return f
 
     @staticmethod
+    def merge(new, old=None):
+        if old is not None:
+            w = merge(new=new.weights, old=old.weights)
+            p = merge(new=new.prices, old=old.prices)
+            return = Portfolio(prices=p, weights=w)
+        else:
+            return new
+
+
+
+
+    @staticmethod
     def fromPosition(prices, position=None, internal=None, name=None, cash=None):
         cash = cash or 0
 

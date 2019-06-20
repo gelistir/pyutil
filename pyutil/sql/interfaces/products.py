@@ -90,7 +90,3 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
 
     def write(self, data, **kwargs):
         self.__collection__.upsert(p_obj=data, name=self.name, **kwargs)
-
-    #@staticmethod
-    #def frame(**kwargs):
-    #    return cls.__collection__.frame(key="name", **kwargs)

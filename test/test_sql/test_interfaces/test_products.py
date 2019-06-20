@@ -60,6 +60,9 @@ class TestProductInterface(object):
         product.write(data=ts1, kind="y")
         pdt.assert_series_equal(ts1, product.read(parse=True, kind="y"))
 
+        y = product.frame(kind="y")
+        pdt.assert_series_equal(ts1, y["A"], check_names=False)
+
     def test_merge(self, ts1, ts2):
         product = Product(name="A")
         product.write(data=ts1, kind="x")

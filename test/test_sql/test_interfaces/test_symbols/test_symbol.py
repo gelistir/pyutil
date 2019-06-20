@@ -33,8 +33,8 @@ class TestSymbol(object):
 
     def test_prices(self, ts):
         symbol = Symbol(name="Thomas")
-        symbol.write(data=ts, kind="PX_LAST")
-        pdt.assert_series_equal(symbol.read(kind="PX_LAST"), ts)
+        symbol.write(data=ts, kind="PX_OPEN")
+        pdt.assert_series_equal(symbol.read(kind="PX_OPEN"), ts)
 
-        frame = Symbol.frame(kind="PX_LAST")
+        frame = Symbol.frame(kind="PX_OPEN")
         pdt.assert_series_equal(frame["Thomas"], ts, check_names=False)

@@ -5,6 +5,7 @@ from sqlalchemy.types import Enum as _Enum
 
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.timeseries.merge import last_index
 
 
 def _module(source):
@@ -24,11 +25,11 @@ def strategies(folder):
             yield m.name, source
 
 
-def strategies_from_db(session, reader=None):
-    """ this opens the door for parallel execution """
-    strategies = session.query(Strategy).filter(Strategy.active).all()
-    for strategy in strategies:
-        yield strategy, strategy.configuration(reader=reader)
+#def strategies_from_db(session, reader=None):
+#    """ this opens the door for parallel execution """
+#    strategies = session.query(Strategy).filter(Strategy.active).all()
+#    for strategy in strategies:
+#        yield strategy, strategy.configuration(reader=reader)
 
 
 class StrategyType(_enum.Enum):
@@ -59,7 +60,8 @@ class Strategy(ProductInterface):
         # Reader is a function taking the name of an asset as a parameter
         return _module(self.source).Configuration(reader=reader)
 
-    def read_portfolio(self):
+    @property
+    def portfolio(self):
         prices = self.read(kind="PRICES")
         weights = self.read(kind="WEIGHTS")
 
@@ -68,7 +70,8 @@ class Strategy(ProductInterface):
         else:
             return Portfolio(prices=prices, weights=weights)
 
-    def write_portfolio(self, portfolio):
+    @portfolio.setter
+    def portfolio(self, portfolio):
         self.write(data=portfolio.weights, kind="WEIGHTS")
         self.write(data=portfolio.prices, kind="PRICES")
 
@@ -76,6 +79,9 @@ class Strategy(ProductInterface):
     def assets(self):
         return self.configuration(reader=None).names
 
+    @property
+    def last(self):
+        return last_index(self.portfolio.weights)
 
     # def upsert(self, portfolio, symbols=None, days=0):
     #     assert isinstance(portfolio, _Portfolio)

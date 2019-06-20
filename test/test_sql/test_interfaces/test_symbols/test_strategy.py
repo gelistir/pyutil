@@ -24,9 +24,8 @@ class TestStrategy(object):
     def test_mongo(self, strategy):
         config = strategy.configuration(reader=None)
         portfolio = config.portfolio
-        strategy.write_portfolio(portfolio=portfolio)
-        portfolio2 = strategy.read_portfolio()
-        assert similar(portfolio, portfolio2)
+        strategy.portfolio = portfolio
+        assert similar(portfolio, strategy.portfolio)
 
     def test_assets(self, strategy):
         assert strategy.assets == test_portfolio().assets
