@@ -5,6 +5,7 @@ import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.timeseries.merge import last_index
 
 
 class SymbolType(_enum.Enum):
@@ -48,6 +49,13 @@ class Symbol(ProductInterface):
     @staticmethod
     def prices():
         return Symbol.frame(kind="PX_LAST")
+
+    def upsert_price(self, data):
+        self.merge(data, kind="PX_LAST")
+
+    @property
+    def last(self):
+        return last_index(self.price)
 
     #def merge(self, new, **kwargs):
     #    self.write(merge(new=new, old=self.read(**kwargs))

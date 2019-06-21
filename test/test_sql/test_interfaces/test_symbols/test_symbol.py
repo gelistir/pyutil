@@ -31,10 +31,21 @@ class TestSymbol(object):
     def test_type(self):
         assert "Alternatives" in SymbolTypes.keys()
 
-    def test_prices(self, ts):
+    def test_prices_1(self, ts):
         symbol = Symbol(name="Thomas")
         symbol.write(data=ts, kind="PX_OPEN")
         pdt.assert_series_equal(symbol.read(kind="PX_OPEN"), ts)
 
         frame = Symbol.frame(kind="PX_OPEN")
         pdt.assert_series_equal(frame["Thomas"], ts, check_names=False)
+
+    def test_prices_2(self, ts):
+        symbol = Symbol(name="Peter Maffay")
+        symbol.upsert_price(data=ts)
+        pdt.assert_series_equal(symbol.price, ts)
+
+        symbol.price = ts
+        pdt.assert_series_equal(symbol.price, ts)
+
+        symbol.upsert_price(data=2*ts.tail(100))
+        pdt.assert_series_equal(symbol.price.tail(100), 2*ts.tail(100))

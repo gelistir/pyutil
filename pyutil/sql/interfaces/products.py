@@ -12,6 +12,7 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from pyutil.mongo.mongo import create_collection as create_collection, mongo_client
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.ref import _ReferenceData
+from pyutil.timeseries.merge import merge
 
 
 class HasIdMixin(object):
@@ -104,7 +105,11 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     def write(self, data, **kwargs):
         self.__collection__.upsert(p_obj=data, name=self.name, **kwargs)
 
-    #def refresh(self):
+    def merge(self, data, **kwargs):
+        old = self.read(parse=True, **kwargs)
+        self.write(data=merge(new=data, old=old), **kwargs)
+
+    # def refresh(self):
     #    _col = self.__collection__
     # @property
     # def collection(self):
