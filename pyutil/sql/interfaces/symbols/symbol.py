@@ -45,6 +45,6 @@ class Symbol(ProductInterface):
     def price(self, data):
         self.write(data=data, kind="PX_LAST")
 
-    @property
-    def prices(self):
+    @staticmethod
+    def prices():
         return Symbol.frame(kind="PX_LAST")

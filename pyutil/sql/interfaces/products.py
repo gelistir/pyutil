@@ -36,13 +36,13 @@ class TableName(object):
 
 
 class Mongo(object):
-    @declared_attr
-    def __collection__(cls):
+    @classmethod
+    def _collection(cls):
         return collection(name=cls.__name__.lower())
 
     @classmethod
     def frame(cls, **kwargs):
-        return cls.__collection__.frame(key="name", **kwargs)
+        return cls._collection().frame(key="name", **kwargs)
 
 
 class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
@@ -86,7 +86,7 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
         return hash(self.name)
 
     def read(self, parse=True, **kwargs):
-        return self.__collection__.find_one(parse=parse, name=self.name, **kwargs)
+        return self._collection().find_one(parse=parse, name=self.name, **kwargs)
 
     def write(self, data, **kwargs):
-        self.__collection__.upsert(p_obj=data, name=self.name, **kwargs)
+        self._collection().upsert(p_obj=data, name=self.name, **kwargs)

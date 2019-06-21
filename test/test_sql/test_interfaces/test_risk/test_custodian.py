@@ -22,7 +22,6 @@ class TestOwner(object):
         c = Custodian(name="UBS")
         c.write(data=ts)
         pdt.assert_series_equal(c.read(parse=True), ts)
-        assert c.__collection__.name == "custodian"
 
 
 class TestCurrency(object):
@@ -35,4 +34,4 @@ class TestCurrency(object):
         c = Currency(name="CHF")
         c.write(data=ts)
         pdt.assert_series_equal(c.read(parse=True), ts)
-        assert c.__collection__.name == "currency"
+
