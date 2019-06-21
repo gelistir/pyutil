@@ -2,6 +2,7 @@ import logging
 import multiprocessing
 import pandas as pd
 
+from pyutil.mongo.mongo import mongo_client
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.portfolio.portfolio import Portfolio
@@ -39,6 +40,8 @@ class __StrategyRunner(Runner):
 
         # do a read is enough...
         with session(connection_str=self.__connection_str) as session:
+            # get a new fresh mongo client
+            Strategy._client = mongo_client()
 
             # extract the strategy you need
             strategy = session.query(Strategy).filter_by(id=strategy_id).one()
@@ -52,4 +55,4 @@ class __StrategyRunner(Runner):
                 # cut off the last few days
                 portfolio_new = portfolio_new.truncate(before=strategy_portfolio.last - pd.DateOffset(days=10))
 
-            strategy.portfolio = Portfolio.merge(new = portfolio_new, old = strategy_portfolio)
+            strategy.portfolio = Portfolio.merge(new=portfolio_new, old=strategy_portfolio)
