@@ -4,7 +4,7 @@ import pandas as pd
 
 from ..performance.summary import fromReturns, NavSeries
 from ..performance.periods import period_returns, periods
-
+from pyutil.timeseries.merge import merge as merge_in_t
 
 def merge(portfolios, axis=0):
     prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
@@ -61,14 +61,11 @@ class Portfolio(object):
     @staticmethod
     def merge(new, old=None):
         if old is not None:
-            w = merge(new=new.weights, old=old.weights)
-            p = merge(new=new.prices, old=old.prices)
-            return = Portfolio(prices=p, weights=w)
+            w = merge_in_t(new=new.weights, old=old.weights)
+            p = merge_in_t(new=new.prices, old=old.prices)
+            return Portfolio(prices=p, weights=w)
         else:
             return new
-
-
-
 
     @staticmethod
     def fromPosition(prices, position=None, internal=None, name=None, cash=None):
@@ -411,3 +408,7 @@ class Portfolio(object):
         frame["{n}leverage".format(n=name)] = self.leverage
         frame["{n}cash".format(n=name)] = self.cash
         return frame
+
+    @property
+    def last(self):
+        return self.prices.last_valid_index()

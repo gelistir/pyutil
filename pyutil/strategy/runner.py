@@ -1,9 +1,10 @@
 import logging
 import multiprocessing
+import pandas as pd
 
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
-from pyutil.timeseries.merge import merge
+from pyutil.portfolio.portfolio import Portfolio
 
 from pyutil.runner import Runner
 
@@ -26,7 +27,7 @@ class __StrategyRunner(Runner):
 
     # this returns a function f(name) = price of Symbol with name==name
     def reader(self, session):
-        return lambda name: session.query(Symbol).filter(Symbol.name == name).one().read(parse=True, kind="PX_LAST")
+        return lambda name: session.query(Symbol).filter(Symbol.name == name).one().price
 
     def append(self, strategy_id):
         job = multiprocessing.Process(target=self.target, kwargs={"strategy_id": strategy_id})

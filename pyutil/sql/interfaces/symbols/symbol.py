@@ -30,7 +30,6 @@ class Symbol(ProductInterface):
         self.internal = internal
         self.webpage = webpage
 
-
     @staticmethod
     def reference_frame(symbols):
         frame = pd.DataFrame({symbol: {**symbol.reference_series, **{"Name": symbol.name, "Sector": symbol.group.value}} for symbol in symbols}).transpose()
@@ -38,6 +37,10 @@ class Symbol(ProductInterface):
         frame = frame.sort_index()
         return frame
 
-    #@staticmethod
-    #def read_prices(**kwargs):
-    #    return Symbol.__collection__.frame(key="name", **kwargs)
+    @property
+    def price(self):
+        return self.read(kind="PX_LAST")
+
+    @price.setter
+    def price(self, data):
+        self.write(data=data, kind="PX_LAST")

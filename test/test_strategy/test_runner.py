@@ -31,7 +31,7 @@ class TestRunner(object):
         # add price data to database
         for asset, data in read(name="price.csv", index_col=0, parse_dates=True, header=0).items():
             symbol = Symbol(name=asset, group=SymbolType.fixed_income)
-            symbol.write(data=data.dropna(), kind="PX_LAST")
+            symbol.price = data.dropna()
             db.session.add(symbol)
 
         # add all strategies to database

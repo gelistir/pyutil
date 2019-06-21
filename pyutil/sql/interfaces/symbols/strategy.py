@@ -25,13 +25,6 @@ def strategies(folder):
             yield m.name, source
 
 
-#def strategies_from_db(session, reader=None):
-#    """ this opens the door for parallel execution """
-#    strategies = session.query(Strategy).filter(Strategy.active).all()
-#    for strategy in strategies:
-#        yield strategy, strategy.configuration(reader=reader)
-
-
 class StrategyType(_enum.Enum):
     mdt = 'mdt'
     conservative = 'conservative'
@@ -79,54 +72,3 @@ class Strategy(ProductInterface):
     def assets(self):
         return self.configuration(reader=None).names
 
-    @property
-    def last(self):
-        return last_index(self.portfolio.weights)
-
-    # def upsert(self, portfolio, symbols=None, days=0):
-    #     assert isinstance(portfolio, _Portfolio)
-    #
-    #     assert self._portfolio
-    #
-    #     # find the last stamp of weights...
-    #     last = self.last
-    #
-    #     if not last:
-    #         self._portfolio.upsert(portfolio=portfolio, symbols=symbols)
-    #     else:
-    #         # We only take the last few days of the new portfolio
-    #         p1 = portfolio.truncate(before=last - pd.DateOffset(days=days))
-    #         self._portfolio.upsert(portfolio=p1, symbols=symbols)
-    #
-    #     return self.portfolio
-
-    # @property
-    # def portfolio(self):
-    #     return self._portfolio.portfolio
-    #
-    # @property
-    # def last(self):
-    #     return self._portfolio.last
-    #
-    # @property
-    # def assets(self):
-    #     return self._portfolio.symbols
-    #
-    # @property
-    # def state(self):
-    #     x = self._portfolio.state
-    #     # print(x)
-    #     y = self.reference_assets.drop(columns=["Name", "Sector"])
-    #     y.index = [asset.name for asset in y.index]
-    #     return pd.concat((x, y), axis=1, sort=False)
-    #
-    # @property
-    # def reference_assets(self):
-    #     return Symbol.reference_frame(symbols=self.assets)
-    #
-    # def sector(self, total=False):
-    #     return self._portfolio.sector(total=total)
-    #
-    # @property
-    # def symbols(self):
-    #     return self._portfolio.symbols
