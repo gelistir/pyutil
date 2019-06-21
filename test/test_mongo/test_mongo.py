@@ -3,7 +3,7 @@ import pytest
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.mongo.mongo import collection as create_collection
+from pyutil.mongo.mongo import create_collection as create_collection
 
 
 @pytest.fixture()
@@ -18,11 +18,9 @@ def ts2():
 
 @pytest.fixture()
 def col(ts1):
-    collection = create_collection(write=True)
+    collection = create_collection()
     collection.upsert(p_obj=ts1, First="Hans", Last="Dampf")
     collection.upsert(p_obj=ts1, First="Hans", Last="Maffay")
-    # It is now forbidden to write into this collection
-    collection.write = False
     return collection
 
 

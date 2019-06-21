@@ -1,12 +1,15 @@
+import os
+
 import pandas as pd
 import sqlalchemy as sq
+from pymongo import MongoClient
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr, has_inherited_table
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm.collections import attribute_mapped_collection
 
-from pyutil.mongo.mongo import collection
+from pyutil.mongo.mongo import create_collection as create_collection, mongo_client
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.ref import _ReferenceData
 
@@ -15,7 +18,8 @@ class HasIdMixin(object):
     @declared_attr.cascading
     def id(cls):
         if has_inherited_table(cls):
-            return sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
+            return sq.Column(sq.ForeignKey(ProductInterface.id, onupdate="CASCADE", ondelete="CASCADE"),
+                             primary_key=True)
         else:
             return sq.Column(sq.Integer, primary_key=True, autoincrement=True)
 
@@ -36,13 +40,16 @@ class TableName(object):
 
 
 class Mongo(object):
-    @classmethod
-    def _collection(cls):
-        return collection(name=cls.__name__.lower())
+    _client = mongo_client()
+
+    @declared_attr
+    def __collection__(cls):
+        return create_collection(name=cls.__name__.lower(), client=cls._client)
 
     @classmethod
-    def frame(cls, **kwargs):
-        return cls._collection().frame(key="name", **kwargs)
+    def frame(cls, collection=None, **kwargs):
+        col = collection or cls.__collection__
+        return col.frame(key="name", **kwargs)
 
 
 class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
@@ -53,12 +60,18 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     __table_args__ = (sq.UniqueConstraint('discriminator', 'name'),)
 
     _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
-                           cascade="all, delete-orphan", back_populates="product", foreign_keys=[_ReferenceData.product_id], lazy="select")
+                            cascade="all, delete-orphan", back_populates="product",
+                            foreign_keys=[_ReferenceData.product_id], lazy="select")
 
     reference = association_proxy('_refdata', 'value', creator=lambda field, v: _ReferenceData(field=field, content=v))
 
+    # __col = create_collection(name=cls.__name__.lower())
+
     def __init__(self, name, **kwargs):
         self.__name = str(name)
+
+        # self.__collection__ is an expensive function!
+        _col = self.__collection__
 
     @hybrid_property
     def name(self):
@@ -86,7 +99,28 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
         return hash(self.name)
 
     def read(self, parse=True, **kwargs):
-        return self._collection().find_one(parse=parse, name=self.name, **kwargs)
+        return self.__collection__.find_one(parse=parse, name=self.name, **kwargs)
 
     def write(self, data, **kwargs):
-        self._collection().upsert(p_obj=data, name=self.name, **kwargs)
+        self.__collection__.upsert(p_obj=data, name=self.name, **kwargs)
+
+    #def refresh(self):
+    #    _col = self.__collection__
+    # @property
+    # def collection(self):
+    #    return self.__col
+
+    # @collection.setter
+    # def collection(self, value):
+    #    self.__col = value
+
+    # @staticmethod
+    # def refresh():
+    #    self.__col =
+    # @classmethod
+    # def frame(collection=None, **kwargs):
+    #    col = collection or __collection__
+    #    col.frame(key="name", **kwargs)
+#
+#    return _collection.frame(key="name", **kwargs)
+# def f(self):

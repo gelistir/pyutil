@@ -7,34 +7,25 @@ from pymongo import MongoClient
 
 
 #http://api.mongodb.com/python/current/faq.html#using-pymongo-with-multiprocessing
-#It's just safer to recreate this MongoClient every time...
+def mongo_client():
+    return MongoClient(host=os.environ["MONGO_HOST"], port=27017)[os.environ["MONGO_DATABASE"]]
 
-def collection(name=None, write=True, host=None, db=None):
-    mongo = MongoClient(host=host or os.environ["MONGO_HOST"], port=27017)[db or os.environ["MONGO_DATABASE"]]
+
+def create_collection(name=None, client=None):
+    client = client or mongo_client()
     name = name or "".join(random.choices(string.ascii_lowercase, k=10))
-    return _Collection(mongo[name], write=write)
+    return _Collection(client[name])
 
 
 class _Collection(object):
-    def __init__(self, collection, write=False):
+    def __init__(self, collection):
         self.__collection = collection
-        self.__write = write
-
-    @property
-    def write(self):
-        return self.__write
-
-    @write.setter
-    def write(self, value):
-        self.__write = value
 
     @property
     def name(self):
         return self.collection.name
 
     def upsert(self, p_obj=None, **kwargs):
-        assert self.write, "It is forbidden to write into this collection"
-
         # check it's either unique or not there
         assert self.__collection.count_documents({**kwargs}) <= 1, "Identifier not unique"
 
@@ -70,3 +61,4 @@ class _Collection(object):
 
     def frame(self, key, **kwargs):
         return pd.DataFrame({x[key]: self.__parse(x) for x in self.find(**kwargs)})
+
