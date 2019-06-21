@@ -3,7 +3,7 @@ import pytest
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.mongo.mongo import collection as create_collection, _mongo
+from pyutil.mongo.mongo import collection as create_collection
 
 
 @pytest.fixture()
@@ -27,9 +27,6 @@ def col(ts1):
 
 
 class TestMongo(object):
-    def test_mongo(self):
-        assert _mongo
-
     def test_find_one(self, col, ts1):
         x = col.find_one(parse=True, First="Hans", Last="Dampf")
         pdt.assert_series_equal(ts1, x)

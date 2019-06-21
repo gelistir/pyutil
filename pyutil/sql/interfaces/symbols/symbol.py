@@ -48,3 +48,6 @@ class Symbol(ProductInterface):
     @staticmethod
     def prices():
         return Symbol.frame(kind="PX_LAST")
+
+    #def merge(self, new, **kwargs):
+    #    self.write(merge(new=new, old=self.read(**kwargs))

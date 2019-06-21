@@ -5,12 +5,14 @@ import string
 import pandas as pd
 from pymongo import MongoClient
 
-_mongo = MongoClient(host=os.environ["MONGO_HOST"], port=27017)[os.environ["MONGO_DATABASE"]]
 
+#http://api.mongodb.com/python/current/faq.html#using-pymongo-with-multiprocessing
+#It's just safer to recreate this MongoClient every time...
 
-def collection(name=None, write=True):
+def collection(name=None, write=True, host=None, db=None):
+    mongo = MongoClient(host=host or os.environ["MONGO_HOST"], port=27017)[db or os.environ["MONGO_DATABASE"]]
     name = name or "".join(random.choices(string.ascii_lowercase, k=10))
-    return _Collection(_mongo[name], write=write)
+    return _Collection(mongo[name], write=write)
 
 
 class _Collection(object):
