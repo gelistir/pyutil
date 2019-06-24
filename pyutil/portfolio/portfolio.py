@@ -1,10 +1,9 @@
-from collections import namedtuple
-
 import pandas as pd
 
 from ..performance.summary import fromReturns, NavSeries
 from ..performance.periods import period_returns, periods
 from pyutil.timeseries.merge import merge as merge_in_t
+
 
 def merge(portfolios, axis=0):
     prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
@@ -35,14 +34,6 @@ def similar(a, b, eps=1e-6):
     return True
 
 
-def __series2frame(index, series):
-    f = pd.DataFrame(index=index, columns=series.index)
-    for key in series.index:
-        f[key] = series[key]
-
-    return f
-
-
 class Portfolio(object):
     def rename(self, names):
         """ names is a dictionary """
@@ -60,7 +51,9 @@ class Portfolio(object):
 
     @staticmethod
     def merge(new, old=None):
+        assert isinstance(new, Portfolio)
         if old is not None:
+            assert isinstance(old, Portfolio)
             w = merge_in_t(new=new.weights, old=old.weights)
             p = merge_in_t(new=new.prices, old=old.prices)
             return Portfolio(prices=p, weights=w)
@@ -68,7 +61,7 @@ class Portfolio(object):
             return new
 
     @staticmethod
-    def fromPosition(prices, position=None, internal=None, name=None, cash=None):
+    def fromPosition(prices, position=None, cash=None):
         cash = cash or 0
 
         if position is None:
@@ -175,29 +168,10 @@ class Portfolio(object):
         self.__weights = weights
 
         self.__before = {today : yesterday for today, yesterday in zip(prices.index[1:], prices.index[:-1])}
-        #self.__smap = symbolmap
-        #self.__internal = internal
-        #self.__name = name
 
-    #@property
-    #def name(self):
-    #    return self.__name
 
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
-
-    # @property
-    # def symbolmap(self) -> dict:
-    #     return self.__smap
-    #
-    # @symbolmap.setter
-    # def symbolmap(self, x: dict):
-    #     assert isinstance(x, dict)
-    #     self.__smap = x
-
-    @property
-    def internal(self) -> dict:
-        return self.__internal
 
     @property
     def cash(self) -> pd.Series:
@@ -331,6 +305,10 @@ class Portfolio(object):
 
     def tail(self, n=10):
         w = self.weights.tail(n)
+        return Portfolio(prices=self.prices.loc[w.index], weights=w)
+
+    def head(self, n=10):
+        w = self.weights.head(n)
         return Portfolio(prices=self.prices.loc[w.index], weights=w)
 
     @property
