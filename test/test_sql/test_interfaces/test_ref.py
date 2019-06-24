@@ -4,7 +4,7 @@ from test.test_sql.product import Product
 
 class TestReference(object):
     def test_reference(self):
-        field = Field(name="Peter", type=FieldType.dynamic, result=DataType.integer)
+        field = Field(name="Peter", type=FieldType.dynamic, result=DataType.integer, addepar="Maffay")
         field_no = Field(name="Hans", type=FieldType.dynamic, result=DataType.integer)
         product = Product(name="A")
 
@@ -27,9 +27,16 @@ class TestReference(object):
         assert DataType.integer.value == "integer"
         assert DataType.integer("210") == 210
         assert str(field) == "(Peter)"
+        assert field.addepar == "Maffay"
 
     def test_eq(self):
         f1 = Field(name="Peter", type=FieldType.dynamic, result=DataType.string)
         f2 = Field(name="Peter", type=FieldType.dynamic, result=DataType.string)
         assert f1 == f2
         assert hash(f1) == hash(f2)
+        assert f1.type == FieldType.dynamic
+
+    def test_lt(self):
+        f1 = Field(name="A")
+        f2 = Field(name="B")
+        assert f1 < f2
