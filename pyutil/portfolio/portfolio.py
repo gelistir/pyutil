@@ -66,6 +66,7 @@ class Portfolio(object):
 
         if position is None:
             position = pd.DataFrame(index=prices.index, columns=prices.keys(), data=0.0)
+            cash = 1
 
         if isinstance(position, pd.Series):
             position = Portfolio.__series2frame(index=prices.index, series=position)
