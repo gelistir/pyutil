@@ -173,5 +173,5 @@ class TestPortfolio(object):
 
     def test_empty_weights(self, portfolio):
         p = Portfolio.fromPosition(prices=portfolio.prices)
-        pdt.assert_frame_equal(p.weights, pd.DataFrame(data=0, index=portfolio.prices.index, columns=portfolio.prices.keys()))
+        pdt.assert_frame_equal(p.weights, pd.DataFrame(data=0.0, index=portfolio.prices.index, columns=portfolio.prices.keys()))
 
