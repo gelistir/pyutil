@@ -49,3 +49,16 @@ class TestSymbol(object):
 
         symbol.upsert_price(data=2*ts.tail(100))
         pdt.assert_series_equal(symbol.price.tail(100), 2*ts.tail(100))
+
+        assert symbol.last == ts.last_valid_index()
+
+    def test_prices_3(self, ts):
+        s1 = Symbol(name="A")
+        s1.price = ts
+
+        s2 = Symbol(name="B")
+        s2.price = 2*ts
+
+        f = Symbol.prices([s1, s2])
+        pdt.assert_series_equal(f["A"], ts, check_names=False)
+        pdt.assert_series_equal(f["B"], 2*ts, check_names=False)

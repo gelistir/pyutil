@@ -29,3 +29,7 @@ class TestStrategy(object):
 
     def test_assets(self, strategy):
         assert strategy.assets == test_portfolio().assets
+
+    def test_portfolio_none(self):
+        strategy = Strategy(name="Peter Maffay")
+        assert strategy.portfolio is None

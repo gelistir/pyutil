@@ -47,8 +47,10 @@ class Symbol(ProductInterface):
         self.write(data=data, kind="PX_LAST")
 
     @staticmethod
-    def prices():
-        return Symbol.frame(kind="PX_LAST")
+    def prices(symbols):
+        return pd.DataFrame({symbol.name: symbol.price for symbol in symbols})
+
+        #return Symbol.frame(kind="PX_LAST")
 
     def upsert_price(self, data):
         self.merge(data, kind="PX_LAST")
@@ -56,6 +58,3 @@ class Symbol(ProductInterface):
     @property
     def last(self):
         return last_index(self.price)
-
-    #def merge(self, new, **kwargs):
-    #    self.write(merge(new=new, old=self.read(**kwargs))
