@@ -4,6 +4,7 @@ import pandas.util.testing as pdt
 import pytest
 
 from pyutil.portfolio.portfolio import Portfolio, similar
+from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from test.config import test_portfolio, read
 
 
@@ -174,4 +175,26 @@ class TestPortfolio(object):
     def test_empty_weights(self, portfolio):
         p = Portfolio.fromPosition(prices=portfolio.prices)
         pdt.assert_frame_equal(p.weights, pd.DataFrame(data=0.0, index=portfolio.prices.index, columns=portfolio.prices.keys()))
+
+    def test_to_frame(self, portfolio):
+        frame = portfolio.to_frame(name="")
+        pdt.assert_series_equal(frame["cash"], portfolio.cash, check_names=False)
+        pdt.assert_series_equal(frame["leverage"], portfolio.leverage, check_names=False)
+
+    def test_last_dates(self, portfolio):
+        pdt.assert_series_equal(portfolio.last_dates, portfolio.prices.apply(lambda x: x.last_valid_index()).sort_values(ascending=True))
+
+    def test_state(self, portfolio):
+        s1 = Symbol(name="A", group=SymbolType.alternatives, internal="AA")
+        s2 = Symbol(name="B", group=SymbolType.alternatives, internal="BB")
+        s3 = Symbol(name="C", group=SymbolType.equities, internal="CC")
+        s4 = Symbol(name="D", group=SymbolType.equities, internal="DD")
+        s5 = Symbol(name="E", group=SymbolType.fixed_income, internal="EE")
+        s6 = Symbol(name="F", group=SymbolType.fixed_income, internal="FF")
+        s7 = Symbol(name="G", group=SymbolType.fixed_income, internal="GG")
+
+        frame = portfolio.state(symbols=[s1, s2, s3, s4, s5, s6, s7])
+        #print(frame)
+        #print(frame.to_csv())
+        pdt.assert_frame_equal(frame, read("state.csv", index_col=0))
 

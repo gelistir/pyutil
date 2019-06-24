@@ -170,7 +170,6 @@ class Portfolio(object):
 
         self.__before = {today : yesterday for today, yesterday in zip(prices.index[1:], prices.index[:-1])}
 
-
     def __repr__(self):
         return "Portfolio with assets: {0}".format(list(self.__weights.keys()))
 
@@ -335,11 +334,7 @@ class Portfolio(object):
         return sorted(list(days[days > 1].index))
 
 
-    @property
-    def state(self):
-        #assert isinstance(symbolmap, dict), "Symbolmap is type {t} and {s}".format(t=type(symbolmap), s=symbolmap)
-
-
+    def state(self, symbols):
         # get the last 5 trading days
         trade_events = self.trading_days[-5:-1]
         today = self.index[-1]
@@ -364,16 +359,13 @@ class Portfolio(object):
         weights.index.name = "Symbol"
         frame = pd.concat((a, weights), axis=1)
 
-        #if self.symbolmap:
-        #    frame["group"] = pd.Series(self.symbolmap)
+        all = {symbol.name: symbol for symbol in symbols}
+        frame["group"] = pd.Series({s : all[s].group.name for s in frame.index})
+        frame["internal"] = pd.Series({s : all[s].internal for s in frame.index})
 
-        #if self.internal:
-        #    frame["internal"] = pd.Series(self.internal)
-
-        #if "group" in frame:
-        #    sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
-        #    frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
-        #    frame["Relative Sector"] = frame["Extrapolated"] / frame["Sector Weight"]
+        sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
+        frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
+        frame["Relative Sector"] = frame["Extrapolated"] / frame["Sector Weight"]
 
         frame.index.name = "Symbol"
         return frame
