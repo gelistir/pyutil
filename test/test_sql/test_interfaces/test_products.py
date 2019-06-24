@@ -79,3 +79,9 @@ class TestProductInterface(object):
         #c = collection(name="wurst")
         p.write(data=ts1, kind="yyx")
         #assert False
+
+    def test_lt(self):
+        p1 = Product(name="A")
+        p2 = Product(name="B")
+        assert p1 < p2
+

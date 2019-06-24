@@ -19,8 +19,9 @@ def future():
 class TestContract(object):
     def test_contract(self):
         # Contract doesn't need a future here...
-        c = Contract(figi="B3BB5", notice=pd.Timestamp("2010-01-01").date(), bloomberg_symbol="AAA", fut_month_yr="MAR 00")
+        c = Contract(figi="B3BB5", notice=pd.Timestamp("2010-01-01").date(), bloomberg_symbol="AAA", fut_month_yr="MAR 00", last_tradeable_date=pd.Timestamp("2009-12-30"))
         assert c.notice == pd.Timestamp("2010-01-01").date()
+        assert c.notice2 == pd.Timestamp("2009-12-30").date()
         assert c.bloomberg_symbol == "AAA"
         assert c.fut_month_yr == "MAR 00"
         assert c.alive(today=pd.Timestamp("2009-11-17").date())

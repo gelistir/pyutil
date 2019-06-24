@@ -53,6 +53,7 @@ class Contract(ProductInterface):
     @hybrid_property
     def notice2(self):
         return min(self._notice, self._last_tradeable_date)
+
     @property
     def quandl(self):
         return "{quandl}{month}{year}".format(quandl=self._future.quandl, month=self.month_x, year=self.year)
