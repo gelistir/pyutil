@@ -5,12 +5,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.ref import Field, FieldType, DataType
 
-# def _create_volatility(currency, data):
-#    assert isinstance(currency, Currency)
-#    assert isinstance(data, pd.Series)
-
-#    return Series(name="volatility", product2=currency, data=data)
-
 
 Field_BMulti = Field(name="Bloomberg Multiplier", type=FieldType.dynamic, result=DataType.float)
 Field_KIID = Field(name="KIID", type=FieldType.dynamic, result=DataType.integer)
@@ -20,18 +14,6 @@ Field_Name = Field(name="Name", type=FieldType.dynamic, result=DataType.string)
 
 class Security(ProductInterface):
     fullname = sq.Column("fullname", sq.String, nullable=True)
-
-    # define the price...
-    # _price_rel = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("price"), lazy="joined")
-
-    # _price = association_proxy("_price_rel", "data", creator=lambda data: Series(name="price", data=data))
-
-    # define the volatility (dictionary where currency is the key!)
-    # _vola_rel = relationship(Series, collection_class=attribute_mapped_collection("product_2"),
-    #                     primaryjoin=ProductInterface.join_series("volatility"), lazy="joined")
-
-    # _vola = association_proxy(target_collection="_vola_rel", attr="data",
-    #                          creator=lambda currency, data: _create_volatility(currency=currency, data=data))
 
     def __init__(self, name, fullname=None, **kwargs):
         super().__init__(name, **kwargs)
@@ -43,13 +25,10 @@ class Security(ProductInterface):
     @hybrid_property
     def kiid(self):
         return self.reference.get(Field_KIID)
-        # return self.get_reference("KIID")
 
     @hybrid_property
     def bloomberg_ticker(self):
         return self.reference.get(Field_Ticker, None)
-
-        # return self.get_reference("Bloomberg Ticker", default=None)
 
     @hybrid_property
     def bloomberg_scaling(self):

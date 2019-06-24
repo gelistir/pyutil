@@ -147,10 +147,10 @@ class TestSummary(object):
         pdt.assert_series_equal(frame["Maffay.nav"], nav.series, check_names=False)
         pdt.assert_series_equal(frame["Maffay.drawdown"], nav.drawdown, check_names=False)
         frame = nav.to_frame()
-        print(frame)
         pdt.assert_series_equal(frame["nav"], nav.series, check_names=False)
         pdt.assert_series_equal(frame["drawdown"], nav.drawdown, check_names=False)
 
-        #assert False
-
+    def test_ewm_volatility(self, nav):
+        x = nav.ewm_volatility(periods=256)
+        pdt.assert_series_equal(x, 16 * nav.returns.fillna(0.0).ewm(com=50, min_periods=50).std(bias=False))
 

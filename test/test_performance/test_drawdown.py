@@ -2,7 +2,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
-from pyutil.performance.drawdown import Drawdown
+from pyutil.performance.drawdown import Drawdown, drawdown
 from test.config import read
 
 
@@ -14,6 +14,7 @@ def ts():
 class TestDrawdown(object):
     def test_drawdown(self, ts):
         pdt.assert_series_equal(Drawdown(ts).drawdown, read("drawdown.csv", squeeze=True, parse_dates=True, header=None, index_col=0), check_names=False)
+        pdt.assert_series_equal(drawdown(ts), read("drawdown.csv", squeeze=True, parse_dates=True, header=None, index_col=0), check_names=False)
 
     def test_periods(self, ts):
         x = Drawdown(ts).periods

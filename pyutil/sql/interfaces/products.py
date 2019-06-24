@@ -1,8 +1,5 @@
-import os
-
 import pandas as pd
 import sqlalchemy as sq
-from pymongo import MongoClient
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr, has_inherited_table
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -45,12 +42,12 @@ class Mongo(object):
 
     @declared_attr
     def __collection__(cls):
+        # this is a very fast operation, as a new client is not created here...
         return create_collection(name=cls.__name__.lower(), client=cls._client)
 
     @classmethod
-    def frame(cls, collection=None, **kwargs):
-        col = collection or cls.__collection__
-        return col.frame(key="name", **kwargs)
+    def frame(cls, **kwargs):
+        return cls.__collection__.frame(key="name", **kwargs)
 
 
 class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
@@ -66,13 +63,9 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
 
     reference = association_proxy('_refdata', 'value', creator=lambda field, v: _ReferenceData(field=field, content=v))
 
-    # __col = create_collection(name=cls.__name__.lower())
-
     def __init__(self, name, **kwargs):
         self.__name = str(name)
 
-        # self.__collection__ is an expensive function!
-        _col = self.__collection__
 
     @hybrid_property
     def name(self):
@@ -108,24 +101,3 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     def merge(self, data, **kwargs):
         old = self.read(parse=True, **kwargs)
         self.write(data=merge(new=data, old=old), **kwargs)
-
-    # def refresh(self):
-    #    _col = self.__collection__
-    # @property
-    # def collection(self):
-    #    return self.__col
-
-    # @collection.setter
-    # def collection(self, value):
-    #    self.__col = value
-
-    # @staticmethod
-    # def refresh():
-    #    self.__col =
-    # @classmethod
-    # def frame(collection=None, **kwargs):
-    #    col = collection or __collection__
-    #    col.frame(key="name", **kwargs)
-#
-#    return _collection.frame(key="name", **kwargs)
-# def f(self):
