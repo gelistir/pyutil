@@ -275,6 +275,14 @@ class Portfolio(object):
         a.index.name = "weight"
         return a
 
+    def sector(self, symbols, total=False):
+        symbolmap = {symbol.name: symbol.group.value for symbol in symbols}
+        frame = self.weights.ffill().groupby(by=symbolmap, axis=1).sum()
+        if total:
+            frame["Total"] = frame.sum(axis=1)
+        return frame
+
+
     # def sector_weights(self, total=False):
     #     """
     #     weights per sector,
@@ -332,7 +340,6 @@ class Portfolio(object):
         __fundsize = 1e6
         days = (__fundsize * self.position).diff().abs().sum(axis=1)
         return sorted(list(days[days > 1].index))
-
 
     def state(self, symbols):
         # get the last 5 trading days

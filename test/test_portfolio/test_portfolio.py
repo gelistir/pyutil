@@ -194,7 +194,16 @@ class TestPortfolio(object):
         s7 = Symbol(name="G", group=SymbolType.fixed_income, internal="GG")
 
         frame = portfolio.state(symbols=[s1, s2, s3, s4, s5, s6, s7])
-        #print(frame)
-        #print(frame.to_csv())
         pdt.assert_frame_equal(frame, read("state.csv", index_col=0))
 
+    def test_sector(self, portfolio):
+        s1 = Symbol(name="A", group=SymbolType.alternatives, internal="AA")
+        s2 = Symbol(name="B", group=SymbolType.alternatives, internal="BB")
+        s3 = Symbol(name="C", group=SymbolType.equities, internal="CC")
+        s4 = Symbol(name="D", group=SymbolType.equities, internal="DD")
+        s5 = Symbol(name="E", group=SymbolType.fixed_income, internal="EE")
+        s6 = Symbol(name="F", group=SymbolType.fixed_income, internal="FF")
+        s7 = Symbol(name="G", group=SymbolType.fixed_income, internal="GG")
+
+        frame = portfolio.sector(symbols=[s1, s2, s3, s4, s5, s6, s7])
+        pdt.assert_frame_equal(frame.tail(5), read("state.csv", index_col=0))
