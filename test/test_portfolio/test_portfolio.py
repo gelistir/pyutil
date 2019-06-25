@@ -206,4 +206,4 @@ class TestPortfolio(object):
         s7 = Symbol(name="G", group=SymbolType.fixed_income, internal="GG")
 
         frame = portfolio.sector(symbols=[s1, s2, s3, s4, s5, s6, s7])
-        pdt.assert_frame_equal(frame.tail(5), read("state.csv", index_col=0))
+        pdt.assert_frame_equal(frame.tail(5), read("sector.csv", index_col=0, parse_dates=True))
