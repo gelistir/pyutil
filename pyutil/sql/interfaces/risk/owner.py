@@ -150,5 +150,20 @@ class Owner(ProductInterface):
         frame.index.name = "Security"
         return frame.sort_index()
 
+    @property
+    def returns(self):
+        return self.read(kind="RETURN")
+
+    @returns.setter
+    def returns(self, data):
+        self.write(data=data, kind="RETURN")
+
+    #@staticmethod
+    #def returns(owners):
+    #    return pd.DataFrame({owner.name: owner.price for owner in owners})
+
+    def upsert_returns(self, data):
+        self.merge(data, kind="RETURN")
+
     #def write(self, data, kind):
     #    self.__collection__.insert(p_obj=data, kind=kind, name=self.name)
