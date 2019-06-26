@@ -7,8 +7,10 @@ from pymongo import MongoClient
 
 
 #http://api.mongodb.com/python/current/faq.html#using-pymongo-with-multiprocessing
-def mongo_client():
-    return MongoClient(host=os.environ["MONGO_HOST"], port=27017)[os.environ["MONGO_DATABASE"]]
+def mongo_client(host=None, database=None):
+    host = host or os.environ["MONGO_HOST"]
+    database = database or os.environ["MONGO_DATABASE"]
+    return MongoClient(host=host, port=27017)[database]
 
 
 def create_collection(name=None, client=None):

@@ -1,10 +1,11 @@
+import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.hybrid import hybrid_property
 
 
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.ref import Field, FieldType, DataType
-
+from pyutil.timeseries.merge import last_index
 
 Field_BMulti = Field(name="Bloomberg Multiplier", type=FieldType.dynamic, result=DataType.float)
 Field_KIID = Field(name="KIID", type=FieldType.dynamic, result=DataType.integer)
@@ -33,6 +34,27 @@ class Security(ProductInterface):
     @hybrid_property
     def bloomberg_scaling(self):
         return self.reference.get(Field_BMulti, 1.0)
+
+    @property
+    def price(self):
+        return self.read(kind="PRICE")
+
+    @price.setter
+    def price(self, data):
+        self.write(data=data, kind="PRICE")
+
+    @staticmethod
+    def prices(securities):
+        return pd.DataFrame({security.name: security.price for security in securities})
+
+    def upsert_price(self, data):
+        self.merge(data, kind="PRICE")
+
+    @property
+    def last(self):
+        return last_index(self.price)
+
+
 
     # def to_json(self):
     #    nav = fromNav(self._price)

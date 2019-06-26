@@ -50,8 +50,6 @@ class Symbol(ProductInterface):
     def prices(symbols):
         return pd.DataFrame({symbol.name: symbol.price for symbol in symbols})
 
-        #return Symbol.frame(kind="PX_LAST")
-
     def upsert_price(self, data):
         self.merge(data, kind="PX_LAST")
 
