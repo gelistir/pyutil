@@ -15,13 +15,6 @@ def mongo_client(host=None, port=None, database=None, username=None, password=No
     password = password or os.environ["MONGODB_PASSWORD"]
     authSource = authSource or os.environ["MONGODB_DATABASE"]
 
-    print(host)
-    print(database)
-    print(port)
-    print(username)
-    print(password)
-    print(authSource)
-
     return MongoClient(host=host, port=int(port), username=username, password=password, authSource=authSource)[database]
 
 

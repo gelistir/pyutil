@@ -1,0 +1,9 @@
+
+
+Start client:
+mongo --host=quantsrv --port=37017 -u root -p l... --authenticationDatabase=admin
+
+
+Add an user:
+use pandasdb
+db.createUser({user:"readxx",pwd:"...",roles:[{role:"read", db: "pandasdb"}],passwordDigestor:"server"})
