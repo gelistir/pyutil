@@ -7,7 +7,7 @@ from pymongo import MongoClient
 
 
 #http://api.mongodb.com/python/current/faq.html#using-pymongo-with-multiprocessing
-def mongo_client(host=None, port=27017, database=None, username=None, password=None, authSource=None):
+def mongo_client(host=None, port=None, database=None, username=None, password=None, authSource=None):
     host = host or os.environ["MONGODB_HOST"]
     database = database or os.environ["MONGODB_DATABASE"]
     port = port or os.environ["MONGODB_PORT"]
