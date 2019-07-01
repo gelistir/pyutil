@@ -22,7 +22,7 @@ def mongo_client(host=None, port=None, database=None, username=None, password=No
     print(password)
     print(authSource)
 
-    return MongoClient(host=host, port=port, username=username, password=password, authSource=authSource)[database]
+    return MongoClient(host=host, port=int(port), username=username, password=password, authSource=authSource)[database]
 
 
 def create_collection(name=None, client=None):
