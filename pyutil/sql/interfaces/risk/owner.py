@@ -1,26 +1,11 @@
 import pandas as pd
 import sqlalchemy as sq
-from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship as _relationship, relationship
-from sqlalchemy.orm.collections import attribute_mapped_collection, collection
+from sqlalchemy.orm import relationship as _relationship
 
-from pyutil.performance.summary import fromReturns
 from pyutil.sql.interfaces.products import ProductInterface
-
-from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
+from pyutil.sql.interfaces.risk.custodian import Currency
 from pyutil.sql.interfaces.risk.security import Security
-# from pyutil.sql.interfaces.series import Series
-from pyutil.timeseries.merge import merge
-#from pyutil.mongo.mongo import collection as create_collection
-
-
-# def _create_position(security, custodian, data):
-# assert isinstance(security, Security)
-# assert isinstance(custodian, Custodian)
-# assert isinstance(data, pd.Series)
-
-# return Series(name="position", product2=security, product3=custodian, data=data)
 
 
 
@@ -29,14 +14,6 @@ class Owner(ProductInterface):
 
     __currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=True)
     __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
-
-    ## returns
-    # _returns_rel = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("returns"), cascade="all, delete-orphan")
-    # _returns = association_proxy("_returns_rel", "data", creator=lambda data: Series(name="returns", data=data))
-
-    ## volatility
-    # _volatility_rel = relationship(Series, uselist=False, primaryjoin=ProductInterface.join_series("volatility"), cascade="all, delete-orphan")
-    # _volatility = association_proxy("_volatility_rel", "data", creator=lambda data: Series(name="volatility", data=data))
 
     # position
     # _position_rel = relationship(Series, collection_class=attribute_mapped_collection("key"), cascade="all, delete-orphan",
@@ -119,22 +96,6 @@ class Owner(ProductInterface):
     #    self._position[key] = merge(new=ts, old=self._position.get(key, default=None))
     #    return self.position(security=security, custodian=custodian)
 
-    # def upsert_volatility(self, ts):
-    #    self._volatility = merge(new=ts, old=self._volatility)
-    #    return self.volatility
-
-    # def upsert_returns(self, ts):
-    #    self._returns = merge(new=ts, old=self._returns)
-    #    return self.returns
-
-    # @property
-    # def volatility(self):
-    #    return self._volatility
-
-    # @property
-    # def returns(self):
-    #    return self._returns
-
     # def position(self, security, custodian):
     #    return self._position[(security, custodian)]
 
@@ -150,20 +111,3 @@ class Owner(ProductInterface):
         frame.index.name = "Security"
         return frame.sort_index()
 
-    @property
-    def returns(self):
-        return self.read(kind="RETURN")
-
-    @returns.setter
-    def returns(self, data):
-        self.write(data=data, kind="RETURN")
-
-    #@staticmethod
-    #def returns(owners):
-    #    return pd.DataFrame({owner.name: owner.price for owner in owners})
-
-    def upsert_returns(self, data):
-        self.merge(data, kind="RETURN")
-
-    #def write(self, data, kind):
-    #    self.__collection__.insert(p_obj=data, kind=kind, name=self.name)

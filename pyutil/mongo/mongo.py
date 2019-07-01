@@ -7,10 +7,15 @@ from pymongo import MongoClient
 
 
 #http://api.mongodb.com/python/current/faq.html#using-pymongo-with-multiprocessing
-def mongo_client(host=None, database=None):
-    host = host or os.environ["MONGO_HOST"]
-    database = database or os.environ["MONGO_DATABASE"]
-    return MongoClient(host=host, port=27017)[database]
+def mongo_client(host=None, port=27017, database=None, username=None, password=None, authSource=None):
+    host = host or os.environ["MONGODB_HOST"]
+    database = database or os.environ["MONGODB_DATABASE"]
+    port = port or os.environ["MONGODB_PORT"]
+    username = username or os.environ["MONGODB_USERNAME"]
+    password = password or os.environ["MONGODB_PASSWORD"]
+    authSource = authSource or os.environ["MONGODB_DATABASE"]
+
+    return MongoClient(host=host, port=port, username=username, password=password, authSource=authSource)[database]
 
 
 def create_collection(name=None, client=None):

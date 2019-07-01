@@ -1,9 +1,8 @@
-import pytest
-
 import pandas as pd
 import pandas.util.testing as pdt
+import pytest
 
-from pyutil.mongo.mongo import create_collection as create_collection
+from pyutil.mongo.mongo import create_collection
 
 
 @pytest.fixture()
