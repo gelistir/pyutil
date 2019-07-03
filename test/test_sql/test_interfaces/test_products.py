@@ -3,7 +3,7 @@ import pandas.util.testing as pdt
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from pyutil.mongo.mongo import create_collection, mongo_client
+from pyutil.mongo.mongo import mongo_client
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.ref import Field, FieldType, DataType
 from pyutil.sql.session import session_factory
@@ -64,21 +64,21 @@ class TestProductInterface(object):
         y = product.frame(kind="y")
         pdt.assert_series_equal(ts1, y["A"], check_names=False)
 
+        s = [x for x in product.meta()]
+        assert {"kind": "y", "name": "A"} in s
+
+
     def test_merge(self, ts1, ts2):
         product = Product(name="A")
         product.write(data=ts1, kind="x")
         product.write(data=ts2, kind="x")
         pdt.assert_series_equal(product.read(kind="x"), ts2)
 
-    def test_collections(self, ts1, ts2):
-        p = Product(name="A")
-        p._client = mongo_client()
-        #p.mcollection = collection()
-        print(p.__collection__)
-        p.write(data=ts1, kind="xx")
-        #c = collection(name="wurst")
-        p.write(data=ts1, kind="yyx")
-        #assert False
+    #def test_collections(self, ts1):
+    #    p = Product(name="A")
+    #    p.write(data=ts1, kind="xx")
+    #    p.write(data=ts1, kind="yx")
+
 
     def test_lt(self):
         p1 = Product(name="A")

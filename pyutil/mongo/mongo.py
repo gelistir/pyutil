@@ -69,3 +69,7 @@ class _Collection(object):
     def frame(self, key, **kwargs):
         return pd.DataFrame({x[key]: self.__parse(x) for x in self.find(**kwargs)})
 
+
+    def meta(self, **kwargs):
+        for x in self.__collection.find({**kwargs},  projection={"_id": False, "data": False}):
+            yield x

@@ -66,3 +66,13 @@ class TestMongo(object):
         assert col.name
         # we just the same repr function in col...
         assert str(col) == str(col.collection)
+
+    def test_meta(self, col):
+        s = [x for x in col.meta()]
+        assert {"First": "Hans", "Last": "Dampf"} in s
+        assert {"First": "Hans", "Last": "Maffay"} in s
+        assert len(s) == 2
+
+        s = [x for x in col.meta(Last="Maffay")]
+        assert len(s) == 1
+        assert {"First": "Hans", "Last": "Maffay"} in s

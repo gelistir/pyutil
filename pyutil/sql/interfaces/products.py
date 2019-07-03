@@ -49,6 +49,9 @@ class Mongo(object):
     def frame(cls, **kwargs):
         return cls.__collection__.frame(key="name", **kwargs)
 
+    @classmethod
+    def meta(cls, **kwargs):
+        return cls.__collection__.meta(**kwargs)
 
 class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     # note that the name should not be unique as Portfolio and Strategy can have the same name
@@ -101,3 +104,6 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     def merge(self, data, **kwargs):
         old = self.read(parse=True, **kwargs)
         self.write(data=merge(new=data, old=old), **kwargs)
+
+    def meta(self, **kwargs):
+        return self.__collection__.meta(name=self.name, **kwargs)
