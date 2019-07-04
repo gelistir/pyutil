@@ -38,10 +38,7 @@ class TestRunner(object):
         db.session.add_all(strats)
         db.session.commit()
 
-        run(strategies=strats, connection_str=db.connection)
+        r = run(strategies=strats, connection_str=db.connection)
 
-        p1 = db.session.query(Strategy).filter(Strategy.name == "P1").one().portfolio.nav.sharpe_ratio()
-        p2 = db.session.query(Strategy).filter(Strategy.name == "P2").one().portfolio.nav.sharpe_ratio()
-
-        assert pytest.approx(p1, -0.23551923609559777, abs=1e-5)
-        assert pytest.approx(p2, -0.20271329554571058, abs=1e-5)
+        assert pytest.approx(r["P1"].nav.sharpe_ratio(), -0.23551923609559777, abs=1e-5)
+        assert pytest.approx(r["P2"].nav.sharpe_ratio(), -0.20271329554571058, abs=1e-5)
