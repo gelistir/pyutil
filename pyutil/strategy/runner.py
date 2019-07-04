@@ -1,5 +1,4 @@
 import logging
-import multiprocessing
 import pandas as pd
 
 from pyutil.mongo.mongo import mongo_client
@@ -16,7 +15,7 @@ def run(strategies, connection_str, logger=None):
     runner = __StrategyRunner(connection_str=connection_str, logger=logger)
 
     for strategy in strategies:
-        runner.append(strategy.id)
+        runner.append(strategy_id=strategy.id)
 
     # run all the jobs
     runner.run_jobs()
@@ -31,12 +30,8 @@ class __StrategyRunner(Runner):
     def reader(self, session):
         return lambda name: session.query(Symbol).filter(Symbol.name == name).one().price
 
-    def append(self, strategy_id):
-        job = multiprocessing.Process(target=self.target, kwargs={"strategy_id": strategy_id})
-        self.jobs.append(job)
-
     # this function is the target for mp.Process
-    def target(self, strategy_id):
+    def target(self, **kwargs):
         from pyutil.sql.session import session
 
         ProductInterface._client = mongo_client()
@@ -44,7 +39,7 @@ class __StrategyRunner(Runner):
         # do a read is enough...
         with session(connection_str=self.__connection_str) as session:
             # extract the strategy you need
-            strategy = session.query(Strategy).filter_by(id=strategy_id).one()
+            strategy = session.query(Strategy).filter_by(id=kwargs["strategy_id"]).one()
             self.logger.debug("Strategy {s}".format(s=strategy.name))
 
             # this could be none...
