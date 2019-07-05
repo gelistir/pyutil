@@ -16,7 +16,7 @@ RUN conda install -y -c conda-forge nomkl pandas=0.24.2 cvxpy=1.0.15 requests=2.
 FROM builder as test
 
 # We install flask here to test some
-RUN pip install --no-cache-dir httpretty pytest==4.3.1 pytest-cov pytest-html sphinx flask==1.0.2
+RUN pip install --no-cache-dir httpretty pytest==4.3.1 pytest-cov pytest-html sphinx flask==1.0.2 sqlalchemy-utils
 
 WORKDIR /pyutil
 

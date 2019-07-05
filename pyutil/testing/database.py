@@ -1,13 +1,11 @@
 import collections
 import random
 import string
-from time import sleep
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy_utils.functions import database_exists, create_database, drop_database
 
-# from pyutil.testing.aux import postgresql_db_test
 Database = collections.namedtuple("Database", ["session", "connection"])
 
 
@@ -17,40 +15,27 @@ def __connection_str(user, password, host, database):
 
 
 def __postgresql_db_test(base, name=None, echo=False):
-    # session object
-    awake = False
+    # use the name or create a random name
     name = name or "".join(random.choices(string.ascii_lowercase, k=10))
-
-    str_test = __connection_str(user="postgres", password="test", host="test-postgresql", database="postgres")
+    # create a connection_str
     str_name = __connection_str(user="postgres", password="test", host="test-postgresql", database=name)
 
-    while not awake:
-        try:
-            engine = create_engine(str_test)
-            conn = engine.connect()
-            conn.execute("commit")
-            awake = True
-        except OperationalError:
-            sleep(1)
-
-    # String interpolation here!? Please avoid
-    conn.execute("""DROP DATABASE IF EXISTS {name}""".format(name=name))
-    conn.execute("commit")
-
-    conn.execute("""CREATE DATABASE {name}""".format(name=name))
-    conn.close()
-
+    # create an engine
     engine = create_engine(str_name, echo=echo)
 
-    # drop all tables (even if there are none)
-    base.metadata.drop_all(engine)
+    # if the database exists already, drop it
+    if database_exists(str_name):
+        drop_database(engine.url)
 
-    # create some tables
+    # create a database
+    create_database(engine.url)
+
+    # create the tables
     base.metadata.create_all(engine)
 
     return Database(session=scoped_session(sessionmaker(bind=engine)), connection=str_name)
 
 
-def database(base):
-    session, connection_str = __postgresql_db_test(base)
+def database(base, name=None, echo=False):
+    session, connection_str = __postgresql_db_test(base, name=name, echo=echo)
     return Database(session=session, connection=connection_str)
