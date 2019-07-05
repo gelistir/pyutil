@@ -10,7 +10,7 @@ from pyutil.testing.database import database
 from test.config import resource, read
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def db():
     db = database(base=Base)
 
@@ -41,6 +41,10 @@ class TestRunner(object):
 
     def test_strategy_update(self, db):
         logger = logging.getLogger(__name__)
-        name, portfolio = _strategy_update(db.session.query(Strategy).filter_by(name="P1").one().id, connection_str=db.connection, logger=logger)
+        # thils will be a very fresh update
+        name, portfolio = _strategy_update(db.session.query(Strategy).filter_by(name="P1").one().id, connection_str=db.connection, logger=logger, n=10)
+        # this will update only the very last few days...
+        name, portfolio = _strategy_update(db.session.query(Strategy).filter_by(name="P1").one().id, connection_str=db.connection, logger=logger, n=10)
+
         assert pytest.approx(portfolio.nav.sharpe_ratio(), -0.23551923609559777, abs=1e-5)
         assert name == "P1"
