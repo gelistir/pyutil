@@ -3,8 +3,9 @@ import pandas.util.testing as pdt
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from pyutil.mongo.mongo import mongo_client
+from pyutil.mongo.mongo import create_collection
 from pyutil.sql.base import Base
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.ref import Field, FieldType, DataType
 from pyutil.sql.session import session_factory
 from test.test_sql.product import Product
@@ -22,6 +23,8 @@ def ts2():
 def ts3():
     return pd.Series(data=[100, 300, 300], index=[0, 1, 2])
 
+# point to a new mongo collection...
+ProductInterface.__collection__ = create_collection()
 
 class TestProductInterface(object):
     def test_name(self):

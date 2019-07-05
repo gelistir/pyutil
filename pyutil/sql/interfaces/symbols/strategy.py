@@ -1,11 +1,11 @@
 import enum as _enum
 import os
+
 import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.timeseries.merge import last_index
 
 
 def _module(source):

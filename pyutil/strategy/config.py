@@ -38,3 +38,7 @@ class ConfigMaster(dict):
     def history(self, t0=pd.Timestamp("2002-01-01")):
         h = pd.DataFrame({name: self.__reader(name=name) for name in self.__names})
         return h.truncate(before=t0).dropna(axis=0, how="all")
+
+    @property
+    def parameter(self):
+        return {key: value for key, value in self.items()}

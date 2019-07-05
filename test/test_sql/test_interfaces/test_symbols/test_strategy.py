@@ -1,6 +1,8 @@
 import pytest
 
+from pyutil.mongo.mongo import create_collection
 from pyutil.portfolio.portfolio import similar
+from pyutil.sql.interfaces.products import ProductInterface
 from test.config import test_portfolio, resource
 from pyutil.sql.interfaces.symbols.strategy import Strategy, strategies
 
@@ -10,6 +12,8 @@ def strategy():
     with open(resource("source.py"), "r") as f:
         yield Strategy(name="Peter", source=f.read(), active=True)
 
+# point to a new mongo collection...
+ProductInterface.__collection__ = create_collection()
 
 class TestStrategy(object):
     def test_module(self, strategy):
@@ -18,7 +22,7 @@ class TestStrategy(object):
 
     def test_run(self):
         folder = resource("strat")
-        d = {name : source for name, source in strategies(folder)}
+        d = {name: source for name, source in strategies(folder)}
         assert set(d.keys()) == {"P1", "P2"}
 
     def test_mongo(self, strategy):

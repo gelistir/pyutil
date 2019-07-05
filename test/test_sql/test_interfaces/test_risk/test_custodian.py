@@ -1,11 +1,15 @@
 import pytest
 
+from pyutil.mongo.mongo import create_collection
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 import pandas.util.testing as pdt
 
 from test.config import read
 
+# point to a new mongo collection...
+ProductInterface.__collection__ = create_collection()
 
 @pytest.fixture(scope="module")
 def ts():

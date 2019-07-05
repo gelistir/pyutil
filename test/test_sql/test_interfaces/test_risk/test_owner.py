@@ -1,14 +1,13 @@
+import pandas as pd
+import pandas.util.testing as pdt
 import pytest
 
-import pandas as pd
-import numpy as np
-
-import pandas.util.testing as pdt
-
+from pyutil.mongo.mongo import create_collection
+from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.interfaces.ref import Field, DataType, FieldType
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
-from pyutil.sql.interfaces.ref import Field, DataType, FieldType
 from pyutil.timeseries.merge import merge
 
 t0 = pd.Timestamp("1978-11-15")
@@ -40,6 +39,8 @@ def owner():
 def kiid():
     return Field(name="KIID", result=DataType.integer, type=FieldType.other)
 
+# point to a new mongo collection...
+ProductInterface.__collection__ = create_collection()
 
 class TestOwner(object):
     def test_position(self, owner, kiid):

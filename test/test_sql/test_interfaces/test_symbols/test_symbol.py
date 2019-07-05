@@ -1,7 +1,8 @@
 import pytest
 import pandas.util.testing as pdt
 
-
+from pyutil.mongo.mongo import create_collection
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.ref import Field, DataType
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType, SymbolTypes
 from test.config import read
@@ -11,6 +12,8 @@ from test.config import read
 def ts():
     return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
 
+# point to a new mongo collection...
+ProductInterface.__collection__ = create_collection()
 
 class TestSymbol(object):
     def test_init(self):

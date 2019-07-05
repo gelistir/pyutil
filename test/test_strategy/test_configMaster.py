@@ -1,46 +1,62 @@
 import pandas.util.testing as pdt
+import pytest
 
+from pyutil.mongo.mongo import create_collection
 from pyutil.portfolio.portfolio import similar
+from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.strategy.config import ConfigMaster
 from test.config import test_portfolio, read
 
+# point to a new mongo collection...
+ProductInterface.__collection__ = create_collection()
 
-class Strategy(ConfigMaster):
-    def __init__(self, names, reader, **kwargs):
-        """
-        :param names: the names of the assets used in the strategy
-        :param reader: a function to access prices for the strategy
-        :param kwargs:
-        """
-        super().__init__(names, reader, **kwargs)
 
-    @property
-    def portfolio(self):
-        return test_portfolio().subportfolio(assets=self.names)
+@pytest.fixture()
+def prices():
+    return read("price.csv", parse_dates=True, index_col=0)
+
+
+@pytest.fixture()
+def portfolio():
+    return test_portfolio()
+
+
+@pytest.fixture()
+def strategy(portfolio, prices):
+
+    class Strategy(ConfigMaster):
+        def __init__(self, names, reader, **kwargs):
+            """
+            :param names: the names of the assets used in the strategy
+            :param reader: a function to access prices for the strategy
+            :param kwargs:
+            """
+            super().__init__(names, reader, **kwargs)
+
+        @property
+        def portfolio(self):
+            return portfolio.subportfolio(assets=self.names)
+
+    return Strategy(names=["A", "B", "C"],             # Assets used by the strategy
+                    reader=lambda name: prices[name],  # simple function to read prices
+                    Hans=30, Dampf=40)                 # parameter
 
 
 class TestConfigMaster(object):
-    def test_run_strategy(self):
-        prices = read("price.csv", parse_dates=True, index_col=0)
+    def test_run_strategy(self, strategy):
+        # you can always add new parameters or change existing ones
+        strategy["Peter Maffay"]=20
+        strategy["Hans"] = 35
+        assert strategy.parameter == {"Peter Maffay": 20, "Hans": 35, "Dampf": 40}
 
-        s = Strategy(names=["A", "B", "C"],             # Assets used by the strategy
-                     reader=lambda name: prices[name],  # simple function to read prices
-                     Hans=30, Dampf=40)                 # parameter
+    def test_prices(self, strategy, prices):
+        pdt.assert_frame_equal(strategy.history(), prices[["A", "B", "C"]])
 
-        # you can still introduce new parameters or change existing ones...
-        # The ConigMaster object is a dictionary!
-        s["Peter Maffay"] = 20
-        s["Hans"] = 35
+    def test_names(self, strategy):
+        assert strategy.names == ["A", "B", "C"]
 
-        pdt.assert_frame_equal(s.history(), prices[["A", "B", "C"]])
-        assert s.names == ["A", "B", "C"]
-        assert s.reader
+    def test_reader(self, strategy, prices):
+        pdt.assert_series_equal(strategy.reader("A"), prices["A"])
 
-        #self.assertIsNotNone(s.reader)
-
-        parameter = {key: value for key, value in s.items()}
-        assert parameter == {"Peter Maffay": 20, "Hans": 35, "Dampf": 40}
-
-        pdt.assert_series_equal(s.reader("A"), prices["A"])
-
-        assert similar(s.portfolio, test_portfolio().subportfolio(assets=s.names))
+    def test_portfolio(self, strategy, portfolio):
+        assert similar(strategy.portfolio, portfolio.subportfolio(assets=strategy.names))

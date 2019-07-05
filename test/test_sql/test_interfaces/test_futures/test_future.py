@@ -2,10 +2,16 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
+from pyutil.mongo.mongo import create_collection
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
 from pyutil.sql.interfaces.futures.future import Future
+
+# point to a new mongo collection...
+from pyutil.sql.interfaces.products import ProductInterface
+
+ProductInterface.__collection__ = create_collection()
 
 
 @pytest.fixture(scope="module")

@@ -1,10 +1,12 @@
 import pandas as pd
 import pytest
 
+from pyutil.mongo.mongo import create_collection
 from pyutil.sql.interfaces.futures.category import FuturesCategory
 from pyutil.sql.interfaces.futures.contract import Contract
 from pyutil.sql.interfaces.futures.exchange import Exchange
 from pyutil.sql.interfaces.futures.future import Future
+from pyutil.sql.interfaces.products import ProductInterface
 
 
 def future():
@@ -14,6 +16,9 @@ def future():
     c = FuturesCategory(name="Equity Index")
     # define the future
     return Future(name="ES1 Index", internal="S&P 500 E-Mini Futures", quandl="CME/ES", exchange=e, category=c)
+
+# point to a new mongo collection...
+ProductInterface.__collection__ = create_collection()
 
 
 class TestContract(object):

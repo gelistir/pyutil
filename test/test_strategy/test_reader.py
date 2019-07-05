@@ -2,14 +2,14 @@ import pytest
 
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.strategy.reader import assets, symbolmap
-from pyutil.testing.database import database
+from test.config import db
 
-from pyutil.sql.base import Base
 
 @pytest.fixture()
-def session():
-    db = database(base=Base)
+def session(db):
+    assert db.session.query(Symbol).count() == 0
 
+    # add one symbol to database
     s = Symbol(name="Maffay", group=SymbolType.fixed_income)
     db.session.add(s)
     db.session.commit()

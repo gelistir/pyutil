@@ -30,6 +30,9 @@ def __postgresql_db_test(base, name=None, echo=False):
     # create a database
     create_database(engine.url)
 
+    # drop all tables (even if there are none)
+    base.metadata.drop_all(engine)
+
     # create the tables
     base.metadata.create_all(engine)
 

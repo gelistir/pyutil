@@ -22,7 +22,6 @@ def client():
     yield app.test_client()
 
 
-
 class TestApp(object):
     def test_get(self, client):
         get(client, url="/hello")
