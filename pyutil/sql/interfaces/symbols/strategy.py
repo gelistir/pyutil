@@ -35,7 +35,6 @@ class StrategyType(_enum.Enum):
 StrategyTypes = {s.value: s for s in StrategyType}
 
 
-
 class Strategy(ProductInterface):
     __searchable__ = ["name", "type"]
     active = sq.Column(sq.Boolean)
@@ -71,4 +70,11 @@ class Strategy(ProductInterface):
     @property
     def assets(self):
         return self.configuration(reader=None).names
+
+    @property
+    def last(self):
+        p = self.portfolio
+        if p is None:
+            return None
+        return p.last
 
