@@ -1,7 +1,7 @@
 import pytest
 
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
-from pyutil.strategy.reader import assets
+from pyutil.strategy.reader import assets, symbolmap
 from pyutil.testing.database import database
 
 from pyutil.sql.base import Base
@@ -18,8 +18,18 @@ def session():
     db.session.close()
 
 
-def test_assets(session):
+def test_assets_1(session):
     a = assets(session=session, names=["Maffay"])
     assert len(a) == 1
     assert a[0] == session.query(Symbol).filter(Symbol.name == "Maffay").one()
 
+
+def test_assets_2(session):
+    a = assets(session=session)
+    assert len(a) == 1
+    assert a[0] == session.query(Symbol).filter(Symbol.name == "Maffay").one()
+
+
+def test_symbolmap(session):
+    a = symbolmap(session=session)
+    assert a == {"Maffay": SymbolType.fixed_income.name}

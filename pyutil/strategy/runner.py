@@ -32,7 +32,7 @@ def _strategy_update(strategy_id, connection_str, logger, n):
 
         portfolio_new = strategy.configuration(reader=reader(session)).portfolio
 
-        if last:
+        if last is not None:
             # use only the very last few days...
             portfolio_new = portfolio_new.truncate(before=last - pd.DateOffset(days=n))
             strategy.portfolio = Portfolio.merge(new=portfolio_new, old=strategy.portfolio)
