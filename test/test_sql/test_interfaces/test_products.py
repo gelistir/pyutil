@@ -88,3 +88,4 @@ class TestProductInterface(object):
         p2 = Product(name="B")
         assert p1 < p2
 
+

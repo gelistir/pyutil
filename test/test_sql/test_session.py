@@ -59,3 +59,10 @@ class TestSession(object):
             with pytest.raises(NoResultFound):
                 s.query(User).filter_by(name="Peter Maffay").one()
 
+    def test_exception(self):
+        with pytest.raises(IntegrityError):
+            connection_str = "sqlite:///:memory:"
+            with s_session(connection_str=connection_str, base=Base) as s:
+                s.add(User(name="Hans"))
+                s.add(User(name="Hans"))
+

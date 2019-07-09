@@ -49,9 +49,9 @@ class Mongo(object):
     def frame(cls, **kwargs):
         return cls.__collection__.frame(key="name", **kwargs)
 
-    @classmethod
-    def meta(cls, **kwargs):
-        return cls.__collection__.meta(**kwargs)
+    #@classmethod
+    #def meta(cls, **kwargs):
+    #    return cls.__collection__.meta(**kwargs)
 
 class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     # note that the name should not be unique as Portfolio and Strategy can have the same name
