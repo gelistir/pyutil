@@ -52,3 +52,10 @@ class TestCvx(object):
         x = signals(matrix, 0.1*np.ones(matrix.shape[0]))
         assert x["UBSG.VX"] == pytest.approx(-0.008692211362626311, 1e-6)
 
+
+    def test_minvar(self, matrix):
+        w = cvx.Variable(matrix.shape[1])
+        objective = std(matrix.values * w)
+        minimize(objective=objective, constraints=[0 <= w, cvx.sum(w) == 1])
+        x = pd.Series(index=matrix.keys(), data=w.value)
+        assert x["UBSG.VX"] == pytest.approx(0.0038855303660729726, 1e-6)
