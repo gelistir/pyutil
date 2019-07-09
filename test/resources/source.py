@@ -12,6 +12,3 @@ class Configuration(ConfigMaster):
     def portfolio(self):
         return self.__portfolio
 
-    #@property
-    #def assets(self):
-    #    return self.__portfolio.assets
