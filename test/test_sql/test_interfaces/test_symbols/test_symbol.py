@@ -1,9 +1,9 @@
+import pandas as pd
 import pytest
 import pandas.util.testing as pdt
 
 from pyutil.mongo.mongo import create_collection
 from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.interfaces.ref import Field, DataType
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType, SymbolTypes
 from test.config import read
 
@@ -23,13 +23,6 @@ class TestSymbol(object):
         assert symbol.discriminator == "symbol"
         assert symbol.__tablename__ == "symbol"
         assert symbol.__mapper_args__ == {'polymorphic_identity': 'symbol'}
-
-    def test_frame(self):
-        symbol = Symbol(name="E", group=SymbolType.fixed_income)
-        field = Field(name="KIID", result=DataType.integer)
-        symbol.reference[field] = 2
-        print(Symbol.reference_frame([symbol]))
-        #todo: finish test
 
     def test_type(self):
         assert "Alternatives" in SymbolTypes.keys()
@@ -65,3 +58,12 @@ class TestSymbol(object):
         f = Symbol.prices([s1, s2])
         pdt.assert_series_equal(f["A"], ts, check_names=False)
         pdt.assert_series_equal(f["B"], 2*ts, check_names=False)
+
+    def test_reference_frame(self):
+        s = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
+        frame = Symbol.reference_frame(symbols=[s])
+        #print(frame)
+        framex = pd.DataFrame(index=[s], columns=["Sector", "Internal"], data=[["Equities", "Peter Maffay"]])
+        framex.index.name = "symbol"
+        pdt.assert_frame_equal(frame, framex)
+        #assert False

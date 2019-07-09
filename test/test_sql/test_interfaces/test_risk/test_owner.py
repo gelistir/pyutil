@@ -128,6 +128,18 @@ class TestOwner(object):
         o = Owner(name="222", currency=Currency(name="CHF"), fullname="Peter Maffay")
         assert o.name == "222"
         assert str(o) == "Owner(222: Peter Maffay, CHF)"
+        assert o.currency == Currency(name="CHF")
+
+        f = Field(name="z", type=FieldType.dynamic, result=DataType.integer)
+        o.reference[f] = 20
+
+        frame = pd.DataFrame(index=["Currency", "Entity ID", "Name", "z"], columns=[o],
+                             data=["CHF", "222", "Peter Maffay", 20]).transpose()
+        frame.index.name = "owner"
+        print(Owner.frame(owners=[o]).dtypes)
+
+
+        pdt.assert_frame_equal(Owner.frame(owners=[o])[frame.keys()], frame, check_dtype=False)
 
     #def test_json(self):
     #    o = Owner(name="Peter")

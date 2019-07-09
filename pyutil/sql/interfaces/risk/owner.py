@@ -15,12 +15,6 @@ class Owner(ProductInterface):
     __currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=True)
     __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
 
-    # position
-    # _position_rel = relationship(Series, collection_class=attribute_mapped_collection("key"), cascade="all, delete-orphan",
-    #                         primaryjoin=ProductInterface.join_series("position"))
-
-    # _position = association_proxy("_position_rel", "data", creator=lambda s, data: _create_position(security=s[0], custodian=s[1], data=data))
-
     def __init__(self, name, currency=None, fullname=None):
         super().__init__(name=name)
         self.currency = currency
@@ -69,9 +63,9 @@ class Owner(ProductInterface):
     #
     #     return x
 
-    @property
-    def reference_securities(self):
-        return Security.frame(self.securities)
+    #@property
+    #def reference_securities(self):
+    #    return Security.frame(self.securities)
 
     #@property
     #def position_reference(self):
@@ -105,9 +99,9 @@ class Owner(ProductInterface):
 
     @staticmethod
     def frame(owners):
-        frame = pd.DataFrame({owner: {**owner.reference_series, **{"Entity ID": int(owner.name), "Name": owner.fullname,
-                                                                   "Currency": owner.currency.name}} for owner in
-                              owners}).transpose()
-        frame.index.name = "Security"
-        return frame.sort_index()
-
+        frame = Owner.reference_frame(products=owners)
+        # that's why owners can't be None
+        frame["Currency"] = pd.Series({owner: owner.currency.name for owner in frame.index})
+        frame["Entity ID"] = pd.Series({owner: owner.name for owner in frame.index})
+        frame["Name"] = pd.Series({owner: owner.fullname for owner in frame.index})
+        return frame

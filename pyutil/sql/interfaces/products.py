@@ -45,13 +45,25 @@ class Mongo(object):
         # this is a very fast operation, as a new client is not created here...
         return create_collection(name=cls.__name__.lower(), client=cls._client)
 
-    @classmethod
-    def frame(cls, **kwargs):
-        return cls.__collection__.frame(key="name", **kwargs)
+    #@declared_attr
+    #def __collection_reference__(cls):
+    #    # this is a very fast operation, as a new client is not created here...
+    #    return create_collection(name=cls.__name__.lower() + "_reference", client=cls._client)
 
+    @classmethod
+    def frame(cls, products=None, **kwargs):
+        if products is not None:
+            return pd.DataFrame({p.name: p.read(**kwargs) for p in products})
+        else:
+            return cls.__collection__.frame(key="name", **kwargs)
+
+    #@classmethod
+    #def frame(cls, products, **kwargs):
+    #    return pd.DataFrame({p.name : p.read(**kwargs) for p in products})
     #@classmethod
     #def meta(cls, **kwargs):
     #    return cls.__collection__.meta(**kwargs)
+
 
 class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     # note that the name should not be unique as Portfolio and Strategy can have the same name
@@ -80,7 +92,7 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
 
     @property
     def reference_series(self):
-        return pd.Series(dict(self.reference)).rename(index=lambda x: x.name)
+        return pd.Series(dict(self.reference)).rename(index=lambda x: x.name).sort_index()
 
     def __repr__(self):
         return "{name}".format(name=self.name)
@@ -107,3 +119,20 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
 
     def meta(self, **kwargs):
         return self.__collection__.meta(name=self.name, **kwargs)
+
+    @classmethod
+    def reference_frame(cls, products):
+        # first loop over all products
+        frame = pd.DataFrame({product: product.reference_series for product in products}).transpose()
+
+        frame.index.name = cls.__name__.lower()
+        return frame.sort_index()
+
+
+    # def __setitem__(self, key, value):
+    #     pass
+    #     #self.__collection_reference__.
+    #
+    # def __getitem__(self, item):
+    #     pass
+

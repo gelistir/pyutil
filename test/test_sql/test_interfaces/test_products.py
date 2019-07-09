@@ -15,16 +15,20 @@ from test.test_sql.product import Product
 def ts1():
     return pd.Series(data=[100, 200], index=[0, 1])
 
+
 @pytest.fixture()
 def ts2():
     return pd.Series(data=[300, 300], index=[1, 2])
+
 
 @pytest.fixture()
 def ts3():
     return pd.Series(data=[100, 300, 300], index=[0, 1, 2])
 
+
 # point to a new mongo collection...
 ProductInterface.__collection__ = create_collection()
+
 
 class TestProductInterface(object):
     def test_name(self):
@@ -35,15 +39,32 @@ class TestProductInterface(object):
         with pytest.raises(AttributeError):
             Product(name="A").name = "AA"
 
-    def test_reference(self):
-        f = Field(name="z", type=FieldType.dynamic, result=DataType.integer)
-        p = Product(name="A")
-        assert p.reference.get(f, 5) == 5
-        assert not p.reference.get(f)
+    # def test_reference(self):
+    #     f1 = Field(name="z", type=FieldType.dynamic, result=DataType.integer)
+    #     f2 = Field(name="y", type=FieldType.dynamic, result=DataType.string)
+    #
+    #     p = Product(name="A")
+    #     # specify a standard value in case field f is not defined for product p
+    #     assert p.reference.get(f1, 5) == 5
+    #     assert not p.reference.get(f1)
+    #
+    #     p.reference[f1] = "120"
+    #     p.reference[f2] = "Hans"
+    #     assert p.reference[f1] == 120
+    #     assert p.reference[f2] == "Hans"
 
-        p.reference[f] = "120"
-        assert p.reference[f] == 120
+        #assert p.reference_series == pd.Series({"y": "Hans", "z": 120})
 
+
+        #frame = Product.reference_frame(products=[p])
+        #print(frame)
+        #print(frame.dtypes)
+
+        #framex = pd.DataFrame(index=[f2, f1], columns=[p], data=["Hans", 120]).transpose()
+        #framex.index.name = "product"
+        #print(frame.dtypes)
+        #print(framex.dtypes)
+        #pdt.assert_frame_equal(frame, framex)
 
     def test_duplicate(self):
         connection_str = "sqlite:///:memory:"
@@ -70,22 +91,18 @@ class TestProductInterface(object):
         s = [x for x in product.meta()]
         assert {"kind": "y", "name": "A"} in s
 
-
     def test_merge(self, ts1, ts2):
         product = Product(name="A")
         product.write(data=ts1, kind="x")
         product.write(data=ts2, kind="x")
         pdt.assert_series_equal(product.read(kind="x"), ts2)
 
-    #def test_collections(self, ts1):
+    # def test_collections(self, ts1):
     #    p = Product(name="A")
     #    p.write(data=ts1, kind="xx")
     #    p.write(data=ts1, kind="yx")
-
 
     def test_lt(self):
         p1 = Product(name="A")
         p2 = Product(name="B")
         assert p1 < p2
-
-

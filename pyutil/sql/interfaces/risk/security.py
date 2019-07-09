@@ -1,7 +1,5 @@
-import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.ext.hybrid import hybrid_property
-
 
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.ref import Field, FieldType, DataType
@@ -44,8 +42,9 @@ class Security(ProductInterface):
         self.write(data=data, kind="PRICE")
 
     @staticmethod
-    def prices(securities):
-        return pd.DataFrame({security.name: security.price for security in securities})
+    def prices(securities=None):
+        return Security.frame(products=securities, kind="PRICE")
+        #return pd.DataFrame({security.name: security.price for security in securities})
 
     def upsert_price(self, data):
         self.merge(data, kind="PRICE")
