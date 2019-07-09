@@ -207,3 +207,6 @@ class TestPortfolio(object):
 
         frame = portfolio.sector(symbols=[s1, s2, s3, s4, s5, s6, s7])
         pdt.assert_frame_equal(frame.tail(5), read("sector.csv", index_col=0, parse_dates=True))
+
+        frame = portfolio.sector(symbols=[s1, s2, s3, s4, s5, s6, s7], total=True)
+        pdt.assert_frame_equal(frame.head(3), read("sector_total.csv", index_col=0, parse_dates=True))
