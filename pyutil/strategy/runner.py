@@ -16,7 +16,7 @@ def _strategy_update(strategy_id, connection_str, logger, n):
     from pyutil.sql.session import session
 
     def reader(session):
-        return lambda name: session.query(Symbol).filter(Symbol.name == name).one().price
+        return lambda name: session.query(Symbol).filter(Symbol.name == name).one().read(key="PX_LAST")
 
     # make a fresh mongo client
     ProductInterface._client = mongo_client()
