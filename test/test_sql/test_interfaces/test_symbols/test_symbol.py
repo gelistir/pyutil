@@ -12,58 +12,56 @@ from test.config import read
 def ts():
     return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
 
+@pytest.fixture()
+def symbol(ts):
+    # point to a new mongo collection...
+    ProductInterface.__collection__ = create_collection()
+    ProductInterface.__collection_reference__ = create_collection()
+
+    symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
+    symbol.write(data=ts, key="PX_OPEN")
+    symbol["xxx"] = "A"
+    symbol.upsert_price(data=ts)
+
+    return symbol
+
 # point to a new mongo collection...
-ProductInterface.__collection__ = create_collection()
+#ProductInterface.__collection__ = create_collection()
+#ProductInterface.__collection_reference__ = create_collection()
+
 
 class TestSymbol(object):
-    def test_init(self):
-        symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
+    def test_init(self, symbol):
         assert symbol.internal == "Peter Maffay"
         assert symbol.group == SymbolType.equities
-        assert symbol.discriminator == "symbol"
-        assert symbol.__tablename__ == "symbol"
-        assert symbol.__mapper_args__ == {'polymorphic_identity': 'symbol'}
 
     def test_type(self):
         assert "Alternatives" in SymbolTypes.keys()
 
-    def test_prices_1(self, ts):
-        symbol = Symbol(name="Thomas")
-        symbol.write(data=ts, kind="PX_OPEN")
-        pdt.assert_series_equal(symbol.read(kind="PX_OPEN"), ts)
+    def test_prices_1(self, symbol, ts):
+        pdt.assert_series_equal(symbol.read(key="PX_OPEN"), ts)
 
-        frame = Symbol.frame(kind="PX_OPEN")
-        pdt.assert_series_equal(frame["Thomas"], ts, check_names=False)
+        frame = Symbol.pandas_frame(products=[symbol], key="PX_OPEN")
+        pdt.assert_series_equal(frame["A"], ts, check_names=False)
 
-    def test_prices_2(self, ts):
-        symbol = Symbol(name="Peter Maffay")
-        symbol.upsert_price(data=ts)
+    def test_prices_2(self, symbol, ts):
         pdt.assert_series_equal(symbol.price, ts)
 
         symbol.price = ts
         pdt.assert_series_equal(symbol.price, ts)
 
-        symbol.upsert_price(data=2*ts.tail(100))
-        pdt.assert_series_equal(symbol.price.tail(100), 2*ts.tail(100))
+        symbol.upsert_price(data=2 * ts.tail(100))
+        pdt.assert_series_equal(symbol.price.tail(100), 2 * ts.tail(100))
 
         assert symbol.last == ts.last_valid_index()
 
-    def test_prices_3(self, ts):
-        s1 = Symbol(name="A")
-        s1.price = ts
+    def test_reference_frame(self, symbol):
+        frame = Symbol.reference_frame(symbols=[symbol])
 
-        s2 = Symbol(name="B")
-        s2.price = 2*ts
-
-        f = Symbol.prices([s1, s2])
-        pdt.assert_series_equal(f["A"], ts, check_names=False)
-        pdt.assert_series_equal(f["B"], 2*ts, check_names=False)
-
-    def test_reference_frame(self):
-        s = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
-        frame = Symbol.reference_frame(symbols=[s])
-        #print(frame)
-        framex = pd.DataFrame(index=[s], columns=["Sector", "Internal"], data=[["Equities", "Peter Maffay"]])
+        # print(frame)
+        framex = pd.DataFrame(index=[symbol.name], columns=["xxx", "Sector", "Internal"], data=[["A", "Equities", "Peter Maffay"]])
         framex.index.name = "symbol"
+        print(frame)
+
         pdt.assert_frame_equal(frame, framex)
-        #assert False
+        # assert False

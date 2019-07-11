@@ -1,13 +1,9 @@
 import pandas as pd
 import pandas.util.testing as pdt
 import pytest
-from sqlalchemy.exc import IntegrityError
 
 from pyutil.mongo.mongo import create_collection
-from pyutil.sql.base import Base
 from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.interfaces.ref import Field, FieldType, DataType
-from pyutil.sql.session import session_factory
 from test.test_sql.product import Product
 
 
@@ -28,81 +24,46 @@ def ts3():
 
 # point to a new mongo collection...
 ProductInterface.__collection__ = create_collection()
+ProductInterface.__collection_reference__ = create_collection()
 
 
 class TestProductInterface(object):
     def test_name(self):
         assert Product(name="A").name == "A"
-        assert Product(name="A").discriminator == "product"
 
         # you can not change the name of a product!
         with pytest.raises(AttributeError):
             Product(name="A").name = "AA"
 
-    # def test_reference(self):
-    #     f1 = Field(name="z", type=FieldType.dynamic, result=DataType.integer)
-    #     f2 = Field(name="y", type=FieldType.dynamic, result=DataType.string)
-    #
-    #     p = Product(name="A")
-    #     # specify a standard value in case field f is not defined for product p
-    #     assert p.reference.get(f1, 5) == 5
-    #     assert not p.reference.get(f1)
-    #
-    #     p.reference[f1] = "120"
-    #     p.reference[f2] = "Hans"
-    #     assert p.reference[f1] == 120
-    #     assert p.reference[f2] == "Hans"
-
-        #assert p.reference_series == pd.Series({"y": "Hans", "z": 120})
-
-
-        #frame = Product.reference_frame(products=[p])
-        #print(frame)
-        #print(frame.dtypes)
-
-        #framex = pd.DataFrame(index=[f2, f1], columns=[p], data=["Hans", 120]).transpose()
-        #framex.index.name = "product"
-        #print(frame.dtypes)
-        #print(framex.dtypes)
-        #pdt.assert_frame_equal(frame, framex)
-
-    def test_duplicate(self):
-        connection_str = "sqlite:///:memory:"
-        s = session_factory(connection_str=connection_str, base=Base, echo=True)
-
-        # create and commit the product A
-        s.add(Product(name="A"))
-        s.commit()
-
-        # now try to add the same product again...
-        s.add(Product(name="A"))
-        with pytest.raises(IntegrityError):
-            s.commit()
+        assert Product.__collection__
+        assert Product.__collection_reference__
 
     def test_timeseries(self, ts1):
         product = Product(name="A")
-
-        product.write(data=ts1, kind="y")
-        pdt.assert_series_equal(ts1, product.read(parse=True, kind="y"))
-
-        y = product.frame(kind="y")
-        pdt.assert_series_equal(ts1, y["A"], check_names=False)
-
-        s = [x for x in product.meta()]
-        assert {"kind": "y", "name": "A"} in s
+        product.write(data=ts1, key="y")
+        pdt.assert_series_equal(ts1, product.read(key="y"))
 
     def test_merge(self, ts1, ts2):
         product = Product(name="A")
-        product.write(data=ts1, kind="x")
-        product.write(data=ts2, kind="x")
-        pdt.assert_series_equal(product.read(kind="x"), ts2)
-
-    # def test_collections(self, ts1):
-    #    p = Product(name="A")
-    #    p.write(data=ts1, kind="xx")
-    #    p.write(data=ts1, kind="yx")
+        product.write(data=ts1, key="x")
+        product.write(data=ts2, key="x")
+        pdt.assert_series_equal(product.read(key="x"), ts2)
+        frame = Product.pandas_frame(products=[product], key="x")
+        pdt.assert_series_equal(frame["A"], ts2, check_names=False)
 
     def test_lt(self):
         p1 = Product(name="A")
         p2 = Product(name="B")
         assert p1 < p2
+
+    def test_meta(self):
+        p1 = Product(name="A")
+        p2 = Product(name="B")
+        p1["xxx"] = 1
+        p1["yyy"] = 2
+        p2["zzz"] = 3
+
+        frame = Product.reference_frame(products=[p1, p2]).transpose()
+        assert frame["A"]["yyy"] == 2
+        assert frame["B"]["zzz"] == 3
+

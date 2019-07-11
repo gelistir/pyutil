@@ -12,7 +12,7 @@ from pyutil.sql.interfaces.futures.future import Future
 from pyutil.sql.interfaces.products import ProductInterface
 
 ProductInterface.__collection__ = create_collection()
-
+ProductInterface.__collection_reference__ = create_collection()
 
 @pytest.fixture(scope="module")
 def future():

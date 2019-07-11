@@ -34,25 +34,25 @@ class Symbol(ProductInterface):
     @staticmethod
     def reference_frame(symbols):
         frame = ProductInterface.reference_frame(symbols)
-        frame["Sector"] = pd.Series({symbol: symbol.group.value for symbol in symbols})
-        frame["Internal"] = pd.Series({symbol: symbol.internal for symbol in symbols})
+        frame["Sector"] = pd.Series({symbol.name: symbol.group.value for symbol in symbols})
+        frame["Internal"] = pd.Series({symbol.name: symbol.internal for symbol in symbols})
         frame.index.name = "symbol"
         return frame
 
     @property
     def price(self):
-        return self.read(kind="PX_LAST")
+        return self.read(key="PX_LAST")
 
     @price.setter
     def price(self, data):
-        self.write(data=data, kind="PX_LAST")
+        self.write(data=data, key="PX_LAST")
 
     @staticmethod
-    def prices(symbols=None):
-        return Symbol.frame(products=symbols, kind="PX_LAST")
+    def prices(symbols):
+        return Symbol.pandas_frame(products=symbols, key="PX_LAST")
 
     def upsert_price(self, data):
-        self.merge(data, kind="PX_LAST")
+        self.merge(data, key="PX_LAST")
 
     @property
     def last(self):

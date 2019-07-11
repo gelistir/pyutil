@@ -28,6 +28,7 @@ def test_portfolio():
 def db():
     # point to a new mongo collection...
     ProductInterface.__collection__ = create_collection()
+    ProductInterface.__collection_reference__ = create_collection()
 
     # new db
     return database(base=Base)

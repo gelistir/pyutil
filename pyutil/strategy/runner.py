@@ -4,9 +4,9 @@ import multiprocessing as mp
 
 import pandas as pd
 
+from pyutil.mongo.mongo import mongo_client
 from pyutil.portfolio.portfolio import Portfolio
 
-from pyutil.mongo.mongo import mongo_client
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol

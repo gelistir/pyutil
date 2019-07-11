@@ -2,13 +2,13 @@ import sqlalchemy as sq
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.interfaces.ref import Field, FieldType, DataType
+#from pyutil.sql.interfaces.ref import Field, FieldType, DataType
 from pyutil.timeseries.merge import last_index
 
-Field_BMulti = Field(name="Bloomberg Multiplier", type=FieldType.dynamic, result=DataType.float)
-Field_KIID = Field(name="KIID", type=FieldType.dynamic, result=DataType.integer)
-Field_Ticker = Field(name="Bloomberg Ticker", type=FieldType.dynamic, result=DataType.string)
-Field_Name = Field(name="Name", type=FieldType.dynamic, result=DataType.string)
+#Field_BMulti = Field(name="Bloomberg Multiplier", type=FieldType.dynamic, result=DataType.float)
+#Field_KIID = Field(name="KIID", type=FieldType.dynamic, result=DataType.integer)
+#Field_Ticker = Field(name="Bloomberg Ticker", type=FieldType.dynamic, result=DataType.string)
+#Field_Name = Field(name="Name", type=FieldType.dynamic, result=DataType.string)
 
 
 class Security(ProductInterface):
@@ -19,35 +19,39 @@ class Security(ProductInterface):
         self.fullname = fullname
 
     def __repr__(self):
-        return "Security({id}: {name})".format(id=self.name, name=self.reference.get(Field_Name))
+        return "Security({id}: {name})".format(id=self.name, name=self["Name"])
 
-    @hybrid_property
-    def kiid(self):
-        return self.reference.get(Field_KIID)
+    #@hybrid_property
+    #def kiid(self):
+    #    return self.reference.get(Field_KIID)
 
     @hybrid_property
     def bloomberg_ticker(self):
-        return self.reference.get(Field_Ticker, None)
+        return self["Bloomberg Ticker"]
 
+
+    #     return self.reference.get(Field_Ticker, None)
+    #
     @hybrid_property
     def bloomberg_scaling(self):
-        return self.reference.get(Field_BMulti, 1.0)
+        return self["Bloomberg Multiplier"] or 1.0
+    #     return self.reference.get(Field_BMulti, 1.0)
 
     @property
     def price(self):
-        return self.read(kind="PRICE")
+        return self.read(key="PRICE")
 
     @price.setter
     def price(self, data):
-        self.write(data=data, kind="PRICE")
+        self.write(data=data, key="PRICE")
 
     @staticmethod
-    def prices(securities=None):
-        return Security.frame(products=securities, kind="PRICE")
-        #return pd.DataFrame({security.name: security.price for security in securities})
+    def prices(securities):
+        return Security.pandas_frame(products=securities, key="PRICE")
+
 
     def upsert_price(self, data):
-        self.merge(data, kind="PRICE")
+        self.merge(data, key="PRICE")
 
     @property
     def last(self):

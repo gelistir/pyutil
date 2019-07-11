@@ -19,7 +19,7 @@ def future():
 
 # point to a new mongo collection...
 ProductInterface.__collection__ = create_collection()
-
+ProductInterface.__collection_reference__ = create_collection()
 
 class TestContract(object):
     def test_contract(self):
@@ -52,14 +52,8 @@ class TestContract(object):
 
     def test_exchange(self):
         e = Exchange(name="CME")
-        assert e.__tablename__ == "exchange"
-        assert e.__mapper_args__ == {'polymorphic_identity': 'exchange'}
-        assert e.discriminator == "exchange"
         assert e.name == "CME"
 
     def test_category(self):
         f = FuturesCategory(name="Energy")
-        assert f.__tablename__ == "futurescategory"
-        assert f.__mapper_args__ == {'polymorphic_identity': 'futurescategory'}
-        assert f.discriminator == "futurescategory"
         assert f.name == "Energy"

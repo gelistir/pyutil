@@ -1,72 +1,36 @@
 import pandas as pd
+import pytest
 
-from pyutil.sql.interfaces.ref import Field, FieldType, DataType
+from pyutil.mongo.mongo import create_collection
 from test.test_sql.product import Product
-
 import pandas.util.testing as pdt
 
+
+@pytest.fixture()
+def product():
+    Product.__collection__ = create_collection()
+    Product.__collection_reference__ = create_collection()
+    product = Product(name="A")
+    product["aaa"] = "A"
+    product["bbb"] = "Z"
+    return product
+
+
 class TestReference(object):
-    def test_reference(self):
-        field = Field(name="Peter", type=FieldType.dynamic, result=DataType.integer, addepar="Maffay")
-        field_no = Field(name="Hans", type=FieldType.dynamic, result=DataType.integer)
-        product = Product(name="A")
+    def test_ref_new_none(self, product):
+        assert product["NoNoNo"] is None
 
-        product.reference[field] = "100"
-        # does the conversion for me...
-        assert product.reference[field] == 100
-        # you can also use a string to get to the field...
-        #assert product.get_reference(field="Peter") == 100
+    def test_ref_new(self, product):
+        assert product["bbb"] == "Z"
 
-        assert product.reference.get(field) == 100
+    def test_ref_series(self, product):
+        pdt.assert_series_equal(product.reference_series, pd.Series({"aaa": "A", "bbb": "Z"}))
 
+    def test_ref_frame(self, product):
+        f1 = Product.reference_frame(products=[product])
+        f2 = pd.DataFrame(index=["A"], columns=["aaa", "bbb"], data=[["A", "Z"]])
+        f2.index.name = "product"
+        pdt.assert_frame_equal(f1, f2)
 
-        # this field is not in the dictionary
-        assert product.reference.get(field_no, 120) == 120
-        assert product.reference == {field: 100}
-
-        product.reference[field] = "120"
-        assert product.reference[field] == 120
-
-        assert DataType.integer.value == "integer"
-        assert DataType.integer("210") == 210
-        assert str(field) == "(Peter)"
-        assert field.addepar == "Maffay"
-
-    def test_eq(self):
-        f1 = Field(name="Peter", type=FieldType.dynamic, result=DataType.string)
-        f2 = Field(name="Peter", type=FieldType.dynamic, result=DataType.string)
-        assert f1 == f2
-        assert hash(f1) == hash(f2)
-        assert f1.type == FieldType.dynamic
-
-    def test_lt(self):
-        f1 = Field(name="A")
-        f2 = Field(name="B")
-        assert f1 < f2
-
-    def test_reference_series(self):
-        p = Product(name="A")
-        field1 = Field(name="Peter", type=FieldType.dynamic, result=DataType.integer)
-        field2 = Field(name="Hans", type=FieldType.dynamic, result=DataType.string)
-
-        p.reference[field1] = "120"
-        p.reference[field2] = "wurst"
-
-        #print(pd.Series(dict(p.reference)))
-
-        pdt.assert_series_equal(p.reference_series, pd.Series({"Hans": "wurst", "Peter": 120}))
-
-    def test_reference_frame(self):
-        p = Product(name="A")
-        field1 = Field(name="Peter", type=FieldType.dynamic, result=DataType.integer)
-        field2 = Field(name="Hans", type=FieldType.dynamic, result=DataType.string)
-
-        p.reference[field1] = "120"
-        p.reference[field2] = "wurst"
-
-        f = Product.reference_frame(products=[p])
-
-        framex = pd.DataFrame(index=[field2.name, field1.name], columns=[p], data=["wurst", 120]).transpose()
-        framex.index.name = "product"
-
-        pdt.assert_frame_equal(f, framex)
+    def test_name(self, product):
+        assert product.name == "A"

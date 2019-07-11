@@ -4,7 +4,7 @@ import pytest
 
 from pyutil.mongo.mongo import create_collection
 from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.interfaces.ref import Field, DataType, FieldType
+#from pyutil.sql.interfaces.ref import Field, DataType, FieldType
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
@@ -35,25 +35,26 @@ def ts3():
 def owner():
     return Owner(name=100, currency=Currency(name="USD"), fullname="Peter Maffay")
 
-@pytest.fixture()
-def kiid():
-    return Field(name="KIID", result=DataType.integer, type=FieldType.other)
+#@pytest.fixture()
+#def kiid():
+#    return Field(name="KIID", result=DataType.integer, type=FieldType.other)
 
 # point to a new mongo collection...
 ProductInterface.__collection__ = create_collection()
+ProductInterface.__collection_reference__ = create_collection()
 
 class TestOwner(object):
-    def test_position(self, owner, kiid):
+    def test_position(self, owner):
         # create a security
         s1 = Security(name="123", fullname="A")
 
-        s1.reference[kiid] = 5
-        assert s1.kiid == 5
+        s1["KIID"] = 5
+        assert s1["KIID"] == 5
 
         # create a 2nd security
         s2 = Security(name="211", fullname="B")
-        s2.reference[kiid] = 7
-        assert s2.kiid == 7
+        s2["KIID"] = 7
+        assert s2["KIID"] == 7
 
         #assert owner.custodians == set([])
         #assert owner.securities == set([])
@@ -98,15 +99,15 @@ class TestOwner(object):
 
     def test_returns(self, ts1, ts2, ts3):
         o = Owner(name="222")
-        o.write(data=ts1, kind="RETURN")
-        pdt.assert_series_equal(ts1, o.read(kind="RETURN"))
+        o.write(data=ts1, key="RETURN")
+        pdt.assert_series_equal(ts1, o.read(key="RETURN"))
 
-        o.write(data=merge(new=ts2, old=ts1), kind="RETURN")
+        o.write(data=merge(new=ts2, old=ts1), key="RETURN")
         pdt.assert_series_equal(merge(new=ts2, old=ts1), ts3)
 
         print(o.read("RETURN"))
         #ts=pd.Series(data=[250, 300], index=[1, 2]))
-        pdt.assert_series_equal(ts3, o.read(kind="RETURN"))
+        pdt.assert_series_equal(ts3, o.read(key="RETURN"))
 
     #def test_volatility(self):
     #    o = Owner(name="222")
@@ -130,16 +131,17 @@ class TestOwner(object):
         assert str(o) == "Owner(222: Peter Maffay, CHF)"
         assert o.currency == Currency(name="CHF")
 
-        f = Field(name="z", type=FieldType.dynamic, result=DataType.integer)
-        o.reference[f] = 20
+        #f = Field(name="z", type=FieldType.dynamic, result=DataType.integer)
+        o["z"] = 20
+        #o.reference[f] = 20
 
-        frame = pd.DataFrame(index=["Currency", "Entity ID", "Name", "z"], columns=[o],
-                             data=["CHF", "222", "Peter Maffay", 20]).transpose()
+        frame = pd.DataFrame(index=["z","Currency", "Entity ID", "Name"], columns=[o.name],
+                             data=[20, "CHF", "222", "Peter Maffay"]).transpose()
         frame.index.name = "owner"
-        print(Owner.frame(owners=[o]).dtypes)
+        print(Owner.reference_frame(owners=[o]).dtypes)
+        print(Owner.reference_frame(owners=[o]))
 
-
-        pdt.assert_frame_equal(Owner.frame(owners=[o])[frame.keys()], frame, check_dtype=False)
+        pdt.assert_frame_equal(Owner.reference_frame(owners=[o])[frame.keys()], frame, check_dtype=False)
 
     #def test_json(self):
     #    o = Owner(name="Peter")

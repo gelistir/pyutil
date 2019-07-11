@@ -12,8 +12,11 @@ def strategy():
     with open(resource("source.py"), "r") as f:
         yield Strategy(name="Peter", source=f.read(), active=True)
 
+
 # point to a new mongo collection...
 ProductInterface.__collection__ = create_collection()
+ProductInterface.__collection_reference__ = create_collection()
+
 
 class TestStrategy(object):
     def test_module(self, strategy):

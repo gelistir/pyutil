@@ -1,14 +1,11 @@
 import pandas as pd
 import sqlalchemy as sq
-from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declared_attr, has_inherited_table
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm.collections import attribute_mapped_collection
 
-from pyutil.mongo.mongo import create_collection as create_collection, mongo_client
+# from pyutil.mongo.mongo import create_collection, mongo_client
+from pyutil.mongo.mongo import mongo_client, create_collection
 from pyutil.sql.base import Base
-from pyutil.sql.interfaces.ref import _ReferenceData
 from pyutil.timeseries.merge import merge
 
 
@@ -45,24 +42,24 @@ class Mongo(object):
         # this is a very fast operation, as a new client is not created here...
         return create_collection(name=cls.__name__.lower(), client=cls._client)
 
-    #@declared_attr
-    #def __collection_reference__(cls):
-    #    # this is a very fast operation, as a new client is not created here...
-    #    return create_collection(name=cls.__name__.lower() + "_reference", client=cls._client)
+    @declared_attr
+    def __collection_reference__(cls):
+        # this is a very fast operation, as a new client is not created here...
+        return create_collection(name=cls.__name__.lower() + "_reference", client=cls._client)
 
-    @classmethod
-    def frame(cls, products=None, **kwargs):
-        if products is not None:
-            return pd.DataFrame({p.name: p.read(**kwargs) for p in products})
-        else:
-            return cls.__collection__.frame(key="name", **kwargs)
-
-    #@classmethod
-    #def frame(cls, products, **kwargs):
-    #    return pd.DataFrame({p.name : p.read(**kwargs) for p in products})
-    #@classmethod
-    #def meta(cls, **kwargs):
-    #    return cls.__collection__.meta(**kwargs)
+    # @classmethod
+    # def frame(cls, key, products=None, **kwargs):
+    #     if products is not None:
+    #         return pd.DataFrame({p.name: p.read(key, **kwargs) for p in products})
+    #     else:
+    #         return cls.__collection__.frame_pandas(meta="name", **kwargs)
+    #
+    # @classmethod
+    # def frame_reference(cls, products=None, **kwargs):
+    #     if products is not None:
+    #         return pd.DataFrame({p.name: p for p in products})
+    #     else:
+    #         return cls.__collection_reference__.frame_reference(meta="name", **kwargs)
 
 
 class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
@@ -72,15 +69,8 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     discriminator = sq.Column(sq.String)
     __table_args__ = (sq.UniqueConstraint('discriminator', 'name'),)
 
-    _refdata = relationship(_ReferenceData, collection_class=attribute_mapped_collection("field"),
-                            cascade="all, delete-orphan", back_populates="product",
-                            foreign_keys=[_ReferenceData.product_id], lazy="select")
-
-    reference = association_proxy('_refdata', 'value', creator=lambda field, v: _ReferenceData(field=field, content=v))
-
     def __init__(self, name, **kwargs):
         self.__name = str(name)
-
 
     @hybrid_property
     def name(self):
@@ -92,7 +82,7 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
 
     @property
     def reference_series(self):
-        return pd.Series(dict(self.reference)).rename(index=lambda x: x.name).sort_index()
+        return pd.Series({a.meta["key"]: a.data for a in self.__collection_reference__.find(name=self.name)})
 
     def __repr__(self):
         return "{name}".format(name=self.name)
@@ -107,32 +97,49 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     def __hash__(self):
         return hash(self.name)
 
-    def read(self, parse=True, **kwargs):
-        return self.__collection__.find_one(parse=parse, name=self.name, **kwargs)
+    def read(self, key, **kwargs):
+        try:
+            return self.__collection__.find_one(name=self.name, key=key, **kwargs).data
+        except AttributeError:
+            return None
 
-    def write(self, data, **kwargs):
-        self.__collection__.upsert(p_obj=data, name=self.name, **kwargs)
+    def write(self, data, key, **kwargs):
+        self.__collection__.upsert(value=data, key=key, name=self.name, **kwargs)
 
-    def merge(self, data, **kwargs):
-        old = self.read(parse=True, **kwargs)
-        self.write(data=merge(new=data, old=old), **kwargs)
+    def merge(self, data, key, **kwargs):
+        old = self.read(key=key, **kwargs)
+        self.write(data=merge(new=data, old=old), key=key, **kwargs)
 
-    def meta(self, **kwargs):
-        return self.__collection__.meta(name=self.name, **kwargs)
+    # def meta(self, **kwargs):
+    #    self.__collection_reference__.frame_reference(key=self.name, **kwargs)
+
+    # def meta(self, **kwargs):
+    #    return self.__collection__.meta(name=self.name, **kwargs)
 
     @classmethod
     def reference_frame(cls, products):
-        # first loop over all products
-        frame = pd.DataFrame({product: product.reference_series for product in products}).transpose()
-
+        frame = pd.DataFrame({product.name: product.reference_series for product in products}).transpose()
         frame.index.name = cls.__name__.lower()
         return frame.sort_index()
 
+    @classmethod
+    def pandas_frame(cls, products, key, **kwargs):
+        frame = pd.DataFrame({product.name: product.read(key=key, **kwargs) for product in products}).dropna(axis=1, how="all").transpose()
+        frame.index.name = cls.__name__.lower()
+        return frame.sort_index().transpose()
 
-    # def __setitem__(self, key, value):
-    #     pass
-    #     #self.__collection_reference__.
+    #    # first loop over all products
+    #    frame = pd.DataFrame({product: product.reference_series for product in products}).transpose()
     #
-    # def __getitem__(self, item):
-    #     pass
+    #    frame.index.name = cls.__name__.lower()
+    #    return frame.sort_index()
 
+    def __setitem__(self, key, value):
+        self.__collection_reference__.upsert(name=self.name, value=value, key=key)
+
+    def __getitem__(self, item):
+        try:
+            a = self.__collection_reference__.find_one(name=self.name, key=item)
+            return a.data
+        except AttributeError:
+            return None

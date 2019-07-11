@@ -6,7 +6,6 @@ import pandas as pd
 from pymongo import MongoClient
 
 
-#http://api.mongodb.com/python/current/faq.html#using-pymongo-with-multiprocessing
 def mongo_client(host=None, port=None, database=None, username=None, password=None, authSource=None):
     host = host or os.environ["MONGODB_HOST"]
     database = database or os.environ["MONGODB_DATABASE"]
@@ -24,52 +23,64 @@ def create_collection(name=None, client=None):
     return _Collection(client[name])
 
 
+class _MongoObject(object):
+    @staticmethod
+    def __parse(x=None):
+        try:
+            return pd.read_msgpack(x)
+        except AttributeError:
+            return {}
+        except ValueError:
+            return x
+
+    def __init__(self, mongo_dict):
+        self.__data = mongo_dict["data"]
+        self.__meta = {x: mongo_dict.get(x) for x in set(mongo_dict.keys()).difference({"_id", "data"})}
+
+    @property
+    def data(self):
+        return self.__parse(self.__data)
+
+    @property
+    def meta(self):
+        return self.__meta
+
+
 class _Collection(object):
     def __init__(self, collection):
-        self.__collection = collection
+        self.__col = collection
 
     @property
     def name(self):
         return self.collection.name
 
-    def upsert(self, p_obj=None, **kwargs):
+    def upsert(self, value=None, **kwargs):
         # check it's either unique or not there
-        assert self.__collection.count_documents({**kwargs}) <= 1, "Identifier not unique"
 
-        if p_obj is not None:
-            self.__collection.update_one({**kwargs}, {"$set": {"data": p_obj.to_msgpack()}}, upsert=True)
+        assert self.__col.count_documents(kwargs) <= 1, "Identifier not unique"
 
-        return p_obj
-
-    def find(self, parse=False, **kwargs):
-        for a in self.__collection.find({**kwargs}):
-            yield self.__parse(a, parse=parse)
-
-    @staticmethod
-    def __parse(a, parse=True):
-        if parse:
+        if value is not None:
             try:
-                return pd.read_msgpack(a["data"])
-            except TypeError:
-                return None
-        else:
-            return a
+                self.__col.update_one(kwargs, {"$set": {"data": value.to_msgpack()}}, upsert=True)
+            except AttributeError:
+                self.__col.update_one(kwargs, {"$set": {"data": value}}, upsert=True)
 
-    def find_one(self, parse=False, **kwargs):
-        assert self.__collection.count_documents({**kwargs}) <= 1, "Found multiple documents."
-        return self.__parse(self.__collection.find_one({**kwargs}), parse)
+    def find(self, **kwargs):
+        for a in self.__col.find(kwargs):
+            yield _MongoObject(mongo_dict=a)
+
+    def find_one(self, **kwargs):
+        n = self.__col.count_documents(kwargs)
+        if n == 0:
+            return None
+
+        assert n <= 1, "Could not find a unique document"
+
+        return _MongoObject(self.__col.find_one(kwargs))
 
     @property
     def collection(self):
-        return self.__collection
+        return self.__col
 
     def __repr__(self):
-        return self.__collection.__repr__()
-
-    def frame(self, key, **kwargs):
-        return pd.DataFrame({x[key]: self.__parse(x) for x in self.find(**kwargs)})
-
-
-    def meta(self, **kwargs):
-        for x in self.__collection.find({**kwargs},  projection={"_id": False, "data": False}):
-            yield x
+        return self.__col.__repr__()
