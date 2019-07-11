@@ -35,7 +35,8 @@ class _MongoObject(object):
 
     def __init__(self, mongo_dict):
         self.__data = mongo_dict["data"]
-        self.__meta = {x: mongo_dict.get(x) for x in set(mongo_dict.keys()).difference({"_id", "data"})}
+        self.__t = mongo_dict["now"]
+        self.__meta = {x: mongo_dict.get(x) for x in set(mongo_dict.keys()).difference({"_id", "data", "now"})}
 
     @property
     def data(self):
@@ -45,6 +46,9 @@ class _MongoObject(object):
     def meta(self):
         return self.__meta
 
+    @property
+    def t(self):
+        return self.__t
 
 class _Collection(object):
     def __init__(self, collection):
@@ -61,9 +65,9 @@ class _Collection(object):
 
         if value is not None:
             try:
-                self.__col.update_one(kwargs, {"$set": {"data": value.to_msgpack()}}, upsert=True)
+                self.__col.update_one(kwargs, {"$set": {"data": value.to_msgpack(), "now": pd.Timestamp("now")}}, upsert=True)
             except AttributeError:
-                self.__col.update_one(kwargs, {"$set": {"data": value}}, upsert=True)
+                self.__col.update_one(kwargs, {"$set": {"data": value, "now": pd.Timestamp("now")}}, upsert=True)
 
     def find(self, **kwargs):
         for a in self.__col.find(kwargs):
