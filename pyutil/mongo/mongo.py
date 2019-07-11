@@ -98,7 +98,9 @@ class _Collection(object):
         #print({**kwargs})
         print(kwargs)
         old = self.read(**kwargs)
-        self.write(data=merge(new=data, old=old), **kwargs)
+        print(merge(new=data, old=old))
+
+        self.upsert(value=merge(new=data, old=old), **kwargs)
 
     def last(self, **kwargs):
         return self.read(**kwargs).last_valid_index()
