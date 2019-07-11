@@ -103,4 +103,7 @@ class _Collection(object):
         self.upsert(value=merge(new=data, old=old), **kwargs)
 
     def last(self, **kwargs):
-        return self.read(**kwargs).last_valid_index()
+        try:
+            return self.read(**kwargs).last_valid_index()
+        except AttributeError:
+            return None

@@ -88,13 +88,10 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
         self.__collection__.write(data=data, key=key, name=self.name, **kwargs)
 
     def merge(self, data, key, **kwargs):
-        self.__collection__.merge(data=data, key=key, **kwargs)
+        self.__collection__.merge(data=data, key=key, name=self.name, **kwargs)
 
     def last(self, key, **kwargs):
-        try:
-            return self.read(key, **kwargs).last_valid_index()
-        except AttributeError:
-            return None
+        return self.__collection__.last(key=key, name=self.name, **kwargs)
 
     @classmethod
     def reference_frame(cls, products):

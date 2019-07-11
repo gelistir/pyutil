@@ -50,7 +50,7 @@ class TestSecurity(object):
         s1.write(key="PRICE", data=ts)
         s2.write(key="PRICE", data=ts)
         s3.write(key="PRICE", data=None)
-        frame = Security.prices(securities=[s1, s2, s3])
+        frame = Security.pandas_frame(products=[s1, s2, s3], key="PRICE")
         print(frame)
 
         pdt.assert_series_equal(ts, s1.read(key="PRICE"), check_names=False)
