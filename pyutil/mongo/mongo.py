@@ -95,11 +95,7 @@ class _Collection(object):
         self.upsert(value=data, **kwargs)
 
     def merge(self, data, **kwargs):
-        #print({**kwargs})
-        print(kwargs)
         old = self.read(**kwargs)
-        print(merge(new=data, old=old))
-
         self.upsert(value=merge(new=data, old=old), **kwargs)
 
     def last(self, **kwargs):
