@@ -37,3 +37,4 @@ class Symbol(ProductInterface):
         frame["Internal"] = pd.Series({symbol.name: symbol.internal for symbol in symbols})
         frame.index.name = "symbol"
         return frame
+
