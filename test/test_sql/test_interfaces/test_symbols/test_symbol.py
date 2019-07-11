@@ -21,13 +21,9 @@ def symbol(ts):
     symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
     symbol.write(data=ts, key="PX_OPEN")
     symbol["xxx"] = "A"
-    symbol.upsert_price(data=ts)
+    symbol.write(data=ts, key="PX_LAST")
 
     return symbol
-
-# point to a new mongo collection...
-#ProductInterface.__collection__ = create_collection()
-#ProductInterface.__collection_reference__ = create_collection()
 
 
 class TestSymbol(object):
@@ -45,15 +41,13 @@ class TestSymbol(object):
         pdt.assert_series_equal(frame["A"], ts, check_names=False)
 
     def test_prices_2(self, symbol, ts):
-        pdt.assert_series_equal(symbol.price, ts)
+        pdt.assert_series_equal(symbol.read(key="PX_LAST"), ts)
 
-        symbol.price = ts
-        pdt.assert_series_equal(symbol.price, ts)
 
-        symbol.upsert_price(data=2 * ts.tail(100))
-        pdt.assert_series_equal(symbol.price.tail(100), 2 * ts.tail(100))
+        symbol.merge(data=2 * ts.tail(100), key="PX_LAST")
+        pdt.assert_series_equal(symbol.read(key="PX_LAST").tail(100), 2 * ts.tail(100))
 
-        assert symbol.last == ts.last_valid_index()
+        assert symbol.last(key="PX_LAST") == ts.last_valid_index()
 
     def test_reference_frame(self, symbol):
         frame = Symbol.reference_frame(symbols=[symbol])

@@ -3,10 +3,8 @@ import sqlalchemy as sq
 from sqlalchemy.ext.declarative import declared_attr, has_inherited_table
 from sqlalchemy.ext.hybrid import hybrid_property
 
-# from pyutil.mongo.mongo import create_collection, mongo_client
 from pyutil.mongo.mongo import mongo_client, create_collection
 from pyutil.sql.base import Base
-from pyutil.timeseries.merge import merge
 
 
 class HasIdMixin(object):
@@ -47,20 +45,6 @@ class Mongo(object):
         # this is a very fast operation, as a new client is not created here...
         return create_collection(name=cls.__name__.lower() + "_reference", client=cls._client)
 
-    # @classmethod
-    # def frame(cls, key, products=None, **kwargs):
-    #     if products is not None:
-    #         return pd.DataFrame({p.name: p.read(key, **kwargs) for p in products})
-    #     else:
-    #         return cls.__collection__.frame_pandas(meta="name", **kwargs)
-    #
-    # @classmethod
-    # def frame_reference(cls, products=None, **kwargs):
-    #     if products is not None:
-    #         return pd.DataFrame({p.name: p for p in products})
-    #     else:
-    #         return cls.__collection_reference__.frame_reference(meta="name", **kwargs)
-
 
 class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     # note that the name should not be unique as Portfolio and Strategy can have the same name
@@ -98,23 +82,16 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
         return hash(self.name)
 
     def read(self, key, **kwargs):
-        try:
-            return self.__collection__.find_one(name=self.name, key=key, **kwargs).data
-        except AttributeError:
-            return None
+        return self.__collection__.read(name=self.name, key=key, **kwargs)
 
     def write(self, data, key, **kwargs):
-        self.__collection__.upsert(value=data, key=key, name=self.name, **kwargs)
+        self.__collection__.write(data=data, key=key, name=self.name, **kwargs)
 
     def merge(self, data, key, **kwargs):
-        old = self.read(key=key, **kwargs)
-        self.write(data=merge(new=data, old=old), key=key, **kwargs)
+        self.__collection__.merge(data=data, key=key, **kwargs)
 
-    # def meta(self, **kwargs):
-    #    self.__collection_reference__.frame_reference(key=self.name, **kwargs)
-
-    # def meta(self, **kwargs):
-    #    return self.__collection__.meta(name=self.name, **kwargs)
+    def last(self, key, **kwargs):
+        return self.read(key, **kwargs).last_valid_index()
 
     @classmethod
     def reference_frame(cls, products):
@@ -127,12 +104,6 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
         frame = pd.DataFrame({product.name: product.read(key=key, **kwargs) for product in products}).dropna(axis=1, how="all").transpose()
         frame.index.name = cls.__name__.lower()
         return frame.sort_index().transpose()
-
-    #    # first loop over all products
-    #    frame = pd.DataFrame({product: product.reference_series for product in products}).transpose()
-    #
-    #    frame.index.name = cls.__name__.lower()
-    #    return frame.sort_index()
 
     def __setitem__(self, key, value):
         self.__collection_reference__.upsert(name=self.name, value=value, key=key)

@@ -5,6 +5,8 @@ import string
 import pandas as pd
 from pymongo import MongoClient
 
+from pyutil.timeseries.merge import merge
+
 
 def mongo_client(host=None, port=None, database=None, username=None, password=None, authSource=None):
     host = host or os.environ["MONGODB_HOST"]
@@ -28,8 +30,6 @@ class _MongoObject(object):
     def __parse(x=None):
         try:
             return pd.read_msgpack(x)
-        except AttributeError:
-            return {}
         except ValueError:
             return x
 
@@ -84,3 +84,19 @@ class _Collection(object):
 
     def __repr__(self):
         return self.__col.__repr__()
+
+    def read(self, **kwargs):
+        try:
+            return self.find_one(**kwargs).data
+        except AttributeError:
+            return None
+
+    def write(self, data, **kwargs):
+        self.upsert(value=data, **kwargs)
+
+    def merge(self, data, **kwargs):
+        old = self.read(**kwargs)
+        self.write(data=merge(new=data, old=old), **kwargs)
+
+    def last(self, **kwargs):
+        return self.read(**kwargs).last_valid_index()

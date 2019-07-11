@@ -53,40 +53,27 @@ class TestSecurity(object):
         frame = Security.prices(securities=[s1, s2, s3])
         print(frame)
 
-        pdt.assert_series_equal(ts, s1.price, check_names=False)
-        pdt.assert_series_equal(ts, s2.price, check_names=False)
+        pdt.assert_series_equal(ts, s1.read(key="PRICE"), check_names=False)
+        pdt.assert_series_equal(ts, s2.read(key="PRICE"), check_names=False)
         pdt.assert_series_equal(ts, frame["A"], check_names=False)
         pdt.assert_series_equal(ts, frame["B"], check_names=False)
         assert set(frame.keys()) == {"A", "B"}
 
-    def test_prices_1(self, ts):
-        security = Security(name="Thomas")
-        security.write(data=ts, key="PX_OPEN")
-        pdt.assert_series_equal(security.read(key="PX_OPEN"), ts)
+    #def test_prices_1(self, ts):
+    #    security = Security(name="Thomas")
+    #    security.write(data=ts, key="PX_OPEN")
+    #    pdt.assert_series_equal(security.read(key="PX_OPEN"), ts)
 
-        frame = Security.pandas_frame(products=[security], key="PX_OPEN")
-        pdt.assert_series_equal(frame["Thomas"], ts, check_names=False)
+    #    frame = Security.pandas_frame(products=[security], key="PX_OPEN")
+    #    pdt.assert_series_equal(frame["Thomas"], ts, check_names=False)
 
-    def test_prices_2(self, ts):
-        security = Security(name="Peter Maffay")
-        security.upsert_price(data=ts)
-        pdt.assert_series_equal(security.price, ts)
-
-        security.price = ts
-        pdt.assert_series_equal(security.price, ts)
-
-        security.upsert_price(data=2 * ts.tail(100))
-        pdt.assert_series_equal(security.price.tail(100), 2 * ts.tail(100))
-
-        assert security.last == ts.last_valid_index()
-
-    def test_prices_3(self, ts):
+    def test_prices(self, ts):
         s1 = Security(name="A")
-        s1.price = ts
+        s1.write(data=ts, key="PRICE")
 
         s2 = Security(name="B")
-        s2.price = 2 * ts
+        s2.write(data=2*ts, key="PRICE")
 
-        f = Security.prices([s1, s2])
+        f = Security.pandas_frame(products=[s1, s2], key="PRICE")
         pdt.assert_series_equal(f["A"], ts, check_names=False)
         pdt.assert_series_equal(f["B"], 2 * ts, check_names=False)
