@@ -35,7 +35,7 @@ class _MongoObject(object):
 
     def __init__(self, mongo_dict):
         self.__data = mongo_dict["data"]
-        self.__t = mongo_dict["now"]
+        self.__t = mongo_dict.get("now", 0)
         self.__meta = {x: mongo_dict.get(x) for x in set(mongo_dict.keys()).difference({"_id", "data", "now"})}
 
     @property
