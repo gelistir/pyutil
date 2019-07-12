@@ -5,7 +5,6 @@ def drawdown(series):
     return Drawdown(series).drawdown
 
 
-
 class Drawdown(object):
     def __init__(self, series: pd.Series, eps: float = 0) -> object:
         """

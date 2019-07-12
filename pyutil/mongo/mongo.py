@@ -50,6 +50,7 @@ class _MongoObject(object):
     def t(self):
         return self.__t
 
+
 class _Collection(object):
     def __init__(self, collection):
         self.__col = collection
