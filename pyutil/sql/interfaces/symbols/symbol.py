@@ -31,10 +31,12 @@ class Symbol(ProductInterface):
         self.webpage = webpage
 
     @staticmethod
-    def reference_frame(symbols, **kwargs):
-        frame = ProductInterface.reference_frame(symbols)
-        frame["Sector"] = pd.Series({symbol.name: symbol.group.value for symbol in symbols})
-        frame["Internal"] = pd.Series({symbol.name: symbol.internal for symbol in symbols})
-        frame.index.name = "symbol"
+    def reference_frame(symbols):
+        frame = Symbol._reference_frame(symbols)
+        frame["Sector"] = pd.Series({symbol: symbol.group.value for symbol in symbols})
+        frame["Internal"] = pd.Series({symbol: symbol.internal for symbol in symbols})
         return frame
 
+    @staticmethod
+    def pandas_frame(symbols, key):
+        return Symbol._pandas_frame(products=symbols, key=key)

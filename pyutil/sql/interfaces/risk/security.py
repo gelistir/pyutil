@@ -21,3 +21,14 @@ class Security(ProductInterface):
     @hybrid_property
     def bloomberg_scaling(self):
         return self["Bloomberg Multiplier"] or 1.0
+
+    @staticmethod
+    def pandas_frame(products, key, **kwargs):
+        return Security._pandas_frame(products=products, key=key, **kwargs)
+
+
+    @staticmethod
+    def reference_frame(products):
+        frame = Security._reference_frame(products=products)
+        frame["fullname"] = {s : s.fullname for s in products}
+        return frame

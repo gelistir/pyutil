@@ -94,23 +94,26 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
         return self.__collection__.last(key=key, name=self.name, **kwargs)
 
     @classmethod
-    def reference_frame(cls, products):
-        frame = pd.DataFrame({product.name: product.reference_series for product in products}).transpose()
+    def _reference_frame(cls, products: object) -> pd.DataFrame:
+        frame = pd.DataFrame({product: product.reference_series for product in products}).transpose()
         frame.index.name = cls.__name__.lower()
         return frame.sort_index()
 
     @classmethod
-    def pandas_frame(cls, products, key, **kwargs):
+    def _pandas_frame(cls, products, key, **kwargs):
         frame = pd.DataFrame({product.name: product.read(key=key, **kwargs) for product in products}).dropna(axis=1, how="all").transpose()
         frame.index.name = cls.__name__.lower()
         return frame.sort_index().transpose()
 
     def __setitem__(self, key, value):
+        """
+        :param key:
+        :param value:
+        """
         self.__collection_reference__.upsert(name=self.name, value=value, key=key)
 
     def __getitem__(self, item):
         try:
-            a = self.__collection_reference__.find_one(name=self.name, key=item)
-            return a.data
+            return self.__collection_reference__.find_one(name=self.name, key=item).data
         except AttributeError:
             return None

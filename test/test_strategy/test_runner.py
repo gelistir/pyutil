@@ -17,7 +17,7 @@ def database(db):
     # add assets to database
     for asset, data in read(name="price.csv", index_col=0, parse_dates=True, header=0).items():
         symbol = Symbol(name=asset, group=SymbolType.fixed_income)
-        symbol.write(data= data.dropna(), key="PX_LAST")
+        symbol.write(data=data.dropna(), key="PX_LAST")
         db.session.add(symbol)
 
     # add strategies to database
@@ -34,7 +34,6 @@ def database(db):
     db.session.close()
 
 
-
 class TestRunner(object):
     def test_runner(self, database):
         r = run(strategies=database.session.query(Strategy), connection_str=database.connection)
@@ -46,12 +45,14 @@ class TestRunner(object):
         logger = logging.getLogger(__name__)
         # check that the strategy does not contain any portfolio yet
         strategy = database.session.query(Strategy).filter_by(name="P1").one()
-        assert strategy.last is None
+        assert strategy.last_valid_index is None
 
         # thils will be a very fresh update
-        name, portfolio = _strategy_update(database.session.query(Strategy).filter_by(name="P1").one().id, connection_str=database.connection, logger=logger, n=10)
+        name, portfolio = _strategy_update(database.session.query(Strategy).filter_by(name="P1").one().id,
+                                           connection_str=database.connection, logger=logger, n=10)
         # this will update only the very last few days...
-        name, portfolio = _strategy_update(database.session.query(Strategy).filter_by(name="P1").one().id, connection_str=database.connection, logger=logger, n=10)
+        name, portfolio = _strategy_update(database.session.query(Strategy).filter_by(name="P1").one().id,
+                                           connection_str=database.connection, logger=logger, n=10)
 
         assert pytest.approx(portfolio.nav.sharpe_ratio(), -0.23551923609559777, abs=1e-5)
         assert name == "P1"

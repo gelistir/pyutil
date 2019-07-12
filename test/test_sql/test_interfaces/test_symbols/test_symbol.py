@@ -37,7 +37,7 @@ class TestSymbol(object):
     def test_prices_1(self, symbol, ts):
         pdt.assert_series_equal(symbol.read(key="PX_OPEN"), ts)
 
-        frame = Symbol.pandas_frame(products=[symbol], key="PX_OPEN")
+        frame = Symbol.pandas_frame(symbols=[symbol], key="PX_OPEN")
         pdt.assert_series_equal(frame["A"], ts, check_names=False)
 
     def test_prices_2(self, symbol, ts):
@@ -53,7 +53,7 @@ class TestSymbol(object):
         frame = Symbol.reference_frame(symbols=[symbol])
 
         # print(frame)
-        framex = pd.DataFrame(index=[symbol.name], columns=["xxx", "Sector", "Internal"], data=[["A", "Equities", "Peter Maffay"]])
+        framex = pd.DataFrame(index=[symbol], columns=["xxx", "Sector", "Internal"], data=[["A", "Equities", "Peter Maffay"]])
         framex.index.name = "symbol"
         print(frame)
 

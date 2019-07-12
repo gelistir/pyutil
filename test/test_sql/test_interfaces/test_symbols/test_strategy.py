@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 from pyutil.mongo.mongo import create_collection
@@ -6,6 +7,7 @@ from pyutil.sql.interfaces.products import ProductInterface
 from test.config import test_portfolio, resource
 from pyutil.sql.interfaces.symbols.strategy import Strategy, strategies
 
+import pandas.util.testing as pdt
 
 @pytest.fixture()
 def strategy():
@@ -40,3 +42,10 @@ class TestStrategy(object):
     def test_portfolio_none(self):
         strategy = Strategy(name="Peter Maffay")
         assert strategy.portfolio is None
+
+    def test_reference_frame(self, strategy):
+        frame = Strategy.reference_frame([strategy])
+        framex = pd.DataFrame(index=[strategy], columns=["source", "type", "active"], data=[[strategy.source, strategy.type, strategy.active]])
+        framex.index.name = "strategy"
+        pdt.assert_frame_equal(frame, framex)
+

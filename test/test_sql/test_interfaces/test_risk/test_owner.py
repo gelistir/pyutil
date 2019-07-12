@@ -135,7 +135,7 @@ class TestOwner(object):
         o["z"] = 20
         #o.reference[f] = 20
 
-        frame = pd.DataFrame(index=["z","Currency", "Entity ID", "Name"], columns=[o.name],
+        frame = pd.DataFrame(index=["z","Currency", "Entity ID", "Name"], columns=[o],
                              data=[20, "CHF", "222", "Peter Maffay"]).transpose()
         frame.index.name = "owner"
         print(Owner.reference_frame(owners=[o]).dtypes)

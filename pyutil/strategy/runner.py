@@ -25,7 +25,7 @@ def _strategy_update(strategy_id, connection_str, logger, n):
     with session(connection_str=connection_str) as session:
         # extract the strategy you need
         strategy = session.query(Strategy).filter_by(id=strategy_id).one()
-        last = strategy.last
+        last = strategy.last_valid_index
 
         logger.debug(strategy.name)
         logger.debug(last)

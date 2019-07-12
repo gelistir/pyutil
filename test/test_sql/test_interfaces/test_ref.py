@@ -27,8 +27,8 @@ class TestReference(object):
         pdt.assert_series_equal(product.reference_series, pd.Series({"aaa": "A", "bbb": "Z"}))
 
     def test_ref_frame(self, product):
-        f1 = Product.reference_frame(products=[product])
-        f2 = pd.DataFrame(index=["A"], columns=["aaa", "bbb"], data=[["A", "Z"]])
+        f1 = Product._reference_frame(products=[product])
+        f2 = pd.DataFrame(index=[product], columns=["aaa", "bbb"], data=[["A", "Z"]])
         f2.index.name = "product"
         pdt.assert_frame_equal(f1, f2)
 

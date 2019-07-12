@@ -1,6 +1,7 @@
 import enum as _enum
 import os
 
+import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
@@ -72,9 +73,13 @@ class Strategy(ProductInterface):
         return self.configuration(reader=None).names
 
     @property
-    def last(self):
-        p = self.portfolio
-        if p is None:
-            return None
-        return p.last
+    def last_valid_index(self):
+        return self.__collection__.last(key="PRICES", name=self.name)
 
+    @staticmethod
+    def reference_frame(strategies):
+        frame = Strategy._reference_frame(products=strategies)
+        frame["source"] = pd.Series({s: s.source for s in strategies})
+        frame["type"] = pd.Series({s: s.type for s in strategies})
+        frame["active"] = pd.Series({s: s.active for s in strategies})
+        return frame

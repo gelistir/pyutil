@@ -48,7 +48,7 @@ class TestProductInterface(object):
         product.write(data=ts1, key="x")
         product.write(data=ts2, key="x")
         pdt.assert_series_equal(product.read(key="x"), ts2)
-        frame = Product.pandas_frame(products=[product], key="x")
+        frame = Product._pandas_frame(products=[product], key="x")
         pdt.assert_series_equal(frame["A"], ts2, check_names=False)
 
     def test_lt(self):
@@ -63,7 +63,7 @@ class TestProductInterface(object):
         p1["yyy"] = 2
         p2["zzz"] = 3
 
-        frame = Product.reference_frame(products=[p1, p2]).transpose()
-        assert frame["A"]["yyy"] == 2
-        assert frame["B"]["zzz"] == 3
+        frame = Product._reference_frame(products=[p1, p2]).transpose()
+        assert frame[p1]["yyy"] == 2
+        assert frame[p2]["zzz"] == 3
 
