@@ -3,7 +3,6 @@ import pandas.util.testing as pdt
 import pytest
 
 from pyutil.mongo.mongo import create_collection
-from pyutil.sql.interfaces.products import ProductInterface
 from test.test_sql.product import Product
 
 
@@ -23,12 +22,17 @@ def ts3():
 
 
 # point to a new mongo collection...
-ProductInterface.__collection__ = create_collection()
-ProductInterface.__collection_reference__ = create_collection()
+@pytest.fixture()
+def product(ts1):
+    Product.__collection__ = create_collection()
+    Product.__collection_reference__ = create_collection()
+    p = Product(name="A")
+    p.write(data=ts1, key="y")
+    return p
 
 
 class TestProductInterface(object):
-    def test_name(self):
+    def test_name(self, product):
         assert Product(name="A").name == "A"
 
         # you can not change the name of a product!
@@ -38,13 +42,10 @@ class TestProductInterface(object):
         assert Product.__collection__
         assert Product.__collection_reference__
 
-    def test_timeseries(self, ts1):
-        product = Product(name="A")
-        product.write(data=ts1, key="y")
+    def test_timeseries(self, product, ts1):
         pdt.assert_series_equal(ts1, product.read(key="y"))
 
-    def test_merge(self, ts1, ts2):
-        product = Product(name="A")
+    def test_merge(self, product, ts1, ts2):
         product.write(data=ts1, key="x")
         product.write(data=ts2, key="x")
         pdt.assert_series_equal(product.read(key="x"), ts2)
@@ -66,4 +67,12 @@ class TestProductInterface(object):
         frame = Product._reference_frame(products=[p1, p2]).transpose()
         assert frame[p1]["yyy"] == 2
         assert frame[p2]["zzz"] == 3
+
+    def test_framexx(self, product, ts1):
+        # add some extra product but without timeseries
+        p2 = Product(name="B")
+        frame = Product._pandas_frame(key="y")
+        print(frame)
+        pdt.assert_series_equal(frame["A"], ts1, check_names=False)
+
 

@@ -28,7 +28,9 @@ class Security(ProductInterface):
 
 
     @staticmethod
-    def reference_frame(products):
+    def reference_frame(products, f=lambda x: x):
         frame = Security._reference_frame(products=products)
         frame["fullname"] = {s : s.fullname for s in products}
+        frame.index = map(f, frame.index)
+        frame.index.name = "security"
         return frame

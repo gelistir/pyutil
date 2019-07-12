@@ -17,20 +17,29 @@ def product():
 
 
 class TestReference(object):
-    def test_ref_new_none(self, product):
+    def test_get_item(self, product):
+        assert product.name == "A"
         assert product["NoNoNo"] is None
-
-    def test_ref_new(self, product):
         assert product["bbb"] == "Z"
 
     def test_ref_series(self, product):
         pdt.assert_series_equal(product.reference_series, pd.Series({"aaa": "A", "bbb": "Z"}))
 
-    def test_ref_frame(self, product):
+    def test_ref_frame_1(self, product):
         f1 = Product._reference_frame(products=[product])
         f2 = pd.DataFrame(index=[product], columns=["aaa", "bbb"], data=[["A", "Z"]])
-        f2.index.name = "product"
-        pdt.assert_frame_equal(f1, f2)
+        pdt.assert_frame_equal(f1, f2, check_names=False)
 
-    def test_name(self, product):
-        assert product.name == "A"
+    def test_ref_frame_2(self, product):
+        f1 = Product._reference_frame(products=[product], f=lambda x: x.name)
+        f2 = pd.DataFrame(index=[product.name], columns=["aaa", "bbb"], data=[["A", "Z"]])
+        pdt.assert_frame_equal(f1, f2, check_names=False)
+
+    #def test_ref_frame_2(self, product):
+    #    pdt.assert_series_equal(product.reference_series, pd.Series({"aaa": "A", "bbb": "Z"}))
+
+    #    f1 = Product._reference_frame()
+    #    print(f1)
+
+    #    f2 = pd.DataFrame(index=["A"], columns=["aaa", "bbb"], data=[["A", "Z"]])
+    #    pdt.assert_frame_equal(f1, f2, check_names=False)

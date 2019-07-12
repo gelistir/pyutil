@@ -98,10 +98,12 @@ class Owner(ProductInterface):
     #    self._position.clear()
 
     @staticmethod
-    def reference_frame(owners: object) -> pd.DataFrame:
+    def reference_frame(owners, f = lambda x: x) -> pd.DataFrame:
         frame = Owner._reference_frame(products=owners)
         # that's why owners can't be None
         frame["Currency"] = pd.Series({owner: owner.currency.name for owner in owners})
         frame["Entity ID"] = pd.Series({owner: owner.name for owner in owners})
         frame["Name"] = pd.Series({owner: owner.fullname for owner in owners})
+        frame.index = map(f, frame.index)
+        frame.index.name = "owner"
         return frame
