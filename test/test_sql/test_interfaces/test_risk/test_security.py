@@ -17,15 +17,15 @@ def ts():
 
 
 @pytest.fixture()
-def security():
-    s = Security(name=100)
+def security(ts):
+    # point to a new mongo collection...
+    Security.__collection__ = create_collection()
+    Security.__collection_reference__ = create_collection()
+
+    s = Security(name=100, fullname="Peter Maffay")
     s["Bloomberg Ticker"] = "IBM US Equity"
+    s.write(key="PRICE", data=ts)
     return s
-
-
-# point to a new mongo collection...
-ProductInterface.__collection__ = create_collection()
-ProductInterface.__collection_reference__ = create_collection()
 
 
 class TestSecurity(object):
@@ -34,8 +34,8 @@ class TestSecurity(object):
         assert security.name == "100"
         assert str(security) == "Security(100: None)"
 
-        assert security.bloomberg_scaling == 1
-        assert security.bloomberg_ticker == "IBM US Equity"
+        #assert security.bloomberg_scaling == 1
+        #assert security.bloomberg_ticker == "IBM US Equity"
 
     def test_write_volatility(self, ts, security):
         # s = Security(name=100)
@@ -43,31 +43,9 @@ class TestSecurity(object):
         x = security.read(key="VOLATILITY")
         pdt.assert_series_equal(x, ts, check_names=False)
 
-    def test_frame(self, ts):
-        s1 = Security(name="A")
-        s2 = Security(name="B")
-        s3 = Security(name="C")
-        s1.write(key="PRICE", data=ts)
-        s2.write(key="PRICE", data=ts)
-        s3.write(key="PRICE", data=None)
-        frame = Security.pandas_frame(products=[s1, s2, s3], key="PRICE")
-        print(frame)
+    def test_prices(self, security, ts):
+        s0 = security
 
-        pdt.assert_series_equal(ts, s1.read(key="PRICE"), check_names=False)
-        pdt.assert_series_equal(ts, s2.read(key="PRICE"), check_names=False)
-        pdt.assert_series_equal(ts, frame["A"], check_names=False)
-        pdt.assert_series_equal(ts, frame["B"], check_names=False)
-        assert set(frame.keys()) == {"A", "B"}
-
-    #def test_prices_1(self, ts):
-    #    security = Security(name="Thomas")
-    #    security.write(data=ts, key="PX_OPEN")
-    #    pdt.assert_series_equal(security.read(key="PX_OPEN"), ts)
-
-    #    frame = Security.pandas_frame(products=[security], key="PX_OPEN")
-    #    pdt.assert_series_equal(frame["Thomas"], ts, check_names=False)
-
-    def test_prices(self, ts):
         s1 = Security(name="A")
         s1.write(data=ts, key="PRICE")
 
@@ -77,3 +55,9 @@ class TestSecurity(object):
         f = Security.pandas_frame(products=[s1, s2], key="PRICE")
         pdt.assert_series_equal(f["A"], ts, check_names=False)
         pdt.assert_series_equal(f["B"], 2 * ts, check_names=False)
+
+    def test_reference(self, security):
+        frame1 = Security.reference_frame(products=[security], f=lambda x: x.name)
+        frame2 = pd.DataFrame(index=["100"], columns=["Bloomberg Ticker", "fullname"], data=[["IBM US Equity", "Peter Maffay"]])
+        pdt.assert_frame_equal(frame1, frame2, check_names=False)
+

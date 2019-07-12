@@ -30,6 +30,7 @@ class TestMongo(object):
     def test_find_one(self, col):
         assert col.find_one(name="HANS").data == 2.0
         assert col.find_one(name="HANS").meta == {"key": "XXX", "name": "HANS"}
+        assert col.find_one(name="HANS").t
 
     def test_not_unique(self, col):
         # not unique
@@ -57,7 +58,7 @@ class TestMongo(object):
         assert str(col)
         assert col.name
 
-    def test_readwrite(self, col, ts2):
+    def test_read_write_merge_last(self, col, ts2):
         col.write(data=ts2, key="PX_OPEN", name="H")
         col.merge(data=ts2.tail(10), key="PX_OPEN", name="H")
         pdt.assert_series_equal(col.read(key="PX_OPEN", name="H"), ts2)
