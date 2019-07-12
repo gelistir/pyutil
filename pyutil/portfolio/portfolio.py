@@ -357,7 +357,3 @@ class Portfolio(object):
         frame["{n}leverage".format(n=name)] = self.leverage
         frame["{n}cash".format(n=name)] = self.cash
         return frame
-
-    @property
-    def last(self):
-        return self.prices.last_valid_index()

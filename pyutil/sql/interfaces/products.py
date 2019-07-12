@@ -7,10 +7,6 @@ from pyutil.mongo.mongo import mongo_client, create_collection
 from pyutil.sql.base import Base
 
 
-def project(frame, f):
-    frame.index = [f(s) for s in frame.index]
-
-
 class HasIdMixin(object):
     @declared_attr.cascading
     def id(cls):

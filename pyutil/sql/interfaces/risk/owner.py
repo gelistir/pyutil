@@ -5,8 +5,6 @@ from sqlalchemy.orm import relationship as _relationship
 
 from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.custodian import Currency
-from pyutil.sql.interfaces.risk.security import Security
-
 
 
 class Owner(ProductInterface):
