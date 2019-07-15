@@ -15,13 +15,7 @@ class Security(ProductInterface):
         return "Security({id}: {name})".format(id=self.name, name=self["Name"])
 
     @staticmethod
-    def pandas_frame(products, key, **kwargs):
-        return Security._pandas_frame(products=products, key=key, **kwargs)
-
-    @staticmethod
     def reference_frame(products, f=lambda x: x):
-        frame = Security._reference_frame(products=products)
-        frame["fullname"] = pd.Series({s: s.fullname for s in products})
-        frame.index = map(f, frame.index)
-        frame.index.name = "security"
+        frame = Security._reference_frame(products=products, f=f)
+        frame["fullname"] = pd.Series({f(s): s.fullname for s in products})
         return frame

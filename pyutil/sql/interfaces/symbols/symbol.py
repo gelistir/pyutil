@@ -32,13 +32,11 @@ class Symbol(ProductInterface):
 
     @staticmethod
     def reference_frame(symbols, f=lambda x: x):
-        frame = Symbol._reference_frame(symbols)
-        frame["Sector"] = pd.Series({symbol: symbol.group.value for symbol in symbols})
-        frame["Internal"] = pd.Series({symbol: symbol.internal for symbol in symbols})
-        frame.index = map(f, frame.index)
-        frame.index.name = "symbol"
+        frame = Symbol._reference_frame(symbols, f)
+        frame["Sector"] = pd.Series({f(symbol): symbol.group.value for symbol in symbols})
+        frame["Internal"] = pd.Series({f(symbol): symbol.internal for symbol in symbols})
         return frame
 
-    @staticmethod
-    def pandas_frame(symbols, key):
-        return Symbol._pandas_frame(products=symbols, key=key)
+    #@staticmethod
+    #def pandas_frame(symbols, key):
+    #        return Symbol._pandas_frame(products=symbols, key=key)

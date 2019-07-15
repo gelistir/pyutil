@@ -49,8 +49,8 @@ class TestProductInterface(object):
         product.write(data=ts1, key="x")
         product.write(data=ts2, key="x")
         pdt.assert_series_equal(product.read(key="x"), ts2)
-        frame = Product._pandas_frame(products=[product], key="x")
-        pdt.assert_series_equal(frame["A"], ts2, check_names=False)
+        frame = Product.pandas_frame(products=[product], key="x")
+        pdt.assert_series_equal(frame[product], ts2, check_names=False)
 
     def test_lt(self):
         p1 = Product(name="A")
@@ -69,9 +69,9 @@ class TestProductInterface(object):
         assert frame[p2]["zzz"] == 3
 
 
-    def test_framexx(self, product, ts1):
+    def test_frame(self, product, ts1):
         # add some extra product but without timeseries
-        frame = Product._pandas_frame(key="y")
+        frame = Product.pandas_frame(key="y", products=[product], f=lambda x: x.name)
         pdt.assert_series_equal(frame["A"], ts1, check_names=False)
 
     def test_health(self, product):

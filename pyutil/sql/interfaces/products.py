@@ -95,42 +95,16 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
 
     @classmethod
     def _reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
-        #def triple(a):
-        #    return pd.Series({"name": a.meta["name"], "key": a.meta["key"], "value": a.data})
-
-        #if products:
         frame = pd.DataFrame({product: product.reference_series for product in products}).transpose()
-        #else:
-        #    xxx = pd.DataFrame(
-        #        {n: triple(a) for n, a in enumerate(cls.__collection_reference__.find(**kwargs))}).transpose()
-        #    xxx = xxx.set_index(keys=["name", "key"]).unstack()["value"]
-        #    print(xxx)
-        #    xxx.columns.name = ""
-        #    print(xxx)
-        #    xxx.index.name = ""
-        #    print(xxx)
-
-        #    # print(a.meta)
-        #    # print(a.data)
-        #    # tuple(a.meta): a.data
-        #    assert False
-
-            #frame = pd.DataFrame(
-            #    {a.meta["name"]: pd.Series(a.meta) for a in cls.__collection_reference__.find(**kwargs)}).transpose()
-
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index()
 
     @classmethod
-    def _pandas_frame(cls, key, products=None, **kwargs) -> pd.DataFrame:
-        if products:
-            frame = pd.DataFrame({product.name: product.read(key=key, **kwargs) for product in products}).dropna(axis=1,
-                                                                                                                 how="all").transpose()
-        else:
-            frame = pd.DataFrame(
-                {a.meta["name"]: a.data for a in cls.__collection__.find(key=key, **kwargs)}).transpose()
-
+    def pandas_frame(cls, key, products, f=lambda x: x, **kwargs) -> pd.DataFrame:
+        frame = pd.DataFrame({product.name: product.read(key=key, **kwargs) for product in products})
+        frame = frame.dropna(axis=1, how="all").transpose()
+        frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index().transpose()
 
