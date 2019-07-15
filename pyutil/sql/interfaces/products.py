@@ -146,3 +146,6 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
             return self.__collection_reference__.find_one(name=self.name, key=item).data
         except AttributeError:
             return None
+
+    def health(self, keys):
+        return {key for key in keys if self[key] is None}

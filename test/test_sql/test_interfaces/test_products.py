@@ -68,6 +68,7 @@ class TestProductInterface(object):
         assert frame[p1]["yyy"] == 2
         assert frame[p2]["zzz"] == 3
 
+
     def test_framexx(self, product, ts1):
         # add some extra product but without timeseries
         p2 = Product(name="B")
@@ -75,4 +76,8 @@ class TestProductInterface(object):
         print(frame)
         pdt.assert_series_equal(frame["A"], ts1, check_names=False)
 
-
+    def test_health(self, product):
+        #p = Product(name="A")
+        product["Bloomberg Ticker"] = "123"
+        missing = product.health(keys=["Bloomberg Ticker", "AAA"])
+        assert missing == {"AAA"}

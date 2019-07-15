@@ -61,3 +61,6 @@ class TestSecurity(object):
         frame2 = pd.DataFrame(index=["100"], columns=["Bloomberg Ticker", "fullname"], data=[["IBM US Equity", "Peter Maffay"]])
         pdt.assert_frame_equal(frame1, frame2, check_names=False)
 
+    def test_health(self, security):
+        missing = security.health(keys=["Bloomberg Ticker", "AAA"])
+        assert missing == {"AAA"}
