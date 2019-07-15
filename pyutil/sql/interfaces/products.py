@@ -94,7 +94,7 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
         return self.__collection__.last(key=key, name=self.name, **kwargs)
 
     @classmethod
-    def _reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
+    def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
         frame = pd.DataFrame({product: product.reference_series for product in products}).transpose()
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
@@ -102,7 +102,7 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
 
     @classmethod
     def pandas_frame(cls, key, products, f=lambda x: x, **kwargs) -> pd.DataFrame:
-        frame = pd.DataFrame({product.name: product.read(key=key, **kwargs) for product in products})
+        frame = pd.DataFrame({product: product.read(key=key, **kwargs) for product in products})
         frame = frame.dropna(axis=1, how="all").transpose()
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()

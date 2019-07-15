@@ -77,11 +77,11 @@ class Strategy(ProductInterface):
         return self.__collection__.last(key="PRICES", name=self.name)
 
     @staticmethod
-    def reference_frame(strategies, f=lambda x: x):
-        frame = Strategy._reference_frame(products=strategies)
-        frame["source"] = pd.Series({s: s.source for s in strategies})
-        frame["type"] = pd.Series({s: s.type for s in strategies})
-        frame["active"] = pd.Series({s: s.active for s in strategies})
-        frame.index = map(f, frame.index)
+    def reference_frame(strategies, f=lambda x: x, **kwargs):
+        frame = ProductInterface.reference_frame(products=strategies, f=f, **kwargs)
+        frame["source"] = pd.Series({f(s): s.source for s in strategies})
+        frame["type"] = pd.Series({f(s): s.type for s in strategies})
+        frame["active"] = pd.Series({f(s): s.active for s in strategies})
+        #frame.index = map(f, frame.index)
         frame.index.name = "strategy"
         return frame
