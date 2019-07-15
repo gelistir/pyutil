@@ -52,8 +52,8 @@ def database(base, name=None, echo=False):
         try:
             db = Database(session=session, connection=connection_str)
             success = True
-        except OperationalError:
+        except Exception:
             sleep(1)
-            pass
+
 
     return db
