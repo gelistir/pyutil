@@ -33,11 +33,11 @@ def product(ts1):
 
 class TestProductInterface(object):
     def test_name(self, product):
-        assert Product(name="A").name == "A"
+        assert product.name == "A"
 
         # you can not change the name of a product!
         with pytest.raises(AttributeError):
-            Product(name="A").name = "AA"
+            product.name = "AA"
 
         assert Product.__collection__
         assert Product.__collection_reference__
@@ -50,10 +50,7 @@ class TestProductInterface(object):
         product.write(data=ts2, key="x")
         pdt.assert_series_equal(product.read(key="x"), ts2)
         frame = Product.pandas_frame(products=[product], key="x")
-        print(frame)
-        print(frame.keys())
         pdt.assert_series_equal(frame[product], ts2, check_names=False)
-        assert frame.index.name == "product"
 
     def test_lt(self):
         p1 = Product(name="A")
@@ -70,7 +67,6 @@ class TestProductInterface(object):
         frame = Product.reference_frame(products=[p1, p2]).transpose()
         assert frame[p1]["yyy"] == 2
         assert frame[p2]["zzz"] == 3
-
 
     def test_frame(self, product, ts1):
         # add some extra product but without timeseries

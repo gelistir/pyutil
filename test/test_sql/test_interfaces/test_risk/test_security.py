@@ -52,13 +52,12 @@ class TestSecurity(object):
         s2 = Security(name="B")
         s2.write(data=2*ts, key="PRICE")
 
-        f = Security.pandas_frame(products=[s1, s2], key="PRICE")
+        f = Security.pandas_frame(products=[s0, s1, s2], key="PRICE")
         pdt.assert_series_equal(f[s1], ts, check_names=False)
         pdt.assert_series_equal(f[s2], 2 * ts, check_names=False)
-        assert f.index.name == "security"
 
     def test_reference(self, security):
-        frame1 = Security.reference_frame(products=[security], f=lambda x: x.name)
+        frame1 = Security.reference_frame(securities=[security], f=lambda x: x.name)
         frame2 = pd.DataFrame(index=["100"], columns=["Bloomberg Ticker", "fullname"], data=[["IBM US Equity", "Peter Maffay"]])
         pdt.assert_frame_equal(frame1, frame2, check_names=False)
 

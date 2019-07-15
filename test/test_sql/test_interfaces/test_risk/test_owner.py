@@ -4,7 +4,6 @@ import pytest
 
 from pyutil.mongo.mongo import create_collection
 from pyutil.sql.interfaces.products import ProductInterface
-#from pyutil.sql.interfaces.ref import Field, DataType, FieldType
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
@@ -138,9 +137,6 @@ class TestOwner(object):
         frame = pd.DataFrame(index=["z","Currency", "Entity ID", "Name"], columns=[o],
                              data=[20, "CHF", "222", "Peter Maffay"]).transpose()
         frame.index.name = "owner"
-        print(Owner.reference_frame(owners=[o]).dtypes)
-        print(Owner.reference_frame(owners=[o]))
-
         pdt.assert_frame_equal(Owner.reference_frame(owners=[o])[frame.keys()], frame, check_dtype=False)
 
     #def test_json(self):
