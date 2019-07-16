@@ -30,12 +30,12 @@ class Owner(ProductInterface):
     def currency(self, value):
         self.__currency = value
 
-    #@property
-    #def securities(self):
+    # @property
+    # def securities(self):
     #    return set([x[0] for x in self._position.keys()])
 
-    #@property
-    #def custodians(self):
+    # @property
+    # def custodians(self):
     #    return set([x[1] for x in self._position.keys()])
 
     # @property
@@ -61,12 +61,12 @@ class Owner(ProductInterface):
     #
     #     return x
 
-    #@property
-    #def reference_securities(self):
+    # @property
+    # def reference_securities(self):
     #    return Security.frame(self.securities)
 
-    #@property
-    #def position_reference(self):
+    # @property
+    # def position_reference(self):
     #    reference = self.reference_securities
     #    position = self.position_frame
     #    volatility = self.vola_security_frame
@@ -76,7 +76,7 @@ class Owner(ProductInterface):
     #    except (KeyError, ValueError):
     #        return pd.DataFrame({})
 
-    #def to_json(self):
+    # def to_json(self):
     #    ts = fromReturns(r=self._returns)
     #    return {"name": self.name, "Nav": ts, "Volatility": ts.ewm_volatility(), "Drawdown": ts.drawdown}
 
@@ -96,7 +96,7 @@ class Owner(ProductInterface):
     #    self._position.clear()
 
     @staticmethod
-    def reference_frame(owners, f = lambda x: x) -> pd.DataFrame:
+    def reference_frame(owners, f=lambda x: x) -> pd.DataFrame:
         frame = ProductInterface.reference_frame(products=owners, f=f)
         # that's why owners can't be None
         frame["Currency"] = pd.Series({f(owner): owner.currency.name for owner in owners})

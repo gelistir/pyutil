@@ -122,4 +122,8 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
             return None
 
     def health(self, keys):
+        """
+
+        :type keys:
+        """
         return {key for key in keys if self[key] is None}
