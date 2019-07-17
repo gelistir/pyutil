@@ -172,13 +172,24 @@ class NavSeries(pd.Series):
         last_day_of_month = (today + pd.offsets.MonthEnd(0)).date()
         return ts.truncate(before=first_day_of_year, after=last_day_of_month)
 
+    @staticmethod
+    def __mtd(ts: pd.Series, today=None) -> pd.Series:
+        today = today or pd.Timestamp("today")
+        first_day_of_month = (today + pd.offsets.MonthBegin(-1)).date()
+        last_day_of_month = (today + pd.offsets.MonthEnd(0)).date()
+        return ts.truncate(before=first_day_of_month, after=last_day_of_month)
+
     @property
-    def ytd_series(self):
+    def ytd_series(self) -> pd.Series:
         """
         Extract the series of monthly returns in the current year
         :return:
         """
-        return self.__ytd(self.returns_monthly, today=self.index[-1]).sort_index(ascending=False).rename(index=lambda x: "{:02d}".format(x.month))
+        return self.__ytd(self.returns_monthly, today=self.index[-1]).sort_index(ascending=False)
+
+    @property
+    def mtd_series(self) -> pd.Series:
+        return self.__mtd(self.returns, today=self.index[-1]).sort_index(ascending=False)
 
     def recent(self, n=15):
         return self.returns.tail(n).dropna()

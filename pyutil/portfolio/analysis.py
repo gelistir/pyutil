@@ -11,39 +11,70 @@ def __last(frame, datefmt=None):
     return frame
 
 
-def __percentage(x):
+def percentage(x):
     return "{0:.2f}%".format(float(100.0 * x)).replace("nan%", "")
 
 
-def nav(portfolios, f=lambda x: x):
+def nav(portfolios, f=lambda x: x) -> pd.DataFrame:
+    assert isinstance(portfolios, dict)
     return pd.DataFrame({name: f(portfolio.nav) for name, portfolio in portfolios.items()})
 
 
 def mtd(portfolios):
-    assert isinstance(portfolios, dict)
-    frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).returns)
-    today = frame.index[-1]
-    offset = -2 if today.day < 5 else -1
-    first_day_of_month = (today + pd.offsets.MonthBegin(offset)).date()
-
-    frame = frame.truncate(before=first_day_of_month)
-    return __last(frame.transpose(), datefmt="%b %d").applymap(__percentage)
+    frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).mtd_series).transpose()
+    return __last(frame, datefmt="%b %d").applymap(percentage)
 
 
 def ytd(portfolios):
-    assert isinstance(portfolios, dict)
     frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).ytd_series).transpose()
-    return __last(frame).applymap(__percentage)
+    return __last(frame, datefmt="%m").applymap(percentage)
 
 
 def recent(portfolios, n=15):
     # define the function
-    assert isinstance(portfolios, dict)
     frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).recent(n)).tail(n).transpose()
-    return __last(frame, datefmt="%b %d").applymap(__percentage)
+    return __last(frame, datefmt="%b %d").applymap(percentage)
 
 
 def sector(portfolios, symbols, total=False):
-    frame = pd.DataFrame({name: portfolio.sector(symbols, total=total).iloc[-1] for name, portfolio in portfolios.items()}).transpose()
+    assert isinstance(portfolios, dict)
+    frame = pd.DataFrame(
+        {name: portfolio.sector(symbols, total=total).iloc[-1] for name, portfolio in portfolios.items()}).transpose()
     frame.index.name = "Portfolio"
-    return frame.applymap(__percentage)
+    return frame.applymap(percentage)
+
+
+def performance(portfolios, **kwargs):
+    return nav(portfolios=portfolios, f=lambda x: fromNav(x).summary(**kwargs))
+
+
+def drawdown(portfolios):
+    return nav(portfolios=portfolios, f=lambda x: fromNav(x).drawdown)
+
+def ewm_volatility(portfolios, **kwargs):
+    return nav(portfolios=portfolios, f=lambda x: fromNav(x).ewm_volatility(**kwargs))
+
+def period(portfolios, before=None, after=None, adjust=True):
+    return nav(portfolios=portfolios, f=lambda x: fromNav(x).truncate(before=before, after=after, adjust=adjust))
+
+    #nav_period = nav.truncate(before=start, after=end).apply(adjust)
+    #o.addItem(display_performance(nav_period), "Performance")
+    #plot_entire = SimpleTimePlot(nav, nav.keys())
+
+    #if start and end:
+    #    plot_entire.add(ConstantBand(x=[start, end]))
+    #else:
+    #    if days:
+    #        for day in days:
+    #            plot_entire.add(ConstantLine(x=day))
+
+    #o.addItem(plot_entire, "History")
+
+    #if start and end:
+    #    plot = SimpleTimePlot(nav_period, nav_period.keys())  # , "Period")
+    #    if days:
+    #        for day in days:
+    #            plot.add(ConstantLine(x=day))
+    #    o.addItem(plot, "Period")
+
+    #return o

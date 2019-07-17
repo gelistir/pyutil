@@ -111,11 +111,13 @@ class TestSummary(object):
         n = fromNav(a)
 
         # no return in Jan 2012, 100% in Feb (from 2.0 to 4.0)
-        pdt.assert_series_equal(n.ytd_series, pd.Series({"02": 1.0}))
+        pdt.assert_series_equal(n.ytd_series, pd.Series({pd.Timestamp("2012-02-14"): 1.0}))
 
         # we made 100% in Feb
         assert n.mtd == 1.0
         assert n.ytd == 1.0
+
+        pdt.assert_series_equal(n.mtd_series, pd.Series({pd.Timestamp("2012-02-14"): 4.0/3.0 - 1.0, pd.Timestamp("2012-02-13"): 0.5}))
 
     def test_adjust(self):
         n = fromNav(pd.Series({}))
