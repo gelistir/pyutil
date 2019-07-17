@@ -4,7 +4,6 @@ import string
 from time import sleep
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy_utils.functions import database_exists, create_database, drop_database
 
@@ -52,8 +51,7 @@ def database(base, name=None, echo=False):
         try:
             db = Database(session=session, connection=connection_str)
             success = True
-        except Exception:
+        except:
             sleep(1)
-
 
     return db
