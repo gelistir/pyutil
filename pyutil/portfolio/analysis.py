@@ -45,18 +45,30 @@ def sector(portfolios, symbols, total=False):
 
 
 def performance(portfolios, **kwargs):
-    return nav(portfolios=portfolios, f=lambda x: fromNav(x).summary(**kwargs))
-
+    perf = nav(portfolios=portfolios, f=lambda x: fromNav(x).summary(**kwargs))
+    return perf
+    #perf.drop(index=["First at", "Last at"], inplace=True)
+    #return perf.applymap(lambda x: float(x))
 
 def drawdown(portfolios):
     return nav(portfolios=portfolios, f=lambda x: fromNav(x).drawdown)
 
+
 def ewm_volatility(portfolios, **kwargs):
     return nav(portfolios=portfolios, f=lambda x: fromNav(x).ewm_volatility(**kwargs))
+
 
 def period(portfolios, before=None, after=None, adjust=True):
     return nav(portfolios=portfolios, f=lambda x: fromNav(x).truncate(before=before, after=after, adjust=adjust))
 
+
+def monthlytable(portfolios):
+    assert isinstance(portfolios, dict)
+    return {name: portfolio.nav.monthlytable.applymap(percentage) for name, portfolio in portfolios.items()}
+
+def drawdown_periods(portfolios):
+    assert isinstance(portfolios, dict)
+    return {name: portfolio.nav.drawdown_periods for name, portfolio in portfolios.items()}
     #nav_period = nav.truncate(before=start, after=end).apply(adjust)
     #o.addItem(display_performance(nav_period), "Performance")
     #plot_entire = SimpleTimePlot(nav, nav.keys())
