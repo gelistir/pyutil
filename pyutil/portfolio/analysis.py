@@ -12,8 +12,16 @@ def __last(frame, datefmt=None):
 
 
 def percentage(x):
-    return "{0:.2f}%".format(float(100.0 * x)).replace("nan%", "")
+    return "{0:.2f}%".format(float(x)).replace("nan%", "")
 
+def fdouble(x):
+    return "{0:.2f}".format(float(x)).replace("nan", "")
+
+def fint(x):
+    try:
+        return "{:d}".format(int(x))
+    except:
+        return ""
 
 def nav(portfolios, f=lambda x: x) -> pd.DataFrame:
     assert isinstance(portfolios, dict)
@@ -21,24 +29,25 @@ def nav(portfolios, f=lambda x: x) -> pd.DataFrame:
 
 
 def mtd(portfolios):
-    frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).mtd_series).transpose()
+    frame = 100*nav(portfolios=portfolios, f=lambda x: fromNav(x).mtd_series).transpose()
     return __last(frame, datefmt="%b %d").applymap(percentage)
 
 
 def ytd(portfolios):
-    frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).ytd_series).transpose()
+    frame = 100*nav(portfolios=portfolios, f=lambda x: fromNav(x).ytd_series).transpose()
     return __last(frame, datefmt="%m").applymap(percentage)
 
 
 def recent(portfolios, n=15):
     # define the function
-    frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).recent(n)).tail(n).transpose()
+    frame = 100*nav(portfolios=portfolios, f=lambda x: fromNav(x).recent(n)).tail(n).transpose()
+    print(frame)
     return __last(frame, datefmt="%b %d").applymap(percentage)
 
 
 def sector(portfolios, symbols, total=False):
     assert isinstance(portfolios, dict)
-    frame = pd.DataFrame(
+    frame = 100*pd.DataFrame(
         {name: portfolio.sector(symbols, total=total).iloc[-1] for name, portfolio in portfolios.items()}).transpose()
     frame.index.name = "Portfolio"
     return frame.applymap(percentage)
@@ -46,7 +55,20 @@ def sector(portfolios, symbols, total=False):
 
 def performance(portfolios, **kwargs):
     perf = nav(portfolios=portfolios, f=lambda x: fromNav(x).summary(**kwargs))
+
+    perf.loc[["Kurtosis", "Current Nav", "Max Nav", "Annua Sharpe Ratio (r_f = 0)", "Calmar Ratio (3Y)"]] =\
+        perf.loc[["Kurtosis", "Current Nav", "Max Nav", "Annua Sharpe Ratio (r_f = 0)", "Calmar Ratio (3Y)"]].applymap(fdouble)
+
+    perf.loc[["# Events", "# Events per year", "# Positive Events", "# Negative Events"]] = \
+        perf.loc[["# Events", "# Events per year", "# Positive Events", "# Negative Events"]].applymap(fint)
+
+    perf.loc[["Return", "Annua Return", "Annua Volatility", "Max Drawdown", "Max % return", "Min % return", "MTD", "YTD", "Current Drawdown", "Value at Risk (alpha = 95)", "Conditional Value at Risk (alpha = 95)"]] = \
+        perf.loc[
+            ["Return", "Annua Return", "Annua Volatility", "Max Drawdown", "Max % return", "Min % return", "MTD", "YTD",
+             "Current Drawdown", "Value at Risk (alpha = 95)", "Conditional Value at Risk (alpha = 95)"]].applymap(percentage)
+
     return perf
+
     #perf.drop(index=["First at", "Last at"], inplace=True)
     #return perf.applymap(lambda x: float(x))
 
