@@ -86,7 +86,7 @@ def period(portfolios, before=None, after=None, adjust=True):
 
 def monthlytable(portfolios):
     assert isinstance(portfolios, dict)
-    return {name: portfolio.nav.monthlytable.applymap(percentage) for name, portfolio in portfolios.items()}
+    return {name: (100*portfolio.nav.monthlytable).applymap(percentage) for name, portfolio in portfolios.items()}
 
 def drawdown_periods(portfolios):
     assert isinstance(portfolios, dict)
