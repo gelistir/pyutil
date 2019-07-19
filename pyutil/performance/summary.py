@@ -236,9 +236,33 @@ class NavSeries(pd.Series):
         d["First at"] = self.index[0].date()
         d["Last at"] = self.index[-1].date()
         d["Kurtosis"] = self.pct_change().kurtosis()
+
         x = pd.Series(d)
         x.index.name = "Performance number"
+
         return x
+
+    def summary_format(self, alpha=0.95, periods=None, r_f=0):
+
+        perf = self.summary(alpha=alpha, periods=periods, r_f=r_f)
+
+        f = lambda x: "{0:.2f}%".format(float(x))
+        for name in ["Return", "Annua Return", "Annua Volatility", "Max Drawdown", "Max % return", "Min % return",
+                     "MTD", "YTD", "Current Drawdown", "Value at Risk (alpha = 95)",
+                     "Conditional Value at Risk (alpha = 95)"]:
+            perf[name] = f(perf[name])
+
+        f = lambda x: "{0:.2f}".format(float(x))
+        for name in ["Annua Sharpe Ratio (r_f = 0)", "Calmar Ratio (3Y)", "Current Nav", "Max Nav"]:
+            perf[name] = f(perf[name])
+
+        f = lambda x: "{:d}".format(int(x))
+        for name in ["# Events", "# Events per year", "# Positive Events", "# Negative Events"]:
+            perf[name] = f(perf[name])
+
+        return perf.apply(str)
+
+
 
     def ewm_volatility(self, com=50, min_periods=50, periods=None):
         periods = periods or self.periods_per_year

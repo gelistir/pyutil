@@ -12,18 +12,6 @@ def __last(frame, datefmt=None):
     return frame
 
 
-#def percentage(x):
-#    return "{0:.2f}%".format(float(x)).replace("nan%", "")
-
-#def fdouble(x):
-#    return "{0:.2f}".format(float(x)).replace("nan", "")
-
-#def fint(x):
-#    try:
-#        return "{:d}".format(int(x))
-#    except:
-#        return ""
-
 def nav(portfolios, f=lambda x: x) -> pd.DataFrame:
     assert isinstance(portfolios, dict)
     return pd.DataFrame({name: f(portfolio.nav) for name, portfolio in portfolios.items()})
@@ -31,18 +19,18 @@ def nav(portfolios, f=lambda x: x) -> pd.DataFrame:
 
 def mtd(portfolios):
     frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).mtd_series).transpose()
-    return __last(frame, datefmt="%b %d")#.applymap(percentage)
+    return __last(frame, datefmt="%b %d")
 
 
 def ytd(portfolios):
     frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).ytd_series).transpose()
-    return __last(frame, datefmt="%m")#.applymap(percentage)
+    return __last(frame, datefmt="%m")
 
 
 def recent(portfolios, n=15):
     # define the function
     frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).recent(n)).tail(n).transpose()
-    return __last(frame, datefmt="%b %d")#.applymap(percentage)
+    return __last(frame, datefmt="%b %d")
 
 
 def sector(portfolios, symbols, total=False):
@@ -50,7 +38,7 @@ def sector(portfolios, symbols, total=False):
     frame = pd.DataFrame(
         {name: portfolio.sector(symbols, total=total).iloc[-1] for name, portfolio in portfolios.items()}).transpose()
     frame.index.name = "Portfolio"
-    return frame#.applymap(percentage)
+    return frame
 
 
 def performance(portfolios, **kwargs):
@@ -69,8 +57,6 @@ def performance(portfolios, **kwargs):
 
     return perf
 
-    #perf.drop(index=["First at", "Last at"], inplace=True)
-    #return perf.applymap(lambda x: float(x))
 
 def drawdown(portfolios):
     return nav(portfolios=portfolios, f=lambda x: fromNav(x).drawdown)
