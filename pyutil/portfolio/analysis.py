@@ -1,6 +1,4 @@
 import pandas as pd
-from pyutil.performance.summary import fromNav
-from pyutil.portfolio.format import fint, fdouble, percentage
 
 
 def __last(frame, datefmt=None):
@@ -18,18 +16,18 @@ def nav(portfolios, f=lambda x: x) -> pd.DataFrame:
 
 
 def mtd(portfolios):
-    frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).mtd_series).transpose()
+    frame = nav(portfolios=portfolios, f=lambda x: x.mtd_series).transpose()
     return __last(frame, datefmt="%b %d")
 
 
 def ytd(portfolios):
-    frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).ytd_series).transpose()
+    frame = nav(portfolios=portfolios, f=lambda x: x.ytd_series).transpose()
     return __last(frame, datefmt="%m")
 
 
 def recent(portfolios, n=15):
     # define the function
-    frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).recent(n)).tail(n).transpose()
+    frame = nav(portfolios=portfolios, f=lambda x: x.recent(n)).tail(n).transpose()
     return __last(frame, datefmt="%b %d")
 
 
@@ -42,32 +40,19 @@ def sector(portfolios, symbols, total=False):
 
 
 def performance(portfolios, **kwargs):
-    perf = nav(portfolios=portfolios, f=lambda x: fromNav(x).summary(**kwargs))
-
-    perf.loc[["Kurtosis", "Current Nav", "Max Nav", "Annua Sharpe Ratio (r_f = 0)", "Calmar Ratio (3Y)"]] =\
-        perf.loc[["Kurtosis", "Current Nav", "Max Nav", "Annua Sharpe Ratio (r_f = 0)", "Calmar Ratio (3Y)"]].applymap(fdouble)
-
-    perf.loc[["# Events", "# Events per year", "# Positive Events", "# Negative Events"]] = \
-        perf.loc[["# Events", "# Events per year", "# Positive Events", "# Negative Events"]].applymap(fint)
-
-    perf.loc[["Return", "Annua Return", "Annua Volatility", "Max Drawdown", "Max % return", "Min % return", "MTD", "YTD", "Current Drawdown", "Value at Risk (alpha = 95)", "Conditional Value at Risk (alpha = 95)"]] = \
-        perf.loc[
-            ["Return", "Annua Return", "Annua Volatility", "Max Drawdown", "Max % return", "Min % return", "MTD", "YTD",
-             "Current Drawdown", "Value at Risk (alpha = 95)", "Conditional Value at Risk (alpha = 95)"]].applymap(percentage)
-
-    return perf
+    return nav(portfolios=portfolios, f=lambda x: x.summary_format(**kwargs))
 
 
 def drawdown(portfolios):
-    return nav(portfolios=portfolios, f=lambda x: fromNav(x).drawdown)
+    return nav(portfolios=portfolios, f=lambda x: x.drawdown)
 
 
 def ewm_volatility(portfolios, **kwargs):
-    return nav(portfolios=portfolios, f=lambda x: fromNav(x).ewm_volatility(**kwargs))
+    return nav(portfolios=portfolios, f=lambda x: x.ewm_volatility(**kwargs))
 
 
 def period(portfolios, before=None, after=None, adjust=True):
-    return nav(portfolios=portfolios, f=lambda x: fromNav(x).truncate(before=before, after=after, adjust=adjust))
+    return nav(portfolios=portfolios, f=lambda x: x.truncate(before=before, after=after, adjust=adjust))
 
 
 def monthlytable(portfolios):

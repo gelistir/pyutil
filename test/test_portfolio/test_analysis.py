@@ -43,6 +43,7 @@ class TestAnalysis(object):
         x = frame["test"]
         assert x["Kurtosis"] == "6.98"
 
+
     def test_ewm_volatility(self, portfolio, portfolios):
         frame = ppa.ewm_volatility(portfolios)
         pdt.assert_series_equal(frame["test"], portfolio.nav.ewm_volatility(), check_names=False)
