@@ -197,16 +197,16 @@ class TestPortfolio(object):
         pdt.assert_frame_equal(frame, read("state.csv", index_col=0))
 
     def test_sector(self, portfolio):
-        s1 = Symbol(name="A", group=SymbolType.alternatives, internal="AA")
-        s2 = Symbol(name="B", group=SymbolType.alternatives, internal="BB")
-        s3 = Symbol(name="C", group=SymbolType.equities, internal="CC")
-        s4 = Symbol(name="D", group=SymbolType.equities, internal="DD")
-        s5 = Symbol(name="E", group=SymbolType.fixed_income, internal="EE")
-        s6 = Symbol(name="F", group=SymbolType.fixed_income, internal="FF")
-        s7 = Symbol(name="G", group=SymbolType.fixed_income, internal="GG")
+        symbolmap = {"A": SymbolType.alternatives.value,
+                     "B": SymbolType.alternatives.value,
+                     "C": SymbolType.equities.value,
+                     "D": SymbolType.equities.value,
+                     "E": SymbolType.fixed_income.value,
+                     "F": SymbolType.fixed_income.value,
+                     "G": SymbolType.fixed_income.value}
 
-        frame = portfolio.sector(symbols=[s1, s2, s3, s4, s5, s6, s7])
+        frame = portfolio.sector(symbolmap=symbolmap)
         pdt.assert_frame_equal(frame.tail(5), read("sector.csv", index_col=0, parse_dates=True))
 
-        frame = portfolio.sector(symbols=[s1, s2, s3, s4, s5, s6, s7], total=True)
+        frame = portfolio.sector(symbolmap=symbolmap, total=True)
         pdt.assert_frame_equal(frame.head(3), read("sector_total.csv", index_col=0, parse_dates=True))

@@ -4,7 +4,7 @@ from pyutil.portfolio.format import fint, fdouble, percentage
 
 class TestFormat(object):
     def test_percentage(self):
-        assert percentage(0.21) == "0.21%"
+        assert percentage(0.21) == "21.00%"
         assert percentage(np.nan) == ""
 
     def test_fdouble(self):

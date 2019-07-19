@@ -1,5 +1,5 @@
 def percentage(x):
-    return "{0:.2f}%".format(float(x)).replace("nan%", "")
+    return "{0:.2f}%".format(100*float(x)).replace("nan%", "")
 
 
 def fdouble(x):

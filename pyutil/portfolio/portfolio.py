@@ -275,8 +275,8 @@ class Portfolio(object):
         a.index.name = "weight"
         return a
 
-    def sector(self, symbols, total=False):
-        symbolmap = {symbol.name: symbol.group.value for symbol in symbols}
+    def sector(self, symbolmap, total=False):
+        #symbolmap = {symbol.name: symbol.group.value for symbol in symbols}
         frame = self.weights.ffill().groupby(by=symbolmap, axis=1).sum()
         if total:
             frame["Total"] = frame.sum(axis=1)
@@ -340,6 +340,7 @@ class Portfolio(object):
         all = {symbol.name: symbol for symbol in symbols}
         frame["group"] = pd.Series({s : all[s].group.name for s in frame.index})
         frame["internal"] = pd.Series({s : all[s].internal for s in frame.index})
+
 
         sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
         frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])

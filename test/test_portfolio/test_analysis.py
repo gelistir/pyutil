@@ -4,6 +4,7 @@ import pandas.util.testing as pdt
 import pytest
 
 import pyutil.portfolio.analysis as ppa
+from pyutil.portfolio.format import percentage
 from test.config import test_portfolio
 
 
@@ -40,9 +41,7 @@ class TestAnalysis(object):
 
     def test_performance(self, portfolios):
         frame = ppa.performance(portfolios)
-        x = frame["test"]
-        assert x["Kurtosis"] == "6.98"
-
+        assert frame["test"]["Kurtosis"] == "6.98"
 
     def test_ewm_volatility(self, portfolio, portfolios):
         frame = ppa.ewm_volatility(portfolios)
@@ -51,3 +50,18 @@ class TestAnalysis(object):
     def test_period(self, portfolio, portfolios):
         frame = ppa.period(portfolios, before=pd.Timestamp("2015-01-01"))
         pdt.assert_series_equal(frame["test"], portfolio.nav.truncate(before=pd.Timestamp("2015-01-01"), adjust=True).series, check_names=False)
+
+    def test_monthlytable(self, portfolio, portfolios):
+        x = ppa.monthlytable(portfolios=portfolios)
+        pdt.assert_frame_equal(x["test"].applymap(percentage), portfolio.nav.monthlytable.applymap(percentage))
+
+    def test_drawdown_periods(self, portfolio, portfolios):
+        x = ppa.drawdown_periods(portfolios=portfolios)
+        pdt.assert_series_equal(x["test"], portfolio.nav.drawdown_periods)
+
+    def test_sector(self, portfolio, portfolios):
+        symbolmap = {"A": "A", "B": "A", "C": "B", "D": "B", "E": "C", "F": "C", "G": "C"}
+
+        frame = ppa.sector(portfolios=portfolios, symbolmap=symbolmap).applymap(percentage)
+        assert frame["test"]["A"] == "13.57%"
+        pdt.assert_series_equal(frame["test"], portfolio.sector(symbolmap=symbolmap).iloc[-1].apply(percentage), check_names=False)

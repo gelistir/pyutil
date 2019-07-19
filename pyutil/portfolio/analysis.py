@@ -10,49 +10,52 @@ def __last(frame, datefmt=None):
     return frame
 
 
-def nav(portfolios, f=lambda x: x) -> pd.DataFrame:
+def nav(portfolios, f=lambda x: x.nav) -> pd.DataFrame:
     assert isinstance(portfolios, dict)
-    return pd.DataFrame({name: f(portfolio.nav) for name, portfolio in portfolios.items()})
-
+    frame = pd.DataFrame({name: f(portfolio) for name, portfolio in portfolios.items()})
+    frame.columns.name = "Portfolio"
+    return frame
 
 def mtd(portfolios):
-    frame = nav(portfolios=portfolios, f=lambda x: x.mtd_series).transpose()
+    frame = nav(portfolios=portfolios, f=lambda x: x.nav.mtd_series).transpose()
     return __last(frame, datefmt="%b %d")
 
 
 def ytd(portfolios):
-    frame = nav(portfolios=portfolios, f=lambda x: x.ytd_series).transpose()
+    frame = nav(portfolios=portfolios, f=lambda x: x.nav.ytd_series).transpose()
     return __last(frame, datefmt="%m")
 
 
 def recent(portfolios, n=15):
     # define the function
-    frame = nav(portfolios=portfolios, f=lambda x: x.recent(n)).tail(n).transpose()
+    frame = nav(portfolios=portfolios, f=lambda x: x.nav.recent(n)).tail(n).transpose()
     return __last(frame, datefmt="%b %d")
 
 
-def sector(portfolios, symbols, total=False):
+def sector(portfolios, symbolmap, total=False):
     assert isinstance(portfolios, dict)
-    frame = pd.DataFrame(
-        {name: portfolio.sector(symbols, total=total).iloc[-1] for name, portfolio in portfolios.items()}).transpose()
-    frame.index.name = "Portfolio"
-    return frame
+    return nav(portfolios=portfolios, f=lambda x: x.sector(symbolmap, total=total).iloc[-1])
+
+    #frame = pd.DataFrame(
+    #    {name: portfolio.sector(symbolmap, total=total).iloc[-1] for name, portfolio in portfolios.items()}).transpose()
+    #frame.index.name = "Portfolio"
+    #return frame
 
 
 def performance(portfolios, **kwargs):
-    return nav(portfolios=portfolios, f=lambda x: x.summary_format(**kwargs))
+    return nav(portfolios=portfolios, f=lambda x: x.nav.summary_format(**kwargs))
 
 
 def drawdown(portfolios):
-    return nav(portfolios=portfolios, f=lambda x: x.drawdown)
+    return nav(portfolios=portfolios, f=lambda x: x.nav.drawdown)
 
 
 def ewm_volatility(portfolios, **kwargs):
-    return nav(portfolios=portfolios, f=lambda x: x.ewm_volatility(**kwargs))
+    return nav(portfolios=portfolios, f=lambda x: x.nav.ewm_volatility(**kwargs))
 
 
 def period(portfolios, before=None, after=None, adjust=True):
-    return nav(portfolios=portfolios, f=lambda x: x.truncate(before=before, after=after, adjust=adjust))
+    return nav(portfolios=portfolios, f=lambda x: x.nav.truncate(before=before, after=after, adjust=adjust))
 
 
 def monthlytable(portfolios):
