@@ -28,21 +28,20 @@ class TestAnalysis(object):
 
     def test_mtd(self, portfolio, portfolios):
         frame = ppa.mtd(portfolios)
-        assert frame.loc["test"]["Apr 20"] == 100*portfolio.nav.mtd_series[pd.Timestamp("2015-04-20")]
+        assert frame.loc["test"]["Apr 20"] == portfolio.nav.mtd_series[pd.Timestamp("2015-04-20")]
 
     def test_ytd(self, portfolio, portfolios):
         frame = ppa.ytd(portfolios)
-        assert frame.loc["test"]["03"] == 100*portfolio.nav.ytd_series[pd.Timestamp("2015-03-31")]
+        assert frame.loc["test"]["03"] == portfolio.nav.ytd_series[pd.Timestamp("2015-03-31")]
 
     def test_recent(self, portfolio, portfolios):
         frame = ppa.recent(portfolios)
-        assert frame.loc["test"]["Apr 20"] == 100*portfolio.nav.recent(n=20)[pd.Timestamp("2015-04-20")]
+        assert frame.loc["test"]["Apr 20"] == portfolio.nav.recent(n=20)[pd.Timestamp("2015-04-20")]
 
     def test_performance(self, portfolios):
         frame = ppa.performance(portfolios)
         x = frame["test"]
         assert x["Kurtosis"] == "6.98"
-
 
     def test_ewm_volatility(self, portfolio, portfolios):
         frame = ppa.ewm_volatility(portfolios)

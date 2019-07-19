@@ -30,24 +30,24 @@ def nav(portfolios, f=lambda x: x) -> pd.DataFrame:
 
 
 def mtd(portfolios):
-    frame = 100*nav(portfolios=portfolios, f=lambda x: fromNav(x).mtd_series).transpose()
+    frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).mtd_series).transpose()
     return __last(frame, datefmt="%b %d")#.applymap(percentage)
 
 
 def ytd(portfolios):
-    frame = 100*nav(portfolios=portfolios, f=lambda x: fromNav(x).ytd_series).transpose()
+    frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).ytd_series).transpose()
     return __last(frame, datefmt="%m")#.applymap(percentage)
 
 
 def recent(portfolios, n=15):
     # define the function
-    frame = 100*nav(portfolios=portfolios, f=lambda x: fromNav(x).recent(n)).tail(n).transpose()
+    frame = nav(portfolios=portfolios, f=lambda x: fromNav(x).recent(n)).tail(n).transpose()
     return __last(frame, datefmt="%b %d")#.applymap(percentage)
 
 
 def sector(portfolios, symbols, total=False):
     assert isinstance(portfolios, dict)
-    frame = 100*pd.DataFrame(
+    frame = pd.DataFrame(
         {name: portfolio.sector(symbols, total=total).iloc[-1] for name, portfolio in portfolios.items()}).transpose()
     frame.index.name = "Portfolio"
     return frame#.applymap(percentage)
