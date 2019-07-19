@@ -1,5 +1,6 @@
 import pandas as pd
 from pyutil.performance.summary import fromNav
+from pyutil.portfolio.format import fint, fdouble, percentage
 
 
 def __last(frame, datefmt=None):
@@ -11,17 +12,17 @@ def __last(frame, datefmt=None):
     return frame
 
 
-def percentage(x):
-    return "{0:.2f}%".format(float(x)).replace("nan%", "")
+#def percentage(x):
+#    return "{0:.2f}%".format(float(x)).replace("nan%", "")
 
-def fdouble(x):
-    return "{0:.2f}".format(float(x)).replace("nan", "")
+#def fdouble(x):
+#    return "{0:.2f}".format(float(x)).replace("nan", "")
 
-def fint(x):
-    try:
-        return "{:d}".format(int(x))
-    except:
-        return ""
+#def fint(x):
+#    try:
+#        return "{:d}".format(int(x))
+#    except:
+#        return ""
 
 def nav(portfolios, f=lambda x: x) -> pd.DataFrame:
     assert isinstance(portfolios, dict)
@@ -30,19 +31,18 @@ def nav(portfolios, f=lambda x: x) -> pd.DataFrame:
 
 def mtd(portfolios):
     frame = 100*nav(portfolios=portfolios, f=lambda x: fromNav(x).mtd_series).transpose()
-    return __last(frame, datefmt="%b %d").applymap(percentage)
+    return __last(frame, datefmt="%b %d")#.applymap(percentage)
 
 
 def ytd(portfolios):
     frame = 100*nav(portfolios=portfolios, f=lambda x: fromNav(x).ytd_series).transpose()
-    return __last(frame, datefmt="%m").applymap(percentage)
+    return __last(frame, datefmt="%m")#.applymap(percentage)
 
 
 def recent(portfolios, n=15):
     # define the function
     frame = 100*nav(portfolios=portfolios, f=lambda x: fromNav(x).recent(n)).tail(n).transpose()
-    print(frame)
-    return __last(frame, datefmt="%b %d").applymap(percentage)
+    return __last(frame, datefmt="%b %d")#.applymap(percentage)
 
 
 def sector(portfolios, symbols, total=False):
@@ -50,7 +50,7 @@ def sector(portfolios, symbols, total=False):
     frame = 100*pd.DataFrame(
         {name: portfolio.sector(symbols, total=total).iloc[-1] for name, portfolio in portfolios.items()}).transpose()
     frame.index.name = "Portfolio"
-    return frame.applymap(percentage)
+    return frame#.applymap(percentage)
 
 
 def performance(portfolios, **kwargs):
@@ -86,7 +86,7 @@ def period(portfolios, before=None, after=None, adjust=True):
 
 def monthlytable(portfolios):
     assert isinstance(portfolios, dict)
-    return {name: (100*portfolio.nav.monthlytable).applymap(percentage) for name, portfolio in portfolios.items()}
+    return {name: portfolio.nav.monthlytable for name, portfolio in portfolios.items()}
 
 def drawdown_periods(portfolios):
     assert isinstance(portfolios, dict)
