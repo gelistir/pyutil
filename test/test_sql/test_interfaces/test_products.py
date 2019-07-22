@@ -77,3 +77,6 @@ class TestProductInterface(object):
         product["Bloomberg Ticker"] = "123"
         missing = product.health(keys=["Bloomberg Ticker", "AAA"])
         assert missing == {"AAA"}
+
+    def test_repr(self, product):
+        assert str(product) == "A"

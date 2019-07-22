@@ -41,17 +41,11 @@ def __postgresql_db_test(base, name=None, echo=False):
 
 
 def database(base, name=None, echo=False):
-    session, connection_str = __postgresql_db_test(base, name=name, echo=echo)
-
     # sometimes it takes a while to fire up the container for the postgresql database
     # we just try, sleep, try again, ... until we finally succeed
-    success = False
-
-    while not success:
+    while True:
         try:
-            db = Database(session=session, connection=connection_str)
-            success = True
+            return __postgresql_db_test(base, name=name, echo=echo)
         except:
             sleep(1)
 
-    return db
