@@ -361,7 +361,8 @@ class Portfolio(object):
         return frame
 
     def to_csv(self, folder, name=None):
-        os.makedirs(folder)
+        if not os.path.exists(folder):
+            os.makedirs(folder)
         name = name or ""
         self.weights.to_csv(os.path.join(folder, "{n}_weights.csv".format(n=name)))
         self.prices.to_csv(os.path.join(folder, "{n}_prices.csv".format(n=name)))
