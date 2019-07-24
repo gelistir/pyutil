@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 from ..performance.summary import fromReturns, NavSeries
 from ..performance.periods import period_returns, periods
@@ -358,3 +359,16 @@ class Portfolio(object):
         frame["{n}leverage".format(n=name)] = self.leverage
         frame["{n}cash".format(n=name)] = self.cash
         return frame
+
+    def to_csv(self, folder, name=None):
+        os.makedirs(folder)
+        name = name or ""
+        self.weights.to_csv(os.path.join(folder, "{n}_weights.csv".format(n=name)))
+        self.prices.to_csv(os.path.join(folder, "{n}_prices.csv".format(n=name)))
+
+    @staticmethod
+    def read_csv(folder, name=None):
+        name = name or ""
+        w = pd.read_csv(os.path.join(folder, "{n}_weights.csv".format(n=name)), index_col=0, parse_dates=True)
+        p = pd.read_csv(os.path.join(folder, "{n}_prices.csv".format(n=name)), index_col=0, parse_dates=True)
+        return Portfolio(prices=p, weights=w)

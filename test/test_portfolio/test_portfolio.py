@@ -210,3 +210,8 @@ class TestPortfolio(object):
 
         frame = portfolio.sector(symbolmap=symbolmap, total=True)
         pdt.assert_frame_equal(frame.head(3), read("sector_total.csv", index_col=0, parse_dates=True))
+
+    def test_csv(self, portfolio):
+        portfolio.to_csv(folder="/tmp/maffay", name="peter")
+        p = Portfolio.read_csv(folder="/tmp/maffay", name="peter")
+        assert similar(portfolio, p)
