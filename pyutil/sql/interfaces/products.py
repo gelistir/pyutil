@@ -81,6 +81,14 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     def __hash__(self):
         return hash(self.name)
 
+    def series(self, **kwargs):
+        return {a.meta["key"] for a in self.__collection__.find(name=self.name, **kwargs)}
+
+        #    assert a.meta["First"] == "Hans"
+        #    assert a.meta["Last"] == "Maffay"
+        #    assert a.meta["key"] in {"PX_LAST", "PX_OPEN"}
+
+
     def read(self, key, **kwargs):
         return self.__collection__.read(name=self.name, key=key, **kwargs)
 

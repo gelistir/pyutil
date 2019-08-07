@@ -21,6 +21,7 @@ def col(ts1):
     # Note that we don't define a name here...
     collection.upsert(value=ts1, key="PX_LAST", First="Hans", Last="Dampf")
     collection.upsert(value=ts1, key="PX_LAST", First="Hans", Last="Maffay")
+    collection.upsert(value=ts1, key="PX_OPEN", First="Hans", Last="Maffay")
     collection.upsert(value=2.0, key="XXX", name="HANS")
     collection.upsert(value=3.0, key="XXX", name="PETER")
     return collection
@@ -35,7 +36,7 @@ class TestMongo(object):
     def test_not_unique(self, col):
         # not unique
         with pytest.raises(AssertionError):
-            # there are two Hans
+            # there are three Hans
             col.find_one(First="Hans")
 
     def test_no_find(self, col):
@@ -47,12 +48,12 @@ class TestMongo(object):
         with pytest.raises(AssertionError):
             col.upsert(value=ts1, key="PX_LAST", First="Hans")
 
-        # check that there are indeed 2
-        assert len([x for x in col.find(First="Hans")]) == 2
+        # check that there are indeed 3
+        assert len([x for x in col.find(First="Hans")]) == 3
 
     def test_overwrite(self, col, ts2):
         col.upsert(value=ts2, key="PX_LAST", First="Hans", Last="Maffay")
-        pdt.assert_series_equal(ts2, col.find_one(Last="Maffay").data)
+        pdt.assert_series_equal(ts2, col.find_one(Last="Maffay", key="PX_LAST").data)
 
     def test_repr(self, col):
         assert str(col)
@@ -63,3 +64,10 @@ class TestMongo(object):
         col.merge(data=ts2.tail(10), key="PX_OPEN", name="H")
         pdt.assert_series_equal(col.read(key="PX_OPEN", name="H"), ts2)
         assert col.last(key="PX_OPEN", name="H") == ts2.last_valid_index()
+
+    def test_ts(self, col):
+        for a in col.find(First="Hans", Last="Maffay"):
+            assert a.meta["First"] == "Hans"
+            assert a.meta["Last"] == "Maffay"
+            assert a.meta["key"] in {"PX_LAST", "PX_OPEN"}
+

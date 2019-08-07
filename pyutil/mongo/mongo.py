@@ -9,6 +9,7 @@ from pyutil.timeseries.merge import merge
 
 
 def mongo_client(host=None, port=None, database=None, username=None, password=None, authSource=None):
+    """ Create a Mongo Client """
     host = host or os.environ["MONGODB_HOST"]
     database = database or os.environ["MONGODB_DATABASE"]
     port = port or os.environ["MONGODB_PORT"]

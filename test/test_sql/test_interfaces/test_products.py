@@ -80,3 +80,6 @@ class TestProductInterface(object):
 
     def test_repr(self, product):
         assert str(product) == "A"
+
+    def test_series(self, product):
+        assert product.series() == {"y"}
