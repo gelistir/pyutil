@@ -68,7 +68,13 @@ class TestProductInterface(object):
         pdt.assert_series_equal(frame["A"], ts1, check_names=False)
 
     def test_series(self, product):
-        assert product.series.keys() == {"x", "y", "Correlation"}
+        for a in product.series.keys(key="Correlation"):
+            assert isinstance(a, dict)
+            assert "second" in a
+            assert "third" in a
+            assert a["key"] == "Correlation"
+            assert a["name"] == "A"
+        #assert product.series.keys() == {"x", "y", "Correlation"}
 
     def test_items(self, product, ts1):
         for a, b in product.series.items(key="Correlation"):

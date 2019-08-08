@@ -83,7 +83,8 @@ class Timeseries(object):
             yield a.meta, a.data
 
     def keys(self, **kwargs):
-        return {a.meta for a in self.__collection.find(name=self.__name, **kwargs)}
+        for a in self.__collection.find(name=self.__name, **kwargs):
+            yield a.meta
 
     def read(self, key, **kwargs):
         return self.__collection.read(name=self.__name, key=key, **kwargs)
