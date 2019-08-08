@@ -19,9 +19,9 @@ def symbol(ts):
     ProductInterface.__collection_reference__ = create_collection()
 
     symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
-    symbol.write(data=ts, key="PX_OPEN")
-    symbol["xxx"] = "A"
-    symbol.write(data=ts, key="PX_LAST")
+    symbol.series["PX_OPEN"] = ts
+    symbol.reference["xxx"] = "A"
+    symbol.series["PX_LAST"] = ts
 
     return symbol
 
@@ -35,19 +35,18 @@ class TestSymbol(object):
         assert "Alternatives" in SymbolTypes.keys()
 
     def test_prices_1(self, symbol, ts):
-        pdt.assert_series_equal(symbol.read(key="PX_OPEN"), ts)
+        pdt.assert_series_equal(symbol.series["PX_OPEN"], ts)
 
         frame = Symbol.pandas_frame(products=[symbol], key="PX_OPEN")
         pdt.assert_series_equal(frame[symbol], ts, check_names=False)
 
     def test_prices_2(self, symbol, ts):
-        pdt.assert_series_equal(symbol.read(key="PX_LAST"), ts)
+        pdt.assert_series_equal(symbol.series["PX_LAST"], ts)
 
+        symbol.series.merge(data=2 * ts.tail(100), key="PX_LAST")
+        pdt.assert_series_equal(symbol.series["PX_LAST"].tail(100), 2 * ts.tail(100))
 
-        symbol.merge(data=2 * ts.tail(100), key="PX_LAST")
-        pdt.assert_series_equal(symbol.read(key="PX_LAST").tail(100), 2 * ts.tail(100))
-
-        assert symbol.last(key="PX_LAST") == ts.last_valid_index()
+        assert symbol.series.last(key="PX_LAST") == ts.last_valid_index()
 
     def test_reference_frame(self, symbol):
         frame = Symbol.reference_frame(symbols=[symbol])

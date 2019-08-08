@@ -27,7 +27,7 @@ def product(ts1):
     Product.__collection__ = create_collection()
     Product.__collection_reference__ = create_collection()
     p = Product(name="A")
-    p.write(data=ts1, key="y")
+    p.series["y"] = ts1
     return p
 
 
@@ -43,12 +43,12 @@ class TestProductInterface(object):
         assert Product.__collection_reference__
 
     def test_timeseries(self, product, ts1):
-        pdt.assert_series_equal(ts1, product.read(key="y"))
+        pdt.assert_series_equal(ts1, product.series["y"])
 
     def test_merge(self, product, ts1, ts2):
-        product.write(data=ts1, key="x")
-        product.write(data=ts2, key="x")
-        pdt.assert_series_equal(product.read(key="x"), ts2)
+        product.series["x"] = ts1
+        product.series["x"] = ts2
+        pdt.assert_series_equal(product.series["x"], ts2)
         frame = Product.pandas_frame(products=[product], key="x")
         pdt.assert_series_equal(frame[product], ts2, check_names=False)
 
@@ -60,9 +60,9 @@ class TestProductInterface(object):
     def test_meta(self):
         p1 = Product(name="A")
         p2 = Product(name="B")
-        p1["xxx"] = 1
-        p1["yyy"] = 2
-        p2["zzz"] = 3
+        p1.reference["xxx"] = 1
+        p1.reference["yyy"] = 2
+        p2.reference["zzz"] = 3
 
         frame = Product.reference_frame(products=[p1, p2]).transpose()
         assert frame[p1]["yyy"] == 2
@@ -74,12 +74,12 @@ class TestProductInterface(object):
         pdt.assert_series_equal(frame["A"], ts1, check_names=False)
 
     def test_health(self, product):
-        product["Bloomberg Ticker"] = "123"
-        missing = product.health(keys=["Bloomberg Ticker", "AAA"])
+        product.reference["Bloomberg Ticker"] = "123"
+        missing = product.reference.health(keys=["Bloomberg Ticker", "AAA"])
         assert missing == {"AAA"}
 
     def test_repr(self, product):
         assert str(product) == "A"
 
     def test_series(self, product):
-        assert product.series() == {"y"}
+        assert product.series.keys() == {"y"}

@@ -47,13 +47,13 @@ class TestOwner(object):
         # create a security
         s1 = Security(name="123", fullname="A")
 
-        s1["KIID"] = 5
-        assert s1["KIID"] == 5
+        s1.reference["KIID"] = 5
+        assert s1.reference["KIID"] == 5
 
         # create a 2nd security
         s2 = Security(name="211", fullname="B")
-        s2["KIID"] = 7
-        assert s2["KIID"] == 7
+        s2.reference["KIID"] = 7
+        assert s2.reference["KIID"] == 7
 
         #assert owner.custodians == set([])
         #assert owner.securities == set([])
@@ -98,15 +98,15 @@ class TestOwner(object):
 
     def test_returns(self, ts1, ts2, ts3):
         o = Owner(name="222")
-        o.write(data=ts1, key="RETURN")
-        pdt.assert_series_equal(ts1, o.read(key="RETURN"))
+        o.series["RETURN"] = ts1 #.write(data=ts1, key="RETURN")
+        pdt.assert_series_equal(ts1, o.series["RETURN"])
 
-        o.write(data=merge(new=ts2, old=ts1), key="RETURN")
+        o.series["RETURN"] = merge(new=ts2, old=ts1)
         pdt.assert_series_equal(merge(new=ts2, old=ts1), ts3)
 
-        print(o.read("RETURN"))
+        #"RETURN"))
         #ts=pd.Series(data=[250, 300], index=[1, 2]))
-        pdt.assert_series_equal(ts3, o.read(key="RETURN"))
+        pdt.assert_series_equal(ts3, o.series["RETURN"])
 
     #def test_volatility(self):
     #    o = Owner(name="222")
@@ -131,7 +131,7 @@ class TestOwner(object):
         assert o.currency == Currency(name="CHF")
 
         #f = Field(name="z", type=FieldType.dynamic, result=DataType.integer)
-        o["z"] = 20
+        o.reference["z"] = 20
         #o.reference[f] = 20
 
         frame = pd.DataFrame(index=["z","Currency", "Entity ID", "Name"], columns=[o],

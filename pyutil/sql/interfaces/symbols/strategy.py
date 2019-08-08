@@ -55,8 +55,8 @@ class Strategy(ProductInterface):
 
     @property
     def portfolio(self):
-        prices = self.read(key="PRICES")
-        weights = self.read(key="WEIGHTS")
+        prices = self.series.get(item="PRICES", default=None)
+        weights = self.series.get(item="WEIGHTS", default=None)
 
         if prices is None and weights is None:
             return None
@@ -65,8 +65,8 @@ class Strategy(ProductInterface):
 
     @portfolio.setter
     def portfolio(self, portfolio):
-        self.write(data=portfolio.weights, key="WEIGHTS")
-        self.write(data=portfolio.prices, key="PRICES")
+        self.series["WEIGHTS"] = portfolio.weights  #.write(data=portfolio.weights, key="WEIGHTS")
+        self.series["PRICES"] = portfolio.prices    #.write(data=portfolio.prices, key="PRICES")
 
     @property
     def assets(self):

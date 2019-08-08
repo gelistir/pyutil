@@ -17,7 +17,7 @@ def database(db):
     # add assets to database
     for asset, data in read(name="price.csv", index_col=0, parse_dates=True, header=0).items():
         symbol = Symbol(name=asset, group=SymbolType.fixed_income)
-        symbol.write(data=data.dropna(), key="PX_LAST")
+        symbol.series["PX_LAST"] = data.dropna()
         db.session.add(symbol)
 
     # add strategies to database

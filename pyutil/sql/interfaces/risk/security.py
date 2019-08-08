@@ -12,7 +12,7 @@ class Security(ProductInterface):
         self.fullname = fullname
 
     def __repr__(self):
-        return "Security({id}: {name})".format(id=self.name, name=self["Name"])
+        return "Security({id}: {name})".format(id=self.name, name=self.reference["Name"])
 
     @staticmethod
     def reference_frame(securities, f=lambda x: x):

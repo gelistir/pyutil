@@ -32,21 +32,89 @@ class TableName(object):
         return cls.__name__.lower()
 
 
-class Mongo(object):
+class Reference(object):
+    def __init__(self, name, collection):
+        self.__collection = collection
+        self.__name = name
+
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def series(self):
+        return pd.Series({a.meta["key"]: a.data for a in self.__collection.find(name=self.__name)})
+
+    def __setitem__(self, key, value):
+        """
+        :param key:
+        :param value:
+        """
+        self.__collection.upsert(name=self.name, value=value, key=key)
+
+    def __getitem__(self, item):
+        try:
+            return self.__collection.find_one(name=self.name, key=item).data
+        except AttributeError:
+            return None
+
+    def health(self, keys):
+        """
+        :type keys:
+        """
+        return {key for key in keys if self[key] is None}
+
+    def get(self, item, default=None):
+        try:
+            return self.__collection.find_one(name=self.name, key=item).data
+        except AttributeError:
+            return default
+
+
+class Timeseries(object):
+    def __init__(self, name, collection):
+        self.__collection = collection
+        self.__name = name
+
+    @property
+    def name(self):
+        return self.__name
+
+    def keys(self, **kwargs):
+        return {a.meta["key"] for a in self.__collection.find(name=self.name, **kwargs)}
+
+    def read(self, key, **kwargs):
+        return self.__collection.read(name=self.name, key=key, **kwargs)
+
+    def write(self, data, key, **kwargs):
+        self.__collection.write(data=data, key=key, name=self.name, **kwargs)
+
+    def merge(self, data, key, **kwargs):
+        self.__collection.merge(data=data, key=key, name=self.name, **kwargs)
+
+    def last(self, key, **kwargs):
+        return self.__collection.last(key=key, name=self.name, **kwargs)
+
+    def get(self, item, default=None, **kwargs):
+        try:
+            return self.read(key=item, **kwargs)
+        except KeyError:
+            return default
+
+    def __getitem__(self, item):
+        return self.get(item=item, default=None)
+
+    def __setitem__(self, key, value):
+        """
+        :param key:
+        :param value:
+        """
+        self.write(data=value, key=key)
+
+
+class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
     _client = mongo_client()
 
-    @declared_attr
-    def __collection__(cls):
-        # this is a very fast operation, as a new client is not created here...
-        return create_collection(name=cls.__name__.lower(), client=cls._client)
-
-    @declared_attr
-    def __collection_reference__(cls):
-        # this is a very fast operation, as a new client is not created here...
-        return create_collection(name=cls.__name__.lower() + "_reference", client=cls._client)
-
-
-class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     # note that the name should not be unique as Portfolio and Strategy can have the same name
     __name = sq.Column("name", sq.String(200), nullable=True)
 
@@ -55,6 +123,8 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
 
     def __init__(self, name, **kwargs):
         self.__name = str(name)
+        self.__reference = Reference(name=self.name, collection=self.__collection_reference__)
+        self.__series = Timeseries(name=self.name, collection=self.__collection__)
 
     @hybrid_property
     def name(self):
@@ -65,8 +135,13 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
         return self.__name
 
     @property
-    def reference_series(self):
-        return pd.Series({a.meta["key"]: a.data for a in self.__collection_reference__.find(name=self.name)})
+    def reference(self):
+        return Reference(name=self.name, collection=self.__collection_reference__)
+
+    @property
+    def series(self):
+        # isn't that very expensive
+        return Timeseries(name=self.name, collection=self.__collection__)
 
     def __repr__(self):
         return "{name}".format(name=self.name)
@@ -81,57 +156,28 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Mongo, Base):
     def __hash__(self):
         return hash(self.name)
 
-    def series(self, **kwargs):
-        return {a.meta["key"] for a in self.__collection__.find(name=self.name, **kwargs)}
-
-        #    assert a.meta["First"] == "Hans"
-        #    assert a.meta["Last"] == "Maffay"
-        #    assert a.meta["key"] in {"PX_LAST", "PX_OPEN"}
-
-
-    def read(self, key, **kwargs):
-        return self.__collection__.read(name=self.name, key=key, **kwargs)
-
-    def write(self, data, key, **kwargs):
-        self.__collection__.write(data=data, key=key, name=self.name, **kwargs)
-
-    def merge(self, data, key, **kwargs):
-        self.__collection__.merge(data=data, key=key, name=self.name, **kwargs)
-
-    def last(self, key, **kwargs):
-        return self.__collection__.last(key=key, name=self.name, **kwargs)
-
     @classmethod
     def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
-        frame = pd.DataFrame({product: product.reference_series for product in products}).transpose()
+        frame = pd.DataFrame({product: product.reference.series for product in products}).transpose()
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index()
 
     @classmethod
     def pandas_frame(cls, key, products, f=lambda x: x, **kwargs) -> pd.DataFrame:
-        frame = pd.DataFrame({product: product.read(key=key, **kwargs) for product in products})
+        frame = pd.DataFrame({product: product.series.read(key=key, **kwargs) for product in products})
         frame = frame.dropna(axis=1, how="all").transpose()
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index().transpose()
 
-    def __setitem__(self, key, value):
-        """
-        :param key:
-        :param value:
-        """
-        self.__collection_reference__.upsert(name=self.name, value=value, key=key)
+    @declared_attr
+    def __collection__(cls):
+        # this is a very fast operation, as a new client is not created here...
+        return create_collection(name=cls.__name__.lower(), client=cls._client)
 
-    def __getitem__(self, item):
-        try:
-            return self.__collection_reference__.find_one(name=self.name, key=item).data
-        except AttributeError:
-            return None
+    @declared_attr
+    def __collection_reference__(cls):
+        # this is a very fast operation, as a new client is not created here...
+        return create_collection(name=cls.__name__.lower() + "_reference", client=cls._client)
 
-    def health(self, keys):
-        """
-
-        :type keys:
-        """
-        return {key for key in keys if self[key] is None}
