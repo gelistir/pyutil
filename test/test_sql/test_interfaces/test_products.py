@@ -74,7 +74,8 @@ class TestProductInterface(object):
             assert "third" in a
             assert a["key"] == "Correlation"
             assert a["name"] == "A"
-        #assert product.series.keys() == {"x", "y", "Correlation"}
+
+        assert len([a for a in product.series]) == 4
 
     def test_items(self, product, ts1):
         for a, b in product.series.items(key="Correlation"):
