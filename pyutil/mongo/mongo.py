@@ -95,8 +95,8 @@ class _Collection(object):
         try:
             return self.find_one(**kwargs).data
         except AttributeError:
-            raise KeyError("No data for {k} has been found".format(k=kwargs))
-        #    return None
+            #raise KeyError("No data for {k} has been found".format(k=kwargs))
+            return None
 
     def write(self, data, **kwargs):
         self.upsert(value=data, **kwargs)
@@ -108,5 +108,5 @@ class _Collection(object):
     def last(self, **kwargs):
         try:
             return self.read(**kwargs).last_valid_index()
-        except KeyError:
+        except AttributeError:
             return None
