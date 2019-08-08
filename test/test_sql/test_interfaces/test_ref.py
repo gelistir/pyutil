@@ -1,15 +1,13 @@
 import pandas as pd
 import pytest
 
-from pyutil.mongo.mongo import create_collection
+from pyutil.mongo.mongo import mongo_client
 from test.test_sql.product import Product
 import pandas.util.testing as pdt
 
 
 @pytest.fixture()
 def product():
-    Product.__collection__ = create_collection()
-    Product.__collection_reference__ = create_collection()
     product = Product(name="A")
     product.reference["aaa"] = "A"
     product.reference["bbb"] = "Z"
@@ -23,10 +21,16 @@ class TestReference(object):
         assert product.reference["bbb"] == "Z"
 
     def test_ref_series(self, product):
-        pdt.assert_series_equal(product.reference.series, pd.Series({"aaa": "A", "bbb": "Z"}))
+        assert product.reference.keys() == {"aaa", "bbb"}
 
     def test_ref_frame_1(self, product):
         f1 = Product.reference_frame(products=[product])
         f2 = pd.DataFrame(index=[product], columns=["aaa", "bbb"], data=[["A", "Z"]])
         pdt.assert_frame_equal(f1, f2, check_names=False)
         assert f1.index.name == "product"
+
+    def test_get(self, product):
+        assert product.reference.get(item="NoNoNo", default=5) == 5
+
+    def test_items(self, product):
+        assert {k: v for k, v in product.reference.items()} == {"aaa": "A", "bbb": "Z"}

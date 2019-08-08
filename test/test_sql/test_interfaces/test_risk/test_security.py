@@ -60,7 +60,3 @@ class TestSecurity(object):
         frame1 = Security.reference_frame(securities=[security], f=lambda x: x.name)
         frame2 = pd.DataFrame(index=["100"], columns=["Bloomberg Ticker", "fullname"], data=[["IBM US Equity", "Peter Maffay"]])
         pdt.assert_frame_equal(frame1, frame2, check_names=False)
-
-    def test_health(self, security):
-        missing = security.reference.health(keys=["Bloomberg Ticker", "AAA"])
-        assert missing == {"AAA"}

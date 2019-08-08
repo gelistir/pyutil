@@ -38,35 +38,29 @@ class Reference(object):
         self.__name = name
 
     @property
-    def name(self):
-        return self.__name
+    def collection(self):
+        return self.__collection
 
-    @property
-    def series(self):
-        return pd.Series({a.meta["key"]: a.data for a in self.__collection.find(name=self.__name)})
+    def __iter__(self):
+        for a in self.__collection.find(name=self.__name):
+            yield a.meta["key"]
+
+    def items(self):
+        for a in self.__collection.find(name=self.__name):
+            yield a.meta["key"], a.data
+
+    def keys(self):
+        return set([a for a in self])
 
     def __setitem__(self, key, value):
-        """
-        :param key:
-        :param value:
-        """
-        self.__collection.upsert(name=self.name, value=value, key=key)
+        self.__collection.upsert(name=self.__name, value=value, key=key)
 
     def __getitem__(self, item):
-        try:
-            return self.__collection.find_one(name=self.name, key=item).data
-        except AttributeError:
-            return None
-
-    def health(self, keys):
-        """
-        :type keys:
-        """
-        return {key for key in keys if self[key] is None}
+        return self.get(item=item, default=None)
 
     def get(self, item, default=None):
         try:
-            return self.__collection.find_one(name=self.name, key=item).data
+            return self.__collection.find_one(name=self.__name, key=item).data
         except AttributeError:
             return default
 
@@ -77,23 +71,31 @@ class Timeseries(object):
         self.__name = name
 
     @property
-    def name(self):
-        return self.__name
+    def collection(self):
+        return self.__collection
+
+    def __iter__(self):
+        for a in self.__collection.find(name=self.__name):
+            yield a.meta
+
+    def items(self, **kwargs):
+        for a in self.__collection.find(name=self.__name, **kwargs):
+            yield a.meta, a.data
 
     def keys(self, **kwargs):
-        return {a.meta["key"] for a in self.__collection.find(name=self.name, **kwargs)}
+        return {a.meta for a in self.__collection.find(name=self.__name, **kwargs)}
 
     def read(self, key, **kwargs):
-        return self.__collection.read(name=self.name, key=key, **kwargs)
+        return self.__collection.read(name=self.__name, key=key, **kwargs)
 
     def write(self, data, key, **kwargs):
-        self.__collection.write(data=data, key=key, name=self.name, **kwargs)
+        self.__collection.write(data=data, key=key, name=self.__name, **kwargs)
 
     def merge(self, data, key, **kwargs):
-        self.__collection.merge(data=data, key=key, name=self.name, **kwargs)
+        self.__collection.merge(data=data, key=key, name=self.__name, **kwargs)
 
     def last(self, key, **kwargs):
-        return self.__collection.last(key=key, name=self.name, **kwargs)
+        return self.__collection.last(key=key, name=self.__name, **kwargs)
 
     def get(self, item, default=None, **kwargs):
         try:
@@ -158,14 +160,14 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
 
     @classmethod
     def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
-        frame = pd.DataFrame({product: product.reference.series for product in products}).transpose()
+        frame = pd.DataFrame({product: pd.Series({key: product.reference[key] for key in product.reference}) for product in products}).transpose()
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index()
 
     @classmethod
     def pandas_frame(cls, key, products, f=lambda x: x, **kwargs) -> pd.DataFrame:
-        frame = pd.DataFrame({product: product.series.read(key=key, **kwargs) for product in products})
+        frame = pd.DataFrame({product: product.series.get(item=key, default=None, *kwargs) for product in products})
         frame = frame.dropna(axis=1, how="all").transpose()
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
