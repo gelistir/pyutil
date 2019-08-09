@@ -69,5 +69,5 @@ tag: test
 	git push --tags
 
 clean:
-	docker-compose -f docker-compose.yml down -v --rmi all --remove-orphans
+	#docker-compose -f docker-compose.yml down -v --rmi all --remove-orphans
 	docker-compose -f docker-compose.test.yml down -v --rmi all --remove-orphans
