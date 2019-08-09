@@ -168,7 +168,7 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
 
     @classmethod
     def pandas_frame(cls, key, products, f=lambda x: x, **kwargs) -> pd.DataFrame:
-        frame = pd.DataFrame({product: product.series.get(item=key, default=None, *kwargs) for product in products})
+        frame = pd.DataFrame({product: product.series.read(key=key, **kwargs) for product in products})
         frame = frame.dropna(axis=1, how="all").transpose()
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()

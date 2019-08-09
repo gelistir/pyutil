@@ -37,7 +37,3 @@ class Symbol(ProductInterface):
         frame["Internal"] = pd.Series({f(symbol): symbol.internal for symbol in symbols})
         frame.index.name = "symbol"
         return frame
-
-    #@staticmethod
-    #def pandas_frame(symbols, key):
-    #        return Symbol._pandas_frame(products=symbols, key=key)

@@ -36,7 +36,7 @@ build:
 	docker-compose build jupyter
 	docker-compose build pyutil
 
-test:
+test: clean
 	mkdir -p artifacts
 	#docker-compose -f docker-compose.test.yml build sut
 	docker-compose -f docker-compose.test.yml run sut
