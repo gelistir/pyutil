@@ -36,9 +36,9 @@ build:
 	docker-compose build jupyter
 	docker-compose build pyutil
 
-test: clean
+test:
 	mkdir -p artifacts
-	#docker-compose -f docker-compose.test.yml build sut
+	docker-compose -f docker-compose.test.yml down -v --rmi all --remove-orphans
 	docker-compose -f docker-compose.test.yml run sut
 
 teamcity: test doc
@@ -67,7 +67,3 @@ doc: test
 tag: test
 	git tag -a ${PROJECT_VERSION} -m "new tag"
 	git push --tags
-
-clean:
-	#docker-compose -f docker-compose.yml down -v --rmi all --remove-orphans
-	docker-compose -f docker-compose.test.yml down -v --rmi all --remove-orphans

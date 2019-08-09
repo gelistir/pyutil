@@ -55,8 +55,8 @@ class Strategy(ProductInterface):
 
     @property
     def portfolio(self):
-        prices = self.series.get(item="PRICES", default=None)
-        weights = self.series.get(item="WEIGHTS", default=None)
+        prices = self.series["PRICES"] #.get(item="PRICES", default=None)
+        weights = self.series["WEIGHTS"] #.get(item="WEIGHTS", default=None)
 
         if prices is None and weights is None:
             return None

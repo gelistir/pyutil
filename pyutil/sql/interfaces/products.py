@@ -98,14 +98,14 @@ class Timeseries(object):
     def last(self, key, **kwargs):
         return self.collection.last(key=key, name=self.__name, **kwargs)
 
-    def get(self, item, default=None, **kwargs):
-        try:
-            return self.read(key=item, **kwargs)
-        except KeyError:
-            return default
+    #def get(self, item, default=None, **kwargs):
+    #    try:
+    #        return self.read(key=item, **kwargs)
+    #    except KeyError:
+    #        return default
 
     def __getitem__(self, item):
-        return self.get(item=item, default=None)
+        return self.read(key=item)
 
     def __setitem__(self, key, value):
         """
