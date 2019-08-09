@@ -8,8 +8,8 @@ from pyutil.strategy.config import ConfigMaster
 from test.config import test_portfolio, read
 
 # point to a new mongo collection...
-ProductInterface.__collection__ = create_collection()
-ProductInterface.__collection_reference__ = create_collection()
+ProductInterface.collection = create_collection()
+ProductInterface.collection_reference = create_collection()
 
 
 @pytest.fixture()

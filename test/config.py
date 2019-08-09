@@ -27,8 +27,8 @@ def test_portfolio():
 @pytest.fixture()
 def db():
     # point to a new mongo collection...
-    ProductInterface.__collection__ = create_collection()
-    ProductInterface.__collection_reference__ = create_collection()
+    ProductInterface.collection = create_collection()
+    ProductInterface.collection_reference = create_collection()
 
     # new db
     return database(base=Base)

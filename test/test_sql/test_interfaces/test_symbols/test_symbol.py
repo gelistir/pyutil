@@ -15,8 +15,8 @@ def ts():
 @pytest.fixture()
 def symbol(ts):
     # point to a new mongo collection...
-    ProductInterface.__collection__ = create_collection()
-    ProductInterface.__collection_reference__ = create_collection()
+    ProductInterface.collection = create_collection()
+    ProductInterface.collection_reference = create_collection()
 
     symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
     symbol.series["PX_OPEN"] = ts

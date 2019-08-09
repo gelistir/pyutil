@@ -126,8 +126,8 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
 
     def __init__(self, name, **kwargs):
         self.__name = str(name)
-        self.__reference = Reference(name=self.name, collection=self.__collection_reference__)
-        self.__series = Timeseries(name=self.name, collection=self.__collection__)
+        self.__reference = Reference(name=self.name, collection=self.collection_reference)
+        self.__series = Timeseries(name=self.name, collection=self.collection)
 
     @hybrid_property
     def name(self):
@@ -139,12 +139,12 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
 
     @property
     def reference(self):
-        return Reference(name=self.name, collection=self.__collection_reference__)
+        return Reference(name=self.name, collection=self.collection_reference)
 
     @property
     def series(self):
         # isn't that very expensive
-        return Timeseries(name=self.name, collection=self.__collection__)
+        return Timeseries(name=self.name, collection=self.collection)
 
     def __repr__(self):
         return "{name}".format(name=self.name)
@@ -174,13 +174,13 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
         frame.index.name = cls.__name__.lower()
         return frame.sort_index().transpose()
 
-    @declared_attr
-    def __collection__(cls):
+    @declared_attr.cascading
+    def collection(cls):
         # this is a very fast operation, as a new client is not created here...
         return create_collection(name=cls.__name__.lower(), client=cls._client)
 
-    @declared_attr
-    def __collection_reference__(cls):
+    @declared_attr.cascading
+    def collection_reference(cls):
         # this is a very fast operation, as a new client is not created here...
         return create_collection(name=cls.__name__.lower() + "_reference", client=cls._client)
 

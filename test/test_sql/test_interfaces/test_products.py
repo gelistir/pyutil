@@ -25,8 +25,8 @@ def ts3():
 # point to a new mongo collection...
 @pytest.fixture()
 def product(ts1):
-    Product.__collection__ = create_collection()
-    Product.__collection_reference__ = create_collection()
+    Product.collection = create_collection()
+    Product.collection_reference = create_collection()
     # Product._client = mongo_client()
     p = Product(name="A")
     p.series["y"] = ts1

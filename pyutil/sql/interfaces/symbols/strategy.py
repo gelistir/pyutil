@@ -74,7 +74,7 @@ class Strategy(ProductInterface):
 
     @property
     def last_valid_index(self):
-        return self.__collection__.last(key="PRICES", name=self.name)
+        return self.collection.last(key="PRICES", name=self.name)
 
     @staticmethod
     def reference_frame(strategies, f=lambda x: x) -> pd.DataFrame:
