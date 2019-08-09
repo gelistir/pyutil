@@ -161,7 +161,7 @@ class ProductInterface(TableName, HasIdMixin, MapperArgs, Base):
 
     @classmethod
     def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
-        frame = pd.DataFrame({product: pd.Series({key: product.reference[key] for key in product.reference}) for product in products}).transpose()
+        frame = pd.DataFrame({product: pd.Series({key: data for key, data in product.reference.items()}) for product in products}).transpose()
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index()
