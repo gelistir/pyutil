@@ -10,16 +10,10 @@ from pyutil.sql.interfaces.products import Timeseries, Reference
 class Product(object):
 
     __client = mongo_client()
-
-    #@declared_attr.cascading
-    #def __tablename__(cls):
-    #    return cls.__name__.lower()
-
-    #id = Column(Integer, primary_key=True, autoincrement=True)
-    __name = Column(String(1000), unique=True, nullable=False)
+    __name = Column("name", String(1000), unique=True, nullable=False)
 
     def __init__(self, name):
-        self.__name = name
+        self.__name = str(name)
 
     @hybrid_property
     def name(self):
@@ -75,8 +69,3 @@ class Product(object):
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index().transpose()
-
-
-#class MyModel(Product, Base):
-#    def __init__(self, name):
-#        super().__init__(name)
