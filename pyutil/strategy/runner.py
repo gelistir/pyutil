@@ -4,7 +4,7 @@ import multiprocessing as mp
 
 import pandas as pd
 
-from pyutil.mongo.mongo import mongo_client
+#from pyutil.mongo.mongo import mongo_client
 from pyutil.portfolio.portfolio import Portfolio
 
 
@@ -13,7 +13,7 @@ def _strategy_update(strategy_id, connection_str, logger, n):
     from pyutil.sql.session import session
     from pyutil.sql.interfaces.symbols.strategy import Strategy
     from pyutil.sql.interfaces.symbols.symbol import Symbol
-    from pyutil.sql.product import Product
+    #from pyutil.sql.product import Product
 
 
     def reader(session):
@@ -24,7 +24,7 @@ def _strategy_update(strategy_id, connection_str, logger, n):
         # extract the strategy you need
 
         # make a fresh mongo client
-        Product._client = mongo_client()
+        # Product._client = mongo_client()
 
         strategy = session.query(Strategy).filter_by(id=strategy_id).one()
         last = strategy.last_valid_index

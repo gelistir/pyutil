@@ -3,7 +3,7 @@ from sqlalchemy import String, Column
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 
-from pyutil.mongo.mongo import mongo_client, create_collection
+from pyutil.mongo.mongo import create_collection
 
 
 class _Reference(object):
@@ -84,7 +84,7 @@ class _Timeseries(object):
 
 
 class Product(object):
-    __client = mongo_client()
+    __client = None
     __name = Column("name", String(1000), unique=True, nullable=False)
 
     def __init__(self, name):
