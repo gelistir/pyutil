@@ -20,11 +20,15 @@ def _strategy_update(strategy_id, connection_str, logger, n):
         return lambda name: session.query(Symbol).filter(Symbol.name == name).one().series["PX_LAST"]
 
     # make a fresh mongo client
-    Product._client = mongo_client()
+    #Product._client = mongo_client()
 
     # do a read is enough...
     with session(connection_str=connection_str) as session:
         # extract the strategy you need
+
+        # make a fresh mongo client
+        Product._client = mongo_client()
+
         strategy = session.query(Strategy).filter_by(id=strategy_id).one()
         last = strategy.last_valid_index
 
