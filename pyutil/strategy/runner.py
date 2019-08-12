@@ -44,8 +44,8 @@ def _strategy_update(strategy_id, connection_str, logger, n):
         return strategy.name, strategy.portfolio
 
 
-def run(strategies, connection_str, logger=None, n=10):
+def run(strategy_ids, connection_str, logger=None, n=10):
     pool = mp.Pool(mp.cpu_count())
     logger = logger or logging.getLogger(__name__)
     __update = partial(_strategy_update, connection_str=connection_str, logger=logger, n=n)
-    return {r[0]: r[1] for r in pool.map(__update, [x.id for x in strategies])}
+    return {r[0]: r[1] for r in pool.map(__update, strategy_ids)}

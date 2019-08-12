@@ -43,7 +43,7 @@ def database():
 
 class TestRunner(object):
     def test_runner(self, database):
-        r = run(strategies=database.session.query(Strategy), connection_str=database.connection)
+        r = run(strategy_ids=[s.id for s in database.session.query(Strategy)], connection_str=database.connection)
 
         assert pytest.approx(r["P1"].nav.sharpe_ratio(), -0.23551923609559777, abs=1e-5)
         assert pytest.approx(r["P2"].nav.sharpe_ratio(), -0.20271329554571058, abs=1e-5)
