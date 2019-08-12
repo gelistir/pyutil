@@ -2,13 +2,13 @@ import pandas as pd
 import pytest
 
 from pyutil.mongo.mongo import mongo_client
-from test.test_sql.product import Product
+from test.test_sql.product import Maffay
 import pandas.util.testing as pdt
 
 
 @pytest.fixture()
 def product():
-    product = Product(name="A")
+    product = Maffay(name="A")
     product.reference["aaa"] = "A"
     product.reference["bbb"] = "Z"
     return product
@@ -24,10 +24,10 @@ class TestReference(object):
         assert product.reference.keys() == {"aaa", "bbb"}
 
     def test_ref_frame_1(self, product):
-        f1 = Product.reference_frame(products=[product])
+        f1 = Maffay.reference_frame(products=[product])
         f2 = pd.DataFrame(index=[product], columns=["aaa", "bbb"], data=[["A", "Z"]])
         pdt.assert_frame_equal(f1, f2, check_names=False)
-        assert f1.index.name == "product"
+        assert f1.index.name == "maffay"
 
     def test_get(self, product):
         assert product.reference.get(item="NoNoNo", default=5) == 5

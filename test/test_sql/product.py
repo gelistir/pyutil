@@ -1,6 +1,7 @@
-from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.base import Base
+from pyutil.sql.ppp import Product
 
 
-class Product(ProductInterface):
+class Maffay(Product, Base):
     def __init__(self, name, **kwargs):
         super().__init__(name, **kwargs)

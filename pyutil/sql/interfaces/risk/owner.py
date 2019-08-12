@@ -3,11 +3,13 @@ import sqlalchemy as sq
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 
-from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.base import Base
+#from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.custodian import Currency
+from pyutil.sql.ppp import Product
 
 
-class Owner(ProductInterface):
+class Owner(Product, Base):
     fullname = sq.Column("fullname", sq.String, nullable=True)
 
     __currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=True)
@@ -97,7 +99,7 @@ class Owner(ProductInterface):
 
     @staticmethod
     def reference_frame(owners, f=lambda x: x) -> pd.DataFrame:
-        frame = ProductInterface.reference_frame(products=owners, f=f)
+        frame = Product.reference_frame(products=owners, f=f)
         # that's why owners can't be None
         frame["Currency"] = pd.Series({f(owner): owner.currency.name for owner in owners})
         frame["Entity ID"] = pd.Series({f(owner): owner.name for owner in owners})

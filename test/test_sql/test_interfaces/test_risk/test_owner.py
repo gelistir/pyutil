@@ -3,7 +3,6 @@ import pandas.util.testing as pdt
 import pytest
 
 from pyutil.mongo.mongo import create_collection
-from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
@@ -39,8 +38,8 @@ def owner():
 #    return Field(name="KIID", result=DataType.integer, type=FieldType.other)
 
 # point to a new mongo collection...
-ProductInterface.collection = create_collection()
-ProductInterface.collection_reference = create_collection()
+Owner.collection = create_collection()
+Owner.collection_reference = create_collection()
 
 class TestOwner(object):
     def test_position(self, owner):

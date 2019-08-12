@@ -3,7 +3,6 @@ import pytest
 import pandas.util.testing as pdt
 
 from pyutil.mongo.mongo import create_collection
-from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType, SymbolTypes
 from test.config import read
 
@@ -15,8 +14,8 @@ def ts():
 @pytest.fixture()
 def symbol(ts):
     # point to a new mongo collection...
-    ProductInterface.collection = create_collection()
-    ProductInterface.collection_reference = create_collection()
+    Symbol.collection = create_collection()
+    Symbol.collection_reference = create_collection()
 
     symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
     symbol.series["PX_OPEN"] = ts

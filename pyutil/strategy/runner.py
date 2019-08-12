@@ -7,9 +7,10 @@ import pandas as pd
 from pyutil.mongo.mongo import mongo_client
 from pyutil.portfolio.portfolio import Portfolio
 
-from pyutil.sql.interfaces.products import ProductInterface
+#from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
+from pyutil.sql.ppp import Product
 
 
 def _strategy_update(strategy_id, connection_str, logger, n):
@@ -19,7 +20,7 @@ def _strategy_update(strategy_id, connection_str, logger, n):
         return lambda name: session.query(Symbol).filter(Symbol.name == name).one().series["PX_LAST"]
 
     # make a fresh mongo client
-    ProductInterface._client = mongo_client()
+    Product._client = mongo_client()
 
     # do a read is enough...
     with session(connection_str=connection_str) as session:

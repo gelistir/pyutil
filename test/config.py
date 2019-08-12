@@ -1,14 +1,12 @@
 import os
 
 import pandas as pd
-import pytest
+#import pytest
 
-from pyutil.mongo.mongo import create_collection
 from pyutil.portfolio.portfolio import Portfolio
-from pyutil.sql.base import Base
-from pyutil.sql.interfaces.products import ProductInterface
+#from pyutil.sql.base import Base
 from pyutil.testing.aux import resource_folder
-from pyutil.testing.database import database
+#from pyutil.testing.database import database
 
 pd.options.display.width = 300
 
@@ -24,11 +22,7 @@ def test_portfolio():
     return Portfolio(prices=read("price.csv", parse_dates=True, index_col=0),
                      weights=read("weight.csv", parse_dates=True, index_col=0))
 
-@pytest.fixture()
-def db():
-    # point to a new mongo collection...
-    ProductInterface.collection = create_collection()
-    ProductInterface.collection_reference = create_collection()
-
-    # new db
-    return database(base=Base)
+#@pytest.fixture()
+#def db():
+#    # new db
+#    return database(base=Base)

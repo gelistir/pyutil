@@ -1,11 +1,7 @@
-import enum as _enum
+from pyutil.sql.base import Base
+from pyutil.sql.ppp import Product
 
-import pandas as pd
-import sqlalchemy as sq
-from sqlalchemy.types import Enum as _Enum
 
-from pyutil.sql.interfaces.products import ProductInterface
-
-class Frame(ProductInterface):
+class Frame(Product, Base):
     def __init__(self, name):
         super().__init__(name)

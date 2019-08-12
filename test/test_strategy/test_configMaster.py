@@ -3,13 +3,14 @@ import pytest
 
 from pyutil.mongo.mongo import create_collection
 from pyutil.portfolio.portfolio import similar
-from pyutil.sql.interfaces.products import ProductInterface
+#from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.ppp import Product
 from pyutil.strategy.config import ConfigMaster
 from test.config import test_portfolio, read
 
 # point to a new mongo collection...
-ProductInterface.collection = create_collection()
-ProductInterface.collection_reference = create_collection()
+Product.collection = create_collection()
+Product.collection_reference = create_collection()
 
 
 @pytest.fixture()

@@ -1,12 +1,16 @@
 import pytest
 
+from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.strategy.reader import assets, symbolmap
-from test.config import db
+from pyutil.testing.database import database
+#from test.config import db
 
 
 @pytest.fixture()
-def session(db):
+def session():
+    db = database(base=Base)
+
     assert db.session.query(Symbol).count() == 0
 
     # add one symbol to database

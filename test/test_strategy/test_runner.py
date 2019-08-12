@@ -2,17 +2,24 @@ import logging
 
 import pytest
 
+from pyutil.mongo.mongo import create_collection
+from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.strategy import Strategy, strategies
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.strategy.runner import run, _strategy_update
-from test.config import resource, read, db
-
+from test.config import resource, read
+from pyutil.testing.database import database as datab
 
 @pytest.fixture(scope="function")
-def database(db):
+def database():
+
+    db = datab(base=Base)
     # check if database is really empty
     assert db.session.query(Strategy).count() == 0
     assert db.session.query(Symbol).count() == 0
+
+    Strategy.collection = create_collection()
+    Strategy.collection_reference = create_collection()
 
     # add assets to database
     for asset, data in read(name="price.csv", index_col=0, parse_dates=True, header=0).items():

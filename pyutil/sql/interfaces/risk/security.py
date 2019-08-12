@@ -1,14 +1,16 @@
 import pandas as pd
 import sqlalchemy as sq
 
-from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.base import Base
+#from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.ppp import Product
 
 
-class Security(ProductInterface):
+class Security(Product, Base):
     fullname = sq.Column("fullname", sq.String, nullable=True)
 
     def __init__(self, name, fullname=None, **kwargs):
-        super().__init__(name, **kwargs)
+        super().__init__(str(name), **kwargs)
         self.fullname = fullname
 
     def __repr__(self):
@@ -16,7 +18,7 @@ class Security(ProductInterface):
 
     @staticmethod
     def reference_frame(securities, f=lambda x: x):
-        frame = ProductInterface.reference_frame(products=securities, f=f)
+        frame = Product.reference_frame(products=securities, f=f)
         frame["fullname"] = pd.Series({f(s): s.fullname for s in securities})
         frame.index.name = "security"
         return frame

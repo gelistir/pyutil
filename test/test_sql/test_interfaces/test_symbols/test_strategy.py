@@ -3,7 +3,6 @@ import pytest
 
 from pyutil.mongo.mongo import create_collection
 from pyutil.portfolio.portfolio import similar
-from pyutil.sql.interfaces.products import ProductInterface
 from test.config import test_portfolio, resource
 from pyutil.sql.interfaces.symbols.strategy import Strategy, strategies
 
@@ -16,8 +15,8 @@ def strategy():
 
 
 # point to a new mongo collection...
-ProductInterface.collection = create_collection()
-ProductInterface.collection_reference = create_collection()
+Strategy.collection = create_collection()
+Strategy.collection_reference = create_collection()
 
 
 class TestStrategy(object):

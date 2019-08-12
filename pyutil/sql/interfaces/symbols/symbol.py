@@ -4,7 +4,8 @@ import pandas as pd
 import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
-from pyutil.sql.interfaces.products import ProductInterface
+from pyutil.sql.base import Base
+from pyutil.sql.ppp import Product
 
 
 class SymbolType(_enum.Enum):
@@ -17,7 +18,7 @@ class SymbolType(_enum.Enum):
 SymbolTypes = {s.value: s for s in SymbolType}
 
 
-class Symbol(ProductInterface):
+class Symbol(Product, Base):
     __searchable__ = ['internal', 'name', 'group']
 
     group = sq.Column("group", _Enum(SymbolType), nullable=True)
@@ -32,7 +33,7 @@ class Symbol(ProductInterface):
 
     @staticmethod
     def reference_frame(symbols, f=lambda x: x):
-        frame = ProductInterface.reference_frame(symbols, f)
+        frame = Product.reference_frame(symbols, f)
         frame["Sector"] = pd.Series({f(symbol): symbol.group.value for symbol in symbols})
         frame["Internal"] = pd.Series({f(symbol): symbol.internal for symbol in symbols})
         frame.index.name = "symbol"

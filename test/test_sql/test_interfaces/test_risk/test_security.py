@@ -3,7 +3,7 @@ import pandas.util.testing as pdt
 import pytest
 
 from pyutil.mongo.mongo import create_collection
-from pyutil.sql.interfaces.products import ProductInterface
+#from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.security import Security
 from test.config import read
 
