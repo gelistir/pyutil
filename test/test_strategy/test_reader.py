@@ -4,7 +4,6 @@ from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.strategy.reader import assets, symbolmap
 from pyutil.testing.database import database
-#from test.config import db
 
 
 @pytest.fixture()

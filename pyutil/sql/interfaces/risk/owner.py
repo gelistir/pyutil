@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship as _relationship
 from pyutil.sql.base import Base
 #from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.custodian import Currency
-from pyutil.sql.ppp import Product
+from pyutil.sql.product import Product
 
 
 class Owner(Product, Base):

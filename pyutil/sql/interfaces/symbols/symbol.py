@@ -5,7 +5,7 @@ import sqlalchemy as sq
 from sqlalchemy.types import Enum as _Enum
 
 from pyutil.sql.base import Base
-from pyutil.sql.ppp import Product
+from pyutil.sql.product import Product
 
 
 class SymbolType(_enum.Enum):

@@ -7,8 +7,7 @@ from sqlalchemy.types import Enum as _Enum
 
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.sql.base import Base
-#from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.ppp import Product
+from pyutil.sql.product import Product
 
 
 def _module(source):
@@ -43,14 +42,12 @@ class Strategy(Product, Base):
     active = sq.Column(sq.Boolean)
     source = sq.Column(sq.String)
     type = sq.Column(_Enum(StrategyType))
-    #stratname = sq.Column(sq.String)
 
     def __init__(self, name, active=True, source="", type=StrategyType.conservative):
         super().__init__(name)
         self.active = active
         self.source = source
         self.type = type
-        #self.stratname = name
 
     def configuration(self, reader=None):
         # Configuration only needs a reader to access the symbols...
@@ -59,8 +56,8 @@ class Strategy(Product, Base):
 
     @property
     def portfolio(self):
-        prices = self.series["PRICES"] #.get(item="PRICES", default=None)
-        weights = self.series["WEIGHTS"] #.get(item="WEIGHTS", default=None)
+        prices = self.series["PRICES"]
+        weights = self.series["WEIGHTS"]
 
         if prices is None and weights is None:
             return None
@@ -69,8 +66,8 @@ class Strategy(Product, Base):
 
     @portfolio.setter
     def portfolio(self, portfolio):
-        self.series["WEIGHTS"] = portfolio.weights  #.write(data=portfolio.weights, key="WEIGHTS")
-        self.series["PRICES"] = portfolio.prices    #.write(data=portfolio.prices, key="PRICES")
+        self.series["WEIGHTS"] = portfolio.weights
+        self.series["PRICES"] = portfolio.prices
 
     @property
     def assets(self):
@@ -88,55 +85,4 @@ class Strategy(Product, Base):
         frame["active"] = pd.Series({f(s): s.active for s in strategies})
         frame.index.name = "strategy"
         return frame
-
-
-# class Strategy(ProductInterface):
-#     __searchable__ = ["name", "type"]
-#     active = sq.Column(sq.Boolean)
-#     source = sq.Column(sq.String)
-#     type = sq.Column(_Enum(StrategyType))
-#     stratname = sq.Column(sq.String)
-#
-#     def __init__(self, name, active=True, source="", type=StrategyType.conservative):
-#         super().__init__(name)
-#         self.active = active
-#         self.source = source
-#         self.type = type
-#
-#     def configuration(self, reader=None):
-#         # Configuration only needs a reader to access the symbols...
-#         # Reader is a function taking the name of an asset as a parameter
-#         return _module(self.source).Configuration(reader=reader)
-#
-#     @property
-#     def portfolio(self):
-#         prices = self.series["PRICES"] #.get(item="PRICES", default=None)
-#         weights = self.series["WEIGHTS"] #.get(item="WEIGHTS", default=None)
-#
-#         if prices is None and weights is None:
-#             return None
-#         else:
-#             return Portfolio(prices=prices, weights=weights)
-#
-#     @portfolio.setter
-#     def portfolio(self, portfolio):
-#         self.series["WEIGHTS"] = portfolio.weights  #.write(data=portfolio.weights, key="WEIGHTS")
-#         self.series["PRICES"] = portfolio.prices    #.write(data=portfolio.prices, key="PRICES")
-#
-#     @property
-#     def assets(self):
-#         return self.configuration(reader=None).names
-#
-#     @property
-#     def last_valid_index(self):
-#         return self.collection.last(key="PRICES", name=self.name)
-#
-#     @staticmethod
-#     def reference_frame(strategies, f=lambda x: x) -> pd.DataFrame:
-#         frame = ProductInterface.reference_frame(products=strategies, f=f)
-#         frame["source"] = pd.Series({f(s): s.source for s in strategies})
-#         frame["type"] = pd.Series({f(s): s.type for s in strategies})
-#         frame["active"] = pd.Series({f(s): s.active for s in strategies})
-#         frame.index.name = "strategy"
-#         return frame
 

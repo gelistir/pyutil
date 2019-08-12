@@ -1,16 +1,16 @@
 import pandas.util.testing as pdt
 import pytest
 
-from pyutil.mongo.mongo import create_collection
+#from pyutil.mongo.mongo import create_collection
 from pyutil.portfolio.portfolio import similar
-#from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.ppp import Product
+#from pyutil.sql.interfaces.symbols.strategy import Strategy
+#from pyutil.sql.product import Product
 from pyutil.strategy.config import ConfigMaster
 from test.config import test_portfolio, read
 
 # point to a new mongo collection...
-Product.collection = create_collection()
-Product.collection_reference = create_collection()
+#Strategy.collection = create_collection()
+#Strategy.collection_reference = create_collection()
 
 
 @pytest.fixture()

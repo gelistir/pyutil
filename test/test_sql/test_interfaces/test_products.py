@@ -2,9 +2,8 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
-# from pyutil.mongo.mongo import create_collection
 from pyutil.mongo.mongo import create_collection
-from test.test_sql.product import Maffay
+from test.test_sql.maffay import Maffay
 
 
 @pytest.fixture()

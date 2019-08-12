@@ -1,5 +1,5 @@
 from pyutil.sql.base import Base
-from pyutil.sql.ppp import Product
+from pyutil.sql.product import Product
 
 
 class Maffay(Product, Base):

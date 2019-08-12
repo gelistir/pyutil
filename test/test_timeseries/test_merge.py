@@ -10,8 +10,6 @@ from test.config import read
 def ts():
     return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
 
-#index = pd.Timestamp("2015-04-14")
-
 
 class TestMerge(object):
     def test_last_index(self, ts):

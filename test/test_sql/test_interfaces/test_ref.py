@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 from pyutil.mongo.mongo import mongo_client
-from test.test_sql.product import Maffay
+from test.test_sql.maffay import Maffay
 import pandas.util.testing as pdt
 
 

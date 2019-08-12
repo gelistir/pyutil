@@ -10,7 +10,7 @@ from pyutil.portfolio.portfolio import Portfolio
 #from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.symbols.strategy import Strategy
 from pyutil.sql.interfaces.symbols.symbol import Symbol
-from pyutil.sql.ppp import Product
+from pyutil.sql.product import Product
 
 
 def _strategy_update(strategy_id, connection_str, logger, n):
