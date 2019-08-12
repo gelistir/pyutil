@@ -10,4 +10,4 @@ class Base(object):
     def __tablename__(cls):
         return cls.__name__.lower()
 
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    id = Column("id", Integer, primary_key=True, autoincrement=True, nullable=False)
