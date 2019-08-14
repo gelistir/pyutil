@@ -65,9 +65,11 @@ class TestMongo(object):
         pdt.assert_series_equal(col.read(key="PX_OPEN", name="H"), ts2)
         assert col.last(key="PX_OPEN", name="H") == ts2.last_valid_index()
 
+    def test_last_none(self, col):
+        assert col.last(key="PX_XXX", name="B") is None
+
     def test_ts(self, col):
         for a in col.find(First="Hans", Last="Maffay"):
             assert a.meta["First"] == "Hans"
             assert a.meta["Last"] == "Maffay"
             assert a.meta["key"] in {"PX_LAST", "PX_OPEN"}
-
