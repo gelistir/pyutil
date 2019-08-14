@@ -6,14 +6,12 @@ import pandas as pd
 
 from pyutil.portfolio.portfolio import Portfolio
 
+from pyutil.sql.interfaces.symbols.strategy import Strategy
+from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 
 def _strategy_update(strategy_id, connection_str, logger, n):
     from pyutil.sql.session import session
-    from pyutil.mongo.mongo import mongo_client
-    from pyutil.sql.interfaces.symbols.strategy import Strategy
-    from pyutil.sql.interfaces.symbols.symbol import Symbol
-
 
     def reader(session):
         return lambda name: session.query(Symbol).filter(Symbol.name == name).one().series["PX_LAST"]
@@ -23,8 +21,12 @@ def _strategy_update(strategy_id, connection_str, logger, n):
         # extract the strategy you need
 
         # make fresh mongo clients
-        Strategy._client = mongo_client()
-        Symbol._client = mongo_client()
+        Strategy.refresh_mongo()
+        Symbol.refresh_mongo()
+
+
+#        Strategy._client = mongo_client()
+#        Symbol._client = mongo_client()
 
         strategy = session.query(Strategy).filter_by(id=strategy_id).one()
         last = strategy.last_valid_index
