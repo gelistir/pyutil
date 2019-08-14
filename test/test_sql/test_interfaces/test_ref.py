@@ -1,7 +1,6 @@
 import pandas as pd
 import pytest
 
-from pyutil.mongo.mongo import mongo_client
 from test.test_sql.maffay import Maffay
 import pandas.util.testing as pdt
 
@@ -23,7 +22,7 @@ class TestReference(object):
     def test_ref_series(self, product):
         assert product.reference.keys() == {"aaa", "bbb"}
 
-    def test_ref_frame_1(self, product):
+    def test_ref_frame(self, product):
         f1 = Maffay.reference_frame(products=[product])
         f2 = pd.DataFrame(index=[product], columns=["aaa", "bbb"], data=[["A", "Z"]])
         pdt.assert_frame_equal(f1, f2, check_names=False)

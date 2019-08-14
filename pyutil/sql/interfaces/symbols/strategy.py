@@ -75,7 +75,10 @@ class Strategy(Product, Base):
 
     @property
     def last_valid_index(self):
-        return self.collection.last(key="PRICES", name=self.name)
+        try:
+            return self.series["PRICES"].last_valid_index() #.last(key="PRICES", name=self.name)
+        except AttributeError:
+            return None
 
     @staticmethod
     def reference_frame(strategies, f=lambda x: x) -> pd.DataFrame:

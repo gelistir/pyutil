@@ -2,7 +2,6 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
-from pyutil.mongo.mongo import create_collection
 from test.test_sql.maffay import Maffay
 
 
@@ -24,8 +23,10 @@ def ts3():
 # point to a new mongo collection...
 @pytest.fixture()
 def product(ts1):
-    Maffay.collection = create_collection()
-    Maffay.collection_reference = create_collection()
+    Maffay.refresh_mongo()
+
+    # Maffay.collection = create_collection()
+    # Maffay.collection_reference = create_collection()
     # Product._client = mongo_client()
     p = Maffay(name="A")
     p.series["y"] = ts1
@@ -43,8 +44,8 @@ class TestProductInterface(object):
         with pytest.raises(AttributeError):
             product.name = "AA"
 
-        # assert Product.__collection__
-        # assert Product.__collection_reference__
+        assert Maffay.collection
+        assert Maffay.collection_reference
 
     def test_timeseries(self, product, ts1):
         pdt.assert_series_equal(ts1, product.series["y"])

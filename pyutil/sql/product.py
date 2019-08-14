@@ -84,7 +84,6 @@ class _Timeseries(object):
 
 
 class Product(object):
-    #__client = None
     __name = Column("name", String(1000), unique=True, nullable=False)
 
     def __init__(self, name):
@@ -107,6 +106,11 @@ class Product(object):
     def collection_reference(cls):
         # this is a very fast operation, as a new client is not created here...
         return create_collection(name=cls.__name__.lower() + "_reference")
+
+    @classmethod
+    def refresh_mongo(cls):
+        cls.collection = create_collection(name=cls.__name__.lower())
+        cls.collection_reference = create_collection(name=cls.__name__.lower() + "_reference")
 
     def __repr__(self):
         return "{name}".format(name=self.name)
