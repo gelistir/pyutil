@@ -18,15 +18,9 @@ def _strategy_update(strategy_id, connection_str, logger, n):
 
     # do a read is enough...
     with session(connection_str=connection_str) as session:
-        # extract the strategy you need
-
-        # make fresh mongo clients
+        # make fresh mongo clients to avoid forking issues
         Strategy.refresh_mongo()
         Symbol.refresh_mongo()
-
-
-#        Strategy._client = mongo_client()
-#        Symbol._client = mongo_client()
 
         strategy = session.query(Strategy).filter_by(id=strategy_id).one()
         last = strategy.last_valid_index
@@ -46,8 +40,8 @@ def _strategy_update(strategy_id, connection_str, logger, n):
         return strategy.name, strategy.portfolio
 
 
-def run(strategy_ids, connection_str, logger=None, n=10):
+def run(strategies, connection_str, logger=None, n=10):
     pool = mp.Pool(mp.cpu_count())
     logger = logger or logging.getLogger(__name__)
     __update = partial(_strategy_update, connection_str=connection_str, logger=logger, n=n)
-    return {r[0]: r[1] for r in pool.map(__update, strategy_ids)}
+    return {r[0]: r[1] for r in pool.map(__update, [strategy.id for strategy in strategies])}
