@@ -1,8 +1,9 @@
 import calendar
 import numpy as np
+import pandas as pd
 
 
-def monthlytable(nav):
+def monthlytable(nav) -> pd.DataFrame:
     """
     Get a table of monthly returns
 

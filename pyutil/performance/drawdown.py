@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def drawdown(series):
+def drawdown(series) -> pd.Series:
     return Drawdown(series).drawdown
 
 
@@ -27,15 +27,15 @@ class Drawdown(object):
         return self.__eps
 
     @property
-    def price_series(self):
+    def price_series(self) -> pd.Series:
         return self.__series
 
     @property
-    def highwatermark(self):
+    def highwatermark(self) -> pd.Series:
         return self.__series.expanding(min_periods=1).max()
 
     @property
-    def drawdown(self):
+    def drawdown(self) -> pd.Series:
         return 1 - self.__series / self.highwatermark
 
     @property

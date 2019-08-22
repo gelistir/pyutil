@@ -1,7 +1,8 @@
 import numpy as np
+import pandas as pd
 
 
-def volatility_adjust(prices, vola=32, min_periods=50, winsor=4.2, n=1):
+def volatility_adjust(prices, vola=32, min_periods=50, winsor=4.2, n=1) -> pd.Series:
     assert winsor > 0
     # check that all indices are increasing
     assert prices.index.is_monotonic_increasing
@@ -22,7 +23,7 @@ def volatility_adjust(prices, vola=32, min_periods=50, winsor=4.2, n=1):
     return prices
 
 
-def oscillator(price, a=32, b=96, min_periods=100):
+def oscillator(price, a=32, b=96, min_periods=100) -> pd.Series:
     def __geom(q):
         return 1.0 / (1 - q)
 
@@ -32,5 +33,5 @@ def oscillator(price, a=32, b=96, min_periods=100):
     return osc / np.sqrt(__geom(l_fast**2) - 2.0 * __geom(l_slow * l_fast) + __geom(l_slow**2))
 
 
-def trend_new(price, a=32, b=96, vola=32, winsor=4.2, min_periods=50, f=np.tanh, n=1):
+def trend_new(price, a=32, b=96, vola=32, winsor=4.2, min_periods=50, f=np.tanh, n=1) -> pd.Series:
     return f(oscillator(volatility_adjust(price,vola,min_periods,winsor,n),a,b,2*min_periods))

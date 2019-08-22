@@ -52,7 +52,7 @@ class NavSeries(pd.Series):
             assert not (self < 0).any(), "Problem with data:\n{x}".format(x=self.series)
 
     @property
-    def series(self):
+    def series(self) -> pd.Series:
         return pd.Series({t: v for t, v in self.items()})
 
     @property
@@ -80,19 +80,19 @@ class NavSeries(pd.Series):
         return fromNav(super().truncate(before=before, after=after), adjust=adjust)
 
     @property
-    def monthlytable(self):
+    def monthlytable(self) -> pd.DataFrame:
         return monthlytable(self)
 
     @property
-    def returns(self):
+    def returns(self) -> pd.Series:
         return self.pct_change().dropna()
 
     @property
-    def returns_monthly(self):
+    def returns_monthly(self) -> pd.Series:
         return self.monthly.pct_change().dropna()
 
     @property
-    def returns_annual(self):
+    def returns_annual(self) -> pd.Series:
         x = self.annual.pct_change().dropna()
         x.index = [a.year for a in x.index]
         return x
@@ -122,7 +122,7 @@ class NavSeries(pd.Series):
         return periods * (self.__gmean(self.returns + 1.0) - 1.0) - r_f
 
     @property
-    def drawdown(self):
+    def drawdown(self) -> pd.Series:
         return Drawdown(self).drawdown
 
     def sortino_ratio(self, periods=None, r_f=0):
@@ -191,7 +191,7 @@ class NavSeries(pd.Series):
     def mtd_series(self) -> pd.Series:
         return self.__mtd(self.returns, today=self.index[-1]).sort_index(ascending=False)
 
-    def recent(self, n=15):
+    def recent(self, n=15) -> pd.Series:
         return self.returns.tail(n).dropna()
 
     def var(self, alpha=0.95):
