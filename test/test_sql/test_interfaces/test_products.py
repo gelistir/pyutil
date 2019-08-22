@@ -10,16 +10,6 @@ def ts1():
     return pd.Series(data=[100, 200], index=[0, 1])
 
 
-@pytest.fixture()
-def ts2():
-    return pd.Series(data=[300, 300], index=[1, 2])
-
-
-@pytest.fixture()
-def ts3():
-    return pd.Series(data=[100, 300, 300], index=[0, 1, 2])
-
-
 # point to a new mongo collection...
 @pytest.fixture()
 def product(ts1):
@@ -34,41 +24,20 @@ def product(ts1):
 
 
 class TestProductInterface(object):
-    def test_name(self, product):
-        assert product.name == "A"
-
-        # you can not change the name of a product!
-        with pytest.raises(AttributeError):
-            product.name = "AA"
-
-        assert Symbol.collection
-        assert Symbol.collection_reference
-
-    def test_timeseries(self, product, ts1):
-        pdt.assert_series_equal(ts1, product.series["y"])
-
-    def test_merge(self, product, ts2):
-        # product.series["x"] = ts1
-        product.series["x"] = ts2
-        pdt.assert_series_equal(product.series["x"], ts2)
-        frame = Symbol.pandas_frame(products=[product], key="x")
-        pdt.assert_series_equal(frame[product], ts2, check_names=False)
-
-    def test_lt(self):
-        p1 = Symbol(name="A")
-        p2 = Symbol(name="B")
-        assert p1 < p2
-
-    def test_repr(self):
-        p1 = Symbol(name="A")
-        assert str(p1) == "A"
-        #p2 = Symbol(name="B")
-        #assert p1 < p2
-
-    def test_frame(self, product, ts1):
-        # add some extra product but without timeseries
-        frame = Symbol.pandas_frame(key="y", products=[product], f=lambda x: x.name)
-        pdt.assert_series_equal(frame["A"], ts1, check_names=False)
+    # def test_timeseries(self, product, ts1):
+    #     pdt.assert_series_equal(ts1, product.series["y"])
+    #
+    # def test_merge(self, product, ts2):
+    #     # product.series["x"] = ts1
+    #     product.series["x"] = ts2
+    #     pdt.assert_series_equal(product.series["x"], ts2)
+    #     frame = Symbol.pandas_frame(products=[product], key="x")
+    #     pdt.assert_series_equal(frame[product], ts2, check_names=False)
+    #
+    # def test_frame(self, product, ts1):
+    #     # add some extra product but without timeseries
+    #     frame = Symbol.pandas_frame(key="y", products=[product], f=lambda x: x.name)
+    #     pdt.assert_series_equal(frame["A"], ts1, check_names=False)
 
     def test_series(self, product):
         for a in product.series.keys(key="Correlation"):

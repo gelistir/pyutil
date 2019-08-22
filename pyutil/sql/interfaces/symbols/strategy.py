@@ -81,11 +81,11 @@ class Strategy(Product, Base):
             return None
 
     @classmethod
-    def reference_frame(cls, strategies, f=lambda x: x) -> pd.DataFrame:
-        frame = Product.reference_frame(products=strategies, f=f)
-        frame["source"] = pd.Series({f(s): s.source for s in strategies})
-        frame["type"] = pd.Series({f(s): s.type for s in strategies})
-        frame["active"] = pd.Series({f(s): s.active for s in strategies})
+    def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
+        frame = Product.reference_frame(products=products, f=f)
+        frame["source"] = pd.Series({f(s): s.source for s in products})
+        frame["type"] = pd.Series({f(s): s.type for s in products})
+        frame["active"] = pd.Series({f(s): s.active for s in products})
         frame.index.name = "strategy"
         return frame
 
