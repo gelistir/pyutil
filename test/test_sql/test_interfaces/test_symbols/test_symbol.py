@@ -48,9 +48,8 @@ class TestSymbol(object):
         assert symbol.series.last(key="PX_LAST") == ts.last_valid_index()
 
     def test_reference_frame(self, symbol):
-        frame = Symbol.reference_frame(symbols=[symbol])
+        frame = Symbol.reference_frame(products=[symbol])
 
-        # print(frame)
         framex = pd.DataFrame(index=[symbol], columns=["xxx", "Sector", "Internal"], data=[["A", "Equities", "Peter Maffay"]])
         framex.index.name = "symbol"
 

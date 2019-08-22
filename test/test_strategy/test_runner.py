@@ -4,7 +4,7 @@ import pytest
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.strategy import Strategy, strategies
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
-from pyutil.strategy.runner import run
+from pyutil.strategy.runner import run, _strategy_update
 from test.config import resource, read
 from pyutil.testing.database import database as datab
 
@@ -30,6 +30,7 @@ def database():
         s = Strategy(name=name, source=source)
         db.session.add(s)
         assert s.portfolio is None
+        assert s.last_valid_index is None
 
     db.session.commit()
 
@@ -44,6 +45,19 @@ class TestRunner(object):
 
         assert pytest.approx(r["P1"].nav.sharpe_ratio(), -0.23551923609559777, abs=1e-5)
         assert pytest.approx(r["P2"].nav.sharpe_ratio(), -0.20271329554571058, abs=1e-5)
+
+    def test_strategies(self, database):
+        s = Strategy.products(session=database.session)
+        assert set([x.name for x in s]) == {"P1", "P2"}
+
+    def test_run(self, database):
+        s = database.session.query(Strategy).filter(Strategy.name == "P1").one()
+        assert s.portfolio is None
+        name, portfolio = _strategy_update(strategy_id=s.id, connection_str=database.connection)
+        s.portfolio = portfolio
+        assert s.last_valid_index == portfolio.prices.last_valid_index()
+        assert name == "P1"
+        assert pytest.approx(portfolio.nav.sharpe_ratio(), -0.23551923609559777, abs=1e-5)
 
     # def test_strategy_update(self, database):
     #     # logger = logging.getLogger(__name__)

@@ -31,10 +31,14 @@ class Symbol(Product, Base):
         self.internal = internal
         self.webpage = webpage
 
-    @staticmethod
-    def reference_frame(symbols, f=lambda x: x):
-        frame = Product.reference_frame(symbols, f)
-        frame["Sector"] = pd.Series({f(symbol): symbol.group.value for symbol in symbols})
-        frame["Internal"] = pd.Series({f(symbol): symbol.internal for symbol in symbols})
+    @classmethod
+    def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
+        frame = Product.reference_frame(products, f)
+        frame["Sector"] = pd.Series({f(symbol): symbol.group.value for symbol in products})
+        frame["Internal"] = pd.Series({f(symbol): symbol.internal for symbol in products})
         frame.index.name = "symbol"
         return frame
+
+    @staticmethod
+    def symbolmap(symbols):
+        return {asset.name: asset.group.value for asset in symbols}

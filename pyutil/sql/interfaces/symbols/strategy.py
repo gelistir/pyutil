@@ -80,8 +80,8 @@ class Strategy(Product, Base):
         except AttributeError:
             return None
 
-    @staticmethod
-    def reference_frame(strategies, f=lambda x: x) -> pd.DataFrame:
+    @classmethod
+    def reference_frame(cls, strategies, f=lambda x: x) -> pd.DataFrame:
         frame = Product.reference_frame(products=strategies, f=f)
         frame["source"] = pd.Series({f(s): s.source for s in strategies})
         frame["type"] = pd.Series({f(s): s.type for s in strategies})

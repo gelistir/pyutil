@@ -148,3 +148,11 @@ class Product(object):
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index().transpose()
+
+    @classmethod
+    def products(cls, session, names=None):
+        # extract symbols from database
+        if names is None:
+            return session.query(cls).all()
+        else:
+            return session.query(cls).filter(cls.name.in_(names)).all()

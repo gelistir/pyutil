@@ -1,13 +1,11 @@
-import pandas as pd
 import pytest
 
-from test.test_sql.maffay import Maffay
-import pandas.util.testing as pdt
+from pyutil.sql.interfaces.symbols.symbol import Symbol
 
 
 @pytest.fixture()
 def product():
-    product = Maffay(name="A")
+    product = Symbol(name="A")
     product.reference["aaa"] = "A"
     product.reference["bbb"] = "Z"
     return product
@@ -21,12 +19,6 @@ class TestReference(object):
 
     def test_ref_series(self, product):
         assert product.reference.keys() == {"aaa", "bbb"}
-
-    def test_ref_frame(self, product):
-        f1 = Maffay.reference_frame(products=[product])
-        f2 = pd.DataFrame(index=[product], columns=["aaa", "bbb"], data=[["A", "Z"]])
-        pdt.assert_frame_equal(f1, f2, check_names=False)
-        assert f1.index.name == "maffay"
 
     def test_get(self, product):
         assert product.reference.get(item="NoNoNo", default=5) == 5
