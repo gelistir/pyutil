@@ -11,7 +11,7 @@ services:
       - ./test:/pyutil/test:ro
       - ./artifacts:/pyutil/artifacts
       - ./source:/source
-      #- /opt/.pycharm_helpers/pycharm:/opt/.pycharm_helpers/pycharm:ro
+
     links:
       - test-postgresql
       - test-mongo

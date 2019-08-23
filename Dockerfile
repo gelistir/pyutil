@@ -4,12 +4,11 @@ FROM continuumio/miniconda3 as builder
 # File Author / Maintainer
 MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
 
-COPY . /tmp/pyutil
+COPY requirements.txt /tmp/pyutil/requirements.txt
 
 RUN conda install -y -c conda-forge nomkl pandas=0.24.2 requests=2.21.0 && \
     conda clean -y --all && \
     pip install --no-cache-dir -r /tmp/pyutil/requirements.txt && \
-    #pip install --no-cache-dir /tmp/pyutil && \
     rm -r /tmp/pyutil
 
 COPY ./pyutil /pyutil/pyutil

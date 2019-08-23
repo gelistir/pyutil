@@ -49,10 +49,10 @@ class TestStrategy(object):
         assert similar(x["Peter"], test_portfolio())
 
     def test_assets(self, strategy):
+        assert strategy.name == "Peter"
         assert strategy.assets == test_portfolio().assets
         assert strategy.last_valid_index == test_portfolio().prices.last_valid_index()
         assert similar(strategy.portfolio, test_portfolio())
-        #assert strategy.configuration(reader=None)
         assert similar(strategy.configuration(reader=None).portfolio, test_portfolio())
 
     def test_reference(self, strategy):

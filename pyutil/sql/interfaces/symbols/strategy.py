@@ -8,6 +8,7 @@ from sqlalchemy.types import Enum as _Enum
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.sql.base import Base
 from pyutil.sql.product import Product
+from pyutil.strategy.config import ConfigMaster
 
 
 def _module(source):
@@ -49,7 +50,7 @@ class Strategy(Product, Base):
         self.source = source
         self.type = type
 
-    def configuration(self, reader=None):
+    def configuration(self, reader=None) -> ConfigMaster:
         # Configuration only needs a reader to access the symbols...
         # Reader is a function taking the name of an asset as a parameter
         return _module(self.source).Configuration(reader=reader)
