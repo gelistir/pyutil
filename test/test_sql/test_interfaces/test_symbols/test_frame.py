@@ -5,7 +5,7 @@ from pyutil.sql.interfaces.frame import Frame
 from test.config import test_portfolio
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def frame():
     # point to a new mongo collection...
     Frame.refresh_mongo()

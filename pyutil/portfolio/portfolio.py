@@ -313,7 +313,7 @@ class Portfolio(object):
         days = (__fundsize * self.position).diff().abs().sum(axis=1)
         return sorted(list(days[days > 1].index))
 
-    def state(self, symbols):
+    def state(self, symbols=None):
         # get the last 5 trading days
         trade_events = self.trading_days[-5:-1]
         today = self.index[-1]
@@ -338,14 +338,15 @@ class Portfolio(object):
         weights.index.name = "Symbol"
         frame = pd.concat((a, weights), axis=1)
 
-        all = {symbol.name: symbol for symbol in symbols}
-        frame["group"] = pd.Series({s : all[s].group.name for s in frame.index})
-        frame["internal"] = pd.Series({s : all[s].internal for s in frame.index})
+        if symbols is not None:
+            all = {symbol.name: symbol for symbol in symbols}
+            frame["group"] = pd.Series({s : all[s].group.name for s in frame.index})
+            frame["internal"] = pd.Series({s : all[s].internal for s in frame.index})
 
 
-        sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
-        frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
-        frame["Relative Sector"] = frame["Extrapolated"] / frame["Sector Weight"]
+            sector_weights = frame.groupby(by="group")["Extrapolated"].sum()
+            frame["Sector Weight"] = frame["group"].apply(lambda x: sector_weights[x])
+            frame["Relative Sector"] = frame["Extrapolated"] / frame["Sector Weight"]
 
         frame.index.name = "Symbol"
         return frame

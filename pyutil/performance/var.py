@@ -10,7 +10,7 @@ def cvar(series, alpha=0.99):
 
 
 class VaR(object):
-    def __init__(self, series, alpha = 0.99):
+    def __init__(self, series, alpha=0.99):
         self.__series = series.dropna()
         self.__alpha = alpha
 
@@ -21,7 +21,7 @@ class VaR(object):
     @property
     def __tail(self):
         losses = self.__losses
-        return np.sort(losses.values)[int(losses.shape[0] * self.__alpha):]
+        return np.sort(losses.values)[int(losses.shape[0] * self.alpha):]
 
     @property
     def cvar(self):
@@ -30,3 +30,7 @@ class VaR(object):
     @property
     def var(self):
         return self.__tail[0]
+
+    @property
+    def alpha(self):
+        return self.__alpha

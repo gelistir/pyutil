@@ -9,7 +9,7 @@ class Mail(object):
     Class for sending emails with and without attachments via mailgun
     """
 
-    def __init__(self, mailgunapi=None, mailgunkey=None):
+    def __init__(self, mailgunapi=None, mailgunkey=None, to_adr=None, from_adr=None, text="", subject=""):
         """
         Create a Mail object
         """
@@ -17,10 +17,10 @@ class Mail(object):
         self.__mailgun_api = mailgunapi or os.environ["MAILGUNAPI"]
         self.__mailgun_key = mailgunkey or os.environ["MAILGUNKEY"]
         self.__files = list()
-        self.__subject = ""
-        self.__text = ""
-        self.__toAdr = None
-        self.__fromAdr = None
+        self.__subject = subject
+        self.__text = text
+        self.__toAdr = to_adr
+        self.__fromAdr = from_adr
 
     def attach_file(self, name, localpath, mode="r+b"):
         """

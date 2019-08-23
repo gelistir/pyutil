@@ -1,8 +1,8 @@
 import pandas as pd
 
 
-def adjust(ts: pd.Series) -> pd.Series:
+def adjust(ts: pd.Series, value=100.0) -> pd.Series:
     try:
-        return 100 * ts / (ts.dropna().iloc[0])
+        return value * ts / (ts.dropna().iloc[0])
     except IndexError:
         return pd.Series({})

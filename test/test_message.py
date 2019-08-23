@@ -36,9 +36,7 @@ class TestMessage(object):
             assert len(x) == 4
 
     def test_empty_text(self):
-        m = Mail()
-        m.fromAdr = "Peter Maffay"
-        m.toAdr = "David Hasselhoff"
+        m = Mail(from_adr="Peter Maffay", to_adr="David Hasselhoff")
         # you can't send anything with fake mailgunapi and mailgunkey
         with pytest.raises(AssertionError):
             m.send()
