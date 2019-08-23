@@ -6,7 +6,6 @@ from pyutil.strategy.config import ConfigMaster
 from test.config import test_portfolio, read
 
 
-
 @pytest.fixture()
 def prices():
     return read("price.csv", parse_dates=True, index_col=0)

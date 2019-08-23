@@ -4,10 +4,11 @@ from pyutil.portfolio.portfolio import similar
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.strategy import Strategy, StrategyType
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
-from pyutil.strategy.runner import run
+from pyutil.strategy.runner import run, _strategy_update
 from pyutil.testing.database import database
 
 from test.config import resource, test_portfolio
+
 
 @pytest.fixture(scope="module")
 def strategy():
@@ -21,13 +22,13 @@ def strategy():
         return s
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def symbols():
     p = test_portfolio()
     return [Symbol(name=a, group=SymbolType.alternatives) for a in p.assets]
 
 
-@pytest.fixture()
+@pytest.fixture(scope="module")
 def db(strategy, symbols):
     db = database(base=Base)
     db.session.add(strategy)
@@ -42,8 +43,10 @@ class TestStrategy(object):
     def test_symbol(self, db):
         assert db.connection
         assert db.session
-        strategies = Strategy.products(session=db.session)
 
+        # extract all strategies from database
+        strategies = Strategy.products(session=db.session)
+        #
         x = run(strategies=strategies, connection_str=db.connection)
         assert x["Peter"]
         assert similar(x["Peter"], test_portfolio())
@@ -57,8 +60,16 @@ class TestStrategy(object):
 
     def test_reference(self, strategy):
         frame = Strategy.reference_frame(products=[strategy])
-        assert frame["active"][strategy] == True
+        assert frame["active"][strategy]
         assert frame["type"][strategy] == StrategyType.conservative
         assert frame["source"][strategy]
 
-        #assert False
+    def test_run(self, db):
+        for x in db.session.query(Strategy):
+            print("Hello")
+            print(x)
+
+        s = db.session.query(Strategy).filter(Strategy.name == "Peter").one()
+        name, portfolio = _strategy_update(strategy_id=s.id, connection_str=db.connection)
+        assert similar(portfolio, test_portfolio())
+        assert name == "Peter"

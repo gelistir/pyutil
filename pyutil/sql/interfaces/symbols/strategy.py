@@ -20,14 +20,6 @@ def _module(source):
     return mod
 
 
-def strategies(folder):
-    for file in os.listdir(folder):
-        with open(os.path.join(folder, file), "r") as f:
-            source = f.read()
-            m = _module(source=source)
-            yield m.name, source
-
-
 class StrategyType(_enum.Enum):
     mdt = 'mdt'
     conservative = 'conservative'
