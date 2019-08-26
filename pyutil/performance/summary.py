@@ -307,7 +307,7 @@ class NavSeries(pd.Series):
         # overwrite the last index with the trust last index
 
         a.index = a.index[:-1].append(pd.DatetimeIndex([self.index[-1]]))
-        return a
+        return NavSeries(a)
 
     def to_frame(self, name=""):
         frame = self.series.to_frame("{name}nav".format(name=name))
