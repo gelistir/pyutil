@@ -2,11 +2,12 @@ import pandas as pd
 from sqlalchemy import String, Column
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm.exc import NoResultFound
 
 from pyutil.mongo.mongo import create_collection
 
 
-class _Reference(object):
+class _Mongo(object):
     def __init__(self, name, collection):
         self.__collection = collection
         self.__name = name
@@ -15,62 +16,69 @@ class _Reference(object):
     def collection(self):
         return self.__collection
 
+    @property
+    def name(self):
+        return self.__name
+
+    def delete(self, **kwargs):
+        return self.collection.delete(name=self.name, **kwargs)
+
+
+class _Reference(_Mongo):
+    def __init__(self, name, collection):
+        super().__init__(name, collection)
+
     def __iter__(self):
-        for a in self.collection.find(name=self.__name):
+        for a in self.collection.find(name=self.name):
             yield a.meta["key"]
 
     def items(self):
-        for a in self.collection.find(name=self.__name):
+        for a in self.collection.find(name=self.name):
             yield a.meta["key"], a.data
 
     def keys(self):
         return set([a for a in self])
 
     def __setitem__(self, key, value):
-        self.collection.upsert(name=self.__name, value=value, key=key)
+        self.collection.upsert(name=self.name, value=value, key=key)
 
     def __getitem__(self, item):
         return self.get(item=item, default=None)
 
     def get(self, item, default=None):
         try:
-            return self.collection.find_one(name=self.__name, key=item).data
+            return self.collection.find_one(name=self.name, key=item).data
         except AttributeError:
             return default
 
 
-class _Timeseries(object):
+class _Timeseries(_Mongo):
     def __init__(self, name, collection):
-        self.__collection = collection
-        self.__name = name
-
-    @property
-    def collection(self):
-        return self.__collection
+        super().__init__(name, collection)
 
     def __iter__(self):
-        for a in self.collection.find(name=self.__name):
+        for a in self.collection.find(name=self.name):
             yield a.meta
 
     def items(self, **kwargs):
-        for a in self.collection.find(name=self.__name, **kwargs):
+        for a in self.collection.find(name=self.name, **kwargs):
             yield a.meta, a.data
 
     def keys(self, **kwargs):
-        for a in self.collection.find(name=self.__name, **kwargs):
+        for a in self.collection.find(name=self.name, **kwargs):
             yield a.meta
 
     def read(self, key, **kwargs):
-        return self.collection.read(name=self.__name, key=key, **kwargs)
+        return self.collection.read(name=self.name, key=key, **kwargs)
 
     def write(self, data, key, **kwargs):
-        self.collection.write(data=data, key=key, name=self.__name, **kwargs)
+        self.collection.write(data=data, key=key, name=self.name, **kwargs)
 
     def merge(self, data, key, **kwargs):
-        self.collection.merge(data=data, key=key, name=self.__name, **kwargs)
+        self.collection.merge(data=data, key=key, name=self.name, **kwargs)
 
     def last(self, key, **kwargs):
-        return self.collection.last(key=key, name=self.__name, **kwargs)
+        return self.collection.last(key=key, name=self.name, **kwargs)
 
     def __getitem__(self, item):
         return self.read(key=item)
@@ -136,7 +144,8 @@ class Product(object):
 
     @classmethod
     def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
-        frame = pd.DataFrame({product: pd.Series({key: data for key, data in product.reference.items()}) for product in products}).transpose()
+        frame = pd.DataFrame({product: pd.Series({key: data for key, data in product.reference.items()}) for product in
+                              products}).transpose()
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index()
@@ -156,3 +165,13 @@ class Product(object):
             return session.query(cls).all()
         else:
             return session.query(cls).filter(cls.name.in_(names)).all()
+
+    @classmethod
+    def delete(cls, session, name):
+        try:
+            object = session.query(cls).filter(cls.name == name).one()
+            object.series.delete()
+            object.reference.delete()
+            session.delete(object)
+        except NoResultFound:
+            pass

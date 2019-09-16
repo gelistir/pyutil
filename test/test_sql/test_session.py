@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
@@ -67,3 +68,18 @@ class TestSession(object):
                 s.add(Symbol(name="Hans"))
                 s.add(Symbol(name="Hans"))
 
+    def test_delete(self, session):
+        # exists is False, as the user "B" does not exist yet
+        x, exists = get_one_or_create(session, Symbol, name="B")
+        assert not exists
+        session.commit()
+
+        x.reference["A"] = "B"
+        x.series.write(data=pd.Series(data=[1,2]), key="PX_LAST")
+
+        Symbol.delete(session=session, name="B")
+
+        with pytest.raises(NoResultFound):
+            session.query(Symbol).filter(Symbol.name=="B").one()
+
+        Symbol.delete(session=session, name="XXZJYJLKA")

@@ -94,3 +94,8 @@ class TestProduct(object):
         with pytest.raises(AssertionError):
             pdt.assert_series_equal(s.series.read(key="Correlation"), ts)
 
+    def test_delete(self, singer):
+        r1 = singer.series.delete()
+        r2 = singer.reference.delete()
+        assert r1.deleted_count == 1
+        assert r2.deleted_count == 1

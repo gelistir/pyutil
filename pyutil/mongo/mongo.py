@@ -110,3 +110,6 @@ class _Collection(object):
             return self.read(**kwargs).last_valid_index()
         except AttributeError:
             return None
+
+    def delete(self, **kwargs):
+        return self.__col.delete_many(kwargs)

@@ -27,3 +27,4 @@ def monthlytable(nav) -> pd.DataFrame:
     frame.columns.name = None
     # most recent years on top
     return frame.iloc[::-1]
+

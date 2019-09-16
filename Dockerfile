@@ -17,7 +17,7 @@ COPY ./pyutil /pyutil/pyutil
 FROM builder as test
 
 # We install flask here to test some
-RUN pip install --no-cache-dir httpretty pytest==4.3.1 pytest-cov pytest-html sphinx flask==1.0.2 sqlalchemy-utils
+RUN pip install --no-cache-dir httpretty pytest pytest-cov pytest-html sphinx flask==1.0.2 sqlalchemy-utils
 
 WORKDIR /pyutil
 

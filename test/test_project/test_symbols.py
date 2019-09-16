@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+from sqlalchemy.orm.exc import NoResultFound
 
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
@@ -60,3 +61,10 @@ class TestSymbols(object):
         assert frame["XXX"][symbol] == 10
         assert frame["Sector"][symbol] == "Alternatives"
         assert frame["Internal"][symbol] == "AAA"
+
+    def test_delete(self, session):
+        Symbol.delete(session=session, name="A")
+        # make sure the symbol no longer exists
+        with pytest.raises(NoResultFound):
+            session.query(Symbol).filter(Symbol.name=="A").one()
+
