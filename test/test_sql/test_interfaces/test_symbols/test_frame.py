@@ -8,8 +8,11 @@ from test.config import test_portfolio
 @pytest.fixture(scope="module")
 def frame():
     # point to a new mongo collection...
-    Frame.refresh_mongo()
     f = Frame(name="Portfolio")
+    #f.series.delete()
+    #print(test_portfolio().prices.to_msgpack())
+    #assert False
+
     f.series["Prices"] = test_portfolio().prices
     f.series["Weight"] = test_portfolio().weights
     return f

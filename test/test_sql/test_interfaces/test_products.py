@@ -18,6 +18,8 @@ def ts():
 @pytest.fixture()
 def singer(ts):
     s = Singer(name="Peter Maffay")
+    s.series.delete()
+    s.reference.delete()
     s.reference["XXX"] = 10
     s.series["PRICE"] = ts
     return s
@@ -80,19 +82,17 @@ class TestProduct(object):
         frame = Singer.pandas_frame(key="PRICE", products=[singer])
         pdt.assert_series_equal(frame[singer], ts, check_names=False)
 
-    def test_write(self, ts):
-        # create a symbol
-        s = Singer(name="A")
+    def test_write(self, ts, singer):
         # create a first series...
-        s.series.write(data=ts, key="Correlation", second="C")
-        pdt.assert_series_equal(s.series.read(key="Correlation"), ts)
+        singer.series.write(data=ts, key="Correlation", second="C")
+        pdt.assert_series_equal(singer.series.get(item="Correlation"), ts)
 
         # ... and a second series
-        s.series.write(data=ts, key="Correlation", second="E")
+        singer.series.write(data=ts, key="Correlation", second="E")
 
         # you can't read a series named Correlation as there are two of them!
         with pytest.raises(AssertionError):
-            pdt.assert_series_equal(s.series.read(key="Correlation"), ts)
+            pdt.assert_series_equal(singer.series.get(item="Correlation"), ts)
 
     def test_delete(self, singer):
         r1 = singer.series.delete()

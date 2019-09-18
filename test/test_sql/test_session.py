@@ -75,7 +75,7 @@ class TestSession(object):
         session.commit()
 
         x.reference["A"] = "B"
-        x.series.write(data=pd.Series(data=[1,2]), key="PX_LAST")
+        x.series["PX_LAST"] = pd.Series(data=[1,2])
 
         Symbol.delete(session=session, name="B")
 

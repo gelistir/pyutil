@@ -13,8 +13,11 @@ from test.config import resource, test_portfolio
 @pytest.fixture(scope="module")
 def strategy():
     with open(resource("source.py"), "r") as f:
-        Strategy.refresh_mongo()
         s = Strategy(name="Peter", source=f.read(), active=True)
+
+        s.reference.delete()
+        s.series.delete()
+
         assert s.portfolio is None
         assert s.last_valid_index is None
         s.portfolio = test_portfolio()

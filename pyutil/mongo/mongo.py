@@ -1,11 +1,9 @@
 import os
 import random
 import string
-
 import pandas as pd
-from pymongo import MongoClient
 
-from pyutil.timeseries.merge import merge
+from pymongo import MongoClient
 
 
 def mongo_client(host=None, port=None, database=None, username=None, password=None, authSource=None):
@@ -62,8 +60,7 @@ class _Collection(object):
 
     def upsert(self, value=None, **kwargs):
         # check it's either unique or not there
-
-        assert self.__col.count_documents(kwargs) <= 1, "Identifier not unique"
+        assert self.__col.count_documents(kwargs) <= 1, "Identifier not unique {a}. {b}".format(a=self.__col.count_documents(kwargs), b=kwargs)
 
         if value is not None:
             try:
@@ -91,25 +88,11 @@ class _Collection(object):
     def __repr__(self):
         return self.__col.__repr__()
 
-    def read(self, **kwargs):
+    def read(self, default=None, **kwargs):
         try:
             return self.find_one(**kwargs).data
         except AttributeError:
-            #raise KeyError("No data for {k} has been found".format(k=kwargs))
-            return None
-
-    def write(self, data, **kwargs):
-        self.upsert(value=data, **kwargs)
-
-    def merge(self, data, **kwargs):
-        old = self.read(**kwargs)
-        self.upsert(value=merge(new=data, old=old), **kwargs)
-
-    def last(self, **kwargs):
-        try:
-            return self.read(**kwargs).last_valid_index()
-        except AttributeError:
-            return None
+            return default
 
     def delete(self, **kwargs):
         return self.__col.delete_many(kwargs)
