@@ -8,6 +8,7 @@ from pyutil.strategy.runner import run, _strategy_update
 from pyutil.testing.database import database
 
 from test.config import resource, test_portfolio
+import pandas.util.testing as pdt
 
 
 @pytest.fixture(scope="module")
@@ -76,3 +77,8 @@ class TestStrategy(object):
         name, portfolio = _strategy_update(strategy_id=s.id, connection_str=db.connection)
         assert similar(portfolio, test_portfolio())
         assert name == "Peter"
+
+    def test_navs(self, db):
+        strategies = Strategy.products(session=db.session, names=["Peter"])
+        frame = Strategy.navs(strategies=strategies, f=lambda x: x.name)
+        pdt.assert_series_equal(frame["Peter"], test_portfolio().nav.series, check_names=False)
