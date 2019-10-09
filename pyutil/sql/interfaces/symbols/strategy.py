@@ -85,6 +85,3 @@ class Strategy(Product, Base):
     @classmethod
     def navs(cls, strategies, f=lambda x: x) -> pd.DataFrame:
         return pd.DataFrame({f(strategy): strategy.portfolio.nav for strategy in strategies})
-        #frame.columns = = frame.rename(columns=map(f, frame.keys()))
-        #return frame
-
