@@ -56,6 +56,7 @@ class _Reference(_Mongo):
     def keys(self):
         return set([a for a in self])
 
+    #def get(self, ):
 
 class _Timeseries(_Mongo):
     def __init__(self, name, collection):
@@ -109,9 +110,9 @@ class Product(object):
         return create_collection(name=cls.__name__.lower() + "_reference")
 
     @classmethod
-    def refresh_mongo(cls):
-        cls.collection = create_collection(name=cls.__name__.lower())
-        cls.collection_reference = create_collection(name=cls.__name__.lower() + "_reference")
+    def refresh_mongo(cls, client=None):
+        cls.collection = create_collection(name=cls.__name__.lower(), client=client)
+        cls.collection_reference = create_collection(name=cls.__name__.lower() + "_reference", client=client)
 
     def __repr__(self):
         return "{name}".format(name=self.name)
