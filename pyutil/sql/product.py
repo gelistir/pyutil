@@ -167,5 +167,6 @@ class Product(object):
             object.series.delete()
             object.reference.delete()
             session.delete(object)
+            session.commit()
         except NoResultFound:
             pass
