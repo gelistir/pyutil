@@ -82,6 +82,12 @@ class Strategy(Product, Base):
         frame.index.name = "strategy"
         return frame
 
-    @classmethod
-    def navs(cls, strategies, f=lambda x: x) -> pd.DataFrame:
-        return pd.DataFrame({f(strategy): strategy.portfolio.nav for strategy in strategies})
+    @staticmethod
+    def navs(strategies, f=lambda x: x) -> pd.DataFrame:
+        return pd.DataFrame({key: item.nav for key, item in Strategy.portfolios(strategies, f).items()})
+
+        #return pd.DataFrame({f(strategy): strategy.portfolio.nav for strategy in strategies})
+
+    @staticmethod
+    def portfolios(strategies, f=lambda x: x) -> dict:
+        return {f(strategy): strategy.portfolio for strategy in strategies if strategy.portfolio is not None}
