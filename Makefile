@@ -1,13 +1,16 @@
 #!make
-PROJECT_VERSION := $(shell python setup.py --version)
+#PROJECT_VERSION := $(shell python setup.py --version)
 
 SHELL := /bin/bash
-PACKAGE := pyutil
+#PACKAGE := pyutil
 
 # needed to get the ${PORT} environment variable
 include .env
 export
 
+include pyutil/__init__.py
+PROJECT_VERSION := ${__version__}
+PACKAGE := ${__title__}
 
 .PHONY: help build test teamcity jupyter graph doc tag clean
 

@@ -15,4 +15,4 @@ class TestAdjust(object):
         assert adjust(ts).loc["2014-01-01"] == 100.00
 
     def test_adjust_empty(self):
-        assert adjust(pd.Series({})).empty
+        assert adjust(pd.Series({})) is None
