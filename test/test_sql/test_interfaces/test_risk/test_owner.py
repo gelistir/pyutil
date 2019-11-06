@@ -40,10 +40,6 @@ def owner():
 #def kiid():
 #    return Field(name="KIID", result=DataType.integer, type=FieldType.other)
 
-# point to a new mongo collection...
-#Owner.collection = create_collection()
-#Owner.collection_reference = create_collection()
-#Product.mongo_database = mongo()
 
 class TestOwner(object):
     def test_position(self, mongo):

@@ -36,7 +36,7 @@ help:
 
 
 build:
-	#docker-compose build jupyter
+	docker-compose build jupyter
 	docker-compose build --no-cache pyutil
 
 test: clean
@@ -46,7 +46,8 @@ test: clean
 
 teamcity: test doc
 
-jupyter: build
+jupyter:
+	docker-compose build --no-cache jupyter
 	echo "http://localhost:${PORT}"
 	docker-compose up jupyter
 

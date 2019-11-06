@@ -19,16 +19,6 @@ def frame(mongo):
 
 
 class TestFrame(object):
-    def test_x(self, mongo):
-        assert mongo
-        Frame.mongo_database = mongo
-        assert Frame.mongo_database
-        #print(Product.mongo_database)
-        #assert Product.mongo_database
-        print(Frame.mongo_database)
-        print(mongo)
-
-
     def test_module(self, frame):
         p = frame.series["Prices"]
         w = frame.series["Weight"]

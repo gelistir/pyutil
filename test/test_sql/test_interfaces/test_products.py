@@ -5,20 +5,17 @@ import pandas.util.testing as pdt
 
 from pyutil.sql.base import Base
 from pyutil.sql.product import Product
-
+from test.config import mongo
 
 class Singer(Product, Base):
     def __init__(self, name):
         super().__init__(name)
 
-@pytest.fixture()
-def mongo():
-    from mongomock import MongoClient
-    return MongoClient().test
 
 @pytest.fixture()
 def ts():
     return pd.Series(data=[100, 200], index=[0, 1])
+
 
 @pytest.fixture()
 def singer(ts, mongo):
