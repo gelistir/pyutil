@@ -7,6 +7,7 @@ from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol
 from pyutil.sql.session import get_one_or_create, get_one_or_none, session as s_session
 from pyutil.testing.database import database
+from test.config import mongo
 
 
 @pytest.fixture()
@@ -17,7 +18,7 @@ def session():
 
 
 class TestSession(object):
-    def test_get_one_or_create(self, session):
+    def test_get_one_or_create(self, session, mongo):
         # exists is False, as the user "B" does not exist yet
         x, exists = get_one_or_create(session, Symbol, name="B")
         assert not exists
@@ -49,7 +50,7 @@ class TestSession(object):
             session.add(Symbol(name="Peter Maffay"))
             session.commit()
 
-    def test_scope(self):
+    def test_scope(self, mongo):
         connection_str = "sqlite:///:memory:"
         with s_session(connection_str=connection_str, base=Base) as s:
             # add the user Hans Dampf
@@ -68,7 +69,8 @@ class TestSession(object):
                 s.add(Symbol(name="Hans"))
                 s.add(Symbol(name="Hans"))
 
-    def test_delete(self, session):
+    def test_delete(self, session, mongo):
+        Symbol.mongo_database = mongo
         # exists is False, as the user "B" does not exist yet
         x, exists = get_one_or_create(session, Symbol, name="B")
         assert not exists

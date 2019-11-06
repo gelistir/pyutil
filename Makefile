@@ -36,12 +36,12 @@ help:
 
 
 build:
-	docker-compose build jupyter
-	docker-compose build pyutil
+	#docker-compose build jupyter
+	docker-compose build --no-cache pyutil
 
 test: clean
 	mkdir -p artifacts
-	#docker-compose -f docker-compose.test.yml down -v --rmi all --remove-orphans
+	docker-compose -f docker-compose.test.yml down -v --rmi all --remove-orphans
 	docker-compose -f docker-compose.test.yml run sut
 
 teamcity: test doc

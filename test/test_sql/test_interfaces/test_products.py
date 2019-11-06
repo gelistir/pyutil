@@ -12,28 +12,34 @@ class Singer(Product, Base):
         super().__init__(name)
 
 @pytest.fixture()
+def mongo():
+    from mongomock import MongoClient
+    return MongoClient().test
+
+@pytest.fixture()
 def ts():
     return pd.Series(data=[100, 200], index=[0, 1])
 
 @pytest.fixture()
-def singer(ts):
+def singer(ts, mongo):
     s = Singer(name="Peter Maffay")
-    s.series.delete()
-    s.reference.delete()
+    # set the mongo database
+    Singer.mongo_database = mongo
+
     s.reference["XXX"] = 10
     s.series["PRICE"] = ts
+    assert s.reference.keys() == {"XXX"}
     return s
 
 
 class TestProduct(object):
-    def test_lt(self):
+    def test_lt(self, mongo):
         assert Singer(name="A") < Singer(name="B")
 
-    def test_name(self):
-        singer = Singer(name="A")
-        assert str(singer) == "A"
+    def test_name(self, singer):
+        assert str(singer) == "Peter Maffay"
 
-        # can't change the name of an asset!
+        # can't change the name of a product!
         with pytest.raises(AttributeError):
             singer.name = "AA"
 
@@ -52,7 +58,7 @@ class TestProduct(object):
         assert singer.reference.collection
         assert {k: v for k, v in singer.reference.items()} == {"XXX": 10}
 
-    def test_keys(self, ts):
+    def test_keys(self, ts, mongo):
         s = Singer(name="BC")
         s.series.write(data=ts, key="Correlation", second="C")
         s.series.write(data=ts, key="Correlation", second="E")

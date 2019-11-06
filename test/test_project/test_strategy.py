@@ -7,17 +7,17 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.strategy.runner import run, _strategy_update
 from pyutil.testing.database import database
 
-from test.config import resource, test_portfolio
+from test.config import resource, test_portfolio, mongo
 import pandas.util.testing as pdt
 
 
-@pytest.fixture(scope="module")
-def strategy():
+@pytest.fixture()
+def strategy(mongo):
     with open(resource("source.py"), "r") as f:
         s = Strategy(name="Peter", source=f.read(), active=True)
-
-        s.reference.delete()
-        s.series.delete()
+        Strategy.mongo_database = mongo
+        #s.reference.delete()
+        #s.series.delete()
 
         assert s.portfolio is None
         assert s.last_valid_index is None
@@ -26,13 +26,13 @@ def strategy():
         return s
 
 
-@pytest.fixture(scope="module")
-def symbols():
+@pytest.fixture()
+def symbols(mongo):
     p = test_portfolio()
     return [Symbol(name=a, group=SymbolType.alternatives) for a in p.assets]
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def db(strategy, symbols):
     db = database(base=Base)
     db.session.add(strategy)

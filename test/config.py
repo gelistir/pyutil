@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import pytest
 
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.testing.aux import resource_folder
@@ -15,3 +16,8 @@ def read(name, **kwargs):
 def test_portfolio():
     return Portfolio(prices=read("price.csv", parse_dates=True, index_col=0),
                      weights=read("weight.csv", parse_dates=True, index_col=0))
+
+@pytest.fixture()
+def mongo():
+    from mongomock import MongoClient
+    return MongoClient().test

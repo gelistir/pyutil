@@ -1,6 +1,6 @@
 import pandas as pd
 from sqlalchemy import String, Column
-from sqlalchemy.ext.declarative import declared_attr
+
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm.exc import NoResultFound
 
@@ -40,7 +40,6 @@ class _Mongo(object):
         self.collection.upsert(value=data, key=key, name=self.name, **kwargs)
 
 
-
 class _Reference(_Mongo):
     def __init__(self, name, collection):
         super().__init__(name, collection)
@@ -56,7 +55,6 @@ class _Reference(_Mongo):
     def keys(self):
         return set([a for a in self])
 
-    #def get(self, ):
 
 class _Timeseries(_Mongo):
     def __init__(self, name, collection):
@@ -88,7 +86,18 @@ class _Timeseries(_Mongo):
 class Product(object):
     __name = Column("name", String(1000), unique=True, nullable=False)
 
-    def __init__(self, name):
+    mongo_database = None
+
+    @classmethod
+    def collection(cls):
+        # this is a very fast operation, as a new client is not created here...
+        return create_collection(database=cls.mongo_database, name=cls.__name__.lower())
+
+    @classmethod
+    def collection_reference(cls):
+        return create_collection(database=cls.mongo_database, name=cls.__name__.lower() + "_reference")
+
+    def __init__(self, name, *args, **kwargs):
         self.__name = str(name)
 
     @hybrid_property
@@ -98,21 +107,6 @@ class Product(object):
         # Thanks to this hybrid annotation sqlalchemy translates self.__name into proper sqlcode
         # print(session.query(Symbol).filter(Symbol.name == "Maffay"))
         return self.__name
-
-    @declared_attr.cascading
-    def collection(cls):
-        # this is a very fast operation, as a new client is not created here...
-        return create_collection(name=cls.__name__.lower())
-
-    @declared_attr.cascading
-    def collection_reference(cls):
-        # this is a very fast operation, as a new client is not created here...
-        return create_collection(name=cls.__name__.lower() + "_reference")
-
-    @classmethod
-    def refresh_mongo(cls, client=None):
-        cls.collection = create_collection(name=cls.__name__.lower(), client=client)
-        cls.collection_reference = create_collection(name=cls.__name__.lower() + "_reference", client=client)
 
     def __repr__(self):
         return "{name}".format(name=self.name)
@@ -129,12 +123,12 @@ class Product(object):
 
     @property
     def reference(self):
-        return _Reference(name=self.name, collection=self.collection_reference)
+        return _Reference(name=self.name, collection=self.__class__.collection_reference())
 
     @property
     def series(self):
         # isn't that very expensive
-        return _Timeseries(name=self.name, collection=self.collection)
+        return _Timeseries(name=self.name, collection=self.__class__.collection())
 
     @classmethod
     def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
@@ -163,10 +157,10 @@ class Product(object):
     @classmethod
     def delete(cls, session, name):
         try:
-            object = session.query(cls).filter(cls.name == name).one()
-            object.series.delete()
-            object.reference.delete()
-            session.delete(object)
+            obj = session.query(cls).filter(cls.name == name).one()
+            obj.series.delete()
+            obj.reference.delete()
+            session.delete(obj)
             session.commit()
         except NoResultFound:
             pass

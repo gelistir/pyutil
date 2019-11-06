@@ -6,7 +6,10 @@ from pyutil.mongo.mongo import create_collection
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
+from pyutil.sql.product import Product
 from pyutil.timeseries.merge import merge
+
+from test.config import mongo
 
 t0 = pd.Timestamp("1978-11-15")
 t1 = pd.Timestamp("1978-11-16")
@@ -38,11 +41,16 @@ def owner():
 #    return Field(name="KIID", result=DataType.integer, type=FieldType.other)
 
 # point to a new mongo collection...
-Owner.collection = create_collection()
-Owner.collection_reference = create_collection()
+#Owner.collection = create_collection()
+#Owner.collection_reference = create_collection()
+#Product.mongo_database = mongo()
 
 class TestOwner(object):
-    def test_position(self, owner):
+    def test_position(self, mongo):
+        Product.mongo_database = mongo
+        assert Security.mongo_database
+        assert Owner.mongo_database
+
         # create a security
         s1 = Security(name="123", fullname="A")
 
@@ -95,8 +103,12 @@ class TestOwner(object):
         # frame = Owner.frame(owners=[owner])
         # pdt.assert_frame_equal(frame, pd.DataFrame(index=pd.Index([owner], name="Security"), columns=["Currency", "Entity ID", "Name"], data=[["USD",100,"Peter Maffay"]]), check_dtype=False)
 
-    def test_returns(self, ts1, ts2, ts3):
+    def test_returns(self, ts1, ts2, ts3, mongo):
+        Product.mongo_database = mongo
+
         o = Owner(name="222")
+        assert Owner.mongo_database
+
         o.series["RETURN"] = ts1 #.write(data=ts1, key="RETURN")
         pdt.assert_series_equal(ts1, o.series["RETURN"])
 
@@ -123,7 +135,11 @@ class TestOwner(object):
     #    owner.custodian = Custodian(name="UBS")
     #    assert owner.custodian == Custodian(name="UBS")
 
-    def test_name(self):
+    def test_name(self, mongo):
+        Product.mongo_database = mongo
+        assert Owner.mongo_database
+        assert Security.mongo_database
+
         o = Owner(name="222", currency=Currency(name="CHF"), fullname="Peter Maffay")
         assert o.name == "222"
         assert str(o) == "Owner(222: Peter Maffay, CHF)"

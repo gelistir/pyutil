@@ -5,7 +5,7 @@ import pytest
 from pyutil.mongo.mongo import create_collection
 #from pyutil.sql.interfaces.products import ProductInterface
 from pyutil.sql.interfaces.risk.security import Security
-from test.config import read
+from test.config import read, mongo
 
 t0 = pd.Timestamp("1978-11-15")
 t1 = pd.Timestamp("1978-11-16")
@@ -17,12 +17,13 @@ def ts():
 
 
 @pytest.fixture()
-def security(ts):
+def security(ts, mongo):
     # point to a new mongo collection... with a random name...
-    Security.collection = create_collection()
-    Security.collection_reference = create_collection()
+    #Security.collection = create_collection()
+    #Security.collection_reference = create_collection()
 
     s = Security(name=100, fullname="Peter Maffay")
+    Security.mongo_database = mongo
     s.reference["Bloomberg Ticker"] = "IBM US Equity"
     s.series["PRICE"] = ts
     return s

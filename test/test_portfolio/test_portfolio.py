@@ -8,7 +8,7 @@ from pyutil.portfolio.portfolio import Portfolio, similar
 from pyutil.mongo.mongo import create_collection
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.testing.database import database
-from test.config import test_portfolio, read
+from test.config import test_portfolio, read, mongo
 
 
 @pytest.fixture(scope="module")
@@ -26,8 +26,8 @@ def symbols():
     #db = database(base=Base)
 
     # point to a new mongo collection...
-    Symbol.collection = create_collection()
-    Symbol.collection_reference = create_collection()
+    #Symbol.collection = create_collection()
+    #Symbol.collection_reference = create_collection()
 
     s1 = Symbol(name="A", group=SymbolType.alternatives, internal="AA")
     s2 = Symbol(name="B", group=SymbolType.alternatives, internal="BB")

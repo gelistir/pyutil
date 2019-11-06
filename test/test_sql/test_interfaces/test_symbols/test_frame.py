@@ -2,23 +2,33 @@ import pytest
 
 from pyutil.portfolio.portfolio import similar, Portfolio
 from pyutil.sql.interfaces.frame import Frame
-from test.config import test_portfolio
+from pyutil.sql.product import Product
+from test.config import test_portfolio, mongo
 
+@pytest.fixture()
+def frame(mongo):
+    assert mongo
+    Product.mongo_database = mongo
+    assert Frame.mongo_database
+    assert Product.mongo_database
 
-@pytest.fixture(scope="module")
-def frame():
-    # point to a new mongo collection...
     f = Frame(name="Portfolio")
-    #f.series.delete()
-    #print(test_portfolio().prices.to_msgpack())
-    #assert False
-
     f.series["Prices"] = test_portfolio().prices
     f.series["Weight"] = test_portfolio().weights
     return f
 
 
 class TestFrame(object):
+    def test_x(self, mongo):
+        assert mongo
+        Frame.mongo_database = mongo
+        assert Frame.mongo_database
+        #print(Product.mongo_database)
+        #assert Product.mongo_database
+        print(Frame.mongo_database)
+        print(mongo)
+
+
     def test_module(self, frame):
         p = frame.series["Prices"]
         w = frame.series["Weight"]

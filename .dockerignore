@@ -5,7 +5,9 @@
 
 !requirements.txt
 
-!work
+!binder/files/*
+!binder/jupyter_notebook_config.py
+
 !test
 !pyutil
 !setup.py

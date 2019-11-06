@@ -6,7 +6,7 @@ import pandas as pd
 from pymongo import MongoClient
 
 
-def mongo_client(host=None, port=None, database=None, username=None, password=None, authSource=None):
+def mongo_database(host=None, port=None, database=None, username=None, password=None, authSource=None):
     """ Create a Mongo Client """
     host = host or os.environ["MONGODB_HOST"]
     database = database or os.environ["MONGODB_DATABASE"]
@@ -18,10 +18,9 @@ def mongo_client(host=None, port=None, database=None, username=None, password=No
     return MongoClient(host=host, port=int(port), username=username, password=password, authSource=authSource)[database]
 
 
-def create_collection(name=None, client=None):
-    client = client or mongo_client()
+def create_collection(database, name=None):
     name = name or "".join(random.choices(string.ascii_lowercase, k=10))
-    return _Collection(client[name])
+    return _Collection(database[name])
 
 
 class _MongoObject(object):
@@ -64,6 +63,7 @@ class _Collection(object):
 
         if value is not None:
             try:
+                # make sure value is a series not a DataFrame!
                 self.__col.update_one(kwargs, {"$set": {"data": value.to_msgpack(), "now": pd.Timestamp("now")}}, upsert=True)
             except AttributeError:
                 self.__col.update_one(kwargs, {"$set": {"data": value, "now": pd.Timestamp("now")}}, upsert=True)

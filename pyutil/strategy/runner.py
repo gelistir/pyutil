@@ -16,8 +16,8 @@ def _strategy_update(strategy_id, connection_str, logger=None):
     # do a read is enough...
     with session(connection_str=connection_str) as session:
         # make fresh mongo clients to avoid forking issues
-        Strategy.refresh_mongo()
-        Symbol.refresh_mongo()
+        #Strategy.refresh_mongo()
+        #Symbol.refresh_mongo()
 
         strategy = session.query(Strategy).filter_by(id=strategy_id).one()
         logger.debug(strategy.name)

@@ -3,6 +3,7 @@ import pandas.util.testing as pdt
 import pytest
 
 from pyutil.mongo.mongo import create_collection
+from test.config import mongo
 
 
 @pytest.fixture()
@@ -16,14 +17,16 @@ def ts2():
 
 
 @pytest.fixture()
-def col(ts1):
-    collection = create_collection()
+def col(ts1, mongo):
+    collection = create_collection(database=mongo)
+
     # Note that we don't define a name here...
     collection.upsert(value=ts1, key="PX_LAST", First="Hans", Last="Dampf")
     collection.upsert(value=ts1, key="PX_LAST", First="Hans", Last="Maffay")
     collection.upsert(value=ts1, key="PX_OPEN", First="Hans", Last="Maffay")
     collection.upsert(value=2.0, key="XXX", name="HANS")
     collection.upsert(value=3.0, key="XXX", name="PETER")
+
     return collection
 
 
@@ -61,7 +64,6 @@ class TestMongo(object):
 
     def test_read_write(self, col, ts2):
         col.upsert(value=ts2, key="PX_OPEN", name="H")
-        #col.merge(data=ts2.tail(10), key="PX_OPEN", name="H")
         pdt.assert_series_equal(col.read(key="PX_OPEN", name="H"), ts2)
 
     def test_ts(self, col):

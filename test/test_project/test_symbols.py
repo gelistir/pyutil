@@ -5,8 +5,12 @@ from sqlalchemy.orm.exc import NoResultFound
 from pyutil.sql.base import Base
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.testing.database import database
+from test.config import mongo
 
-
+#@pytest.fixture()
+#def mongo():
+#    from mongomock import MongoClient
+#    return MongoClient().test
 
 @pytest.fixture()
 def ts():
@@ -14,15 +18,16 @@ def ts():
 
 
 @pytest.fixture()
-def symbol(ts):
+def symbol(ts, mongo):
     s = Symbol(name="A", internal="AAA", group=SymbolType.alternatives)
+    Symbol.mongo_database = mongo
     s.reference["XXX"] = 10
     s.series["PRICE"] = ts
     return s
 
 
 @pytest.fixture()
-def symbols():
+def symbols(mongo):
     s1 = Symbol(name="A", group=SymbolType.alternatives, internal="AAA")
     s2 = Symbol(name="B", group=SymbolType.currency, internal="BBB")
     return [s1, s2]
