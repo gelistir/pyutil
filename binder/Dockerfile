@@ -17,6 +17,6 @@ RUN pip install --no-cache-dir -r /tmp/pyutil/requirements.txt && \
     pip install --no-cache-dir /tmp/pyutil && \
     rm -rf /tmp/pyutil
 
-RUN conda install -y -c conda-forge beakerx rise=5.5.0 cvxpy=1.0.15 mongomock && conda clean -y -all
+RUN conda install -y -c conda-forge beakerx rise=5.5.0 cvxpy=1.0.15 && conda clean -y -all
 
 

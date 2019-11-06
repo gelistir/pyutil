@@ -7,11 +7,6 @@ from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.testing.database import database
 from test.config import mongo
 
-#@pytest.fixture()
-#def mongo():
-#    from mongomock import MongoClient
-#    return MongoClient().test
-
 @pytest.fixture()
 def ts():
     return pd.Series(data=[2, 4, 6])
