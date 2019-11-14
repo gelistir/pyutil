@@ -3,19 +3,29 @@ import random
 import string
 import pandas as pd
 
-from pymongo import MongoClient
+from pymongo import MongoClient, uri_parser
 
 
-def mongo_database(host=None, port=None, database=None, username=None, password=None, authSource=None):
-    """ Create a Mongo Client """
-    host = host or os.environ["MONGODB_HOST"]
-    database = database or os.environ["MONGODB_DATABASE"]
-    port = port or os.environ["MONGODB_PORT"]
-    username = username or os.environ["MONGODB_USERNAME"]
-    password = password or os.environ["MONGODB_PASSWORD"]
-    authSource = authSource or os.environ["MONGODB_DATABASE"]
+class Mongo(object):
+    def __init__(self, uri):
+        parsed_uri = uri_parser.parse_uri(uri)
+        database_name = parsed_uri["database"]
 
-    return MongoClient(host=host, port=int(port), username=username, password=password, authSource=authSource)[database]
+        self.cx = MongoClient(uri)
+        if database_name:
+            self.db = self.cx[database_name]
+
+
+#def mongo_database(host=None, port=None, database=None, username=None, password=None, authSource=None):
+#    """ Create a Mongo Client """
+#    host = host or os.environ["MONGODB_HOST"]
+#    database = database or os.environ["MONGODB_DATABASE"]
+#    port = port or os.environ["MONGODB_PORT"]
+#    username = username or os.environ["MONGODB_USERNAME"]
+#    password = password or os.environ["MONGODB_PASSWORD"]
+#    authSource = authSource or os.environ["MONGODB_DATABASE"]
+
+#    return MongoClient(host=host, port=int(port), username=username, password=password, authSource=authSource)[database]
 
 
 def create_collection(database, name=None):

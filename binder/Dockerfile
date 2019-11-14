@@ -1,4 +1,3 @@
-# Set the base image to beakerx
 FROM jupyter/base-notebook:1386e2046833 as jupyter
 
 # File Author / Maintainer
