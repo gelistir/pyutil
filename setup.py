@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 from setuptools import setup, find_packages
-
+from pyutil import __version__ as version
 setup(
     name='pyutil',
-    version='3.9.1',
+    version=version,
     packages=find_packages(include=["pyutil*"]),
     author='Lobnek Wealth Management',
     author_email='thomas.schmelzer@lobnek.com',
