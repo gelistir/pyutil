@@ -2,7 +2,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
-from pyutil.mongo.mongo import create_collection
+#from pyutil.mongo.mongo import create_collection
 from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security

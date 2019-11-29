@@ -1,9 +1,11 @@
+import random
+import string
+
 import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
-from pyutil.mongo.mongo import create_collection
-from test.config import mongo
+from pyutil.mongo.mongo import Collection
 
 
 @pytest.fixture()
@@ -18,7 +20,11 @@ def ts2():
 
 @pytest.fixture()
 def col(ts1, mongo):
-    collection = create_collection(database=mongo)
+    name = "".join(random.choices(string.ascii_lowercase, k=10))
+    #col = mongo[name]
+    collection = Collection(collection=mongo[name])
+
+    #collection = create_collection(database=mongo)
 
     # Note that we don't define a name here...
     collection.upsert(value=ts1, key="PX_LAST", First="Hans", Last="Dampf")

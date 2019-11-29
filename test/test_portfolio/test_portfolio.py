@@ -5,7 +5,6 @@ import pytest
 
 from pyutil.portfolio.portfolio import Portfolio, similar
 
-from pyutil.mongo.mongo import create_collection
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.testing.database import database
 from test.config import test_portfolio, read, mongo

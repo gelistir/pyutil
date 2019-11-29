@@ -12,10 +12,12 @@ COPY --chown=jovyan:users /binder/files $HOME/work
 # copy the package over and install it
 COPY --chown=jovyan:users . /tmp/pyutil
 
-RUN pip install --no-cache-dir -r /tmp/pyutil/requirements.txt && \
+RUN conda install -y -c conda-forge nomkl pandas=0.24.2 requests=2.21.0 && \
+    conda clean -y --all && \
+    pip install --no-cache-dir -r /tmp/pyutil/requirements.txt && \
     pip install --no-cache-dir /tmp/pyutil && \
     rm -rf /tmp/pyutil
 
-RUN conda install -y -c conda-forge beakerx rise=5.5.0 cvxpy=1.0.15 && conda clean -y -all
+RUN conda install -y -c conda-forge beakerx rise=5.5.0 cvxpy && conda clean -y -all
 
 

@@ -4,7 +4,7 @@ from sqlalchemy import String, Column
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm.exc import NoResultFound
 
-from pyutil.mongo.mongo import create_collection
+from pyutil.mongo.mongo import Collection
 from pyutil.timeseries.merge import merge
 
 
@@ -91,11 +91,11 @@ class Product(object):
     @classmethod
     def collection(cls):
         # this is a very fast operation, as a new client is not created here...
-        return create_collection(database=cls.mongo_database, name=cls.__name__.lower())
+        return Collection(collection=cls.mongo_database[cls.__name__.lower()])
 
     @classmethod
     def collection_reference(cls):
-        return create_collection(database=cls.mongo_database, name=cls.__name__.lower() + "_reference")
+        return Collection(collection=cls.mongo_database[cls.__name__.lower() + "_reference"])
 
     def __init__(self, name, *args, **kwargs):
         self.__name = str(name)

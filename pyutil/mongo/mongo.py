@@ -1,6 +1,3 @@
-import os
-import random
-import string
 import pandas as pd
 
 from pymongo import MongoClient, uri_parser
@@ -11,26 +8,20 @@ class Mongo(object):
         parsed_uri = uri_parser.parse_uri(uri)
         database_name = parsed_uri["database"]
 
-        self.cx = MongoClient(uri)
+        self.__cx = MongoClient(uri)
         if database_name:
-            self.db = self.cx[database_name]
+            self.__db = self.__cx[database_name]
 
+    def collection(self, name):
+        return Collection(self.database[name])
 
-#def mongo_database(host=None, port=None, database=None, username=None, password=None, authSource=None):
-#    """ Create a Mongo Client """
-#    host = host or os.environ["MONGODB_HOST"]
-#    database = database or os.environ["MONGODB_DATABASE"]
-#    port = port or os.environ["MONGODB_PORT"]
-#    username = username or os.environ["MONGODB_USERNAME"]
-#    password = password or os.environ["MONGODB_PASSWORD"]
-#    authSource = authSource or os.environ["MONGODB_DATABASE"]
+    @property
+    def database(self):
+        return self.__db
 
-#    return MongoClient(host=host, port=int(port), username=username, password=password, authSource=authSource)[database]
-
-
-def create_collection(database, name=None):
-    name = name or "".join(random.choices(string.ascii_lowercase, k=10))
-    return _Collection(database[name])
+    @property
+    def client(self):
+        return self.__cx
 
 
 class _MongoObject(object):
@@ -59,9 +50,13 @@ class _MongoObject(object):
         return self.__t
 
 
-class _Collection(object):
+class Collection(object):
     def __init__(self, collection):
         self.__col = collection
+
+    @property
+    def collection(self):
+        return self.__col
 
     @property
     def name(self):
@@ -90,10 +85,6 @@ class _Collection(object):
         assert n <= 1, "Could not find a unique document"
 
         return _MongoObject(self.__col.find_one(kwargs))
-
-    @property
-    def collection(self):
-        return self.__col
 
     def __repr__(self):
         return self.__col.__repr__()
