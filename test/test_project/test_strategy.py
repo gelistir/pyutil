@@ -51,7 +51,7 @@ class TestStrategy(object):
         # extract all strategies from database
         strategies = Strategy.products(session=db.session)
         #
-        x = run(strategies=strategies, connection_str=db.connection)
+        x = run(strategies=strategies, connection_str=db.connection, mongo_uri='mongodb://test-mongo:27017/test')
         assert x["Peter"]
         assert similar(x["Peter"], test_portfolio())
 
@@ -74,7 +74,7 @@ class TestStrategy(object):
             print(x)
 
         s = db.session.query(Strategy).filter(Strategy.name == "Peter").one()
-        name, portfolio = _strategy_update(strategy_id=s.id, connection_str=db.connection)
+        name, portfolio = _strategy_update(strategy_id=s.id, connection_str=db.connection, mongo_uri='mongodb://test-mongo:27017/test')
         assert similar(portfolio, test_portfolio())
         assert name == "Peter"
 
