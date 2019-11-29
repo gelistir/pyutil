@@ -6,7 +6,7 @@ import pandas.util.testing as pdt
 import pytest
 
 from pyutil.mongo.mongo import Collection
-
+from test.config import mongo
 
 @pytest.fixture()
 def ts1():
