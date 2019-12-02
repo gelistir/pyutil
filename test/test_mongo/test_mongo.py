@@ -5,7 +5,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
-from pyutil.mongo.mongo import Collection
+from pyutil.mongo.mongo import Collection, Mongo
 from test.config import mongo
 
 @pytest.fixture()
@@ -35,6 +35,14 @@ def col(ts1, mongo):
 
     return collection
 
+
+class TestMongoURI(object):
+    def test_init(self):
+        MONGO_URI = 'mongodb://test-mongo:27017/test'
+        m = Mongo(uri=MONGO_URI)
+        assert m.database.name == "test"
+        assert m.client
+        assert m.collection(name="wurst")
 
 class TestMongo(object):
     def test_find_one(self, col):
