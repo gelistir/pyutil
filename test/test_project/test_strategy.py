@@ -6,7 +6,7 @@ from pyutil.sql.interfaces.symbols.strategy import Strategy, StrategyType
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.testing.database import database
 
-from test.config import resource, test_portfolio, mongo
+from test.config import test_portfolio, mongo, resource
 import pandas.util.testing as pdt
 
 

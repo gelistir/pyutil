@@ -3,10 +3,10 @@ import pandas as pd
 import pytest
 
 from pyutil.portfolio.portfolio import Portfolio
-from pyutil.testing.aux import resource_folder
 
-# this is a function mapping name of a file to its path...
-resource = resource_folder(folder=os.path.dirname(__file__))
+
+def resource(name):
+    return os.path.join(os.path.dirname(__file__), "resources", name)
 
 
 def read(name, **kwargs):

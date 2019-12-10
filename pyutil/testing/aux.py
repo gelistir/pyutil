@@ -13,13 +13,3 @@ def get(client, url):
     response = client.get(url)
     assert response.status_code == 200, "The return code is {r}".format(r=response.status_code)
     return response.data
-
-
-def resource_folder(folder):
-    def __resource(name, folder):
-        return os.path.join(folder, "resources", name)
-
-    return partial(__resource, folder=folder)
-
-
-
