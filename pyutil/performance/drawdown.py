@@ -2,6 +2,15 @@ import pandas as pd
 
 
 def drawdown(series) -> pd.Series:
+    """
+    Compute the drawdown for a price series. The drawdown is defined as 1 - price/highwatermark.
+    The highwatermark at time t is the highest price that has been achieved before or at time t.
+
+    Args:
+        series:
+
+    Returns: Drawdown as a pandas series
+    """
     return Drawdown(series).drawdown
 
 
