@@ -3,7 +3,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
-from pyutil.portfolio.portfolio import Portfolio, similar
+from pyutil.portfolio.portfolio import Portfolio, similar, one_over_n
 
 from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
 from pyutil.testing.database import database
@@ -45,6 +45,17 @@ def symbols():
 
 
 class TestPortfolio(object):
+    def test_one_over_n(self):
+        prices = pd.DataFrame(index=[1,2,3], columns=["A","B"], data=[[np.nan, 2.0], [3.0, np.nan], [np.nan, 4.0]])
+        #print(prices.head(5))
+        portfolio = one_over_n(prices=prices)
+        #print(portfolio.weights)
+        pdt.assert_frame_equal(portfolio.weights, pd.DataFrame(index=[1,2,3], columns=["A","B"], data=[[np.nan, 1.0], [0.5, 0.5], [0.5, 0.5]]))
+
+
+
+
+
     def test_from_position(self):
         prices = pd.DataFrame(index=[1, 2, 3], columns=["A", "B"], data=[[1, 1], [1.1, 1.2], [1.1, 1.4]])
         position = pd.Series(index=["A", "B"], data=[100, 200])

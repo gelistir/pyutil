@@ -1,6 +1,6 @@
 import pytest
 
-from pyutil.timeseries.signal import trend_new
+from pyutil.timeseries.signal import trend_new, volatility
 from test.config import read
 
 
@@ -12,5 +12,8 @@ def ts():
 class TestSignal(object):
     def test_trend_new(self, ts):
         osc = trend_new(ts)
-        assert osc["2015-04-20"] == pytest.approx(0.05390185343741904, 1e-6)
+        assert osc["2015-04-20"] == pytest.approx(0.05457355730789621, 1e-6)
 
+    def test_volatility(self, ts):
+        vola = volatility(prices=ts, annualized=True)
+        assert vola["2015-04-20"] == pytest.approx(0.02850826439271097, 1e-6)

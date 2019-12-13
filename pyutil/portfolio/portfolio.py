@@ -35,6 +35,24 @@ def similar(a, b, eps=1e-6):
     return True
 
 
+
+def one_over_n(prices):
+    """
+    Args:
+        prices: Frame of prices
+
+    Returns: The classic 1/n portfolio
+    """
+    def __f(x):
+        n = x.notnull().sum()
+        y = pd.Series(index=x.index)
+        if n > 0:
+            y[x.notnull()] = 1 / n
+        return y
+
+    return Portfolio(prices=prices, weights=prices.ffill().apply(__f, axis=1))
+
+
 class Portfolio(object):
     def rename(self, names):
         """ names is a dictionary """
