@@ -72,13 +72,23 @@ class _Timeseries(_Mongo):
         for a in self.collection.find(name=self.name, **kwargs):
             yield a.meta
 
-    def last(self, key, **kwargs):
+    def last(self, key, default=None, **kwargs):
         try:
             return self.get(item=key, **kwargs).last_valid_index()
         except AttributeError:
-            return None
+            return default
 
     def merge(self, data, key, **kwargs):
+        """
+        Merge some new data with existing data.
+
+        Args:
+            data: new timeseries/frame
+            key: key of the timeseries
+            **kwargs: use this for further specification of the timeseries
+
+        Returns:
+        """
         old = self.get(item=key, **kwargs)
         self.write(data=merge(new=data, old=old), key=key, **kwargs)
 

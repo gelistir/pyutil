@@ -43,6 +43,7 @@ class TestProduct(object):
     def test_last(self, singer, ts):
         assert singer.series.last(key="PRICE") == ts.last_valid_index()
         assert singer.series.last(key="OPEN") is None
+        assert singer.series.last(key="OPEN", default=pd.Timestamp("2010-01-01")) == pd.Timestamp("2010-01-01")
 
     def test_timeseries(self, singer, ts):
         pdt.assert_series_equal(singer.series["PRICE"], ts)
