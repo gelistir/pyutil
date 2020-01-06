@@ -11,7 +11,7 @@ class Security(Product, Base):
     def __init__(self, name, fullname=None, type=None, **kwargs):
         super().__init__(str(name), **kwargs)
         self.fullname = fullname
-        self.type = type
+        self.security_type = type
 
     def __repr__(self):
         return "Security({id}: {name})".format(id=self.name, name=self.reference["Name"])
@@ -20,6 +20,6 @@ class Security(Product, Base):
     def reference_frame(securities, f=lambda x: x):
         frame = Product.reference_frame(products=securities, f=f)
         frame["fullname"] = pd.Series({f(s): s.fullname for s in securities})
-        frame["type"] = pd.Series({f(s): s.type for s in securities})
+        frame["type"] = pd.Series({f(s): s.security_type for s in securities})
         frame.index.name = "security"
         return frame

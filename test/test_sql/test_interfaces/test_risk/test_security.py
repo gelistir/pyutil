@@ -22,7 +22,7 @@ def security(ts, mongo):
     #Security.collection = create_collection()
     #Security.collection_reference = create_collection()
 
-    s = Security(name=100, fullname="Peter Maffay", type="Option")
+    s = Security(name=100, fullname="Peter Maffay", security_type="Option")
     Security.mongo_database = mongo
     s.reference["Bloomberg Ticker"] = "IBM US Equity"
     s.series["PRICE"] = ts
@@ -34,7 +34,7 @@ class TestSecurity(object):
         # s = Security(name=100)
         assert security.name == "100"
         assert str(security) == "Security(100: None)"
-        assert security.type == "Option"
+        assert security.security_type == "Option"
         assert security.fullname == "Peter Maffay"
         #assert security.bloomberg_scaling == 1
         #assert security.bloomberg_ticker == "IBM US Equity"
