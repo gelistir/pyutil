@@ -22,7 +22,7 @@ def security(ts, mongo):
     #Security.collection = create_collection()
     #Security.collection_reference = create_collection()
 
-    s = Security(name=100, fullname="Peter Maffay", security_type="Option")
+    s = Security(name=100, fullname="Peter Maffay")
     Security.mongo_database = mongo
     s.reference["Bloomberg Ticker"] = "IBM US Equity"
     s.series["PRICE"] = ts
@@ -34,7 +34,6 @@ class TestSecurity(object):
         # s = Security(name=100)
         assert security.name == "100"
         assert str(security) == "Security(100: None)"
-        assert security.security_type == "Option"
         assert security.fullname == "Peter Maffay"
         #assert security.bloomberg_scaling == 1
         #assert security.bloomberg_ticker == "IBM US Equity"
@@ -60,5 +59,5 @@ class TestSecurity(object):
 
     def test_reference(self, security):
         frame1 = Security.reference_frame(securities=[security], f=lambda x: x.name)
-        frame2 = pd.DataFrame(index=["100"], columns=["Bloomberg Ticker", "fullname", "type"], data=[["IBM US Equity", "Peter Maffay", "Option"]])
+        frame2 = pd.DataFrame(index=["100"], columns=["Bloomberg Ticker", "fullname"], data=[["IBM US Equity", "Peter Maffay"]])
         pdt.assert_frame_equal(frame1, frame2, check_names=False)
