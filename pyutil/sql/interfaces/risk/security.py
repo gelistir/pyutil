@@ -8,10 +8,10 @@ from pyutil.sql.product import Product
 class Security(Product, Base):
     fullname = sq.Column("fullname", sq.String, nullable=True)
 
-    def __init__(self, name, fullname=None, type=None, **kwargs):
+    def __init__(self, name, fullname=None, security_type=None, **kwargs):
         super().__init__(str(name), **kwargs)
         self.fullname = fullname
-        self.security_type = type
+        self.security_type = security_type
 
     def __repr__(self):
         return "Security({id}: {name})".format(id=self.name, name=self.reference["Name"])
