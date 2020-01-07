@@ -1,11 +1,8 @@
 import pandas as pd
 import pytest
-from sqlalchemy.orm.exc import NoResultFound
 
-from pyutil.sql.base import Base
-from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
-from pyutil.testing.database import database
-from test.config import mongo
+from pyutil.mongo.engine.symbol import Group, Symbol
+from test.config import mongo_client
 
 @pytest.fixture()
 def ts():
@@ -13,58 +10,65 @@ def ts():
 
 
 @pytest.fixture()
-def symbol(ts, mongo):
-    s = Symbol(name="A", internal="AAA", group=SymbolType.alternatives)
-    Symbol.mongo_database = mongo
+def symbol(mongo_client, ts):
+    g = Group(name = "Alternatives")
+    g.save()
+    s = Symbol(name="A", internal="AAA", group=g)
+
     s.reference["XXX"] = 10
-    s.series["PRICE"] = ts
+    s.price = ts
     return s
 
 
 @pytest.fixture()
-def symbols(mongo):
-    s1 = Symbol(name="A", group=SymbolType.alternatives, internal="AAA")
-    s2 = Symbol(name="B", group=SymbolType.currency, internal="BBB")
+def symbols(mongo_client):
+    a = Group(name="Alternatives")
+    a.save()
+
+    c = Group(name="Currency")
+    c.save()
+
+    s1 = Symbol(name="A", group=a, internal="AAA")
+    s2 = Symbol(name="B", group=c, internal="BBB")
     return [s1, s2]
 
 
-@pytest.fixture()
-def session(symbols):
-    db = database(base=Base)
-    db.session.add_all(symbols)
-    db.session.commit()
-    yield db.session
-    db.session.close()
-
 
 class TestSymbols(object):
-    def test_symbol(self, session, symbols):
+    def test_symbol(self, mongo_client, symbols):
         # get all symbols from database
-        a = Symbol.products(session=session)
+        for symbol in symbols:
+            symbol.save()
+
+        a = Symbol.products()
         assert len(a) == 2
         assert set(symbols) == set(a)
         assert Symbol.symbolmap(symbols) == {"A": "Alternatives", "B": "Currency"}
 
-    def test_symbols(self, session, symbols):
+    def test_symbols(self, mongo_client, symbols):
+        for symbol in symbols:
+            symbol.save()
+
         # get only one symbol from database
-        a = Symbol.products(session=session, names=["A"])
+        a = Symbol.products(names=["A"])
+        #print([s for s in Symbol.objects])
         assert len(a) == 1
         assert a[0] == symbols[0]
 
     def test_meta(self, symbol):
         assert symbol.internal == "AAA"
-        assert symbol.group == SymbolType.alternatives
+        assert symbol.group.name == "Alternatives"
 
     def test_reference_frame(self, symbol):
-        frame = Symbol.reference_frame(products=[symbol])
+        frame = Symbol.reference_frame(products=[symbol], f=lambda x: x.name)
         assert frame.index.name == "symbol"
-        assert frame["XXX"][symbol] == 10
-        assert frame["Sector"][symbol] == "Alternatives"
-        assert frame["Internal"][symbol] == "AAA"
+        assert frame["XXX"]["A"] == 10
+        assert frame["Sector"]["A"] == "Alternatives"
+        assert frame["Internal"]["A"] == "AAA"
 
-    def test_delete(self, session):
-        Symbol.delete(session=session, name="A")
-        # make sure the symbol no longer exists
-        with pytest.raises(NoResultFound):
-            session.query(Symbol).filter(Symbol.name=="A").one()
+    #def test_delete(self, session):
+    #    Symbol.delete(session=session, name="A")
+    #    # make sure the symbol no longer exists
+    #    with pytest.raises(NoResultFound):
+    #        session.query(Symbol).filter(Symbol.name=="A").one()
 

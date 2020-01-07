@@ -1,20 +1,17 @@
 import pytest
 
+from pyutil.mongo.engine.symbol import Symbol, Group
 from pyutil.portfolio.portfolio import similar
-from pyutil.sql.base import Base
-from pyutil.sql.interfaces.symbols.strategy import Strategy, StrategyType
-from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
-from pyutil.testing.database import database
+from pyutil.mongo.engine.strategy import Strategy
 
-from test.config import test_portfolio, mongo, resource
+from test.config import test_portfolio, mongo_client, resource
 import pandas.util.testing as pdt
 
 
 @pytest.fixture()
-def strategy(mongo):
+def strategy():
     with open(resource("source.py"), "r") as f:
-        s = Strategy(name="Peter", source=f.read(), active=True)
-        Strategy.mongo_database = mongo
+        s = Strategy(name="Peter", source=f.read(), active=True, type="wild")
 
         assert s.portfolio is None
         assert s.last_valid_index is None
@@ -24,20 +21,21 @@ def strategy(mongo):
 
 
 @pytest.fixture()
-def symbols():
+def symbols(mongo_client):
     p = test_portfolio()
-    return [Symbol(name=a, group=SymbolType.alternatives) for a in p.assets]
+    g = Group(name="Alternatives")
+    g.save()
+
+    return [Symbol(name=a, group=g) for a in p.assets]
 
 
 @pytest.fixture()
-def db(strategy, symbols):
-    db = database(base=Base)
-    db.session.add(strategy)
-    db.session.add_all(symbols)
-    db.session.commit()
+def db(mongo_client, strategy, symbols):
+    for symbol in symbols:
+        symbol.save()
 
-    yield db
-    db.session.close()
+    strategy.save()
+
 
 
 class TestStrategy(object):
@@ -59,23 +57,13 @@ class TestStrategy(object):
         assert similar(strategy.portfolio, test_portfolio())
         assert similar(strategy.configuration(reader=None).portfolio, test_portfolio())
 
-    def test_reference(self, strategy):
-        frame = Strategy.reference_frame(products=[strategy])
-        assert frame["active"][strategy]
-        assert frame["type"][strategy] == StrategyType.conservative
-        assert frame["source"][strategy]
-
-    # def test_run(self, db):
-    #     for x in db.session.query(Strategy):
-    #         print("Hello")
-    #         print(x)
-    #
-    #     s = db.session.query(Strategy).filter(Strategy.name == "Peter").one()
-    #     name, portfolio = _strategy_update(strategy_id=s.id, connection_str=db.connection, mongo_uri='mongodb://test-mongo:27017/test')
-    #     assert similar(portfolio, test_portfolio())
-    #     assert name == "Peter"
+    def test_reference(self, db, strategy):
+        frame = Strategy.reference_frame(products=[strategy], f=lambda x: x.name)
+        assert frame["active"]["Peter"]
+        assert frame["type"]["Peter"] == "wild"
+        assert frame["source"]["Peter"]
 
     def test_navs(self, db):
-        strategies = Strategy.products(session=db.session, names=["Peter"])
+        strategies = Strategy.products(names=["Peter"])
         frame = Strategy.navs(strategies=strategies, f=lambda x: x.name)
         pdt.assert_series_equal(frame["Peter"], test_portfolio().nav.series, check_names=False)

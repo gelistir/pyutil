@@ -11,24 +11,15 @@ class PandasDocument(DynamicDocument):
     reference = DictField()
     date_modified = DateTimeField(default=datetime.datetime.utcnow)
 
-    # def get_series(self, name):
-    #     try:
-    #         return pd.read_json(self[name], orient="split", typ="series")
-    #     except (AttributeError, KeyError):
-    #         return None
-    #
-    # def get_frame(self, name):
-    #     try:
-    #         return pd.read_json(self[name], orient="split", typ="frame")
-    #     except (AttributeError, KeyError):
-    #         return None
-
 
     @classmethod
     def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
+        print(products)
         frame = pd.DataFrame({product: pd.Series({key: data for key, data in product.reference.items()}) for product in
                               products}).transpose()
+        print(frame)
         frame.index = map(f, frame.index)
+        print(frame)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index()
 
@@ -77,3 +68,10 @@ class PandasDocument(DynamicDocument):
         else:
             return cls.objects(name__in=names)
 
+    @classmethod
+    def pandas_frame(cls, key, products, f=lambda x: x) -> pd.DataFrame:
+        frame = pd.DataFrame({product: product.__getattribute__(item=key) for product in products})
+        frame = frame.dropna(axis=1, how="all").transpose()
+        frame.index = map(f, frame.index)
+        frame.index.name = cls.__name__.lower()
+        return frame.sort_index().transpose()

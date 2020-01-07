@@ -39,9 +39,9 @@ build:
 	#docker-compose build jupyter
 	docker-compose build pyutil
 
-test: clean
+test: #clean
 	mkdir -p artifacts
-	docker-compose -f docker-compose.test.yml down -v --rmi all --remove-orphans
+	#docker-compose -f docker-compose.test.yml down -v --rmi all --remove-orphans
 	docker-compose -f docker-compose.test.yml run sut
 
 teamcity: test doc

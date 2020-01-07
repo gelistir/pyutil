@@ -1,20 +1,30 @@
 import pandas as pd
-import sqlalchemy as sq
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship as _relationship
+#import sqlalchemy as sq
+#from sqlalchemy.ext.hybrid import hybrid_property
+#from sqlalchemy.orm import relationship as _relationship
 
 from pyutil.mongo.engine.pandasdocument import PandasDocument
-from pyutil.sql.base import Base
+#from pyutil.sql.base import Base
 #from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.interfaces.risk.custodian import Currency, CurrencyMongo
-from pyutil.sql.product import Product
+from pyutil.sql.interfaces.risk.custodian import CurrencyMongo
+#from pyutil.sql.product import Product
 from mongoengine import *
+
 
 class OwnerMongo(PandasDocument):
     fullname = StringField(max_length=200)
     currency = ReferenceField(CurrencyMongo)
 
-class Owner(Product, Base):
+    @staticmethod
+    def reference_frame(owners, f=lambda x: x) -> pd.DataFrame:
+        frame = PandasDocument.reference_frame(products=owners, f=f)
+        # that's why owners can't be None
+        frame["Currency"] = pd.Series({f(owner): owner.currency.name for owner in owners})
+        frame["Entity ID"] = pd.Series({f(owner): owner.name for owner in owners})
+        frame["Name"] = pd.Series({f(owner): owner.fullname for owner in owners})
+        frame.index.name = "owner"
+        return frame
+#class Owner(Product, Base):
     #fullname = sq.Column("fullname", sq.String, nullable=True)
 
     #__currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=True)
@@ -102,12 +112,3 @@ class Owner(Product, Base):
     #    # delete all positions...
     #    self._position.clear()
 
-    @staticmethod
-    def reference_frame(owners, f=lambda x: x) -> pd.DataFrame:
-        frame = Product.reference_frame(products=owners, f=f)
-        # that's why owners can't be None
-        frame["Currency"] = pd.Series({f(owner): owner.currency.name for owner in owners})
-        frame["Entity ID"] = pd.Series({f(owner): owner.name for owner in owners})
-        frame["Name"] = pd.Series({f(owner): owner.fullname for owner in owners})
-        frame.index.name = "owner"
-        return frame

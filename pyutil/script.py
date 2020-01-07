@@ -1,12 +1,12 @@
 import logging
 from abc import abstractmethod
 
-from pyutil.mongo.mongo import Mongo
-
+#from pyutil.mongo.mongo import Mongo
+from mongoengine import *
 
 class AbstractScript(object):
-    def __init__(self, session, mongo_uri=None, logger=None, **kwargs):
-        self.__session = session
+    def __init__(self,  mongo_uri=None, logger=None, **kwargs):
+        #self.__session = session
         self.__logger = logger or logging.getLogger(__name__)
         self.__mongo_uri = mongo_uri
         self.__dict = kwargs
@@ -15,9 +15,9 @@ class AbstractScript(object):
     def logger(self):
         return self.__logger
 
-    @property
-    def session(self):
-        return self.__session
+    #@property
+    #def session(self):
+    #    return self.__session
 
     @abstractmethod
     def run(self):
@@ -26,7 +26,13 @@ class AbstractScript(object):
     @property
     def mongo(self):
         if self.__mongo_uri:
-            return Mongo(uri=self.__mongo_uri).database
+            # todo: think about the script
+
+            client = connect(self.__mongo_uri, alias="default")
+            assert client is not None
+            yield client
+            disconnect(alias="default")
+            #return Mongo(uri=self.__mongo_uri).database
 
         return None
 

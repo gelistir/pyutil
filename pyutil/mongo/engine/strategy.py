@@ -28,18 +28,15 @@ class Strategy(PandasDocument):
 
     @property
     def portfolio(self):
-        prices = self.prices
-        weights = self.weights
-
-        if prices is None and weights is None:
+        try:
+            return Portfolio(prices=self.prices, weights=self.weights)
+        except AttributeError:
             return None
-        else:
-            return Portfolio(prices=prices, weights=weights)
 
     @portfolio.setter
     def portfolio(self, portfolio):
-        self.weights = PandasDocument.parse(portfolio.weights)
-        self.prices = PandasDocument.parse(portfolio.prices)
+        self.weights = portfolio.weights
+        self.prices = portfolio.prices
 
     @property
     def assets(self):
@@ -54,11 +51,13 @@ class Strategy(PandasDocument):
 
     @classmethod
     def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
+        print(products)
         frame = PandasDocument.reference_frame(products=products, f=f)
+        print(frame)
         frame["source"] = pd.Series({f(s): s.source for s in products})
         frame["type"] = pd.Series({f(s): s.type for s in products})
         frame["active"] = pd.Series({f(s): s.active for s in products})
-        frame.index.name = "strategy"
+        #frame.index.name = "strategy"
         return frame
 
     @staticmethod

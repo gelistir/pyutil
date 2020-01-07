@@ -3,11 +3,10 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
+from pyutil.mongo.engine.symbol import Symbol, Group
 from pyutil.portfolio.portfolio import Portfolio, similar, one_over_n
 
-from pyutil.sql.interfaces.symbols.symbol import Symbol, SymbolType
-from pyutil.testing.database import database
-from test.config import test_portfolio, read, mongo
+from test.config import test_portfolio, read, mongo_client
 
 
 @pytest.fixture(scope="module")
@@ -21,20 +20,29 @@ def sector_weights():
 
 
 @pytest.fixture()
-def symbols():
+def symbols(mongo_client):
     #db = database(base=Base)
 
     # point to a new mongo collection...
     #Symbol.collection = create_collection()
     #Symbol.collection_reference = create_collection()
 
-    s1 = Symbol(name="A", group=SymbolType.alternatives, internal="AA")
-    s2 = Symbol(name="B", group=SymbolType.alternatives, internal="BB")
-    s3 = Symbol(name="C", group=SymbolType.equities, internal="CC")
-    s4 = Symbol(name="D", group=SymbolType.equities, internal="DD")
-    s5 = Symbol(name="E", group=SymbolType.fixed_income, internal="EE")
-    s6 = Symbol(name="F", group=SymbolType.fixed_income, internal="FF")
-    s7 = Symbol(name="G", group=SymbolType.fixed_income, internal="GG")
+    a = Group(name="Alternatives")
+    a.save()
+
+    e = Group(name="Equities")
+    e.save()
+
+    f = Group(name="Fixed Income")
+    f.save()
+
+    s1 = Symbol(name="A", group=a, internal="AA")
+    s2 = Symbol(name="B", group=a, internal="BB")
+    s3 = Symbol(name="C", group=e, internal="CC")
+    s4 = Symbol(name="D", group=e, internal="DD")
+    s5 = Symbol(name="E", group=f, internal="EE")
+    s6 = Symbol(name="F", group=f, internal="FF")
+    s7 = Symbol(name="G", group=f, internal="GG")
 
     # symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
     # symbol.series["PX_OPEN"] = ts
@@ -228,15 +236,7 @@ class TestPortfolio(object):
         pdt.assert_frame_equal(frame, read("state.csv", index_col=0))
 
     def test_sector(self, portfolio, symbols):
-        symbolmap = {s.name: s.group.value for s in symbols}
-
-        # symbolmap = {"A": SymbolType.alternatives.value,
-        #             "B": SymbolType.alternatives.value,
-        #             "C": SymbolType.equities.value,
-        #              "D": SymbolType.equities.value,
-        #             "E": SymbolType.fixed_income.value,
-        #             "F": SymbolType.fixed_income.value,
-        #             "G": SymbolType.fixed_income.value}
+        symbolmap = {s.name: s.group.name for s in symbols}
 
         frame = portfolio.sector(symbolmap=symbolmap)
         pdt.assert_frame_equal(frame.tail(5), read("sector.csv", index_col=0, parse_dates=True))

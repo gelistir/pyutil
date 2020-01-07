@@ -2,8 +2,8 @@ from pyutil.script import AbstractScript
 
 
 class Script(AbstractScript):
-    def __init__(self, session, **kwargs):
-        super().__init__(session, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def run(self):
         pass
@@ -11,11 +11,8 @@ class Script(AbstractScript):
 
 class TestScript(object):
     def test_script(self):
-        s = Script(session=None, folder="folder")
+        s = Script(folder="folder")
         # logger is constructed implicitly
         assert s.logger
-
-        assert not s.session
-        assert not s.mongo
-
+        #assert not s.mongo
         assert s["folder"] == "folder"

@@ -18,10 +18,10 @@ def test_portfolio():
     return Portfolio(prices=read("price.csv", parse_dates=True, index_col=0),
                      weights=read("weight.csv", parse_dates=True, index_col=0))
 
-@pytest.fixture()
-def mongo():
-    from mongomock import MongoClient
-    return MongoClient().test
+#@pytest.fixture()
+#def mongo():
+#    from mongomock import MongoClient
+#    return MongoClient().test
 
 
 @pytest.fixture()

@@ -14,8 +14,5 @@ class TestFrame(object):
         # You don't need to save the data...
         # f.save()
 
-        print(f.prices)
-        print(f.weights)
-
         x = Portfolio(prices=f.prices, weights=f.weights)
         assert similar(x, test_portfolio())
