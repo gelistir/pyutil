@@ -75,6 +75,7 @@ class Collection(object):
 
     def find(self, **kwargs):
         for a in self.__col.find(kwargs):
+            print(a)
             yield _MongoObject(mongo_dict=a)
 
     def find_one(self, **kwargs):

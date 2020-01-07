@@ -3,7 +3,7 @@ import pandas.util.testing as pdt
 import pytest
 
 #from pyutil.mongo.mongo import create_collection
-from pyutil.sql.interfaces.risk.custodian import Custodian, Currency
+from pyutil.sql.interfaces.risk.custodian import Currency, CustodianMongo
 from pyutil.sql.interfaces.risk.owner import Owner
 from pyutil.sql.interfaces.risk.security import Security
 from pyutil.sql.product import Product
@@ -62,8 +62,8 @@ class TestOwner(object):
         #assert owner.securities == set([])
 
         # one owner can have multiple custodians
-        c1 = Custodian(name="UBS")
-        c2 = Custodian(name="CS")
+        c1 = CustodianMongo(name="UBS")
+        c2 = CustodianMongo(name="CS")
 
         # # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
         # owner.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))

@@ -3,34 +3,39 @@ import sqlalchemy as sq
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship as _relationship
 
+from pyutil.mongo.engine.pandasdocument import PandasDocument
 from pyutil.sql.base import Base
 #from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.interfaces.risk.custodian import Currency
+from pyutil.sql.interfaces.risk.custodian import Currency, CurrencyMongo
 from pyutil.sql.product import Product
+from mongoengine import *
 
+class OwnerMongo(PandasDocument):
+    fullname = StringField(max_length=200)
+    currency = ReferenceField(CurrencyMongo)
 
 class Owner(Product, Base):
-    fullname = sq.Column("fullname", sq.String, nullable=True)
+    #fullname = sq.Column("fullname", sq.String, nullable=True)
 
-    __currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=True)
-    __currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
+    #__currency_id = sq.Column("currency_id", sq.Integer, sq.ForeignKey(Currency.id), nullable=True)
+    #__currency = _relationship(Currency, foreign_keys=[__currency_id], lazy="joined")
 
-    def __init__(self, name, currency=None, fullname=None):
-        super().__init__(name=name)
-        self.currency = currency
-        self.fullname = fullname
+    #def __init__(self, name, currency=None, fullname=None):
+    #    super().__init__(name=name)
+    #    self.currency = currency
+    #    self.fullname = fullname
 
-    def __repr__(self):
-        return "Owner({id}: {fullname}, {currency})".format(id=self.name, fullname=self.fullname,
-                                                            currency=self.currency.name)
+    #def __repr__(self):
+    #    return "Owner({id}: {fullname}, {currency})".format(id=self.name, fullname=self.fullname,
+    #                                                        currency=self.currency.name)
 
-    @hybrid_property
-    def currency(self):
-        return self.__currency
+    #@hybrid_property
+    #def currency(self):
+    #    return self.__currency
 
-    @currency.setter
-    def currency(self, value):
-        self.__currency = value
+    #@currency.setter
+    #def currency(self, value):
+    #    self.__currency = value
 
     # @property
     # def securities(self):

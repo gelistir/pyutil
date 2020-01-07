@@ -7,6 +7,7 @@ from pyutil.sql.base import Base
 from pyutil.sql.product import Product
 from test.config import mongo
 
+
 class Singer(Product, Base):
     def __init__(self, name):
         super().__init__(name)

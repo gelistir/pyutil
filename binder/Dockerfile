@@ -18,8 +18,8 @@ RUN conda install -y -c conda-forge nomkl pandas=0.24.2 requests=2.21.0 cvxpy mo
     pip install --no-cache-dir /tmp/pyutil && \
     rm -rf /tmp/pyutil
 
-RUN conda install -y -c conda-forge pyarrow=0.15.1 && \
-    conda clean -y --all
+#RUN conda install -y -c conda-forge pyarrow=0.15.1 && \
+#    conda clean -y --all
 
 #RUN conda install -y -c conda-forge cvxpy && conda clean -y -all
 
