@@ -48,7 +48,7 @@ class Strategy(PandasDocument):
             return None
 
     @classmethod
-    def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
+    def reference_frame(cls, products, f=lambda x: x.name) -> pd.DataFrame:
         frame = PandasDocument.reference_frame(products=products, f=f)
         frame["source"] = pd.Series({f(s): s.source for s in products})
         frame["type"] = pd.Series({f(s): s.type for s in products})

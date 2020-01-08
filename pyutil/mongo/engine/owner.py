@@ -9,13 +9,13 @@ class OwnerMongo(PandasDocument):
     fullname = StringField(max_length=200)
     currency = ReferenceField(Currency)
 
-    @staticmethod
-    def reference_frame(owners, f=lambda x: x) -> pd.DataFrame:
-        frame = PandasDocument.reference_frame(products=owners, f=f)
+    @classmethod
+    def reference_frame(cls, products, f=lambda x: x.name) -> pd.DataFrame:
+        frame = PandasDocument.reference_frame(products=products, f=f)
         # that's why owners can't be None
-        frame["Currency"] = pd.Series({f(owner): owner.currency.name for owner in owners})
-        frame["Entity ID"] = pd.Series({f(owner): owner.name for owner in owners})
-        frame["Name"] = pd.Series({f(owner): owner.fullname for owner in owners})
+        frame["Currency"] = pd.Series({f(owner): owner.currency.name for owner in products})
+        frame["Entity ID"] = pd.Series({f(owner): owner.name for owner in products})
+        frame["Name"] = pd.Series({f(owner): owner.fullname for owner in products})
         frame.index.name = "owner"
         return frame
 #class Owner(Product, Base):

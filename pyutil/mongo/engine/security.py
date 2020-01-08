@@ -9,10 +9,10 @@ from .custodian import Currency
 class SecurityMongo(PandasDocument):
     fullname = StringField(max_length=200)
 
-    @staticmethod
-    def reference_frame(securities, f=lambda x: x):
-        frame = PandasDocument.reference_frame(products=securities, f=f)
-        frame["fullname"] = pd.Series({f(s): s.fullname for s in securities})
+    @classmethod
+    def reference_frame(cls, products, f=lambda x: x.name):
+        frame = PandasDocument.reference_frame(products=products, f=f)
+        frame["fullname"] = pd.Series({f(s): s.fullname for s in products})
         frame.index.name = "security"
         return frame
 

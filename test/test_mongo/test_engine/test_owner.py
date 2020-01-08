@@ -145,7 +145,7 @@ class TestOwner(object):
         frame = pd.DataFrame(index=["z","Currency", "Entity ID", "Name"], columns=["222"],
                              data=[20, "CHF", "222", "Peter Maffay"]).transpose()
         frame.index.name = "owner"
-        pdt.assert_frame_equal(OwnerMongo.reference_frame(owners=[o], f=lambda x: x.name)[frame.keys()], frame, check_dtype=False)
+        pdt.assert_frame_equal(OwnerMongo.reference_frame(products=[o], f=lambda x: x.name)[frame.keys()], frame, check_dtype=False)
 
     #def test_json(self):
     #    o = Owner(name="Peter")

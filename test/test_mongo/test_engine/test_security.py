@@ -64,6 +64,6 @@ class TestSecurity(object):
         pdt.assert_series_equal(f["B"], 2 * ts, check_names=False)
 
     def test_reference(self, security):
-        frame1 = SecurityMongo.reference_frame(securities=[security], f=lambda x: x.name)
+        frame1 = SecurityMongo.reference_frame(products=[security], f=lambda x: x.name)
         frame2 = pd.DataFrame(index=["100"], columns=["Bloomberg Ticker", "fullname"], data=[["IBM US Equity", "Peter Maffay"]])
         pdt.assert_frame_equal(frame1, frame2, check_names=False)

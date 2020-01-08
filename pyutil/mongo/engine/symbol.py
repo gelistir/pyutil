@@ -18,7 +18,7 @@ class Symbol(PandasDocument):
         return {asset.name: asset.group.name for asset in symbols}
 
     @classmethod
-    def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
+    def reference_frame(cls, products, f=lambda x: x.name) -> pd.DataFrame:
         frame = PandasDocument.reference_frame(products, f)
         frame["Sector"] = pd.Series({f(symbol): symbol.group.name for symbol in products})
         frame["Internal"] = pd.Series({f(symbol): symbol.internal for symbol in products})
