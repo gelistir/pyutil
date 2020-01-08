@@ -1,6 +1,6 @@
 import pandas as pd
 
-from pyutil.mongo.engine.pandasdocument import PandasDocument
+from .pandasdocument import PandasDocument
 from mongoengine import *
 
 
@@ -24,3 +24,7 @@ class Symbol(PandasDocument):
         frame["Internal"] = pd.Series({f(symbol): symbol.internal for symbol in products})
         frame.index.name = "symbol"
         return frame
+
+    #{"name": "AQCOMSP LX Equity",
+    # "index": [1385942400000, 1386028800000, 1386115200000],
+    # "data": [999.27, 998.85, 994.01]}

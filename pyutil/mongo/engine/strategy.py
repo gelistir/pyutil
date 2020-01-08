@@ -5,16 +5,16 @@ from pyutil.portfolio.portfolio import Portfolio
 from pyutil.strategy.config import ConfigMaster
 
 
+def _module(source):
+    from types import ModuleType
+
+    compiled = compile(source, '', 'exec')
+    mod = ModuleType("module")
+    exec(compiled, mod.__dict__)
+    return mod
+
+
 class Strategy(PandasDocument):
-    @property
-    def __module(self):
-        from types import ModuleType
-
-        compiled = compile(self.source, '', 'exec')
-        mod = ModuleType("module")
-        exec(compiled, mod.__dict__)
-        return mod
-
     active = BooleanField(default=True)
     source = StringField()
     type = StringField(max_length=100)
@@ -22,7 +22,7 @@ class Strategy(PandasDocument):
     def configuration(self, reader=None) -> ConfigMaster:
         # Configuration only needs a reader to access the symbols...
         # Reader is a function taking the name of an asset as a parameter
-        return self.__module.Configuration(reader=reader)
+        return _module(self.source).Configuration(reader=reader)
 
     @property
     def portfolio(self):

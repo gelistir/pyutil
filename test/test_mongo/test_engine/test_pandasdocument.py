@@ -64,7 +64,7 @@ class TestEngine(object):
         assert set(frame.index) == {"Peter", "Falco"}
         assert frame.empty
 
-    def test_reference(self):
+    def test_reference_frame(self):
         p1 = Singer(name="Peter")
         p1.reference["A"] = 20.0
 
@@ -80,7 +80,10 @@ class TestEngine(object):
         p1 = Singer(name="Peter Maffay")
         p1.price = pd.Series(data=[2, 3, 5])
 
-        assert p1.reference == {}
-        frame = Singer.pandas_frame(key="price", products=[p1], f=lambda x: x.name)
+        p2 = Singer(name="Falco")
 
+        assert p1.reference == {}
+        frame = Singer.pandas_frame(key="price", products=[p1, p2], f=lambda x: x.name)
+
+        assert set(frame.keys()) == {"Peter Maffay"}
         pdt.assert_series_equal(p1.price, frame["Peter Maffay"], check_names=False)

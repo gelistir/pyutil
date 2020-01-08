@@ -39,7 +39,6 @@ class PandasDocument(DynamicDocument):
             DynamicDocument.__setattr__(self, key, value)
 
     def __getattribute__(self, item):
-        # todo: make the logic
         if item.startswith("_"):
             return DynamicDocument.__getattribute__(self, item)
 
@@ -67,8 +66,26 @@ class PandasDocument(DynamicDocument):
 
     @classmethod
     def pandas_frame(cls, key, products, f=lambda x: x) -> pd.DataFrame:
-        frame = pd.DataFrame({product: product.__getattribute__(item=key) for product in products})
+        frame = pd.DataFrame({product: product.__getpandas__(item=key) for product in products})
         frame = frame.dropna(axis=1, how="all").transpose()
         frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index().transpose()
+
+    def __getpandas__(self, item):
+        try:
+            x = DynamicDocument.__getattribute__(self, item)
+        except AttributeError:
+            return None
+
+        try:
+            return pd.read_json(x, orient="split", typ="frame")
+        except:
+            pass
+
+        try:
+            return pd.read_json(x, orient="split", typ="series")
+        except:
+            pass
+
+        raise AttributeError("Problem with item {i}".format(i=item))
