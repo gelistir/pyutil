@@ -12,12 +12,6 @@ services:
       - ./artifacts:/pyutil/artifacts
       - ./source:/source
 
-    links:
-      - test-mongo
-
     environment:
       - MAILGUNAPI=0
       - MAILGUNKEY=0
-
-  test-mongo:
-    image: bitnami/mongodb

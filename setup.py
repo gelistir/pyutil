@@ -8,6 +8,6 @@ setup(
     packages=find_packages(include=["pyutil*"]),
     author='Lobnek Wealth Management',
     author_email='thomas.schmelzer@lobnek.com',
-    description='', install_requires=['requests>=2.21.0', 'pandas>=0.24.0', 'sqlalchemy', 'psycopg2-binary', 'pymongo', 'scipy'],
+    description='', install_requires=['requests>=2.21.0', 'pandas>=0.24.0', 'pymongo', 'scipy'],
     license='LICENSE.txt'
 )
