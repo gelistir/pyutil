@@ -16,7 +16,7 @@ import types
 def configuration(envvar='APPLICATION_SETTINGS'):
     # use the Config from Flask
     config = Config(root_path=".")
-    success = config.from_envvar(envvar, silent=False)
+    success = config.from_envvar(envvar)
 
     # make sure this was successful
     assert success
@@ -72,7 +72,7 @@ class Config(dict):
         dict.__init__(self, defaults or {})
         self.root_path = root_path
 
-    def from_envvar(self, variable_name, silent=False):
+    def from_envvar(self, variable_name):
         """Loads a configuration from an environment variable pointing to
         a configuration file.  This is basically just a shortcut with nicer
         error messages for this line of code::
@@ -80,23 +80,19 @@ class Config(dict):
             app.config.from_pyfile(os.environ['YOURAPPLICATION_SETTINGS'])
 
         :param variable_name: name of the environment variable
-        :param silent: set to ``True`` if you want silent failure for missing
-                       files.
         :return: bool. ``True`` if able to load config, ``False`` otherwise.
         """
         rv = os.environ.get(variable_name)
         if not rv:
-            if silent:
-                return False
             raise RuntimeError(
                 "The environment variable %r is not set "
                 "and as such configuration could not be "
                 "loaded.  Set this variable and make it "
                 "point to a configuration file" % variable_name
             )
-        return self.from_pyfile(rv, silent=silent)
+        return self.from_pyfile(rv)
 
-    def from_pyfile(self, filename, silent=False):
+    def from_pyfile(self, filename):
         """Updates the values in the config from a Python file.  This function
         behaves as if the file was imported as module with the
         :meth:`from_object` function.
@@ -104,10 +100,6 @@ class Config(dict):
         :param filename: the filename of the config.  This can either be an
                          absolute filename or a filename relative to the
                          root path.
-        :param silent: set to ``True`` if you want silent failure for missing
-                       files.
-
-           `silent` parameter.
         """
         filename = os.path.join(self.root_path, filename)
         d = types.ModuleType("config")
@@ -120,8 +112,6 @@ class Config(dict):
                         self[key] = getattr(d, key)
 
         except IOError as e:
-            if silent and e.errno in (errno.ENOENT, errno.EISDIR, errno.ENOTDIR):
-                return False
             e.strerror = "Unable to load configuration file (%s)" % e.strerror
             raise
 

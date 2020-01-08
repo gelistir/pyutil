@@ -1,5 +1,6 @@
 import pandas as pd
 import pandas.util.testing as pdt
+import pytest
 
 from pyutil.mongo.engine.pandasdocument import PandasDocument
 from pyutil.timeseries.merge import merge
@@ -87,3 +88,11 @@ class TestEngine(object):
 
         assert set(frame.keys()) == {"Peter Maffay"}
         pdt.assert_series_equal(p1.price, frame["Peter Maffay"], check_names=False)
+
+    def test_pandas_wrong(self):
+        p1 = Singer(name="Peter Maffay")
+        p1.price = 5.0
+
+        with pytest.raises(AttributeError):
+            Singer.pandas_frame(key="price", products=[p1], f=lambda x: x.name)
+
