@@ -13,17 +13,11 @@ services:
       - ./source:/source
 
     links:
-      - test-postgresql
       - test-mongo
 
     environment:
       - MAILGUNAPI=0
       - MAILGUNKEY=0
-    #env_file:
-    #  - ./test/.env-test
-
-  test-postgresql:
-    image: postgres:9.6
 
   test-mongo:
     image: bitnami/mongodb
