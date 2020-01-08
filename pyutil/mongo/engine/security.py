@@ -1,20 +1,13 @@
 import pandas as pd
 
-from pyutil.mongo.engine.pandasdocument import PandasDocument
+from .pandasdocument import PandasDocument
 from mongoengine import *
 
-from pyutil.sql.interfaces.risk.custodian import CurrencyMongo
+from .custodian import Currency
 
 
 class SecurityMongo(PandasDocument):
     fullname = StringField(max_length=200)
-
-    #def __init__(self, name, fullname=None, **kwargs):
-    #    super().__init__(str(name), **kwargs)
-    #    self.fullname = fullname
-
-    #def __repr__(self):
-    #    return "Security({id}: {name})".format(id=self.name, name=self.reference["Name"])
 
     @staticmethod
     def reference_frame(securities, f=lambda x: x):
@@ -31,4 +24,4 @@ class SecurityVolatility(PandasDocument):
         self.currency = currency
 
     security = ReferenceField(SecurityMongo)
-    currency = ReferenceField(CurrencyMongo)
+    currency = ReferenceField(Currency)

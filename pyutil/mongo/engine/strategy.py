@@ -1,12 +1,11 @@
 import pandas as pd
 from mongoengine import *
-from pyutil.mongo.engine.pandasdocument import PandasDocument
+from .pandasdocument import PandasDocument
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.strategy.config import ConfigMaster
 
 
 class Strategy(PandasDocument):
-    #@staticmethod
     @property
     def __module(self):
         from types import ModuleType
@@ -16,7 +15,6 @@ class Strategy(PandasDocument):
         exec(compiled, mod.__dict__)
         return mod
 
-    #name = StringField(max_length=200, required=True)
     active = BooleanField(default=True)
     source = StringField()
     type = StringField(max_length=100)
@@ -51,13 +49,11 @@ class Strategy(PandasDocument):
 
     @classmethod
     def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
-        print(products)
         frame = PandasDocument.reference_frame(products=products, f=f)
-        print(frame)
         frame["source"] = pd.Series({f(s): s.source for s in products})
         frame["type"] = pd.Series({f(s): s.type for s in products})
         frame["active"] = pd.Series({f(s): s.active for s in products})
-        #frame.index.name = "strategy"
+        frame.index.name = "strategy"
         return frame
 
     @staticmethod

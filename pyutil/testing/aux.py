@@ -1,8 +1,3 @@
-import os
-
-from functools import partial
-
-
 def post(client, data, url):
     response = client.post(url, data=data)
     assert response.status_code == 200, "The return code is {r}".format(r=response.status_code)

@@ -2,11 +2,9 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
-#from pyutil.mongo.mongo import create_collection
-from pyutil.sql.interfaces.risk.custodian import CurrencyMongo, CustodianMongo
-from pyutil.sql.interfaces.risk.owner import OwnerMongo
-from pyutil.sql.interfaces.risk.security import SecurityMongo
-#from pyutil.sql.product import Product
+from pyutil.mongo.engine.custodian import Currency, Custodian
+from pyutil.mongo.engine.owner import OwnerMongo
+from pyutil.mongo.engine.security import SecurityMongo
 from pyutil.timeseries.merge import merge
 
 from test.config import mongo_client
@@ -34,21 +32,13 @@ def ts3():
 
 @pytest.fixture()
 def owner(mongo_client):
-    c = CurrencyMongo(name="USD")
+    c = Currency(name="USD")
     c.save()
     return OwnerMongo(name=100, currency=c, fullname="Peter Maffay")
-
-#@pytest.fixture()
-#def kiid():
-#    return Field(name="KIID", result=DataType.integer, type=FieldType.other)
 
 
 class TestOwner(object):
     def test_position(self):
-        #Product.mongo_database = mongo
-        #assert Security.mongo_database
-        #assert Owner.mongo_database
-
         # create a security
         s1 = SecurityMongo(name="123", fullname="A")
 
@@ -64,8 +54,8 @@ class TestOwner(object):
         #assert owner.securities == set([])
 
         # one owner can have multiple custodians
-        c1 = CustodianMongo(name="UBS")
-        c2 = CustodianMongo(name="CS")
+        c1 = Custodian(name="UBS")
+        c2 = Custodian(name="CS")
 
         # # update a position in a security, you have to go through an owner! Position without an owner wouldn't make sense
         # owner.upsert_position(security=s1, custodian=c1, ts=pd.Series({t1: 0.1, t2: 0.4}))
@@ -137,7 +127,7 @@ class TestOwner(object):
         #Product.mongo_database = mongo
         #assert Owner.mongo_database
         #assert Security.mongo_database
-        c = CurrencyMongo(name="CHF")
+        c = Currency(name="CHF")
         c.save()
 
         o = OwnerMongo(name="222", fullname="Peter Maffay", currency=c)

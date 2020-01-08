@@ -1,19 +1,13 @@
 import pandas as pd
-#import sqlalchemy as sq
-#from sqlalchemy.ext.hybrid import hybrid_property
-#from sqlalchemy.orm import relationship as _relationship
 
-from pyutil.mongo.engine.pandasdocument import PandasDocument
-#from pyutil.sql.base import Base
-#from pyutil.sql.interfaces.products import ProductInterface
-from pyutil.sql.interfaces.risk.custodian import CurrencyMongo
-#from pyutil.sql.product import Product
+from .pandasdocument import PandasDocument
+from .custodian import Currency
 from mongoengine import *
 
 
 class OwnerMongo(PandasDocument):
     fullname = StringField(max_length=200)
-    currency = ReferenceField(CurrencyMongo)
+    currency = ReferenceField(Currency)
 
     @staticmethod
     def reference_frame(owners, f=lambda x: x) -> pd.DataFrame:

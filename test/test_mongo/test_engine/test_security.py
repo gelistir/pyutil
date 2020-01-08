@@ -2,8 +2,8 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
-from pyutil.sql.interfaces.risk.security import SecurityMongo, SecurityVolatility
-from pyutil.sql.interfaces.risk.custodian import CurrencyMongo
+from pyutil.mongo.engine.security import SecurityMongo, SecurityVolatility
+from pyutil.mongo.engine.custodian import Currency
 from test.config import read, mongo_client
 
 t0 = pd.Timestamp("1978-11-15")
@@ -39,7 +39,7 @@ class TestSecurity(object):
 
     def test_write_volatility(self, mongo_client, ts, security):
         # s = Security(name=100)
-        c = CurrencyMongo(name="USD")
+        c = Currency(name="USD")
         c.save()
 
         security.save()

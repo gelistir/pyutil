@@ -1,4 +1,4 @@
-from pyutil.mongo.engine.pandasdocument import PandasDocument
+from .pandasdocument import PandasDocument
 
 
 class Frame(PandasDocument):
