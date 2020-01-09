@@ -10,9 +10,9 @@ def ts():
     return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
 
 
-class TestAdjust(object):
-    def test_adjust(self, ts):
-        assert adjust(ts).loc["2014-01-01"] == 100.00
+def test_adjust(ts):
+    assert adjust(ts).loc["2014-01-01"] == 100.00
 
-    def test_adjust_empty(self):
-        assert adjust(pd.Series({})) is None
+
+def test_adjust_empty():
+    assert adjust(pd.Series({})) is None

@@ -18,7 +18,6 @@ class MockResponse:
 
 
 def test_fetch_csv(monkeypatch):
-
     # Any arguments may be passed and mock_get() will always return our
     # mocked object, which only has the .json() method.
     def mock_get(*args, **kwargs):
