@@ -10,8 +10,6 @@ pip install git+http://github.com/lobnek/pyutil.git
 
 ## Running a strategy
 
-![Alt text](examples/portfolio.png)
-
 Our main concern is to implement and maintain strategies in a robust way. We do not rewrite our codes for production servers 
 in alternative programming languages. We use the same Python scripts both in research and production. 
 
