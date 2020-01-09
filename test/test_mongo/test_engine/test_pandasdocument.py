@@ -79,7 +79,7 @@ class TestEngine(object):
 
     def test_ts(self):
         p1 = Singer(name="Peter Maffay")
-        p1.price = pd.Series(data=[2, 3, 5])
+        p1.price = pd.Series(data=[2, 3, 5], index=[1.1,2.1,3.1])
 
         p2 = Singer(name="Falco")
 
@@ -108,4 +108,6 @@ class TestEngine(object):
         x = p1.pandas(item="price", default=pd.Series({}))
         assert x.empty
 
-        #assert pdt.assert_series_equal(p1.pandas(item="price", default=pd.Series({})), pd.Series({}))
+    def test_repr(self):
+        p1 = Singer(name="Peter Maffay")
+        assert str(p1) == "<Singer: Peter Maffay>"

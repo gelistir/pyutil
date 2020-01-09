@@ -88,3 +88,6 @@ class PandasDocument(DynamicDocument):
             raise AttributeError()
         except AttributeError:
             return default
+
+    def __str__(self):
+        return "<{type}: {name}>".format(type=self.__class__.__name__, name=self.name)
