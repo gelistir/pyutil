@@ -14,10 +14,10 @@ class PandasDocument(DynamicDocument):
 
     @classmethod
     def reference_frame(cls, products) -> pd.DataFrame:
-        f = lambda x: x.name
-        frame = pd.DataFrame({product: pd.Series({key: data for key, data in product.reference.items()}) for product in
+        #f = lambda x: x.name
+        frame = pd.DataFrame({product.name: pd.Series({key: data for key, data in product.reference.items()}) for product in
                               products}).transpose()
-        frame.index = map(f, frame.index)
+        #frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index()
 

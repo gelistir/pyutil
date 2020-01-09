@@ -13,3 +13,7 @@ class TestEngine(object):
 
         assert s.portfolio is None
         assert s.last_valid_index is None
+        s.save()
+
+        frame = Strategy.reference_frame()
+        assert frame.index.name == "strategy"

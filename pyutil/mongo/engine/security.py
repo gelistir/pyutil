@@ -10,10 +10,11 @@ class Security(PandasDocument):
     fullname = StringField(max_length=200)
 
     @classmethod
-    def reference_frame(cls, products):
-        frame = PandasDocument.reference_frame(products=products)
+    def reference_frame(cls, products=None):
+        products = products or Security.objects
+        frame = super().reference_frame(products=products)
         frame["fullname"] = pd.Series({s.name: s.fullname for s in products})
-        frame.index.name = "security"
+        #frame.index.name = "security"
         return frame
 
 

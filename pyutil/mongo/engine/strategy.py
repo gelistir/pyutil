@@ -48,20 +48,23 @@ class Strategy(PandasDocument):
             return None
 
     @classmethod
-    def reference_frame(cls, products) -> pd.DataFrame:
-        frame = PandasDocument.reference_frame(products=products)
+    def reference_frame(cls, products=None) -> pd.DataFrame:
+        products = products or Strategy.objects
+        frame = super().reference_frame(products=products)
         frame["source"] = pd.Series({s.name: s.source for s in products})
         frame["type"] = pd.Series({s.name: s.type for s in products})
         frame["active"] = pd.Series({s.name: s.active for s in products})
-        frame.index.name = "strategy"
+        #frame.index.name = "strategy"
         return frame
 
     @staticmethod
-    def portfolios(strategies) -> dict:
+    def portfolios(strategies=None) -> dict:
+        strategies = strategies or Strategy.objects
         return {strategy.name: strategy.portfolio for strategy in strategies if strategy.portfolio is not None}
 
     @staticmethod
-    def navs(strategies) -> pd.DataFrame:
+    def navs(strategies=None) -> pd.DataFrame:
+        strategies = strategies or Strategy.objects
         frame = pd.DataFrame({key: item.nav for key, item in Strategy.portfolios(strategies).items()})
         frame.index.name = "Portfolio"
         return frame

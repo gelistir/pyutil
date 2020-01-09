@@ -10,13 +10,14 @@ class Owner(PandasDocument):
     currency = ReferenceField(Currency)
 
     @classmethod
-    def reference_frame(cls, products) -> pd.DataFrame:
-        frame = PandasDocument.reference_frame(products=products)
+    def reference_frame(cls, products=None) -> pd.DataFrame:
+        products = products or Owner.objects
+        frame = super().reference_frame(products=products)
         # that's why owners can't be None
         frame["Currency"] = pd.Series({owner.name: owner.currency.name for owner in products})
         frame["Entity ID"] = pd.Series({owner.name: owner.name for owner in products})
         frame["Name"] = pd.Series({owner.name: owner.fullname for owner in products})
-        frame.index.name = "owner"
+        #frame.index.name = "owner"
         return frame
 #class Owner(Product, Base):
     #fullname = sq.Column("fullname", sq.String, nullable=True)
