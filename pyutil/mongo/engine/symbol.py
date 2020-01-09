@@ -24,7 +24,6 @@ class Symbol(PandasDocument):
         frame = super().reference_frame(products)
         frame["Sector"] = pd.Series({symbol.name: symbol.group.name for symbol in products})
         frame["Internal"] = pd.Series({symbol.name: symbol.internal for symbol in products})
-        #frame.index.name = "symbol"
         return frame
 
     #{"name": "AQCOMSP LX Equity",

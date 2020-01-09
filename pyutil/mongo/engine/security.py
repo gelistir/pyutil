@@ -14,7 +14,6 @@ class Security(PandasDocument):
         products = products or Security.objects
         frame = super().reference_frame(products=products)
         frame["fullname"] = pd.Series({s.name: s.fullname for s in products})
-        #frame.index.name = "security"
         return frame
 
 

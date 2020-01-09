@@ -17,7 +17,6 @@ class Owner(PandasDocument):
         frame["Currency"] = pd.Series({owner.name: owner.currency.name for owner in products})
         frame["Entity ID"] = pd.Series({owner.name: owner.name for owner in products})
         frame["Name"] = pd.Series({owner.name: owner.fullname for owner in products})
-        #frame.index.name = "owner"
         return frame
 #class Owner(Product, Base):
     #fullname = sq.Column("fullname", sq.String, nullable=True)

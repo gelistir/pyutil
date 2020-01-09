@@ -54,7 +54,6 @@ class Strategy(PandasDocument):
         frame["source"] = pd.Series({s.name: s.source for s in products})
         frame["type"] = pd.Series({s.name: s.type for s in products})
         frame["active"] = pd.Series({s.name: s.active for s in products})
-        #frame.index.name = "strategy"
         return frame
 
     @staticmethod
