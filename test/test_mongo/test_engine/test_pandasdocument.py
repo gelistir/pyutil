@@ -79,7 +79,7 @@ class TestEngine(object):
 
     def test_ts(self):
         p1 = Singer(name="Peter Maffay")
-        p1.price = pd.Series(data=[2, 3, 5], index=[1.1,2.1,3.1])
+        p1.price = pd.Series(data=[2, 3, 5], index=[pd.Timestamp("2010-01-01"), pd.Timestamp("2010-01-03"), pd.Timestamp("2010-01-05")])
 
         p2 = Singer(name="Falco")
 
@@ -94,7 +94,7 @@ class TestEngine(object):
         p1.price = 5.0
         assert Singer.pandas_frame(item="price", products=[p1]).empty
 
-        #with pytest.raises(AttributeError):
+        # with pytest.raises(AttributeError):
         #    Singer.pandas_frame(key="price", products=[p1])
 
     def test_last(self):
