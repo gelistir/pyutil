@@ -62,4 +62,6 @@ class Strategy(PandasDocument):
 
     @staticmethod
     def navs(strategies) -> pd.DataFrame:
-        return pd.DataFrame({key: item.nav for key, item in Strategy.portfolios(strategies).items()})
+        frame = pd.DataFrame({key: item.nav for key, item in Strategy.portfolios(strategies).items()})
+        frame.index.name = "Portfolio"
+        return frame
