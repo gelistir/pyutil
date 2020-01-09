@@ -102,6 +102,12 @@ class TestEngine(object):
         assert p1.last(item="price") is None
         assert p1.last(item="price", default=pd.Timestamp("2010-01-01")) == pd.Timestamp("2010-01-01")
 
+        p1.price = pd.Series(index=[2.1], data=[[3.0]])
+        assert p1.last(item="price") == 2.1
+
+        p1.wurst = [5.0]
+        assert p1.last(item="wurst") is None
+
     def test_pandas(self):
         p1 = Singer(name="Peter Maffay")
         assert p1.pandas(item="price") is None
