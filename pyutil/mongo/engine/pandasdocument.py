@@ -5,17 +5,16 @@ from mongoengine import *
 
 
 class PandasDocument(DynamicDocument):
-
     meta = {'allow_inheritance': True}
     name = StringField(max_length=200, required=True, unique=True)
     reference = DictField()
     date_modified = DateTimeField(default=datetime.datetime.utcnow)
 
-
     @classmethod
     def reference_frame(cls, products) -> pd.DataFrame:
-        frame = pd.DataFrame({product.name: pd.Series({key: data for key, data in product.reference.items()}) for product in
-                              products}).transpose()
+        frame = pd.DataFrame(
+            {product.name: pd.Series({key: data for key, data in product.reference.items()}) for product in
+             products}).transpose()
         frame.index.name = cls.__name__.lower()
         return frame.sort_index()
 
@@ -64,26 +63,28 @@ class PandasDocument(DynamicDocument):
             return cls.objects(name__in=names)
 
     @classmethod
-    def pandas_frame(cls, key, products) -> pd.DataFrame:
-        frame = pd.DataFrame({product.name: product.__getpandas__(item=key) for product in products})
+    def pandas_frame(cls, item, products) -> pd.DataFrame:
+        frame = pd.DataFrame({product.name: product.pandas(item=item, default=pd.Series({})) for product in products})
         frame = frame.dropna(axis=1, how="all").transpose()
         frame.index.name = cls.__name__.lower()
         return frame.sort_index().transpose()
 
-    def __getpandas__(self, item):
+    def last(self, item, default=None):
         try:
-            x = DynamicDocument.__getattribute__(self, item)
+            obj = self.__getattribute__(item)
+            if isinstance(obj, pd.Series) or isinstance(obj, pd.DataFrame):
+                return obj.last_valid_index()
+            # obj is not a pandas object...
+            raise AttributeError()
         except AttributeError:
-            return None
+            return default
 
+    def pandas(self, item, default=None):
         try:
-            return pd.read_json(x, orient="split", typ="frame")
-        except:
-            pass
+            obj = self.__getattribute__(item)
+            if isinstance(obj, pd.Series) or isinstance(obj, pd.DataFrame):
+                return obj
 
-        try:
-            return pd.read_json(x, orient="split", typ="series")
-        except:
-            pass
-
-        raise AttributeError("Problem with item {i}".format(i=item))
+            raise AttributeError()
+        except AttributeError:
+            return default

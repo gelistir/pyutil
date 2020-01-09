@@ -84,7 +84,7 @@ class TestEngine(object):
         p2 = Singer(name="Falco")
 
         assert p1.reference == {}
-        frame = Singer.pandas_frame(key="price", products=[p1, p2])
+        frame = Singer.pandas_frame(item="price", products=[p1, p2])
 
         assert set(frame.keys()) == {"Peter Maffay"}
         pdt.assert_series_equal(p1.price, frame["Peter Maffay"], check_names=False)
@@ -92,7 +92,20 @@ class TestEngine(object):
     def test_pandas_wrong(self):
         p1 = Singer(name="Peter Maffay")
         p1.price = 5.0
+        assert Singer.pandas_frame(item="price", products=[p1]).empty
 
-        with pytest.raises(AttributeError):
-            Singer.pandas_frame(key="price", products=[p1])
+        #with pytest.raises(AttributeError):
+        #    Singer.pandas_frame(key="price", products=[p1])
 
+    def test_last(self):
+        p1 = Singer(name="Peter Maffay")
+        assert p1.last(item="price") is None
+        assert p1.last(item="price", default=pd.Timestamp("2010-01-01")) == pd.Timestamp("2010-01-01")
+
+    def test_pandas(self):
+        p1 = Singer(name="Peter Maffay")
+        assert p1.pandas(item="price") is None
+        x = p1.pandas(item="price", default=pd.Series({}))
+        assert x.empty
+
+        #assert pdt.assert_series_equal(p1.pandas(item="price", default=pd.Series({})), pd.Series({}))

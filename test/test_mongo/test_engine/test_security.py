@@ -59,7 +59,7 @@ class TestSecurity(object):
         s2 = Security(name="B")
         s2.price = 2*ts
 
-        f = Security.pandas_frame(products=[s0, s1, s2], key="price")
+        f = Security.pandas_frame(products=[s0, s1, s2], item="price")
         pdt.assert_series_equal(f["A"], ts, check_names=False)
         pdt.assert_series_equal(f["B"], 2 * ts, check_names=False)
 
