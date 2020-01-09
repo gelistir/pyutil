@@ -13,7 +13,8 @@ class PandasDocument(DynamicDocument):
 
 
     @classmethod
-    def reference_frame(cls, products, f=lambda x: x) -> pd.DataFrame:
+    def reference_frame(cls, products) -> pd.DataFrame:
+        f = lambda x: x.name
         frame = pd.DataFrame({product: pd.Series({key: data for key, data in product.reference.items()}) for product in
                               products}).transpose()
         frame.index = map(f, frame.index)
@@ -65,10 +66,11 @@ class PandasDocument(DynamicDocument):
             return cls.objects(name__in=names)
 
     @classmethod
-    def pandas_frame(cls, key, products, f=lambda x: x) -> pd.DataFrame:
-        frame = pd.DataFrame({product: product.__getpandas__(item=key) for product in products})
+    def pandas_frame(cls, key, products) -> pd.DataFrame:
+        #f = lambda x: x.name
+        frame = pd.DataFrame({product.name: product.__getpandas__(item=key) for product in products})
         frame = frame.dropna(axis=1, how="all").transpose()
-        frame.index = map(f, frame.index)
+        #frame.index = map(f, frame.index)
         frame.index.name = cls.__name__.lower()
         return frame.sort_index().transpose()
 
