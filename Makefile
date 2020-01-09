@@ -47,7 +47,7 @@ test: #clean
 teamcity: test doc
 
 jupyter:
-	docker-compose build --no-cache jupyter
+	docker-compose build jupyter
 	echo "http://localhost:${PORT}"
 	docker-compose up jupyter
 
