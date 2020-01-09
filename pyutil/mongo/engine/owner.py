@@ -5,17 +5,17 @@ from .custodian import Currency
 from mongoengine import *
 
 
-class OwnerMongo(PandasDocument):
+class Owner(PandasDocument):
     fullname = StringField(max_length=200)
     currency = ReferenceField(Currency)
 
-    @staticmethod
-    def reference_frame(owners) -> pd.DataFrame:
-        frame = PandasDocument.reference_frame(products=owners)
+    @classmethod
+    def reference_frame(cls, products) -> pd.DataFrame:
+        frame = PandasDocument.reference_frame(products=products)
         # that's why owners can't be None
-        frame["Currency"] = pd.Series({owner.name: owner.currency.name for owner in owners})
-        frame["Entity ID"] = pd.Series({owner.name: owner.name for owner in owners})
-        frame["Name"] = pd.Series({owner.name: owner.fullname for owner in owners})
+        frame["Currency"] = pd.Series({owner.name: owner.currency.name for owner in products})
+        frame["Entity ID"] = pd.Series({owner.name: owner.name for owner in products})
+        frame["Name"] = pd.Series({owner.name: owner.fullname for owner in products})
         frame.index.name = "owner"
         return frame
 #class Owner(Product, Base):

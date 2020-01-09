@@ -67,7 +67,6 @@ class PandasDocument(DynamicDocument):
 
     @classmethod
     def pandas_frame(cls, key, products) -> pd.DataFrame:
-        #f = lambda x: x.name
         frame = pd.DataFrame({product.name: product.__getpandas__(item=key) for product in products})
         frame = frame.dropna(axis=1, how="all").transpose()
         #frame.index = map(f, frame.index)

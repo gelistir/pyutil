@@ -61,7 +61,7 @@ class TestEngine(object):
         assert len(b) == 2
         assert set(b) == {p1, p2}
 
-        frame = Singer.reference_frame(products=[p1, p2], f=lambda x: x.name)
+        frame = Singer.reference_frame(products=[p1, p2])
         assert set(frame.index) == {"Peter", "Falco"}
         assert frame.empty
 
@@ -73,7 +73,7 @@ class TestEngine(object):
         p2.reference["A"] = 30.0
         p2.reference["B"] = 10.0
 
-        frame = Singer.reference_frame(products=[p1, p2], f=lambda x: x.name)
+        frame = Singer.reference_frame(products=[p1, p2])
         assert set(frame.index) == {"Peter", "Falco"}
         assert set(frame.keys()) == {"A", "B"}
 
@@ -84,7 +84,7 @@ class TestEngine(object):
         p2 = Singer(name="Falco")
 
         assert p1.reference == {}
-        frame = Singer.pandas_frame(key="price", products=[p1, p2], f=lambda x: x.name)
+        frame = Singer.pandas_frame(key="price", products=[p1, p2])
 
         assert set(frame.keys()) == {"Peter Maffay"}
         pdt.assert_series_equal(p1.price, frame["Peter Maffay"], check_names=False)
@@ -94,5 +94,5 @@ class TestEngine(object):
         p1.price = 5.0
 
         with pytest.raises(AttributeError):
-            Singer.pandas_frame(key="price", products=[p1], f=lambda x: x.name)
+            Singer.pandas_frame(key="price", products=[p1])
 

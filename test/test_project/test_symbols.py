@@ -60,7 +60,7 @@ class TestSymbols(object):
         assert symbol.group.name == "Alternatives"
 
     def test_reference_frame(self, symbol):
-        frame = Symbol.reference_frame(products=[symbol], f=lambda x: x.name)
+        frame = Symbol.reference_frame(products=[symbol])
         assert frame.index.name == "symbol"
         assert frame["XXX"]["A"] == 10
         assert frame["Sector"]["A"] == "Alternatives"

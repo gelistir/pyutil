@@ -3,8 +3,8 @@ import pandas.util.testing as pdt
 import pytest
 
 from pyutil.mongo.engine.custodian import Currency, Custodian
-from pyutil.mongo.engine.owner import OwnerMongo
-from pyutil.mongo.engine.security import SecurityMongo
+from pyutil.mongo.engine.owner import Owner
+from pyutil.mongo.engine.security import Security
 from pyutil.timeseries.merge import merge
 
 from test.config import mongo_client
@@ -34,19 +34,19 @@ def ts3():
 def owner(mongo_client):
     c = Currency(name="USD")
     c.save()
-    return OwnerMongo(name=100, currency=c, fullname="Peter Maffay")
+    return Owner(name=100, currency=c, fullname="Peter Maffay")
 
 
 class TestOwner(object):
     def test_position(self):
         # create a security
-        s1 = SecurityMongo(name="123", fullname="A")
+        s1 = Security(name="123", fullname="A")
 
         s1.reference["KIID"] = 5
         assert s1.reference["KIID"] == 5
 
         # create a 2nd security
-        s2 = SecurityMongo(name="211", fullname="B")
+        s2 = Security(name="211", fullname="B")
         s2.reference["KIID"] = 7
         assert s2.reference["KIID"] == 7
 
@@ -94,7 +94,7 @@ class TestOwner(object):
     def test_returns(self, ts1, ts2, ts3):
         #Product.mongo_database = mongo
 
-        o = OwnerMongo(name="222")
+        o = Owner(name="222")
         #assert Owner.mongo_database
 
         o.returns = ts1 #.write(data=ts1, key="RETURN")
@@ -124,13 +124,10 @@ class TestOwner(object):
     #    assert owner.custodian == Custodian(name="UBS")
 
     def test_name(self, mongo_client):
-        #Product.mongo_database = mongo
-        #assert Owner.mongo_database
-        #assert Security.mongo_database
         c = Currency(name="CHF")
         c.save()
 
-        o = OwnerMongo(name="222", fullname="Peter Maffay", currency=c)
+        o = Owner(name="222", fullname="Peter Maffay", currency=c)
 
         assert o.name == "222"
         assert o.currency == c
@@ -145,7 +142,7 @@ class TestOwner(object):
         frame = pd.DataFrame(index=["z","Currency", "Entity ID", "Name"], columns=["222"],
                              data=[20, "CHF", "222", "Peter Maffay"]).transpose()
         frame.index.name = "owner"
-        pdt.assert_frame_equal(OwnerMongo.reference_frame(products=[o], f=lambda x: x.name)[frame.keys()], frame, check_dtype=False)
+        pdt.assert_frame_equal(Owner.reference_frame(products=[o])[frame.keys()], frame, check_dtype=False)
 
     #def test_json(self):
     #    o = Owner(name="Peter")

@@ -58,12 +58,12 @@ class TestStrategy(object):
         assert similar(strategy.configuration(reader=None).portfolio, test_portfolio())
 
     def test_reference(self, db, strategy):
-        frame = Strategy.reference_frame(products=[strategy], f=lambda x: x.name)
+        frame = Strategy.reference_frame(products=[strategy])
         assert frame["active"]["Peter"]
         assert frame["type"]["Peter"] == "wild"
         assert frame["source"]["Peter"]
 
     def test_navs(self, db):
         strategies = Strategy.products(names=["Peter"])
-        frame = Strategy.navs(strategies=strategies, f=lambda x: x.name)
+        frame = Strategy.navs(strategies=strategies)
         pdt.assert_series_equal(frame["Peter"], test_portfolio().nav.series, check_names=False)

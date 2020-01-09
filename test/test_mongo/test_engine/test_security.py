@@ -2,7 +2,7 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
-from pyutil.mongo.engine.security import SecurityMongo, SecurityVolatility
+from pyutil.mongo.engine.security import Security, SecurityVolatility
 from pyutil.mongo.engine.custodian import Currency
 from test.config import read, mongo_client
 
@@ -21,7 +21,7 @@ def security(ts):
     #Security.collection = create_collection()
     #Security.collection_reference = create_collection()
 
-    s = SecurityMongo(name="100", fullname="Peter Maffay")
+    s = Security(name="100", fullname="Peter Maffay")
     #Security.mongo_database = mongo
     s.reference["Bloomberg Ticker"] = "IBM US Equity"
     s.price = ts
@@ -53,17 +53,17 @@ class TestSecurity(object):
     def test_prices(self, security, ts):
         s0 = security
 
-        s1 = SecurityMongo(name="A")
+        s1 = Security(name="A")
         s1.price = ts
 
-        s2 = SecurityMongo(name="B")
+        s2 = Security(name="B")
         s2.price = 2*ts
 
-        f = SecurityMongo.pandas_frame(products=[s0, s1, s2], key="price", f=lambda x: x.name)
+        f = Security.pandas_frame(products=[s0, s1, s2], key="price")
         pdt.assert_series_equal(f["A"], ts, check_names=False)
         pdt.assert_series_equal(f["B"], 2 * ts, check_names=False)
 
     def test_reference(self, security):
-        frame1 = SecurityMongo.reference_frame(products=[security], f=lambda x: x.name)
+        frame1 = Security.reference_frame(products=[security])
         frame2 = pd.DataFrame(index=["100"], columns=["Bloomberg Ticker", "fullname"], data=[["IBM US Equity", "Peter Maffay"]])
         pdt.assert_frame_equal(frame1, frame2, check_names=False)

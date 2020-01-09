@@ -49,20 +49,17 @@ class Strategy(PandasDocument):
 
     @classmethod
     def reference_frame(cls, products) -> pd.DataFrame:
-        f = lambda x: x.name
-        frame = PandasDocument.reference_frame(products=products, f=f)
-        frame["source"] = pd.Series({f(s): s.source for s in products})
-        frame["type"] = pd.Series({f(s): s.type for s in products})
-        frame["active"] = pd.Series({f(s): s.active for s in products})
+        frame = PandasDocument.reference_frame(products=products)
+        frame["source"] = pd.Series({s.name: s.source for s in products})
+        frame["type"] = pd.Series({s.name: s.type for s in products})
+        frame["active"] = pd.Series({s.name: s.active for s in products})
         frame.index.name = "strategy"
         return frame
 
     @staticmethod
     def portfolios(strategies) -> dict:
-        f = lambda x: x.name
-        return {f(strategy): strategy.portfolio for strategy in strategies if strategy.portfolio is not None}
+        return {strategy.name: strategy.portfolio for strategy in strategies if strategy.portfolio is not None}
 
     @staticmethod
     def navs(strategies) -> pd.DataFrame:
-        f = lambda x: x.name
-        return pd.DataFrame({key: item.nav for key, item in Strategy.portfolios(strategies, f).items()})
+        return pd.DataFrame({key: item.nav for key, item in Strategy.portfolios(strategies).items()})

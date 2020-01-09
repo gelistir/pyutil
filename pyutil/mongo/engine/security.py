@@ -6,13 +6,13 @@ from mongoengine import *
 from .custodian import Currency
 
 
-class SecurityMongo(PandasDocument):
+class Security(PandasDocument):
     fullname = StringField(max_length=200)
 
-    @staticmethod
-    def reference_frame(securities):
-        frame = PandasDocument.reference_frame(products=securities)
-        frame["fullname"] = pd.Series({s.name: s.fullname for s in securities})
+    @classmethod
+    def reference_frame(cls, products):
+        frame = PandasDocument.reference_frame(products=products)
+        frame["fullname"] = pd.Series({s.name: s.fullname for s in products})
         frame.index.name = "security"
         return frame
 
@@ -23,5 +23,5 @@ class SecurityVolatility(PandasDocument):
         self.security = security
         self.currency = currency
 
-    security = ReferenceField(SecurityMongo)
+    security = ReferenceField(Security)
     currency = ReferenceField(Currency)
