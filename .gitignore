@@ -17,3 +17,4 @@ build
 
 */.ipynb_checkpoints
 file.db
+*/.ipynb_checkpoints/*
