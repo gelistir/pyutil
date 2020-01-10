@@ -4,7 +4,7 @@ import pytest
 
 from pyutil.mongo.engine.security import Security, SecurityVolatility
 from pyutil.mongo.engine.custodian import Currency
-from test.config import read, mongo_client
+from test.config import mongo, read
 
 t0 = pd.Timestamp("1978-11-15")
 t1 = pd.Timestamp("1978-11-16")
@@ -37,18 +37,19 @@ class TestSecurity(object):
         #assert security.bloomberg_scaling == 1
         #assert security.bloomberg_ticker == "IBM US Equity"
 
-    def test_write_volatility(self, mongo_client, ts, security):
-        # s = Security(name=100)
-        c = Currency(name="USD")
-        c.save()
+    def test_write_volatility(self, mongo, ts, security):
+        with mongo as m:
+            # s = Security(name=100)
+            c = Currency(name="USD")
+            c.save()
 
-        security.save()
+            security.save()
 
-        sv = SecurityVolatility(currency=c, security=security)
-        sv.volatility = ts
-        #security.series.write(key="VOLATILITY", data=ts, currency="USD")
-        #x = security.series["VOLATILITY"]
-        pdt.assert_series_equal(sv.volatility, ts, check_names=False)
+            sv = SecurityVolatility(currency=c, security=security)
+            sv.volatility = ts
+            #security.series.write(key="VOLATILITY", data=ts, currency="USD")
+            #x = security.series["VOLATILITY"]
+            pdt.assert_series_equal(sv.volatility, ts, check_names=False)
 
     def test_prices(self, security, ts):
         s0 = security

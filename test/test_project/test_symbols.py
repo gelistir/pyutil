@@ -2,7 +2,8 @@ import pandas as pd
 import pytest
 
 from pyutil.mongo.engine.symbol import Group, Symbol
-from test.config import mongo_client
+from test.config import mongo
+
 
 @pytest.fixture()
 def ts():
@@ -10,50 +11,40 @@ def ts():
 
 
 @pytest.fixture()
-def symbol(mongo_client, ts):
-    g = Group(name = "Alternatives")
-    g.save()
-    s = Symbol(name="A", internal="AAA", group=g)
+def symbol(mongo, ts):
+    with mongo as m:
+        g = Group(name="Alternatives")
+        g.save()
+        s = Symbol(name="A", internal="AAA", group=g)
 
-    s.reference["XXX"] = 10
-    s.price = ts
-    return s
+        s.reference["XXX"] = 10
+        s.price = ts
+        s.save()
+        return s
 
 
 @pytest.fixture()
-def symbols(mongo_client):
-    a = Group(name="Alternatives")
-    a.save()
+def symbols(mongo):
+    with mongo as m:
+        a = Group(name="Alternatives")
+        a.save()
 
-    c = Group(name="Currency")
-    c.save()
+        c = Group(name="Currency")
+        c.save()
 
-    s1 = Symbol(name="A", group=a, internal="AAA")
-    s2 = Symbol(name="B", group=c, internal="BBB")
-    return [s1, s2]
-
+        s1 = Symbol(name="A", group=a, internal="AAA")
+        s2 = Symbol(name="B", group=c, internal="BBB")
+        return [s1, s2]
 
 
 class TestSymbols(object):
-    def test_symbol(self, mongo_client, symbols):
-        # get all symbols from database
-        for symbol in symbols:
-            symbol.save()
+    def test_symbol(self, mongo, symbols):
+        with mongo as m:
+            # get all symbols from database
+            #for symbol in symbols:
+            #    symbol.save()
 
-        a = Symbol.products()
-        assert len(a) == 2
-        assert set(symbols) == set(a)
-        assert Symbol.symbolmap(symbols) == {"A": "Alternatives", "B": "Currency"}
-
-    def test_symbols(self, mongo_client, symbols):
-        for symbol in symbols:
-            symbol.save()
-
-        # get only one symbol from database
-        a = Symbol.products(names=["A"])
-        #print([s for s in Symbol.objects])
-        assert len(a) == 1
-        assert a[0] == symbols[0]
+            assert Symbol.symbolmap(symbols) == {"A": "Alternatives", "B": "Currency"}
 
     def test_meta(self, symbol):
         assert symbol.internal == "AAA"
@@ -66,9 +57,8 @@ class TestSymbols(object):
         assert frame["Sector"]["A"] == "Alternatives"
         assert frame["Internal"]["A"] == "AAA"
 
-    #def test_delete(self, session):
+    # def test_delete(self, session):
     #    Symbol.delete(session=session, name="A")
     #    # make sure the symbol no longer exists
     #    with pytest.raises(NoResultFound):
     #        session.query(Symbol).filter(Symbol.name=="A").one()
-

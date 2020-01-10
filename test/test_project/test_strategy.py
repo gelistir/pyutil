@@ -4,7 +4,7 @@ from pyutil.mongo.engine.symbol import Symbol, Group
 from pyutil.portfolio.portfolio import similar
 from pyutil.mongo.engine.strategy import Strategy
 
-from test.config import test_portfolio, mongo_client, resource
+from test.config import test_portfolio, mongo, resource
 import pandas.util.testing as pdt
 
 
@@ -21,35 +21,22 @@ def strategy():
 
 
 @pytest.fixture()
-def symbols(mongo_client):
-    p = test_portfolio()
-    g = Group(name="Alternatives")
-    g.save()
+def db(mongo, strategy):
+    with mongo as m:
+        g = Group(name="Alternatives")
+        g.save()
 
-    return [Symbol(name=a, group=g) for a in p.assets]
+        for asset in strategy.portfolio.assets:
+            s = Symbol(name=asset, group=g)
+            s.save()
 
-
-@pytest.fixture()
-def db(mongo_client, strategy, symbols):
-    for symbol in symbols:
-        symbol.save()
-
-    strategy.save()
-
+        strategy.save()
+        yield m
+        # You are now running the test...
+        # once you exit this function m is disconnected
 
 
 class TestStrategy(object):
-    # def test_symbol(self, db):
-    #     assert db.connection
-    #     assert db.session
-    #
-    #     # extract all strategies from database
-    #     strategies = Strategy.products(session=db.session)
-    #     #
-    #     x = run(strategies=strategies, connection_str=db.connection, mongo_uri='mongodb://test-mongo:27017/test')
-    #     assert x["Peter"]
-    #     assert similar(x["Peter"], test_portfolio())
-
     def test_assets(self, strategy):
         assert strategy.name == "Peter"
         assert strategy.assets == test_portfolio().assets
@@ -58,12 +45,14 @@ class TestStrategy(object):
         assert similar(strategy.configuration(reader=None).portfolio, test_portfolio())
 
     def test_reference(self, db, strategy):
-        frame = Strategy.reference_frame(products=[strategy])
-        assert frame["active"]["Peter"]
-        assert frame["type"]["Peter"] == "wild"
-        assert frame["source"]["Peter"]
+        with db as m:
+            frame = Strategy.reference_frame(products=[strategy])
+            assert frame["active"]["Peter"]
+            assert frame["type"]["Peter"] == "wild"
+            assert frame["source"]["Peter"]
 
     def test_navs(self, db):
-        strategies = Strategy.products(names=["Peter"])
-        frame = Strategy.navs(strategies=strategies)
-        pdt.assert_series_equal(frame["Peter"], test_portfolio().nav.series, check_names=False)
+        with db as m:
+            strategies = Strategy.products(names=["Peter"])
+            frame = Strategy.navs(strategies=strategies)
+            pdt.assert_series_equal(frame["Peter"], test_portfolio().nav.series, check_names=False)

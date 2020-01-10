@@ -6,7 +6,7 @@ import pytest
 from pyutil.mongo.engine.symbol import Symbol, Group
 from pyutil.portfolio.portfolio import Portfolio, similar, one_over_n
 
-from test.config import test_portfolio, read, mongo_client
+from test.config import test_portfolio, read, mongo
 
 
 @pytest.fixture(scope="module")
@@ -20,36 +20,26 @@ def sector_weights():
 
 
 @pytest.fixture()
-def symbols(mongo_client):
-    #db = database(base=Base)
+def symbols(mongo):
+    with mongo as m:
+        a = Group(name="Alternatives")
+        a.save()
 
-    # point to a new mongo collection...
-    #Symbol.collection = create_collection()
-    #Symbol.collection_reference = create_collection()
+        e = Group(name="Equities")
+        e.save()
 
-    a = Group(name="Alternatives")
-    a.save()
+        f = Group(name="Fixed Income")
+        f.save()
 
-    e = Group(name="Equities")
-    e.save()
+        s1 = Symbol(name="A", group=a, internal="AA")
+        s2 = Symbol(name="B", group=a, internal="BB")
+        s3 = Symbol(name="C", group=e, internal="CC")
+        s4 = Symbol(name="D", group=e, internal="DD")
+        s5 = Symbol(name="E", group=f, internal="EE")
+        s6 = Symbol(name="F", group=f, internal="FF")
+        s7 = Symbol(name="G", group=f, internal="GG")
 
-    f = Group(name="Fixed Income")
-    f.save()
-
-    s1 = Symbol(name="A", group=a, internal="AA")
-    s2 = Symbol(name="B", group=a, internal="BB")
-    s3 = Symbol(name="C", group=e, internal="CC")
-    s4 = Symbol(name="D", group=e, internal="DD")
-    s5 = Symbol(name="E", group=f, internal="EE")
-    s6 = Symbol(name="F", group=f, internal="FF")
-    s7 = Symbol(name="G", group=f, internal="GG")
-
-    # symbol = Symbol(name="A", group=SymbolType.equities, internal="Peter Maffay")
-    # symbol.series["PX_OPEN"] = ts
-    # symbol.reference["xxx"] = "A"
-    # symbol.series["PX_LAST"] = ts
-
-    return [s1, s2, s3, s4, s5, s6, s7]
+        return [s1, s2, s3, s4, s5, s6, s7]
 
 
 class TestPortfolio(object):

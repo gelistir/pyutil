@@ -7,7 +7,7 @@ from pyutil.mongo.engine.owner import Owner
 from pyutil.mongo.engine.security import Security
 from pyutil.timeseries.merge import merge
 
-from test.config import mongo_client
+from test.config import mongo
 
 t0 = pd.Timestamp("1978-11-15")
 t1 = pd.Timestamp("1978-11-16")
@@ -123,26 +123,27 @@ class TestOwner(object):
     #    owner.custodian = Custodian(name="UBS")
     #    assert owner.custodian == Custodian(name="UBS")
 
-    def test_name(self, mongo_client):
-        c = Currency(name="CHF")
-        c.save()
+    def test_name(self, mongo):
+        with mongo as m:
+            c = Currency(name="CHF")
+            c.save()
 
-        o = Owner(name="222", fullname="Peter Maffay", currency=c)
+            o = Owner(name="222", fullname="Peter Maffay", currency=c)
 
-        assert o.name == "222"
-        assert o.currency == c
+            assert o.name == "222"
+            assert o.currency == c
 
-        #assert str(o) == "Owner(222: Peter Maffay, CHF)"
-        #assert o.currency == Currency(name="CHF")
+            #assert str(o) == "Owner(222: Peter Maffay, CHF)"
+            #assert o.currency == Currency(name="CHF")
 
-        #f = Field(name="z", type=FieldType.dynamic, result=DataType.integer)
-        o.reference["z"] = 20
-        #o.reference[f] = 20
+            #f = Field(name="z", type=FieldType.dynamic, result=DataType.integer)
+            o.reference["z"] = 20
+            #o.reference[f] = 20
 
-        frame = pd.DataFrame(index=["z","Currency", "Entity ID", "Name"], columns=["222"],
-                             data=[20, "CHF", "222", "Peter Maffay"]).transpose()
-        frame.index.name = "owner"
-        pdt.assert_frame_equal(Owner.reference_frame(products=[o])[frame.keys()], frame, check_dtype=False)
+            frame = pd.DataFrame(index=["z","Currency", "Entity ID", "Name"], columns=["222"],
+                                 data=[20, "CHF", "222", "Peter Maffay"]).transpose()
+            frame.index.name = "owner"
+            pdt.assert_frame_equal(Owner.reference_frame(products=[o])[frame.keys()], frame, check_dtype=False)
 
     #def test_json(self):
     #    o = Owner(name="Peter")

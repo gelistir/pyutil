@@ -2,9 +2,9 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
-from pyutil.mongo.engine.pandasdocument import PandasDocument
+from pyutil.mongo.engine.pandasdocument import PandasDocument, NotUniqueError
 from pyutil.timeseries.merge import merge
-from test.config import mongo_client
+from test.config import mongo
 
 
 class Singer(PandasDocument):
@@ -45,25 +45,27 @@ class TestEngine(object):
 
         pdt.assert_series_equal(p.close, pd.Series(index=[1, 2, 3], data=[3.3, 5.3, 6.3]))
 
-    def test_products(self, mongo_client):
-        p1 = Singer(name="Peter")
-        p1.save()
+    def test_products(self, mongo):
+        with mongo:
 
-        p2 = Singer(name="Falco")
-        p2.save()
+            p1 = Singer(name="Peter")
+            p1.save()
 
-        # here we query the database! Hence need the client in the background
-        a = Singer.products(names=["Peter"])
-        assert len(a) == 1
-        assert a[0] == p1
+            p2 = Singer(name="Falco")
+            p2.save()
 
-        b = Singer.products()
-        assert len(b) == 2
-        assert set(b) == {p1, p2}
+            # here we query the database! Hence need the client in the background
+            a = Singer.products(names=["Peter"])
+            assert len(a) == 1
+            assert a[0] == p1
 
-        frame = Singer.reference_frame(products=[p1, p2])
-        assert set(frame.index) == {"Peter", "Falco"}
-        assert frame.empty
+            b = Singer.products()
+            assert len(b) == 2
+            assert set(b) == {p1, p2}
+
+            frame = Singer.reference_frame(products=[p1, p2])
+            assert set(frame.index) == {"Peter", "Falco"}
+            assert frame.empty
 
     def test_reference_frame(self):
         p1 = Singer(name="Peter")
@@ -117,3 +119,15 @@ class TestEngine(object):
     def test_repr(self):
         p1 = Singer(name="Peter Maffay")
         assert str(p1) == "<Singer: Peter Maffay>"
+
+    def test_not_unique_name(self, mongo):
+        with mongo as m:
+            print(type(m))
+            c1 = Singer(name="AA")
+            assert c1.name == "AA"
+
+            c2 = Singer(name="AA")
+
+            c1.save()
+            with pytest.raises(NotUniqueError):
+                c2.save()
