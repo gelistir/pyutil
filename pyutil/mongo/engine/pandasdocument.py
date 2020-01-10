@@ -64,22 +64,22 @@ class PandasDocument(DynamicDocument):
 
     @classmethod
     def pandas_frame(cls, item, products) -> pd.DataFrame:
-        frame = pd.DataFrame({product.name: product.pandas(item=item, default=pd.Series({})) for product in products})
+        frame = pd.DataFrame({product.name: product.__pandas(item=item, default=pd.Series({})) for product in products})
         frame = frame.dropna(axis=1, how="all").transpose()
         frame.index.name = cls.__name__.lower()
         return frame.sort_index().transpose()
 
-    def last(self, item, default=None):
-        try:
-            obj = self.__getattribute__(item)
-            if isinstance(obj, pd.Series) or isinstance(obj, pd.DataFrame):
-                return obj.last_valid_index()
-            # obj is not a pandas object...
-            raise AttributeError()
-        except AttributeError:
-            return default
+    # def last(self, item, default=None):
+    #     try:
+    #         obj = self.__getattribute__(item)
+    #         if isinstance(obj, pd.Series) or isinstance(obj, pd.DataFrame):
+    #             return obj.last_valid_index()
+    #         # obj is not a pandas object...
+    #         raise AttributeError()
+    #     except AttributeError:
+    #         return default
 
-    def pandas(self, item, default=None):
+    def __pandas(self, item, default=None):
         try:
             obj = self.__getattribute__(item)
             if isinstance(obj, pd.Series) or isinstance(obj, pd.DataFrame):

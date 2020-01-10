@@ -97,22 +97,22 @@ class TestEngine(object):
         # with pytest.raises(AttributeError):
         #    Singer.pandas_frame(key="price", products=[p1])
 
-    def test_last(self):
-        p1 = Singer(name="Peter Maffay")
-        assert p1.last(item="price") is None
-        assert p1.last(item="price", default=pd.Timestamp("2010-01-01")) == pd.Timestamp("2010-01-01")
+    # def test_last(self):
+    #     p1 = Singer(name="Peter Maffay")
+    #     assert p1.last(item="price") is None
+    #     assert p1.last(item="price", default=pd.Timestamp("2010-01-01")) == pd.Timestamp("2010-01-01")
+    #
+    #     p1.price = pd.Series(index=[2.1], data=[[3.0]])
+    #     assert p1.last(item="price") == 2.1
+    #
+    #     p1.wurst = [5.0]
+    #     assert p1.last(item="wurst") is None
 
-        p1.price = pd.Series(index=[2.1], data=[[3.0]])
-        assert p1.last(item="price") == 2.1
-
-        p1.wurst = [5.0]
-        assert p1.last(item="wurst") is None
-
-    def test_pandas(self):
-        p1 = Singer(name="Peter Maffay")
-        assert p1.pandas(item="price") is None
-        x = p1.pandas(item="price", default=pd.Series({}))
-        assert x.empty
+    # def test_pandas(self):
+    #     p1 = Singer(name="Peter Maffay")
+    #     assert p1.pandas(item="price") is None
+    #     x = p1.pandas(item="price", default=pd.Series({}))
+    #     assert x.empty
 
     def test_repr(self):
         p1 = Singer(name="Peter Maffay")
