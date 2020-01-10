@@ -21,4 +21,4 @@ RUN pip install --no-cache-dir httpretty pytest pytest-cov pytest-html sphinx fl
 
 WORKDIR /pyutil
 
-CMD py.test --cov=pyutil  --cov-report html:artifacts/html-coverage --cov-report term --html=artifacts/html-report/report.html /pyutil/test
+CMD py.test --cov=pyutil  -v --cov-report html:artifacts/html-coverage --cov-report term --html=artifacts/html-report/report.html /pyutil/test

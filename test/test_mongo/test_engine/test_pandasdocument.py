@@ -67,60 +67,64 @@ class TestEngine(object):
             assert set(frame.index) == {"Peter", "Falco"}
             assert frame.empty
 
-    def test_reference_frame(self):
-        p1 = Singer(name="Peter")
-        p1.reference["A"] = 20.0
+            frame = Singer.reference_frame()
+            assert set(frame.index) == {"Peter", "Falco"}
+            assert frame.empty
 
-        p2 = Singer(name="Falco")
-        p2.reference["A"] = 30.0
-        p2.reference["B"] = 10.0
+    def test_reference_frame(self, mongo):
+        with mongo as m:
+            p1 = Singer(name="Peter")
+            p1.reference["A"] = 20.0
+            p1.save()
 
-        frame = Singer.reference_frame(products=[p1, p2])
-        assert set(frame.index) == {"Peter", "Falco"}
-        assert set(frame.keys()) == {"A", "B"}
+            p2 = Singer(name="Falco")
+            p2.reference["A"] = 30.0
+            p2.reference["B"] = 10.0
+            p2.save()
 
-    def test_ts(self):
-        p1 = Singer(name="Peter Maffay")
-        p1.price = pd.Series(data=[2, 3, 5], index=[pd.Timestamp("2010-01-01"), pd.Timestamp("2010-01-03"), pd.Timestamp("2010-01-05")])
+            frame = Singer.reference_frame(products=[p1, p2])
+            assert set(frame.index) == {"Peter", "Falco"}
+            assert set(frame.keys()) == {"A", "B"}
 
-        p2 = Singer(name="Falco")
+            frame = Singer.reference_frame()
+            assert set(frame.index) == {"Peter", "Falco"}
+            assert set(frame.keys()) == {"A", "B"}
 
-        assert p1.reference == {}
-        frame = Singer.pandas_frame(item="price", products=[p1, p2])
+    def test_ts(self, mongo):
+        with mongo as m:
+            p1 = Singer(name="Peter Maffay")
+            p1.price = pd.Series(data=[2, 3, 5], index=[pd.Timestamp("2010-01-01"), pd.Timestamp("2010-01-03"), pd.Timestamp("2010-01-05")])
+            p1.save()
 
-        assert set(frame.keys()) == {"Peter Maffay"}
-        pdt.assert_series_equal(p1.price, frame["Peter Maffay"], check_names=False)
+            p2 = Singer(name="Falco")
+            p2.save()
+            assert p1.reference == {}
+
+            frame = Singer.pandas_frame(item="price", products=[p1, p2])
+            assert set(frame.keys()) == {"Peter Maffay"}
+            pdt.assert_series_equal(p1.price, frame["Peter Maffay"], check_names=False)
+
+            frame = Singer.pandas_frame(item="price")
+            assert set(frame.keys()) == {"Peter Maffay"}
+            pdt.assert_series_equal(p1.price, frame["Peter Maffay"], check_names=False)
 
     def test_pandas_wrong(self):
         p1 = Singer(name="Peter Maffay")
         p1.price = 5.0
         assert Singer.pandas_frame(item="price", products=[p1]).empty
 
-        # with pytest.raises(AttributeError):
-        #    Singer.pandas_frame(key="price", products=[p1])
-
-    # def test_last(self):
-    #     p1 = Singer(name="Peter Maffay")
-    #     assert p1.last(item="price") is None
-    #     assert p1.last(item="price", default=pd.Timestamp("2010-01-01")) == pd.Timestamp("2010-01-01")
-    #
-    #     p1.price = pd.Series(index=[2.1], data=[[3.0]])
-    #     assert p1.last(item="price") == 2.1
-    #
-    #     p1.wurst = [5.0]
-    #     assert p1.last(item="wurst") is None
-
-    # def test_pandas(self):
-    #     p1 = Singer(name="Peter Maffay")
-    #     assert p1.pandas(item="price") is None
-    #     x = p1.pandas(item="price", default=pd.Series({}))
-    #     assert x.empty
-
     def test_repr(self):
         p1 = Singer(name="Peter Maffay")
         assert str(p1) == "<Singer: Peter Maffay>"
 
     def test_not_unique_name(self, mongo):
+        # can't harm to clean a bit
+        Singer.objects.delete()
+
+        # check that no singer has survived
+        s = [singer for singer in Singer.objects]
+        assert len(s) == 0
+
         with mongo as m:
             print(type(m))
             c1 = Singer(name="AA")
@@ -131,3 +135,20 @@ class TestEngine(object):
             c1.save()
             with pytest.raises(NotUniqueError):
                 c2.save()
+
+    def test_to_dict(self, mongo):
+        # can't harm to clean a bit
+        Singer.objects.delete()
+
+        # check that no singer has survived
+        s = [singer for singer in Singer.objects]
+        assert len(s) == 0
+
+        with mongo as m:
+            c1 = Singer(name="AAA")
+            c1.save()
+
+            c2 = Singer(name="BBB")
+            c2.save()
+
+            assert Singer.to_dict() == {"AAA": c1, "BBB": c2}

@@ -11,7 +11,9 @@ class PandasDocument(DynamicDocument):
     date_modified = DateTimeField(default=datetime.datetime.utcnow)
 
     @classmethod
-    def reference_frame(cls, products) -> pd.DataFrame:
+    def reference_frame(cls, products=None) -> pd.DataFrame:
+        products = products or cls.objects
+
         frame = pd.DataFrame(
             {product.name: pd.Series({key: data for key, data in product.reference.items()}) for product in
              products}).transpose()
@@ -63,21 +65,12 @@ class PandasDocument(DynamicDocument):
             return cls.objects(name__in=names)
 
     @classmethod
-    def pandas_frame(cls, item, products) -> pd.DataFrame:
+    def pandas_frame(cls, item, products=None) -> pd.DataFrame:
+        products = products or cls.objects
         frame = pd.DataFrame({product.name: product.__pandas(item=item, default=pd.Series({})) for product in products})
         frame = frame.dropna(axis=1, how="all").transpose()
         frame.index.name = cls.__name__.lower()
         return frame.sort_index().transpose()
-
-    # def last(self, item, default=None):
-    #     try:
-    #         obj = self.__getattribute__(item)
-    #         if isinstance(obj, pd.Series) or isinstance(obj, pd.DataFrame):
-    #             return obj.last_valid_index()
-    #         # obj is not a pandas object...
-    #         raise AttributeError()
-    #     except AttributeError:
-    #         return default
 
     def __pandas(self, item, default=None):
         try:
@@ -91,3 +84,7 @@ class PandasDocument(DynamicDocument):
 
     def __str__(self):
         return "<{type}: {name}>".format(type=self.__class__.__name__, name=self.name)
+
+    @classmethod
+    def to_dict(cls):
+        return {x.name: x for x in cls.objects}
