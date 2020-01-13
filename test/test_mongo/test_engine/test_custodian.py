@@ -1,4 +1,5 @@
-from pyutil.mongo.engine.custodian import Custodian, Currency
+from pyutil.mongo.engine.currency import Currency
+from pyutil.mongo.engine.custodian import Custodian
 
 
 def test_custodian():

@@ -1,7 +1,7 @@
 import pandas as pd
 
 from .pandasdocument import PandasDocument
-from .custodian import Currency
+from .currency import Currency
 from mongoengine import *
 
 

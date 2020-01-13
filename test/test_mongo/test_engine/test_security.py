@@ -3,7 +3,7 @@ import pandas.util.testing as pdt
 import pytest
 
 from pyutil.mongo.engine.security import Security, SecurityVolatility
-from pyutil.mongo.engine.custodian import Currency
+from pyutil.mongo.engine.currency import Currency
 from test.config import mongo, read
 
 t0 = pd.Timestamp("1978-11-15")

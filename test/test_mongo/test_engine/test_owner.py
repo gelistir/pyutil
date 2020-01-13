@@ -2,7 +2,8 @@ import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
-from pyutil.mongo.engine.custodian import Currency, Custodian
+from pyutil.mongo.engine.currency import Currency
+from pyutil.mongo.engine.custodian import Custodian
 from pyutil.mongo.engine.owner import Owner
 from pyutil.mongo.engine.security import Security
 from pyutil.timeseries.merge import merge

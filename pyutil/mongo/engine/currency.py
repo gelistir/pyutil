@@ -1,5 +1,5 @@
 from .pandasdocument import PandasDocument
 
 
-class Custodian(PandasDocument):
+class Currency(PandasDocument):
     pass

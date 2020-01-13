@@ -1,4 +1,4 @@
-from pyutil.mongo.engine.custodian import Currency
+from pyutil.mongo.engine.currency import Currency
 from pyutil.mongo.mongo import Mongo
 
 

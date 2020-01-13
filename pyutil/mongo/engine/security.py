@@ -3,7 +3,7 @@ import pandas as pd
 from .pandasdocument import PandasDocument
 from mongoengine import *
 
-from .custodian import Currency
+from .currency import Currency
 
 
 class Security(PandasDocument):
