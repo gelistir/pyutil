@@ -36,23 +36,24 @@ def db(mongo, strategy):
         # once you exit this function m is disconnected
 
 
-class TestStrategy(object):
-    def test_assets(self, strategy):
-        assert strategy.name == "Peter"
-        assert strategy.assets == test_portfolio().assets
-        assert strategy.last_valid_index == test_portfolio().prices.last_valid_index()
-        assert similar(strategy.portfolio, test_portfolio())
-        assert similar(strategy.configuration(reader=None).portfolio, test_portfolio())
+def test_assets(strategy):
+    assert strategy.name == "Peter"
+    assert strategy.assets == test_portfolio().assets
+    assert strategy.last_valid_index == test_portfolio().prices.last_valid_index()
+    assert similar(strategy.portfolio, test_portfolio())
+    assert similar(strategy.configuration(reader=None).portfolio, test_portfolio())
 
-    def test_reference(self, db, strategy):
-        with db as m:
-            frame = Strategy.reference_frame(products=[strategy])
-            assert frame["active"]["Peter"]
-            assert frame["type"]["Peter"] == "wild"
-            assert frame["source"]["Peter"]
 
-    def test_navs(self, db):
-        with db as m:
-            strategies = Strategy.products(names=["Peter"])
-            frame = Strategy.navs(strategies=strategies)
-            pdt.assert_series_equal(frame["Peter"], test_portfolio().nav.series, check_names=False)
+def test_reference(db, strategy):
+    with db as m:
+        frame = Strategy.reference_frame(products=[strategy])
+        assert frame["active"]["Peter"]
+        assert frame["type"]["Peter"] == "wild"
+        assert frame["source"]["Peter"]
+
+
+def test_navs(db):
+    with db as m:
+        strategies = Strategy.products(names=["Peter"])
+        frame = Strategy.navs(strategies=strategies)
+        pdt.assert_series_equal(frame["Peter"], test_portfolio().nav.series, check_names=False)

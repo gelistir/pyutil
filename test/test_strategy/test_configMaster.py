@@ -37,21 +37,24 @@ def strategy(portfolio, prices):
                     Hans=30, Dampf=40)                 # parameter
 
 
-class TestConfigMaster(object):
-    def test_run_strategy(self, strategy):
-        # you can always add new parameters or change existing ones
-        strategy["Peter Maffay"]=20
-        strategy["Hans"] = 35
-        assert strategy.parameter == {"Peter Maffay": 20, "Hans": 35, "Dampf": 40}
+def test_run_strategy(strategy):
+    # you can always add new parameters or change existing ones
+    strategy["Peter Maffay"]=20
+    strategy["Hans"] = 35
+    assert strategy.parameter == {"Peter Maffay": 20, "Hans": 35, "Dampf": 40}
 
-    def test_prices(self, strategy, prices):
-        pdt.assert_frame_equal(strategy.history(), prices[["A", "B", "C"]])
 
-    def test_names(self, strategy):
-        assert strategy.names == ["A", "B", "C"]
+def test_prices(strategy, prices):
+    pdt.assert_frame_equal(strategy.history(), prices[["A", "B", "C"]])
 
-    def test_reader(self, strategy, prices):
-        pdt.assert_series_equal(strategy.reader("A"), prices["A"])
 
-    def test_portfolio(self, strategy, portfolio):
-        assert similar(strategy.portfolio, portfolio.subportfolio(assets=strategy.names))
+def test_names(strategy):
+    assert strategy.names == ["A", "B", "C"]
+
+
+def test_reader(strategy, prices):
+    pdt.assert_series_equal(strategy.reader("A"), prices["A"])
+
+
+def test_portfolio(strategy, portfolio):
+    assert similar(strategy.portfolio, portfolio.subportfolio(assets=strategy.names))
