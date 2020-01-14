@@ -4,7 +4,7 @@ import pytest
 from pyutil.portfolio.portfolio import similar
 from pyutil.strategy.config import ConfigMaster
 from test.config import test_portfolio, read
-
+from pyutil.portfolio.portfolio import Portfolio
 
 @pytest.fixture()
 def prices():
@@ -13,7 +13,8 @@ def prices():
 
 @pytest.fixture()
 def portfolio():
-    return test_portfolio()
+    return Portfolio(prices=read("price.csv", parse_dates=True, index_col=0),
+                     weights=read("weight.csv", parse_dates=True, index_col=0))
 
 
 @pytest.fixture()
