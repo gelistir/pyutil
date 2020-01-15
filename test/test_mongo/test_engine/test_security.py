@@ -28,43 +28,42 @@ def security(ts):
     return s
 
 
-class TestSecurity(object):
-    def test_name(self, security):
+def test_name(security):
+    # s = Security(name=100)
+    assert security.name == "100"
+    #assert str(security) == "Security(100: None)"
+    assert security.fullname == "Peter Maffay"
+    #assert security.bloomberg_scaling == 1
+    #assert security.bloomberg_ticker == "IBM US Equity"
+
+def test_write_volatility(mongo, ts, security):
+    with mongo as m:
         # s = Security(name=100)
-        assert security.name == "100"
-        #assert str(security) == "Security(100: None)"
-        assert security.fullname == "Peter Maffay"
-        #assert security.bloomberg_scaling == 1
-        #assert security.bloomberg_ticker == "IBM US Equity"
+        c = Currency(name="USD")
+        c.save()
 
-    def test_write_volatility(self, mongo, ts, security):
-        with mongo as m:
-            # s = Security(name=100)
-            c = Currency(name="USD")
-            c.save()
+        security.save()
 
-            security.save()
+        sv = SecurityVolatility(currency=c, security=security)
+        sv.volatility = ts
+        #security.series.write(key="VOLATILITY", data=ts, currency="USD")
+        #x = security.series["VOLATILITY"]
+        pdt.assert_series_equal(sv.volatility, ts, check_names=False)
 
-            sv = SecurityVolatility(currency=c, security=security)
-            sv.volatility = ts
-            #security.series.write(key="VOLATILITY", data=ts, currency="USD")
-            #x = security.series["VOLATILITY"]
-            pdt.assert_series_equal(sv.volatility, ts, check_names=False)
+def test_prices(security, ts):
+    s0 = security
 
-    def test_prices(self, security, ts):
-        s0 = security
+    s1 = Security(name="A")
+    s1.price = ts
 
-        s1 = Security(name="A")
-        s1.price = ts
+    s2 = Security(name="B")
+    s2.price = 2*ts
 
-        s2 = Security(name="B")
-        s2.price = 2*ts
+    f = Security.pandas_frame(products=[s0, s1, s2], item="price")
+    pdt.assert_series_equal(f["A"], ts, check_names=False)
+    pdt.assert_series_equal(f["B"], 2 * ts, check_names=False)
 
-        f = Security.pandas_frame(products=[s0, s1, s2], item="price")
-        pdt.assert_series_equal(f["A"], ts, check_names=False)
-        pdt.assert_series_equal(f["B"], 2 * ts, check_names=False)
-
-    def test_reference(self, security):
-        frame1 = Security.reference_frame(products=[security])
-        frame2 = pd.DataFrame(index=["100"], columns=["Bloomberg Ticker", "fullname"], data=[["IBM US Equity", "Peter Maffay"]])
-        pdt.assert_frame_equal(frame1, frame2, check_names=False)
+def test_reference(security):
+    frame1 = Security.reference_frame(products=[security])
+    frame2 = pd.DataFrame(index=["100"], columns=["Bloomberg Ticker", "fullname"], data=[["IBM US Equity", "Peter Maffay"]])
+    pdt.assert_frame_equal(frame1, frame2, check_names=False)

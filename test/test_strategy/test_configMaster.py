@@ -3,18 +3,11 @@ import pytest
 
 from pyutil.portfolio.portfolio import similar
 from pyutil.strategy.config import ConfigMaster
-from test.config import test_portfolio, read
-from pyutil.portfolio.portfolio import Portfolio
+from test.config import portfolio, read
 
 @pytest.fixture()
 def prices():
     return read("price.csv", parse_dates=True, index_col=0)
-
-
-@pytest.fixture()
-def portfolio():
-    return Portfolio(prices=read("price.csv", parse_dates=True, index_col=0),
-                     weights=read("weight.csv", parse_dates=True, index_col=0))
 
 
 @pytest.fixture()
@@ -57,5 +50,5 @@ def test_reader(strategy, prices):
     pdt.assert_series_equal(strategy.reader("A"), prices["A"])
 
 
-def test_portfolio(strategy, portfolio):
+def test_x(strategy, portfolio):
     assert similar(strategy.portfolio, portfolio.subportfolio(assets=strategy.names))

@@ -6,12 +6,7 @@ import pytest
 from pyutil.mongo.engine.symbol import Symbol, Group
 from pyutil.portfolio.portfolio import Portfolio, similar, one_over_n
 
-from test.config import test_portfolio, read, mongo
-
-
-@pytest.fixture(scope="module")
-def portfolio():
-    return test_portfolio()
+from test.config import portfolio, read, mongo
 
 
 @pytest.fixture(scope="module")
@@ -50,15 +45,10 @@ class TestPortfolio(object):
         #print(portfolio.weights)
         pdt.assert_frame_equal(portfolio.weights, pd.DataFrame(index=[1,2,3], columns=["A","B"], data=[[np.nan, 1.0], [0.5, 0.5], [0.5, 0.5]]))
 
-
-
-
-
     def test_from_position(self):
         prices = pd.DataFrame(index=[1, 2, 3], columns=["A", "B"], data=[[1, 1], [1.1, 1.2], [1.1, 1.4]])
         position = pd.Series(index=["A", "B"], data=[100, 200])
         p = Portfolio.fromPosition(prices=prices, position=position, cash=5)
-
         assert p.cash.iloc[-1] == pytest.approx(0.012658227848101222, 1e-10)
 
     def test_leverage(self, portfolio):

@@ -14,9 +14,11 @@ def read(name, **kwargs):
     return pd.read_csv(resource(name), **kwargs)
 
 
-def test_portfolio():
+@pytest.fixture()
+def portfolio():
     return Portfolio(prices=read("price.csv", parse_dates=True, index_col=0),
                      weights=read("weight.csv", parse_dates=True, index_col=0))
+
 
 @pytest.fixture()
 def mongo():

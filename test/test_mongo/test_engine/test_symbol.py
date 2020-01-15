@@ -28,6 +28,7 @@ def test_mock(mongo):
 
         assert Symbol.symbolmap() == {"IBM US Equity": "US Equity"}
 
+
 def test_collection(mongo):
     with mongo as m:
         # Create a new page and add tags

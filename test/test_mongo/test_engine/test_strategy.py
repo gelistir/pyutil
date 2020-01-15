@@ -1,17 +1,8 @@
-import pytest
-
 from pyutil.mongo.engine.strategy import Strategy
-from test.config import mongo
-from pyutil.portfolio.portfolio import Portfolio, similar
+from pyutil.portfolio.portfolio import  similar
 import pandas.util.testing as pdt
-from test.config import read, resource
+from test.config import portfolio, mongo, resource
 
-
-
-@pytest.fixture()
-def portfolio():
-    return Portfolio(prices=read("price.csv", parse_dates=True, index_col=0),
-                     weights=read("weight.csv", parse_dates=True, index_col=0))
 
 def test_strategy(mongo, portfolio):
     with mongo as m:
@@ -49,6 +40,7 @@ def test_source(portfolio):
         assert s.last_valid_index is None
         assert s.source
         assert s.assets == portfolio.assets
+
 
 def test_last_valid(portfolio):
     s = Strategy(name="Maffay", source="AAA", active=True, type="wild2")

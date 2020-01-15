@@ -5,20 +5,15 @@ import pytest
 
 import pyutil.portfolio.analysis as ppa
 from pyutil.portfolio.format import percentage
-from test.config import test_portfolio
+from test.config import portfolio
 
 
-@pytest.fixture(scope="module")
-def portfolio():
-    return test_portfolio()
-
-
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def portfolios(portfolio):
     return {"test": portfolio, "A": None}
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def navs(portfolio):
     return {"test": portfolio.nav, "A": None}
 
