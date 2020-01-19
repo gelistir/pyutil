@@ -4,6 +4,16 @@ from .pandasdocument import PandasDocument
 from pyutil.portfolio.portfolio import Portfolio
 from pyutil.strategy.config import ConfigMaster
 
+import os
+
+
+def strategies(folder):
+    for file in os.listdir(folder):
+        with open(os.path.join(folder, file), "r") as f:
+            source = f.read()
+            m = _module(source=source)
+            yield m.name, source
+
 
 def _module(source):
     from types import ModuleType

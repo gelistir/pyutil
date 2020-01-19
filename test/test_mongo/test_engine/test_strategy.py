@@ -1,4 +1,4 @@
-from pyutil.mongo.engine.strategy import Strategy
+from pyutil.mongo.engine.strategy import Strategy, strategies
 from pyutil.portfolio.portfolio import  similar
 import pandas.util.testing as pdt
 from test.config import portfolio, mongo, resource
@@ -47,3 +47,9 @@ def test_last_valid(portfolio):
     s.portfolio = portfolio
     assert s.last_valid_index == portfolio.prices.last_valid_index()
     assert similar(s.portfolio, portfolio)
+
+
+def test_strategies():
+    folder = resource(name="strat")
+    for name, source in strategies(folder=folder):
+        assert name in {"P1", "P2"}
