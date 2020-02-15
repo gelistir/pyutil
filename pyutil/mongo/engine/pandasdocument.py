@@ -5,7 +5,7 @@ from mongoengine import *
 
 
 class PandasDocument(DynamicDocument):
-    meta = {'allow_inheritance': True}
+    meta = {'abstract': True}
     name = StringField(max_length=200, required=True, unique=True)
     reference = DictField()
     date_modified = DateTimeField(default=datetime.datetime.utcnow)

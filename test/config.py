@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import pytest
 
+from pyutil.config.random import random_string
 from pyutil.mongo.mongo import Mongo
 from pyutil.portfolio.portfolio import Portfolio
 
@@ -22,5 +23,5 @@ def portfolio():
 
 @pytest.fixture()
 def mongo():
-    return Mongo(db="test", host="mongomock://localhost")
+    return Mongo(db=random_string(5), host="mongomock://localhost")
 

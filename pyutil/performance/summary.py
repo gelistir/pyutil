@@ -265,7 +265,7 @@ class NavSeries(pd.Series):
 
     def ewm_volatility(self, com=50, min_periods=50, periods=None):
         periods = periods or self.periods_per_year
-        return np.sqrt(periods) * self.returns.fillna(0.0).ewm(com=com, min_periods=min_periods).std(bias=False)
+        return np.sqrt(periods) * self.returns.ewm(com=com, min_periods=min_periods).std(bias=False)
 
     @property
     def period_returns(self):
