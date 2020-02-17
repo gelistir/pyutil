@@ -1,4 +1,5 @@
 import calendar
+from collections import OrderedDict
 from datetime import date
 
 import numpy as np
@@ -80,14 +81,14 @@ class Drawdown(object):
 
         return pd.Series({s: e - s for s, e in zip(start, end)})
 
-
-def var(series, alpha=0.99):
-    return VaR(series, alpha).var
-
-
-def cvar(series, alpha=0.99):
-    return VaR(series, alpha).cvar
-
+#
+# def var(series, alpha=0.99):
+#     return VaR(series, alpha).var
+#
+#
+# def cvar(series, alpha=0.99):
+#     return VaR(series, alpha).cvar
+#
 
 class VaR(object):
     def __init__(self, rseries, alpha=0.99):
@@ -143,6 +144,12 @@ def monthlytable(r) -> pd.DataFrame:
     return frame.iloc[::-1]
 
 
+def from_nav(nav):
+    return ReturnSeries(nav.dropna().pct_change().fillna(0.0))
+
+
+
+
 class ReturnSeries(pd.Series):
     def __init__(self, *args, **kwargs):
         super(ReturnSeries, self).__init__(*args, **kwargs)
@@ -154,6 +161,10 @@ class ReturnSeries(pd.Series):
 
             # check that all indices are increasing
             assert self.index.is_monotonic_increasing
+
+    @property
+    def series(self) -> pd.Series:
+        return pd.Series({t: v for t, v in self.items()})
 
     @property
     def nav(self):
@@ -174,6 +185,19 @@ class ReturnSeries(pd.Series):
     @property
     def monthly_returns(self):
         return (self + 1.0).groupby([self.index.year, self.index.month]).prod() - 1.0
+
+    @property
+    def tail_month(self):
+        first_day_of_month = (self.index[-1] + pd.offsets.MonthBegin(-1)).date()
+        return self.truncate(before=first_day_of_month)
+
+    @property
+    def tail_year(self):
+        first_day_of_year = (self.index[-1] + pd.offsets.YearBegin(-1)).date()
+        return self.truncate(before=first_day_of_year)
+    
+    def resample(self, rule, **kwargs):
+        return (self + 1.0).resample(rule=rule).prod() - 1.0
 
     @property
     def positive_events(self):
@@ -199,17 +223,17 @@ class ReturnSeries(pd.Series):
     def recent(self, n=15) -> pd.Series:
         return self.tail(n).dropna()
 
-    @property
-    def ytd_series(self) -> pd.Series:
-        """
-        Extract the series of monthly returns in the current year
-        :return:
-        """
-        return self.__ytd(self.monthly_returns, today=self.index[-1]).sort_index(ascending=False)
+    # @property
+    # def ytd_series(self) -> pd.Series:
+    #     """
+    #     Extract the series of monthly returns in the current year
+    #     :return:
+    #     """
+    #     return self.__ytd(self.monthly_returns, today=self.index[-1]).sort_index(ascending=False)
 
-    @property
-    def mtd_series(self) -> pd.Series:
-        return self.__mtd(self.returns, today=self.index[-1]).sort_index(ascending=False)
+    #@property
+    #def mtd_series(self) -> pd.Series:
+    #     return self.tail_month.sort_index(ascending=False)
 
     def var(self, alpha=0.95):
         return VaR(rseries=self, alpha=alpha).var
@@ -217,23 +241,26 @@ class ReturnSeries(pd.Series):
     def cvar(self, alpha=0.95):
         return VaR(rseries=self, alpha=alpha).cvar
 
-    def ytd(self, today=None) -> pd.Series:
-        """
-        Extract year to date of a series or a frame
+    def truncate(self, before=None, after=None, axis=None, copy=True):
+        return ReturnSeries(super().truncate(before=before, after=after, axis=axis, copy=copy))
 
-        :param ts: series or frame
-        :param today: today, relevant for testing
+    #def ytd(self, today=None) -> pd.Series:
+    #    """
+    #    Extract year to date of a series or a frame
+#
+#        :param ts: series or frame
+#        :param today: today, relevant for testing
+#
+#         :return: ts or frame starting at the first day of today's year
+#         """
+#         today = today or pd.Timestamp("today")
+#         first_day_of_year = (today + pd.offsets.YearBegin(-1)).date()
+#         return ReturnSeries(self.truncate(before=first_day_of_year))
 
-        :return: ts or frame starting at the first day of today's year
-        """
-        today = today or pd.Timestamp("today")
-        first_day_of_year = (today + pd.offsets.YearBegin(-1)).date()
-        return ReturnSeries(self.truncate(before=first_day_of_year))
-
-    def mtd(self, today=None) -> pd.Series:
-        today = today or pd.Timestamp("today")
-        first_day_of_month = (today + pd.offsets.MonthBegin(-1)).date()
-        return ReturnSeries(self.truncate(before=first_day_of_month))
+    #def mtd(self, today=None) -> pd.Series:
+    #    today = today or pd.Timestamp("today")
+    #    first_day_of_month = (today + pd.offsets.MonthBegin(-1)).date()
+    #    return ReturnSeries(self.truncate(before=first_day_of_month))
 
     def ewm_volatility(self, com=50, min_periods=50, periods=None):
         periods = periods or self.periods_per_year
@@ -245,7 +272,7 @@ class ReturnSeries(pd.Series):
 
     @property
     def drawdown(self) -> pd.Series:
-        return Drawdown(rseries=self).drawdown
+        return drawdown(rseries=self)
 
     @property
     def period_returns(self):
@@ -284,16 +311,96 @@ class ReturnSeries(pd.Series):
         else:
             return self.__mean_r(periods, r_f=r_f) / m
 
+    def calmar_ratio(self, periods=None, r_f=0):
+        periods = periods or self.periods_per_year
+        start = self.index[-1] - pd.DateOffset(years=3)
+        # truncate the nav
+        x = self.truncate(before=start)
+        return ReturnSeries(x).sortino_ratio(periods=periods, r_f=r_f)
 
-if __name__ == '__main__':
-    t1 = pd.Timestamp("2010-10-21")
-    t2 = pd.Timestamp("2010-10-22")
-    t3 = pd.Timestamp("2010-10-23")
-    r = pd.Series(index=[t1, t2, t3], data=[-0.01, 0.02, -0.01])
-    xxx = ReturnSeries(r)
-    print(xxx.drawdown)
-    print(xxx.monthlytable)
-    print(xxx.to_frame())
-    print(xxx.annualized_volatility(periods=256))
+    def summary_format(self, alpha=0.95, periods=None, r_f=0):
+        print("Hello")
+        perf = self.summary(alpha=alpha, periods=periods, r_f=r_f)
+        print(perf)
+
+        f = lambda x: "{0:.2f}%".format(float(x))
+        for name in ["Return", "Annua Return", "Annua Volatility", "Max Drawdown", "Max % return", "Min % return",
+                     "MTD", "YTD", "Current Drawdown", "Value at Risk (alpha = 95)", "Conditional Value at Risk (alpha = 95)"]:
+            perf[name] = f(perf[name])
+
+        f = lambda x: "{0:.2f}".format(float(x))
+        for name in ["Annua Sharpe Ratio (r_f = 0)", "Calmar Ratio (3Y)", "Current Nav", "Max Nav", "Kurtosis"]:
+            perf[name] = f(perf[name])
+
+        f = lambda x: "{:d}".format(int(x))
+        for name in ["# Events", "# Events per year", "# Positive Events", "# Negative Events"]:
+            perf[name] = f(perf[name])
+
+        return perf
+
+
+    # @property
+    # def mtd(self):
+    #     from pyutil.timeseries.aux import mtd as mm
+    #     mm(ts=self)
+
+    def summary(self, alpha=0.95, periods=None, r_f=0):
+        periods = periods or self.periods_per_year
+
+        d = OrderedDict()
+        # d = Dict()
+
+        d["Return"] = 100 * ((self + 1).cumprod() - 1.0).tail(1).values[0]
+        d["# Events"] = self.events
+        d["# Events per year"] = periods
+
+        d["Annua Return"] = 100 * self.__mean_r(periods=periods)
+        d["Annua Volatility"] = 100 * self.annualized_volatility(periods=periods)
+        d["Annua Sharpe Ratio (r_f = {0})".format(r_f)] = self.sharpe_ratio(periods=periods, r_f=r_f)
+
+        #dd = self.drawdown
+        #d["Max Drawdown"] = 100 * dd.max()
+        d["Max % return"] = 100 * self.max()
+        d["Min % return"] = 100 * self.min()
+
+        print(d)
+        # d["MTD"] = 100 * self.mtd
+        # d["YTD"] = 100 * self.ytd
+        #
+        # d["Current Nav"] = self.tail(1).values[0]
+        # d["Max Nav"] = self.max()
+        # #d["Current Drawdown"] = 100 * dd[dd.index[-1]]
+        #
+        d["Calmar Ratio (3Y)"] = self.calmar_ratio(periods=periods, r_f=r_f)
+        #
+        d["# Positive Events"] = self.positive_events
+        d["# Negative Events"] = self.negative_events
+        #
+        d["Value at Risk (alpha = {alpha})".format(alpha=int(100 * alpha))] = 100 * self.var(alpha=alpha)
+        d["Conditional Value at Risk (alpha = {alpha})".format(alpha=int(100 * alpha))] = 100 * self.cvar(alpha=alpha)
+        d["First at"] = self.index[0].date()
+        d["Last at"] = self.index[-1].date()
+        d["Kurtosis"] = self.kurtosis()
+
+        x = pd.Series(d)
+        x.index.name = "Performance number"
+        print(x)
+        return x
+
+
+# if __name__ == '__main__':
+#     t1 = pd.Timestamp("2010-10-21")
+#     t2 = pd.Timestamp("2010-10-22")
+#     t3 = pd.Timestamp("2010-10-23")
+#     r = pd.Series(index=[t1, t2, t3], data=[-0.01, 0.02, -0.01])
+#     xxx = ReturnSeries(r)
+#     print(xxx.drawdown)
+#     print(xxx.monthlytable)
+#     print(xxx.to_frame())
+#     print(xxx.annualized_volatility(periods=256))
+#     print(xxx.monthly_returns)
+#     print(xxx.tail_month)
+#     print(xxx.tail_year)
+
 
 

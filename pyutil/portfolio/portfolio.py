@@ -1,8 +1,9 @@
 import pandas as pd
 import os
 
-from ..performance.return_series import ReturnSeries
+#from ..performance.return_series import ReturnSeries
 from ..performance.periods import period_returns, periods
+from pyutil.performance.return_series import drawdown
 from pyutil.timeseries.merge import merge as merge_in_t
 
 
@@ -233,12 +234,21 @@ class Portfolio(object):
         return self.prices.pct_change()
 
     @property
-    def nav(self) -> ReturnSeries:
+    def nav(self) -> pd.Series:
         """
         nav series
         :return:
         """
-        return ReturnSeries(self.weighted_returns.sum(axis=1)).nav
+        return (self.weighted_returns.sum(axis=1) + 1.0).cumprod()
+
+    @property
+    def returns(self) -> pd.Series:
+        """
+        nav series
+        :return:
+        """
+        return self.weighted_returns.sum(axis=1)
+
 
     @property
     def weighted_returns(self):
@@ -338,6 +348,7 @@ class Portfolio(object):
         if today not in trade_events:
             trade_events.append(today)
 
+        #a = self.weighted_returns.apply(lambda x: )
         offsets = periods(today=self.index[-1])
 
         a = self.weighted_returns.apply(period_returns, offset=offsets).transpose()[
@@ -374,10 +385,10 @@ class Portfolio(object):
         return self.prices.apply(lambda x: x.last_valid_index()).sort_values(ascending=True)
 
     def to_frame(self, name=""):
-        frame = self.nav.to_frame(name)
-        frame = ReturnSeries(self.nav.pct_change()).to_frame(name)
-        frame["{n}leverage".format(n=name)] = self.leverage
-        frame["{n}cash".format(n=name)] = self.cash
+        frame = self.nav.to_frame("{n}-nav".format(n=name))
+        frame["{n}-drawdown".format(n=name)] = drawdown(rseries=self.returns)
+        frame["{n}-leverage".format(n=name)] = self.leverage
+        frame["{n}-cash".format(n=name)] = self.cash
         return frame
 
     def to_csv(self, folder, name=None):

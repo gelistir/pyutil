@@ -1,7 +1,6 @@
 import pandas as pd
 
-from pyutil.performance.return_series import ReturnSeries
-from pyutil.performance.summary import NavSeries
+from pyutil.performance.return_series import from_nav
 
 
 def __attempt(f, argument):
@@ -32,14 +31,25 @@ def nav(portfolios: dict) -> pd.DataFrame:
     return frame
 
 
+def returns(portfolios: dict) -> pd.DataFrame:
+    """
+    :param portfolios: A dictionary of Portfolios
+    :return: A dictionary of NAV curves
+    """
+    assert isinstance(portfolios, dict)
+    frame = pd.DataFrame({name: p.returns for name, p in portfolios.items() if hasattr(p, "nav")})
+    frame.columns.name = "Portfolio"
+    return frame
+
+
 def mtd(frame) -> pd.DataFrame:
     """
 
-    :param frame: A DataFrame of Nav curves?
+    :param frame: A DataFrame of Nav curves
 
     :return:
     """
-    d = {name: __attempt(f=lambda x: NavSeries(x).mtd_series, argument=series) for name, series in frame.items()}
+    d = {name: __attempt(f=lambda x: from_nav(x).tail_month, argument=series) for name, series in frame.items()}
     x = __last(pd.DataFrame(d).transpose(), datefmt="%b %d")
     return x.dropna(axis=0, how="all")
 
@@ -49,12 +59,12 @@ def ytd(frame) -> pd.DataFrame:
     :param frame: 
     :return: 
     """
-    d = {name: __attempt(f=lambda x: NavSeries(x).ytd_series, argument=series) for name, series in frame.items()}
+    d = {name: __attempt(f=lambda x: from_nav(x).tail_year.resample(rule="M"), argument=series) for name, series in frame.items()}
     return __last(pd.DataFrame(d).transpose(), datefmt="%m").dropna(axis=0, how="all")
 
 
 def recent(frame, n=15) -> pd.DataFrame:
-    d = {name: __attempt(f=lambda x: ReturnSeries(x.pct_change()).recent(n=n), argument=series) for name, series in frame.items()}
+    d = {name: __attempt(f=lambda x: from_nav(series).recent(n=n), argument=series) for name, series in frame.items()}
     return __last(pd.DataFrame(d).tail(n).transpose(), datefmt="%b %d").dropna(axis=0, how="all")
 
 
@@ -65,17 +75,18 @@ def sector(portfolios, symbolmap, total=False) -> pd.DataFrame:
 
 
 def performance(frame, **kwargs) -> pd.DataFrame:
-    d = {name: __attempt(f=lambda x: NavSeries(x).summary_format(**kwargs), argument=series) for name, series in frame.items()}
+    d = {name: __attempt(f=lambda x: from_nav(x).summary_format(**kwargs), argument=series) for name, series in frame.items()}
+    print(d)
     return pd.DataFrame(d).dropna(axis=1, how="all")
 
 
 def drawdown(frame) -> pd.DataFrame:
-    d = {name: __attempt(f=lambda x: ReturnSeries(x.pct_change()).drawdown, argument=series) for name, series in frame.items()}
+    d = {name: __attempt(f=lambda x: from_nav(series).drawdown, argument=series) for name, series in frame.items()}
     return pd.DataFrame(d).dropna(axis=1, how="all")
 
 
 def ewm_volatility(frame, **kwargs) -> pd.DataFrame:
-    d = {name: __attempt(f=lambda x: ReturnSeries(x.pct_change()).ewm_volatility(**kwargs), argument=series) for name, series in frame.items()}
+    d = {name: __attempt(f=lambda x: from_nav(series).ewm_volatility(**kwargs), argument=series) for name, series in frame.items()}
     return pd.DataFrame(d).dropna(axis=1, how="all")
 
 

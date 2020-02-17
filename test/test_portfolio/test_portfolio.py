@@ -17,14 +17,9 @@ def sector_weights():
 @pytest.fixture()
 def symbols(mongo):
     with mongo as m:
-        a = Group(name="Alternatives")
-        a.save()
-
-        e = Group(name="Equities")
-        e.save()
-
-        f = Group(name="Fixed Income")
-        f.save()
+        a = Group(name="Alternatives").save()
+        e = Group(name="Equities").save()
+        f = Group(name="Fixed Income").save()
 
         s1 = Symbol(name="A", group=a, internal="AA")
         s2 = Symbol(name="B", group=a, internal="BB")
@@ -40,9 +35,7 @@ def symbols(mongo):
 class TestPortfolio(object):
     def test_one_over_n(self):
         prices = pd.DataFrame(index=[1,2,3], columns=["A","B"], data=[[np.nan, 2.0], [3.0, np.nan], [np.nan, 4.0]])
-        #print(prices.head(5))
         portfolio = one_over_n(prices=prices)
-        #print(portfolio.weights)
         pdt.assert_frame_equal(portfolio.weights, pd.DataFrame(index=[1,2,3], columns=["A","B"], data=[[np.nan, 1.0], [0.5, 0.5], [0.5, 0.5]]))
 
     def test_from_position(self):
@@ -67,7 +60,7 @@ class TestPortfolio(object):
     #     assert xx.ytd.top.values[0] == pytest.approx(0.024480763822820828, 1e-10)
     #     assert xx.mtd.flop.values[0] == pytest.approx(-0.0040598440397091595, 1e-10)
 
-    def test_tail(sel, portfolio):
+    def test_tail(self, portfolio):
         x = portfolio.tail(5)
         assert len(x.index) == 5
         assert x.index[0] == pd.Timestamp("2015-04-16")
