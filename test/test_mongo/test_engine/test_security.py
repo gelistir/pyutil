@@ -39,9 +39,7 @@ def test_name(security):
 def test_write_volatility(mongo, ts, security):
     with mongo as m:
         # s = Security(name=100)
-        c = Currency(name="USD")
-        c.save()
-
+        c = Currency(name="USD").save()
         security.save()
 
         sv = SecurityVolatility(currency=c, security=security)

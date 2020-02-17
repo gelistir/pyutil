@@ -125,8 +125,7 @@ def test_returns(ts1, ts2, ts3):
 
 def test_name(mongo):
     with mongo as m:
-        c = Currency(name="CHF")
-        c.save()
+        c = Currency(name="CHF").save()
 
         o = Owner(name="222", fullname="Peter Maffay", currency=c)
 

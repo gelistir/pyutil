@@ -4,8 +4,7 @@ from pyutil.mongo.mongo import Mongo
 
 def test_stack():
     with Mongo(db="test", host="mongomock://localhost") as m:
-        c = Currency(name="USD")
-        c.save()
+        Currency(name="USD").save()
         assert isinstance(m, Mongo)
 
 

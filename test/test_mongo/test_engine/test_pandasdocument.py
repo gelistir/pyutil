@@ -48,11 +48,9 @@ class TestEngine(object):
     def test_products(self, mongo):
         with mongo:
 
-            p1 = Singer(name="Peter")
-            p1.save()
+            p1 = Singer(name="Peter").save()
 
-            p2 = Singer(name="Falco")
-            p2.save()
+            p2 = Singer(name="Falco").save()
 
             # here we query the database! Hence need the client in the background
             a = Singer.products(names=["Peter"])
@@ -96,8 +94,7 @@ class TestEngine(object):
             p1.price = pd.Series(data=[2, 3, 5], index=[pd.Timestamp("2010-01-01"), pd.Timestamp("2010-01-03"), pd.Timestamp("2010-01-05")])
             p1.save()
 
-            p2 = Singer(name="Falco")
-            p2.save()
+            p2 = Singer(name="Falco").save()
             assert p1.reference == {}
 
             frame = Singer.pandas_frame(item="price", products=[p1, p2])
@@ -145,10 +142,7 @@ class TestEngine(object):
         assert len(s) == 0
 
         with mongo as m:
-            c1 = Singer(name="AAA")
-            c1.save()
-
-            c2 = Singer(name="BBB")
-            c2.save()
+            c1 = Singer(name="AAA").save()
+            c2 = Singer(name="BBB").save()
 
             assert Singer.to_dict() == {"AAA": c1, "BBB": c2}
