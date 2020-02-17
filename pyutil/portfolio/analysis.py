@@ -1,5 +1,6 @@
 import pandas as pd
 
+from pyutil.performance.return_series import ReturnSeries
 from pyutil.performance.summary import NavSeries
 
 
@@ -53,7 +54,7 @@ def ytd(frame) -> pd.DataFrame:
 
 
 def recent(frame, n=15) -> pd.DataFrame:
-    d = {name: __attempt(f=lambda x: NavSeries(x).recent(n=n), argument=series) for name, series in frame.items()}
+    d = {name: __attempt(f=lambda x: ReturnSeries(x.pct_change()).recent(n=n), argument=series) for name, series in frame.items()}
     return __last(pd.DataFrame(d).tail(n).transpose(), datefmt="%b %d").dropna(axis=0, how="all")
 
 
@@ -69,12 +70,12 @@ def performance(frame, **kwargs) -> pd.DataFrame:
 
 
 def drawdown(frame) -> pd.DataFrame:
-    d = {name: __attempt(f=lambda x: NavSeries(x).drawdown, argument=series) for name, series in frame.items()}
+    d = {name: __attempt(f=lambda x: ReturnSeries(x.pct_change()).drawdown, argument=series) for name, series in frame.items()}
     return pd.DataFrame(d).dropna(axis=1, how="all")
 
 
 def ewm_volatility(frame, **kwargs) -> pd.DataFrame:
-    d = {name: __attempt(f=lambda x: NavSeries(x).ewm_volatility(**kwargs), argument=series) for name, series in frame.items()}
+    d = {name: __attempt(f=lambda x: ReturnSeries(x.pct_change()).ewm_volatility(**kwargs), argument=series) for name, series in frame.items()}
     return pd.DataFrame(d).dropna(axis=1, how="all")
 
 

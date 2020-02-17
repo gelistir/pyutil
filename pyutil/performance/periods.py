@@ -4,10 +4,6 @@ import pandas as pd
 Period = namedtuple('Period', ['start', 'end'])
 
 
-def __cumreturn(ts):
-    return (ts + 1.0).prod() - 1.0
-
-
 def periods(today=None):
     """
     Construct a series of Period objects
@@ -35,6 +31,10 @@ def periods(today=None):
 
 
 def period_returns(returns, offset=None, today=None):
+
+    def __cumreturn(ts):
+        return (ts + 1.0).prod() - 1.0
+
     # check series is indeed a series
     assert isinstance(returns, pd.Series)
     # check that all indices are increasing
@@ -48,24 +48,24 @@ def period_returns(returns, offset=None, today=None):
 
     # preserve the order of the elements in the offset series
     return pd.Series(p_returns).loc[offset.index]
-
-
-def period_prices(prices, offset=None, today=None):
-    """
-    Compute the returns achieve over certain periods
-
-    :param prices: time series of prices
-    :param offset: periods given as a Series, if not specified use standard set of periods
-    :return: Series of periods returns, same order as in the period Series
-    """
-    # check series is indeed a series
-    assert isinstance(prices, pd.Series)
-    # check that all indices are increasing
-    assert prices.index.is_monotonic_increasing
-    # make sure all entries non-negative
-    assert not (prices < 0).any()
-
-    return period_returns(returns=prices.pct_change().dropna(), offset=offset, today=today)
+#
+#
+# def period_prices(prices, offset=None, today=None):
+#     """
+#     Compute the returns achieve over certain periods
+#
+#     :param prices: time series of prices
+#     :param offset: periods given as a Series, if not specified use standard set of periods
+#     :return: Series of periods returns, same order as in the period Series
+#     """
+#     # check series is indeed a series
+#     assert isinstance(prices, pd.Series)
+#     # check that all indices are increasing
+#     assert prices.index.is_monotonic_increasing
+#     # make sure all entries non-negative
+#     assert not (prices < 0).any()
+#
+#     return period_returns(returns=prices.pct_change().dropna(), offset=offset, today=today)
 
 
 

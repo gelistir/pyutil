@@ -4,26 +4,23 @@ from datetime import date
 import numpy as np
 import pandas as pd
 
-from .drawdown import Drawdown
-from .month import monthlytable
-from .periods import period_prices
+#from .drawdown import Drawdown
+#from .month import monthlytable
+from .periods import period_returns
 from .var import VaR
 
 
-# from addict import Dict
-def fromReturns(r, adjust=False):
-    if r is None:
-        return NavSeries(pd.Series({}))
-
-    x = NavSeries((1 + r.dropna()).cumprod())
-    if adjust:
-        return x.adjust(value=1.0)
-
-    return x
-
+# def fromReturns(r, adjust=False):
+#     if r is None:
+#         return NavSeries(pd.Series({}))
+#
+#     x = NavSeries((1 + r.dropna()).cumprod())
+#     if adjust:
+#         return x.adjust(value=1.0)
+#
+#     return x
 
 def fromNav(ts, adjust=False):
-    #todo: ts is None
     if ts is None:
         return NavSeries(pd.Series({}))
 
@@ -79,9 +76,9 @@ class NavSeries(pd.Series):
     def truncate(self, before=None, after=None, adjust=False):
         return fromNav(super().truncate(before=before, after=after), adjust=adjust)
 
-    @property
-    def monthlytable(self) -> pd.DataFrame:
-        return monthlytable(self)
+    #@property
+    #def monthlytable(self) -> pd.DataFrame:
+    #    return monthlytable(self)
 
     @property
     def returns(self) -> pd.Series:
@@ -121,9 +118,9 @@ class NavSeries(pd.Series):
         periods = periods or self.periods_per_year
         return periods * (self.__gmean(self.returns + 1.0) - 1.0) - r_f
 
-    @property
-    def drawdown(self) -> pd.Series:
-        return Drawdown(self).drawdown
+    #@property
+    #def drawdown(self) -> pd.Series:
+    #    return Drawdown(self).drawdown
 
     def sortino_ratio(self, periods=None, r_f=0):
         periods = periods or self.periods_per_year
@@ -191,14 +188,14 @@ class NavSeries(pd.Series):
     def mtd_series(self) -> pd.Series:
         return self.__mtd(self.returns, today=self.index[-1]).sort_index(ascending=False)
 
-    def recent(self, n=15) -> pd.Series:
-        return self.returns.tail(n).dropna()
+    #def recent(self, n=15) -> pd.Series:
+    #    return self.returns.tail(n).dropna()
 
-    def var(self, alpha=0.95):
-        return VaR(series=self, alpha=alpha).var
+    #def var(self, alpha=0.95):
+    #    return VaR(series=self, alpha=alpha).var
 
-    def cvar(self, alpha=0.95):
-        return VaR(series=self, alpha=alpha).cvar
+    #def cvar(self, alpha=0.95):
+    #    return VaR(series=self, alpha=alpha).cvar
 
     def summary(self, alpha=0.95, periods=None, r_f=0):
         periods = periods or self.periods_per_year
@@ -214,8 +211,8 @@ class NavSeries(pd.Series):
         d["Annua Volatility"] = 100 * self.annualized_volatility(periods=periods)
         d["Annua Sharpe Ratio (r_f = {0})".format(r_f)] = self.sharpe_ratio(periods=periods, r_f=r_f)
 
-        dd = self.drawdown
-        d["Max Drawdown"] = 100 * dd.max()
+        #dd = self.drawdown
+        #d["Max Drawdown"] = 100 * dd.max()
         d["Max % return"] = 100 * self.returns.max()
         d["Min % return"] = 100 * self.returns.min()
 
@@ -224,7 +221,7 @@ class NavSeries(pd.Series):
 
         d["Current Nav"] = self.tail(1).values[0]
         d["Max Nav"] = self.max()
-        d["Current Drawdown"] = 100 * dd[dd.index[-1]]
+        #d["Current Drawdown"] = 100 * dd[dd.index[-1]]
 
         d["Calmar Ratio (3Y)"] = self.calmar_ratio(periods=periods, r_f=r_f)
 
@@ -263,13 +260,13 @@ class NavSeries(pd.Series):
 
 
 
-    def ewm_volatility(self, com=50, min_periods=50, periods=None):
-        periods = periods or self.periods_per_year
-        return np.sqrt(periods) * self.returns.ewm(com=com, min_periods=min_periods).std(bias=False)
+    #def ewm_volatility(self, com=50, min_periods=50, periods=None):
+    #    periods = periods or self.periods_per_year
+    #    return np.sqrt(periods) * self.returns.ewm(com=com, min_periods=min_periods).std(bias=False)
 
-    @property
-    def period_returns(self):
-        return period_prices(self.series, today=self.index[-1])
+    #@property
+    #def period_returns(self):
+    #    return period_returns(self.series.pct_change(), today=self.index[-1])
 
     def adjust(self, value=100.0):
         if self.empty:
@@ -290,14 +287,14 @@ class NavSeries(pd.Series):
     def weekly(self):
         return fromNav(self.resample("W"))
 
-    def fee(self, daily_fee_basis_pts=0.5, adjust=False):
-        ret = self.pct_change().fillna(0.0) - daily_fee_basis_pts / 10000.0
-        return fromReturns(ret, adjust=adjust)
-        # return fromNav((ret + 1.0).cumprod())
+    # def fee(self, daily_fee_basis_pts=0.5, adjust=False):
+    #     ret = self.pct_change().fillna(0.0) - daily_fee_basis_pts / 10000.0
+    #     return fromReturns(ret, adjust=adjust)
+    #     # return fromNav((ret + 1.0).cumprod())
 
-    @property
-    def drawdown_periods(self):
-        return Drawdown(self).periods
+    #@property
+    #def drawdown_periods(self):
+    #    return Drawdown(self).periods
 
     def resample(self, rule="M"):
         # refactor NAV at the end but keep the first element. Important for return computations!
@@ -309,10 +306,10 @@ class NavSeries(pd.Series):
         a.index = a.index[:-1].append(pd.DatetimeIndex([self.index[-1]]))
         return NavSeries(a)
 
-    def to_frame(self, name=""):
-        frame = self.series.to_frame("{name}nav".format(name=name))
-        frame["{name}drawdown".format(name=name)] = self.drawdown
-        return frame
+    #def to_frame(self, name=""):
+    #    frame = self.series.to_frame("{name}nav".format(name=name))
+    #    frame["{name}drawdown".format(name=name)] = self.drawdown
+    #    return frame
 
     #def resample(self, rule="W"):
     #    # little resample which keeps the first point

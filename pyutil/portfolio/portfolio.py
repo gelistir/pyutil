@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-from ..performance.summary import fromReturns, NavSeries
+from ..performance.return_series import ReturnSeries
 from ..performance.periods import period_returns, periods
 from pyutil.timeseries.merge import merge as merge_in_t
 
@@ -233,12 +233,12 @@ class Portfolio(object):
         return self.prices.pct_change()
 
     @property
-    def nav(self) -> NavSeries:
+    def nav(self) -> ReturnSeries:
         """
         nav series
         :return:
         """
-        return fromReturns(self.weighted_returns.sum(axis=1))
+        return ReturnSeries(self.weighted_returns.sum(axis=1)).nav
 
     @property
     def weighted_returns(self):
@@ -375,6 +375,7 @@ class Portfolio(object):
 
     def to_frame(self, name=""):
         frame = self.nav.to_frame(name)
+        frame = ReturnSeries(self.nav.pct_change()).to_frame(name)
         frame["{n}leverage".format(n=name)] = self.leverage
         frame["{n}cash".format(n=name)] = self.cash
         return frame
