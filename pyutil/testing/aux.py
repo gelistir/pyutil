@@ -1,5 +1,5 @@
-import random
-import string
+#import random
+#import string
 
 
 def post(client, data, url):
@@ -14,7 +14,7 @@ def get(client, url):
     return response.data
 
 
-def random_string(n):
-    letters = string.ascii_lowercase
-    return ''.join(random.choice(letters) for i in range(n))
+#def random_string(n):
+#    letters = string.ascii_lowercase
+#    return ''.join(random.choice(letters) for i in range(n))
 

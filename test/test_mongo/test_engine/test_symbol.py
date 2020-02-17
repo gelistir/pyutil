@@ -8,8 +8,7 @@ from test.config import mongo
 def test_mock(mongo):
     with mongo as m:
         # Create a new page and add tags
-        group = Group(name="US Equity")
-        group.save()
+        group = Group(name="US Equity").save()
 
         symbol = Symbol(name='IBM US Equity', group=group, internal="IBM")
         # you can add on the dictionary on the fly
@@ -32,8 +31,7 @@ def test_mock(mongo):
 def test_collection(mongo):
     with mongo as m:
         # Create a new page and add tags
-        group = Group(name="US Equity")
-        group.save()
+        group = Group(name="US Equity").save()
 
         symbol = Symbol(name='XXX', group=group)
         symbol.tags = ['mongodb', 'mongoengine']

@@ -1,3 +1,4 @@
+import json
 from io import StringIO
 
 import pandas as pd
@@ -20,6 +21,16 @@ def test_respond_frame_json(nav):
     x = nav.to_frame(name="Maffay")
     response = respond_pandas(x, "json")
     pdt.assert_frame_equal(pd.read_json(response.data, typ="frame", orient="table"), x)
+
+def test_respond_json():
+    x = ["A", "B"]
+    response = respond_pandas(x, "json")
+    #print(response.data)
+    assert json.loads(response.data) == ["A", "B"]
+
+    #assert False
+
+    #pdt.assert_frame_equal((response.data, typ="frame", orient="table"), x)
 
 
 def test_respond_frame_csv(nav):
