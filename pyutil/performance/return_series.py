@@ -148,8 +148,6 @@ def from_nav(nav):
     return ReturnSeries(nav.dropna().pct_change().fillna(0.0))
 
 
-
-
 class ReturnSeries(pd.Series):
     def __init__(self, *args, **kwargs):
         super(ReturnSeries, self).__init__(*args, **kwargs)
@@ -162,9 +160,9 @@ class ReturnSeries(pd.Series):
             # check that all indices are increasing
             assert self.index.is_monotonic_increasing
 
-    @property
-    def series(self) -> pd.Series:
-        return pd.Series({t: v for t, v in self.items()})
+    #@property
+    #def series(self) -> pd.Series:
+    #    return pd.Series({t: v for t, v in self.items()})
 
     @property
     def nav(self):
@@ -222,18 +220,6 @@ class ReturnSeries(pd.Series):
 
     def recent(self, n=15) -> pd.Series:
         return self.tail(n).dropna()
-
-    # @property
-    # def ytd_series(self) -> pd.Series:
-    #     """
-    #     Extract the series of monthly returns in the current year
-    #     :return:
-    #     """
-    #     return self.__ytd(self.monthly_returns, today=self.index[-1]).sort_index(ascending=False)
-
-    #@property
-    #def mtd_series(self) -> pd.Series:
-    #     return self.tail_month.sort_index(ascending=False)
 
     def var(self, alpha=0.95):
         return VaR(rseries=self, alpha=alpha).var
@@ -319,7 +305,6 @@ class ReturnSeries(pd.Series):
         return ReturnSeries(x).sortino_ratio(periods=periods, r_f=r_f)
 
     def summary_format(self, alpha=0.95, periods=None, r_f=0):
-        print("Hello")
         perf = self.summary(alpha=alpha, periods=periods, r_f=r_f)
         print(perf)
 
@@ -339,10 +324,6 @@ class ReturnSeries(pd.Series):
         return perf
 
 
-    # @property
-    # def mtd(self):
-    #     from pyutil.timeseries.aux import mtd as mm
-    #     mm(ts=self)
 
     def summary(self, alpha=0.95, periods=None, r_f=0):
         periods = periods or self.periods_per_year
@@ -358,18 +339,17 @@ class ReturnSeries(pd.Series):
         d["Annua Volatility"] = 100 * self.annualized_volatility(periods=periods)
         d["Annua Sharpe Ratio (r_f = {0})".format(r_f)] = self.sharpe_ratio(periods=periods, r_f=r_f)
 
-        #dd = self.drawdown
-        #d["Max Drawdown"] = 100 * dd.max()
+        dd = self.drawdown
+        d["Max Drawdown"] = 100 * dd.max()
         d["Max % return"] = 100 * self.max()
         d["Min % return"] = 100 * self.min()
 
-        print(d)
-        # d["MTD"] = 100 * self.mtd
-        # d["YTD"] = 100 * self.ytd
+        d["MTD"] = 100 * ((self.tail_month + 1.0).prod() - 1.0)
+        d["YTD"] = 100 * ((self.tail_year + 1.0).prod() - 1.0)
         #
         # d["Current Nav"] = self.tail(1).values[0]
         # d["Max Nav"] = self.max()
-        # #d["Current Drawdown"] = 100 * dd[dd.index[-1]]
+        d["Current Drawdown"] = 100 * dd[dd.index[-1]]
         #
         d["Calmar Ratio (3Y)"] = self.calmar_ratio(periods=periods, r_f=r_f)
         #
