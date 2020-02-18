@@ -4,7 +4,7 @@ import pytest
 
 import pandas.util.testing as pdt
 
-from pyutil.performance.return_series import from_nav
+from pyutil.performance.return_series import from_nav, from_returns
 from test.config import read
 
 
@@ -23,6 +23,15 @@ def test_from_nav():
     nav = pd.Series(index=[t1, t2, t3], data=[10.0, 10.5, 9.9])
     x = from_nav(nav)
     pdt.assert_series_equal(x.nav, nav)
+
+
+def test_from_returns():
+    t1 = pd.Timestamp("2010-10-21")
+    t2 = pd.Timestamp("2010-10-22")
+    t3 = pd.Timestamp("2010-10-23")
+    r = pd.Series(index=[t1, t2, t3], data=[0.1, -0.2, 0.1])
+    x = from_returns(r)
+    assert x.nav.loc[t1] == 1.10
 
 
 def test_sharpe(ts):

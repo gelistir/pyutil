@@ -4,14 +4,20 @@ from datetime import date
 import numpy as np
 import pandas as pd
 
-from .drawdown import drawdown
-from .month import monthlytable
-from .periods import period_returns
-from .var import VaR
+from pyutil.performance.drawdown import drawdown
+from pyutil.performance.month import monthlytable
+from pyutil.performance.periods import period_returns
+from pyutil.performance.var import VaR
 
 
 def from_nav(nav):
     return _ReturnSeries(last_nav=nav.dropna().values[-1], series=nav.dropna().pct_change().fillna(0.0))
+
+
+def from_returns(returns):
+    r = returns.dropna()
+    nav = (r + 1.0).prod()
+    return _ReturnSeries(last_nav=nav, series=r)
 
 
 class _ReturnSeries(pd.Series):
@@ -214,13 +220,19 @@ class _ReturnSeries(pd.Series):
 
         x = pd.Series(d)
         x.index.name = "Performance number"
-        print(x)
+        #print(x)
         return x
 
 # if __name__ == '__main__':
 #     t1 = pd.Timestamp("2010-10-21")
 #     t2 = pd.Timestamp("2010-10-22")
 #     t3 = pd.Timestamp("2010-10-23")
+#
+#     r = pd.Series(index=[t1,t2,t3], data=[0.1, -0.2, 0.1])
+#     x = from_returns(r)
+#     print(x.nav)
+#     print(x)
+
 #
 #
 #     nav = pd.Series(index=[t1, t2, t3], data=[100, 102, 99])
