@@ -197,7 +197,7 @@ class _ReturnSeries(pd.Series):
         d["MTD"] = 100 * ((self.tail_month + 1.0).prod() - 1.0)
         d["YTD"] = 100 * ((self.tail_year + 1.0).prod() - 1.0)
         #
-        d["Current Nav"] = self.nav.values[0]
+        d["Current Nav"] = self.nav.values[-1]
         d["Max Nav"] = self.nav.max()
         d["Current Drawdown"] = 100 * dd[dd.index[-1]]
         #
