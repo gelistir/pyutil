@@ -1,7 +1,7 @@
 #!make
 #PROJECT_VERSION := $(shell python setup.py --version)
 
-SHELL := /bin/bash
+#SHELL := /bin/bash
 #PACKAGE := pyutil
 
 # needed to get the ${PORT} environment variable
@@ -12,7 +12,7 @@ include pyutil/__init__.py
 PROJECT_VERSION := ${__version__}
 PACKAGE := ${__title__}
 
-.PHONY: help build test teamcity jupyter graph doc tag clean
+.PHONY: help build test teamcity graph doc tag clean
 
 
 .DEFAULT: help
@@ -24,8 +24,8 @@ help:
 	@echo "       Build the docker image for testing and run them."
 	@echo "make teamcity"
 	@echo "       Run tests, build a dependency graph and construct the documentation."
-	@echo "make jupyter"
-	@echo "       Start the Jupyter server."
+	#@echo "make jupyter"
+	#@echo "       Start the Jupyter server."
 	@echo "make graph"
 	@echo "       Build a dependency graph."
 	@echo "make doc"
@@ -73,5 +73,5 @@ tag: test
 	git push --tags
 
 
-clean-notebooks:
-	docker-compose exec jupyter jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace **/*.ipynb
+#clean-notebooks:
+#	docker-compose exec jupyter jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace **/*.ipynb

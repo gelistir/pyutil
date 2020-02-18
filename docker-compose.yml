@@ -7,8 +7,6 @@ services:
       target: builder
     extra_hosts:
       - quantsrv:192.168.100.15
-    env_file:
-      - .config
 
   jupyter:
     build:
@@ -18,8 +16,6 @@ services:
       - ./binder/files:${WORK}
     extra_hosts:
       - quantsrv:192.168.100.15
-    env_file:
-      - .config
     ports:
       - ${PORT}:8888
 
