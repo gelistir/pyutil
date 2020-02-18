@@ -19,3 +19,4 @@ build
 file.db
 *.ipynb_checkpoints/*
 binder/files/.ipynb_checkpoints
+*checkpoint.ipynb
