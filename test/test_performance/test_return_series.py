@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pytest
 
 import pandas.util.testing as pdt
@@ -21,9 +22,7 @@ def test_from_nav():
     t3 = pd.Timestamp("2010-10-23")
     nav = pd.Series(index=[t1, t2, t3], data=[10.0, 10.5, 9.9])
     x = from_nav(nav)
-    pdt.assert_series_equal(10*x.nav, nav)
-
-
+    pdt.assert_series_equal(x.nav, nav)
 
 
 def test_sharpe(ts):
@@ -77,21 +76,31 @@ def test_sortino(ts):
 def test_calmar(ts):
     assert ts.calmar_ratio() == pytest.approx(0.22218777678862034, 1e-10)
 
+
 def test_tail_month(ts):
     assert ts.tail_month.index[0] == pd.Timestamp("2015-04-01")
     pdt.assert_series_equal(ts.tail_month.resample("M"), pd.Series(index=[pd.Timestamp("2015-04-30")], data=0.014133604922211163), check_exact=False)
+
 
 def test_tail_year(ts):
     assert ts.tail_year.index[0] == pd.Timestamp("2015-01-01")
     assert ts.tail_year.resample("M").size == 4
 
-#@pytest.fixture()
-#def nav(ts):
-#    return fromNav(ts, adjust=True)
+
+def test_periods_per_year(ts):
+    assert ts.periods_per_year == 261
+    x = pd.Series(index=[1], data=[5.0])
+    y = from_nav(nav=x)
+    assert y.periods_per_year == 256
 
 
-#def test_annual(ts):
-#    print(ts.mtd(today=ts.index[-1]))
-#    print(ts.ytd(today=ts.index[-1]).monthly_returns)
-#    print(ts.ewm_volatility(com=20))
-#    assert False
+def test_to_frame(ts):
+    frame = ts.to_frame(name="Maffay")
+    assert "Maffay-nav" in frame.keys()
+    assert "Maffay-drawdown" in frame.keys()
+
+
+def test_sortino_no_negative():
+    nav = pd.Series(index=[pd.Timestamp("2010-01-13"),pd.Timestamp("2010-01-15"),pd.Timestamp("2010-01-18")], data=[4.0, 5.0, 6.0])
+    assert not np.isfinite(from_nav(nav).sortino_ratio())
+

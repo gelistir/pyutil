@@ -63,7 +63,7 @@ def test_recent(portfolio, navs):
 
 def test_performance(navs):
     frame = ppa.performance(navs)
-    assert frame["test"]["Kurtosis"] == "6.98"
+    assert frame["test"]["Kurtosis"] == "7.00"
     assert set(frame.keys()) == {"test"}
 
 

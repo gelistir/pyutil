@@ -76,10 +76,7 @@ def sector(portfolios, symbolmap, total=False) -> pd.DataFrame:
 
 def performance(frame, **kwargs) -> pd.DataFrame:
     d = {name: __attempt(f=lambda x: from_nav(x).summary_format(**kwargs), argument=series) for name, series in frame.items()}
-    #d.loc["Current NAV"] = frame.apply(lambda x: x.dropna().values[-1])
-
     d = pd.DataFrame(d).dropna(axis=1, how="all")
-    d.loc["Current NAV"] = frame.apply(lambda x: x.dropna().values[-1])
     print(d)
     return d
 

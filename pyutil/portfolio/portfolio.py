@@ -386,7 +386,7 @@ class Portfolio(object):
 
     def to_frame(self, name=""):
         frame = self.nav.to_frame("{n}-nav".format(n=name))
-        frame["{n}-drawdown".format(n=name)] = drawdown(rseries=self.returns)
+        frame["{n}-drawdown".format(n=name)] = drawdown(series=self.returns)
         frame["{n}-leverage".format(n=name)] = self.leverage
         frame["{n}-cash".format(n=name)] = self.cash
         return frame
