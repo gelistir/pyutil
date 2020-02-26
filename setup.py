@@ -8,7 +8,7 @@ with open('README.md') as f:
     long_description = f.read()
 
 setup(
-    name='pyutil',
+    name='lob-pyutil',
     long_description=long_description,
     long_description_content_type='text/markdown',
     version=version,
