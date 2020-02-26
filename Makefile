@@ -75,3 +75,7 @@ tag: test
 
 #clean-notebooks:
 #	docker-compose exec jupyter jupyter nbconvert --ClearOutputPreprocessor.enabled=True --inplace **/*.ipynb
+pypi: tag
+	python setup.py sdist
+	twine check dist/*
+	twine upload dist/*
