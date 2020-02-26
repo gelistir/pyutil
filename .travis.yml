@@ -1,6 +1,7 @@
 # Use Ubuntu 'trusty' distribution
 sudo: required
 dist: trusty
+language: python
 
 env:
   - DOCKER_COMPOSE_VERSION=1.23.2
