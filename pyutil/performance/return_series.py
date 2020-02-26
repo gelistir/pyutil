@@ -220,33 +220,4 @@ class _ReturnSeries(pd.Series):
 
         x = pd.Series(d)
         x.index.name = "Performance number"
-        #print(x)
         return x
-
-# if __name__ == '__main__':
-#     t1 = pd.Timestamp("2010-10-21")
-#     t2 = pd.Timestamp("2010-10-22")
-#     t3 = pd.Timestamp("2010-10-23")
-#
-#     r = pd.Series(index=[t1,t2,t3], data=[0.1, -0.2, 0.1])
-#     x = from_returns(r)
-#     print(x.nav)
-#     print(x)
-
-#
-#
-#     nav = pd.Series(index=[t1, t2, t3], data=[100, 102, 99])
-#     x = from_nav(nav)
-#     print(x.nav)
-#     print(x)
-#     print(x.monthly_returns)
-#     print(x.annual_returns)
-
-#     xxx = ReturnSeries(r)
-#     print(xxx.drawdown)
-#     print(xxx.monthlytable)
-#     print(xxx.to_frame())
-#     print(xxx.annualized_volatility(periods=256))
-#     print(xxx.monthly_returns)
-#     print(xxx.tail_month)
-#     print(xxx.tail_year)
