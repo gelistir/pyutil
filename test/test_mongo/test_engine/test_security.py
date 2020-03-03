@@ -21,10 +21,10 @@ def security(ts):
     #Security.collection = create_collection()
     #Security.collection_reference = create_collection()
 
-    s = Security(name="100", fullname="Peter Maffay")
+    s = Security(name="100", fullname="Peter Maffay", price=ts)
     #Security.mongo_database = mongo
     s.reference["Bloomberg Ticker"] = "IBM US Equity"
-    s.price = ts
+    #s.price = ts
     return s
 
 
@@ -42,8 +42,8 @@ def test_write_volatility(mongo, ts, security):
         c = Currency(name="USD").save()
         security.save()
 
-        sv = SecurityVolatility(currency=c, security=security)
-        sv.volatility = ts
+        sv = SecurityVolatility(currency=c, security=security, volatility=ts)
+        #sv.volatility = ts
         #security.series.write(key="VOLATILITY", data=ts, currency="USD")
         #x = security.series["VOLATILITY"]
         pdt.assert_series_equal(sv.volatility, ts, check_names=False)
@@ -51,11 +51,11 @@ def test_write_volatility(mongo, ts, security):
 def test_prices(security, ts):
     s0 = security
 
-    s1 = Security(name="A")
-    s1.price = ts
+    s1 = Security(name="A", price=ts)
+    #s1.price = ts
 
-    s2 = Security(name="B")
-    s2.price = 2*ts
+    s2 = Security(name="B", price=2*ts)
+    #s2.price = 2*ts
 
     f = Security.pandas_frame(products=[s0, s1, s2], item="price")
     pdt.assert_series_equal(f["A"], ts, check_names=False)

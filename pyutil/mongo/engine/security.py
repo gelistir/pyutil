@@ -18,10 +18,10 @@ class Security(PandasDocument):
 
 
 class SecurityVolatility(PandasDocument):
-    def __init__(self, security, currency):
-        super().__init__(name=security.name + "_" + currency.name)
-        self.security = security
-        self.currency = currency
+    #def __init__(self, security, currency):
+    #    super().__init__(name=security.name + "_" + currency.name)
+    #    self.security = security
+    #    self.currency = currency
 
     security = ReferenceField(Security)
     currency = ReferenceField(Currency)

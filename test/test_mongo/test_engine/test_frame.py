@@ -5,12 +5,6 @@ from test.config import portfolio
 
 
 def test_frame(portfolio):
-    f = Frame(name="Portfolio")
-    f.prices = portfolio.prices
-    f.weights = portfolio.weights
-
-    # You don't need to save the data...
-    # f.save()
-
+    f = Frame(name="Portfolio", prices=portfolio.prices, weights=portfolio.weights)
     x = Portfolio(prices=f.prices, weights=f.weights)
     assert similar(x, portfolio)

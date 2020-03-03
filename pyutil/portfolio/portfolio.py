@@ -239,7 +239,7 @@ class Portfolio(object):
         nav series
         :return:
         """
-        return (self.weighted_returns.sum(axis=1) + 1.0).cumprod()
+        return (self.returns + 1.0).cumprod()
 
     @property
     def returns(self) -> pd.Series:

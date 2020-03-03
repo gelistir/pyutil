@@ -94,10 +94,10 @@ def test_position():
 def test_returns(ts1, ts2, ts3):
     #Product.mongo_database = mongo
 
-    o = Owner(name="222")
+    o = Owner(name="222", returns=ts1)
     #assert Owner.mongo_database
 
-    o.returns = ts1 #.write(data=ts1, key="RETURN")
+    #o.returns = ts1 #.write(data=ts1, key="RETURN")
     pdt.assert_series_equal(ts1, o.returns)
 
     o.returns = merge(new=ts2, old=ts1)
