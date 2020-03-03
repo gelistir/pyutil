@@ -11,7 +11,6 @@ env
 *.svg
 artifacts
 
-pyutil.egg-info
 dist
 build
 
@@ -21,3 +20,4 @@ file.db
 binder/files/.ipynb_checkpoints
 *checkpoint.ipynb
 
+**.egg-info
