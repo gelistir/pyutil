@@ -15,5 +15,15 @@ RUN conda install -y -c conda-forge nomkl pandas=0.25.3 requests=2.22.0 cvxpy mo
     pip install --no-cache-dir /tmp/pyutil && \
     rm -rf /tmp/pyutil
 
+
+# ----------------------------------------------------------------------------------------
+FROM jupyter as jupyterlab
+
+RUN conda install -y -c conda-forge jupyterlab && \
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager && \
+    jupyter labextension install beakerx-jupyterlab && \
+    jupyter labextension install @jupyterlab/celltags && \
+    jupyter lab build
+
 # hardcoded parameters!? see https://github.com/moby/moby/issues/35018
 COPY --chown=jovyan:users /binder/files $HOME/work

@@ -11,6 +11,7 @@
 !test
 !pyutil
 !setup.py
+!README.md
 
 
 **/__pycache__
