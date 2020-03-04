@@ -23,6 +23,7 @@ def from_returns(returns):
 def performance(nav, alpha=0.95, periods=None):
     return from_nav(nav).summary(alpha=alpha, periods=periods)
 
+
 class _ReturnSeries(pd.Series):
     def __init__(self, last_nav, series):
         super(_ReturnSeries, self).__init__(series)
