@@ -4,7 +4,7 @@ import pandas as pd
 
 from pyutil.performance.drawdown import drawdown
 from pyutil.performance.month import monthlytable
-from pyutil.portfolio.analysis import performance
+from pyutil.performance.return_series import performance
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
