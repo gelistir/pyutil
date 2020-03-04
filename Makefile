@@ -37,7 +37,7 @@ help:
 
 build:
 	#docker-compose build jupyter
-	docker-compose build pyutil
+	docker-compose build --no-cache pyutil
 
 test: #clean
 	mkdir -p artifacts
