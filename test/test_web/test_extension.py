@@ -25,15 +25,18 @@ def test_flask_extension():
         maffay.init_app(app)
         assert maffay.ext == "MAFFAY"
 
+
 def test_init_1():
     app = Flask(__name__)
     app.config["PETER"] = "MAFFAY"
     m = Maffay(name="MAFFAY", app=app)
     assert isinstance(app.extensions["MAFFAY"][m], dict)
 
+
 def test_init_2():
     with pytest.raises(Exception):
         Maffay(name="MAFFAY", app="APP")
+
 
 def test_init_3():
     with pytest.raises(Exception):

@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 
-def monthlytable(r) -> pd.DataFrame:
+def monthlytable(returns) -> pd.DataFrame:
     """
     Get a table of monthly returns
 
@@ -18,7 +18,7 @@ def monthlytable(r) -> pd.DataFrame:
     # r = nav.pct_change().dropna()
     # Works better in the first month
     # Compute all the intramonth-returns, instead of reapplying some monthly resampling of the NAV
-    return_monthly = r.groupby([r.index.year, r.index.month]).apply(_cumulate)
+    return_monthly = returns.groupby([returns.index.year, returns.index.month]).apply(_cumulate)
     frame = return_monthly.unstack(level=1).rename(columns=lambda x: calendar.month_abbr[x])
     ytd = frame.apply(_cumulate, axis=1)
     frame["STDev"] = np.sqrt(12) * frame.std(axis=1)

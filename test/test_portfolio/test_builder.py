@@ -20,11 +20,13 @@ def test_builder():
     assert last_index(portfolio.prices) == 2
     assert str(portfolio) == "Portfolio with assets: ['B', 'A']"
 
+
 def test_rename():
     prices = pd.DataFrame(columns=["B", "A"], index=[1, 2], data=100)
     portfolio = Portfolio(prices=prices)
     portfolio = portfolio.rename(names={"A": "AA", "B": "BB"})
     assert str(portfolio) == "Portfolio with assets: ['BB', 'AA']"
+
 
 def test_forward():
     prices = pd.DataFrame(columns=["A", "B"], index=[1,2,3], data=[[100,120],[110, 110],[130,120]])
@@ -39,11 +41,13 @@ def test_forward():
 
     assert portfolio.weights["A"][3] == pytest.approx(0.56521739130434789, 1e-5)
 
+
 def test_empty():
     portfolio = Portfolio(prices = pd.DataFrame({}))
     #self.assertIsNone(last_index(portfolio.prices))
     assert not last_index(portfolio.prices)
     assert portfolio.empty
+
 
 def test_merge():
     prices1 = pd.DataFrame(columns=["B", "A"], index=[1, 2], data=100)

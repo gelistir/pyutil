@@ -21,12 +21,3 @@ def test_period_returns(returns):
     x = 100*period_returns(returns=returns, offset=p)
     assert x["Three Years"] == pytest.approx(1.1645579858904798, 1e-10)
 
-
-# def test_periods_more(prices):
-#     y = period_prices(prices, offset=periods(today=prices.index[-1]))
-#     pdt.assert_series_equal(y, read("periods.csv", header=None, squeeze=True, index_col=0), check_names=False)
-#
-#
-# def test_period_returns_without_periods(prices):
-#     x = 100*period_prices(prices, today=pd.Timestamp("2015-05-01"))
-#     assert x["Three Years"] == pytest.approx(1.1645579858904798 , 1e-10)

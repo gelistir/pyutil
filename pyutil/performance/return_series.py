@@ -100,10 +100,10 @@ class _ReturnSeries(pd.Series):
         return self.tail(n).dropna()
 
     def var(self, alpha=0.95):
-        return VaR(series=self, alpha=alpha).var
+        return VaR(returns=self, alpha=alpha).var
 
     def cvar(self, alpha=0.95):
-        return VaR(series=self, alpha=alpha).cvar
+        return VaR(returns=self, alpha=alpha).cvar
 
     def truncate(self, before=None, after=None, axis=None, copy=True):
         r = super().truncate(before=before, after=after, axis=axis, copy=copy)

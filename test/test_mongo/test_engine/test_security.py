@@ -17,9 +17,6 @@ def ts():
 
 @pytest.fixture()
 def security(ts):
-    # point to a new mongo collection... with a random name...
-    #Security.collection = create_collection()
-    #Security.collection_reference = create_collection()
 
     s = Security(name="100", fullname="Peter Maffay", price=ts)
     #Security.mongo_database = mongo

@@ -16,11 +16,6 @@ def test_drawdown(ts):
     pdt.assert_series_equal(drawdown(ts), read("drawdown.csv", squeeze=True, parse_dates=True, header=None, index_col=0), check_names=False)
 
 
-#def test_periods(ts):
-#    x = Drawdown(ts).periods
-#    assert x[pd.Timestamp("2014-03-07")] == pd.Timedelta(days=66)
-
-
 def test_empty():
     x = pd.Series({})
     pdt.assert_series_equal(Drawdown(x).drawdown, pd.Series({}))

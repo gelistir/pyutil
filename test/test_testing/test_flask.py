@@ -1,4 +1,5 @@
 import pytest
+import io
 from flask import Flask, request
 from pyutil.testing.aux import get, post
 
@@ -23,8 +24,10 @@ def client():
 
 
 def test_get(client):
-    get(client, url="/hello")
+    data = get(client, url="/hello")
+    assert data.decode() == "Hello World!"
 
 
 def test_post(client):
-    post(client, url="/post", data={})
+    data = post(client, url="/post", data={})
+    assert data.decode() == "Hello Thomas!"

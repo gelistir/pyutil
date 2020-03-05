@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def var(series, alpha=0.99):
     return VaR(series, alpha).var
 
@@ -9,8 +10,8 @@ def cvar(series, alpha=0.99):
 
 
 class VaR(object):
-    def __init__(self, series, alpha=0.99):
-        self.__series = series.dropna()
+    def __init__(self, returns, alpha=0.99):
+        self.__series = returns.dropna()
         self.__alpha = alpha
 
     @property
