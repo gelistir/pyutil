@@ -2,3 +2,4 @@ pymongo==3.9.0
 mongoengine==0.19.1
 
 flask==1.1.1
+pyyaml

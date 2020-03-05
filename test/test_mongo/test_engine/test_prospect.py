@@ -1,3 +1,5 @@
+import pytest
+
 from pyutil.mongo.engine.prospect import Prospect
 from test.config import read
 
@@ -10,5 +12,12 @@ def test_prospect():
     print(c1.position)
     print(c1.prices)
 
+    with pytest.raises(AttributeError):
+        print(c1.wurst)
+
     c1.portfolio(cash=0)
 
+    with pytest.raises(AssertionError):
+        Prospect(name="Peter")
+
+    #assert c2.prices is None

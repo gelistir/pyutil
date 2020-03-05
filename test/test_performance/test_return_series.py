@@ -4,7 +4,7 @@ import pytest
 
 import pandas.util.testing as pdt
 
-from pyutil.performance.return_series import from_nav, from_returns
+from pyutil.performance.return_series import from_nav, from_returns, performance
 from test.config import read
 
 
@@ -113,3 +113,7 @@ def test_sortino_no_negative():
     nav = pd.Series(index=[pd.Timestamp("2010-01-13"),pd.Timestamp("2010-01-15"),pd.Timestamp("2010-01-18")], data=[4.0, 5.0, 6.0])
     assert not np.isfinite(from_nav(nav).sortino_ratio())
 
+
+def test_performance():
+    ts = read("ts.csv", parse_dates=True, squeeze=True, header=None, index_col=0)
+    pdt.assert_series_equal(performance(ts), from_nav(ts).summary())

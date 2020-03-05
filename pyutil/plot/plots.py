@@ -38,14 +38,13 @@ def display_monthtable(nav):
 
 
 def display_performance(nav):
-    assert isinstance(nav, pd.DataFrame)
     perf = nav.apply(performance)
     perf.drop(index=["First at", "Last at"], inplace=True)
     perf = perf.applymap(lambda x: float(x))
     return pandas_display(frame=perf)
 
 
-def pandas_display(frame, columns=None, file=None):
+def pandas_display(frame, columns=None):
     display = bx.TableDisplay(frame)
     display.setStringFormatForType(bx.ColumnType.Double, bx.TableDisplayStringFormat.getDecimalFormat(2, 2))
 
@@ -67,29 +66,4 @@ def pandas_display(frame, columns=None, file=None):
                 pass
 
     display.sendModel()
-
-    if file:
-        frame.to_csv(file)
-
     return display
-
-
-# def __filterColumn(display, column, fct=lambda x: np.isnan(float(x)), update=""):
-#     # get the column index of the column
-#     col_index = display.chart.columnNames.index(column)
-#
-#     # loop over all rows
-#     for row in range(len(display.values)):
-#         # if the entry is a NaN?
-#         if fct(display.values[row][col_index]):
-#             # update the cell
-#             display.updateCell(row, column, update)
-#
-#     # send to the model
-#     display.sendModel()
-#     return display
-
-
-if __name__ == '__main__':
-    o = container()
-    print(o)

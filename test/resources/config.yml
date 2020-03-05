@@ -1,0 +1,20 @@
+BLOOMBERG:
+    - CARMPAT FP Equity
+    - NAH2VII FP Equity
+    - SPX Index
+    - IBM US Equity
+    - NH2ADIC FP Equity
+    - NH2MBHR FP Equity
+    - NH2ADRC FP Equity
+    - NH2MBIE FP Equity
+    - H2MEHRC FP Equity
+
+
+Clients:
+    tschm:
+        Multibonds: {Ticker: NH2MBHR FP Equity, Position: 200}
+        Multiequities: {Ticker: H2MEHRC FP Equity, Position: 300}
+    hans:
+        IBM: {Ticker: IBM US Equity, Position: 300}
+        SPX: {Ticker: SPX Index, Position: 400}
+
