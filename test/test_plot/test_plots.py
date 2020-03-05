@@ -17,6 +17,7 @@ def test_container():
     a = container()
     assert a
 
+
 def test_nav_curve(ts):
     x = nav_curve(ts.tail(5))
     assert x.model["log_x"] == False
@@ -31,6 +32,7 @@ def test_month_table(ts):
 def test_display_performance(ts):
     x = display_performance(ts.to_frame(name="NAV"))
     assert x.model
+
 
 def test_frames():
     f = pd.DataFrame(index=["A","B"], columns=["C1", "C2"], data=[["A","B"],["C","D"]])
