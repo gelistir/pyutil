@@ -19,8 +19,8 @@ def container():
     return container
 
 
-def nav_curve(nav, name=None, showLegend=True):
-    p = bx.TimePlot(xLabel="Time", yLabel="NAV", title=name, showLegend=showLegend)
+def nav_curve(nav, name=None, showLegend=True, **kwargs):
+    p = bx.TimePlot(xLabel="Time", yLabel="NAV", title=name, showLegend=showLegend, **kwargs)
 
     p.getYAxes()[0].setBound(0, nav.max() + 0.1)
     y_axis = bx.YAxis(label="Drawdown", upperMargin=2)
@@ -34,16 +34,7 @@ def nav_curve(nav, name=None, showLegend=True):
 
 
 def display_monthtable(nav):
-    return pandas_display(frame=100 * monthlytable(nav))
-
-    # display = bx.TableDisplay(100 * monthlytable(nav))
-    # dbl_format = bx.TableDisplayStringFormat.getDecimalFormat(2, 2)
-
-    # for column in display.chart.columnNames:
-    #    display.setStringFormatForColumn(column, dbl_format)
-    #    __filterColumn(display, column)
-
-    # return display
+    return pandas_display(frame=100 * monthlytable(nav.pct_change().fillna(0.0)))
 
 
 def display_performance(nav):
@@ -52,11 +43,6 @@ def display_performance(nav):
     perf.drop(index=["First at", "Last at"], inplace=True)
     perf = perf.applymap(lambda x: float(x))
     return pandas_display(frame=perf)
-
-    #display = bx.TableDisplay(perf)
-    #dbl_format = bx.TableDisplayStringFormat.getDecimalFormat(0, 2)
-    #display.setStringFormatForType(bx.ColumnType.Double, dbl_format)
-    #return display
 
 
 def pandas_display(frame, columns=None, file=None):
@@ -88,20 +74,20 @@ def pandas_display(frame, columns=None, file=None):
     return display
 
 
-def __filterColumn(display, column, fct=lambda x: np.isnan(float(x)), update=""):
-    # get the column index of the column
-    col_index = display.chart.columnNames.index(column)
-
-    # loop over all rows
-    for row in range(len(display.values)):
-        # if the entry is a NaN?
-        if fct(display.values[row][col_index]):
-            # update the cell
-            display.updateCell(row, column, update)
-
-    # send to the model
-    display.sendModel()
-    return display
+# def __filterColumn(display, column, fct=lambda x: np.isnan(float(x)), update=""):
+#     # get the column index of the column
+#     col_index = display.chart.columnNames.index(column)
+#
+#     # loop over all rows
+#     for row in range(len(display.values)):
+#         # if the entry is a NaN?
+#         if fct(display.values[row][col_index]):
+#             # update the cell
+#             display.updateCell(row, column, update)
+#
+#     # send to the model
+#     display.sendModel()
+#     return display
 
 
 if __name__ == '__main__':
