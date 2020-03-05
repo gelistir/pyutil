@@ -22,7 +22,7 @@ FROM jupyter as jupyterlab
 RUN conda install -y -c conda-forge jupyterlab && \
     jupyter labextension install @jupyter-widgets/jupyterlab-manager && \
     jupyter labextension install beakerx-jupyterlab && \
-    jupyter labextension install @jupyterlab/celltags && \
+    #jupyter labextension install @jupyterlab/celltags && \
     jupyter lab build
 
 # hardcoded parameters!? see https://github.com/moby/moby/issues/35018
