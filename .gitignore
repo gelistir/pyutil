@@ -16,7 +16,7 @@ build
 
 *.ipynb_checkpoints*
 file.db
-**/*.ipynb_checkpoints/*
+**/.ipynb_checkpoints/*
 binder/files/.ipynb_checkpoints
 *checkpoint.ipynb
 
