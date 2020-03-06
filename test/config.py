@@ -3,7 +3,6 @@ import pandas as pd
 import pytest
 
 from pyutil.config.random import random_string
-#from pyutil.mongo.mongo import Mongo
 from pyutil.portfolio.portfolio import Portfolio
 
 
@@ -19,13 +18,6 @@ def read(name, **kwargs):
 def portfolio():
     return Portfolio(prices=read("price.csv", parse_dates=True, index_col=0),
                      weights=read("weight.csv", parse_dates=True, index_col=0))
-
-
-#@pytest.fixture()
-#def mongo():
-#    return Mongo(db=random_string(5), host="mongomock://localhost")
-
-#MONGODB = {'db': random_string(5), 'host': "mongomock://localhost"}
 
 
 from mongoengine import *
