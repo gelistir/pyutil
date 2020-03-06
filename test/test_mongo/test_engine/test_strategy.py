@@ -1,35 +1,36 @@
 from pyutil.mongo.engine.strategy import Strategy, strategies
 from pyutil.portfolio.portfolio import  similar
 import pandas.util.testing as pdt
-from test.config import portfolio, mongo, resource
+from test.config import *
 
 
-def test_strategy(mongo, portfolio):
-    with mongo as m:
-        s = Strategy(name="mdt", type="mdt", active=True, source="AAA")
+def test_strategy(portfolio):
+    Strategy.objects.delete()
 
-        assert s.source == "AAA"
-        assert s.type == "mdt"
-        assert s.active
+    s = Strategy(name="mdt", type="mdt", active=True, source="AAA")
 
-        assert s.portfolio is None
-        assert s.last_valid_index is None
-        s.save()
+    assert s.source == "AAA"
+    assert s.type == "mdt"
+    assert s.active
 
-        frame = Strategy.reference_frame()
-        assert frame.index.name == "strategy"
+    assert s.portfolio is None
+    assert s.last_valid_index is None
+    s.save()
 
-        s.portfolio = portfolio
-        pdt.assert_frame_equal(s.portfolio.weights, portfolio.weights)
-        pdt.assert_frame_equal(s.portfolio.prices, portfolio.prices)
+    frame = Strategy.reference_frame()
+    assert frame.index.name == "strategy"
 
-        s.save()
+    s.portfolio = portfolio
+    pdt.assert_frame_equal(s.portfolio.weights, portfolio.weights)
+    pdt.assert_frame_equal(s.portfolio.prices, portfolio.prices)
 
-        navs = Strategy.navs()
-        print(navs["mdt"])
-        print(portfolio.nav)
+    s.save()
 
-        assert not navs["mdt"].empty
+    navs = Strategy.navs()
+    print(navs["mdt"])
+    print(portfolio.nav)
+
+    assert not navs["mdt"].empty
 
 
 def test_source(portfolio):

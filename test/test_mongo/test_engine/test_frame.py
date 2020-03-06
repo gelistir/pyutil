@@ -1,7 +1,7 @@
 from pyutil.mongo.engine.frame import Frame
-from pyutil.portfolio.portfolio import similar, Portfolio
+from pyutil.portfolio.portfolio import similar
 
-from test.config import portfolio
+from test.config import *
 
 
 def test_frame(portfolio):

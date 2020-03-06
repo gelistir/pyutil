@@ -1,12 +1,9 @@
 import numpy as np
-import pandas as pd
 import pandas.util.testing as pdt
-import pytest
 
 from pyutil.mongo.engine.symbol import Symbol, Group
-from pyutil.portfolio.portfolio import Portfolio, similar, one_over_n
-
-from test.config import portfolio, read, mongo
+from pyutil.portfolio.portfolio import similar, one_over_n
+from test.config import *
 
 
 @pytest.fixture(scope="module")
@@ -15,21 +12,22 @@ def sector_weights():
 
 
 @pytest.fixture()
-def symbols(mongo):
-    with mongo as m:
-        a = Group(name="Alternatives").save()
-        e = Group(name="Equities").save()
-        f = Group(name="Fixed Income").save()
+def symbols():
+    Group.objects.delete()
 
-        s1 = Symbol(name="A", group=a, internal="AA")
-        s2 = Symbol(name="B", group=a, internal="BB")
-        s3 = Symbol(name="C", group=e, internal="CC")
-        s4 = Symbol(name="D", group=e, internal="DD")
-        s5 = Symbol(name="E", group=f, internal="EE")
-        s6 = Symbol(name="F", group=f, internal="FF")
-        s7 = Symbol(name="G", group=f, internal="GG")
+    a = Group(name="Alternatives").save()
+    e = Group(name="Equities").save()
+    f = Group(name="Fixed Income").save()
 
-        return [s1, s2, s3, s4, s5, s6, s7]
+    s1 = Symbol(name="A", group=a, internal="AA")
+    s2 = Symbol(name="B", group=a, internal="BB")
+    s3 = Symbol(name="C", group=e, internal="CC")
+    s4 = Symbol(name="D", group=e, internal="DD")
+    s5 = Symbol(name="E", group=f, internal="EE")
+    s6 = Symbol(name="F", group=f, internal="FF")
+    s7 = Symbol(name="G", group=f, internal="GG")
+
+    return [s1, s2, s3, s4, s5, s6, s7]
 
 
 class TestPortfolio(object):

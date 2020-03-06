@@ -8,7 +8,7 @@ from pyutil.mongo.engine.owner import Owner
 from pyutil.mongo.engine.security import Security
 from pyutil.timeseries.merge import merge
 
-from test.config import mongo
+from test.config import *
 
 t0 = pd.Timestamp("1978-11-15")
 t1 = pd.Timestamp("1978-11-16")
@@ -32,7 +32,7 @@ def ts3():
 
 
 @pytest.fixture()
-def owner(mongo_client):
+def owner():
     c = Currency(name="USD")
     c.save()
     return Owner(name=100, currency=c, fullname="Peter Maffay")
@@ -123,8 +123,8 @@ def test_returns(ts1, ts2, ts3):
 #    owner.custodian = Custodian(name="UBS")
 #    assert owner.custodian == Custodian(name="UBS")
 
-def test_name(mongo):
-    with mongo as m:
+def test_name():
+    #with mongo as m:
         c = Currency(name="CHF").save()
 
         o = Owner(name="222", fullname="Peter Maffay", currency=c)

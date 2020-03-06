@@ -1,7 +1,7 @@
 import pytest
 
 from pyutil.mongo.engine.prospect import Prospect
-from test.config import read
+from test.config import *
 
 
 def test_prospect():

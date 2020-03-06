@@ -44,7 +44,7 @@ def display_performance(nav):
     return pandas_display(frame=perf)
 
 
-def pandas_display(frame, columns=None):
+def pandas_display(frame, columns=None, file=None):
     display = bx.TableDisplay(frame)
     display.setStringFormatForType(bx.ColumnType.Double, bx.TableDisplayStringFormat.getDecimalFormat(2, 2))
 
@@ -66,4 +66,8 @@ def pandas_display(frame, columns=None):
                 pass
 
     display.sendModel()
+
+    if file:
+        frame.to_csv(file)
+
     return display
