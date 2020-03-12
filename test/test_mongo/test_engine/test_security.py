@@ -1,6 +1,4 @@
-import pandas as pd
 import pandas.util.testing as pdt
-import pytest
 
 from pyutil.mongo.engine.security import Security, SecurityVolatility
 from pyutil.mongo.engine.currency import Currency
@@ -17,21 +15,13 @@ def ts():
 
 @pytest.fixture()
 def security(ts):
-
-    s = Security(name="100", fullname="Peter Maffay", price=ts)
-    #Security.mongo_database = mongo
+    s = Security(name="100", price=ts)
     s.reference["Bloomberg Ticker"] = "IBM US Equity"
-    #s.price = ts
     return s
 
 
 def test_name(security):
-    # s = Security(name=100)
     assert security.name == "100"
-    #assert str(security) == "Security(100: None)"
-    assert security.fullname == "Peter Maffay"
-    #assert security.bloomberg_scaling == 1
-    #assert security.bloomberg_ticker == "IBM US Equity"
 
 def test_write_volatility(ts, security):
     # s = Security(name=100)
@@ -59,5 +49,5 @@ def test_prices(security, ts):
 
 def test_reference(security):
     frame1 = Security.reference_frame(products=[security])
-    frame2 = pd.DataFrame(index=["100"], columns=["Bloomberg Ticker", "fullname"], data=[["IBM US Equity", "Peter Maffay"]])
+    frame2 = pd.DataFrame(index=["100"], columns=["Bloomberg Ticker"], data=[["IBM US Equity"]])
     pdt.assert_frame_equal(frame1, frame2, check_names=False)

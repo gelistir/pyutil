@@ -1,6 +1,6 @@
 import pytest
 
-from pyutil.options.european import call, put, vanilla, OptionType
+from pyutil.options.european import call, put, vanilla#, OptionType
 
 
 def test_call():
@@ -14,7 +14,7 @@ def test_call():
     c = call(spot, strike, sigma, T, r_free)
     assert c == pytest.approx(0.027352509369436617, 1e-10)
 
-    c = vanilla(spot, strike, sigma, T, r_free, OptionType.CALL)
+    c = vanilla(spot, strike, sigma, T, r_free, "CALL")
     assert c == pytest.approx(0.027352509369436617, 1e-10)
 
 
@@ -28,5 +28,5 @@ def test_put():
     p = put(spot, strike, sigma, T, r_free)
     assert p == pytest.approx(45.150294959440842, 1e-10)
 
-    p = vanilla(spot, strike, sigma, T, r_free, OptionType.PUT)
+    p = vanilla(spot, strike, sigma, T, r_free, "PUT")
     assert p == pytest.approx(45.150294959440842, 1e-10)

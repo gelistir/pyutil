@@ -6,7 +6,6 @@ from mongoengine import *
 
 
 class Owner(PandasDocument):
-    fullname = StringField(max_length=200)
     currency = ReferenceField(Currency)
 
     @classmethod
@@ -16,8 +15,8 @@ class Owner(PandasDocument):
         # that's why owners can't be None
         frame["Currency"] = pd.Series({owner.name: owner.currency.name for owner in products})
         frame["Entity ID"] = pd.Series({owner.name: owner.name for owner in products})
-        frame["Name"] = pd.Series({owner.name: owner.fullname for owner in products})
         return frame
+
 #class Owner(Product, Base):
     #fullname = sq.Column("fullname", sq.String, nullable=True)
 
