@@ -1,7 +1,7 @@
 import numpy as np
 import pandas.util.testing as pdt
 
-from pyutil.portfolio.portfolio import similar, one_over_n
+from pyutil.portfolio.portfolio import similar
 from test.config import *
 
 pd.set_option('display.max_rows', None)
@@ -17,12 +17,6 @@ def portfolio():
 
 
 class TestPortfolio(object):
-    def test_one_over_n(self):
-        prices = pd.DataFrame(index=[1, 2, 3], columns=["A", "B"], data=[[np.nan, 2.0], [3.0, np.nan], [np.nan, 4.0]])
-        portfolio = one_over_n(prices=prices)
-        pdt.assert_frame_equal(portfolio.weights, pd.DataFrame(index=[1, 2, 3], columns=["A", "B"],
-                                                               data=[[np.nan, 1.0], [0.5, 0.5], [0.5, 0.5]]))
-
     def test_from_position(self):
         prices = pd.DataFrame(index=[1, 2, 3], columns=["A", "B"], data=[[1, 1], [1.1, 1.2], [1.1, 1.4]])
         position = pd.Series(index=["A", "B"], data=[100, 200])
