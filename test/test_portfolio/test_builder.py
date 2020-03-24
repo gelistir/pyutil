@@ -31,7 +31,7 @@ def test_rename(portfolio):
 
 
 def test_forward():
-    prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[100, 120], [110, 110], [130, 120]])
+    prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[100, 120], [100, 108], [130, 120]])
 
     portfolio = Portfolio(prices=prices)
     portfolio[1] = pd.Series({"A": 0.5, "B": 0.4})

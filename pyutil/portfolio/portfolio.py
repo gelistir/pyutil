@@ -159,7 +159,7 @@ class Portfolio(object):
 
     @property
     def position(self):
-        return _factor*(self.weights / self.prices)
+        return (self.weights / self.prices).apply(lambda x: x*self.nav)
 
     @property
     def assets(self) -> list:
@@ -338,10 +338,8 @@ class Portfolio(object):
             # What hasn't changed is the position though.
 
             # old position
-            position = self.position.loc[t1]
-            # new prices
-            prices = self.prices.loc[t2]
-            # new weights
-            self[t2] = (position * prices) / ((position * prices).sum() + _factor * self.cash[t1])
+
+            v = (self.asset_returns.loc[t2] + 1.0) * self.weights.loc[t1]
+            self[t2] = v / (v.sum() + self.cash[t1])
 
             yield t2, self
