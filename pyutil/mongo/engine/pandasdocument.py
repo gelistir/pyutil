@@ -3,11 +3,31 @@ import pandas as pd
 
 from mongoengine import *
 
+# We rely heavily on MongoEngine, see http://mongoengine.org/
+# MongoEngine is an ORM for MongoDB, as sqlalchemy is an ORM for SQL
+# MongoDB is a document based database.
+# There is a one-to-one relationship between documents and objects.
+# The objects are defined using MongoEngine
+
+
+# An document could be
+# {"Name": "IBM US Equity", "PX_LAST": 110.0, ...}
+
+# Each document is dynamic and stores all time series and reference data related to an object
+# Each object and therefore each document is a child of the abstract PandasDocument object.
+
+
 
 class PandasDocument(DynamicDocument):
+    # A PandasDocument is an abstract Mongo Document, e.g. instances of this document can not be instantiated.
+    # All concrete objects such as Symbols or Strategies are children of the PandasDocument.
+    # Having a common parent helps to share functionality
     meta = {'abstract': True}
+    # Each children has a unique name (within the class of the children)
     name = StringField(max_length=200, required=True, unique=True)
+    # A dicitionary for reference data, e.g. something like symbol.reference["PX_LAST"] = ...
     reference = DictField()
+    # Date modified
     date_modified = DateTimeField(default=datetime.datetime.utcnow)
 
     @classmethod
@@ -21,9 +41,11 @@ class PandasDocument(DynamicDocument):
         return frame.sort_index()
 
     def __lt__(self, other):
+        # sort documents by name
         return self.name < other.name
 
     def __eq__(self, other):
+        # two documents are the sname if they have the same name and class
         return self.__class__ == other.__class__ and self.name == other.name
 
     # we want to make a set of assets, etc....
@@ -87,4 +109,5 @@ class PandasDocument(DynamicDocument):
 
     @classmethod
     def to_dict(cls):
+        # represent all documents of a class as a dictionary
         return {x.name: x for x in cls.objects}

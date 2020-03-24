@@ -1,41 +1,22 @@
 import numpy as np
 import pandas.util.testing as pdt
 
-from pyutil.mongo.engine.symbol import Symbol, Group
-from pyutil.portfolio.portfolio import similar, one_over_n
+from pyutil.portfolio.portfolio import similar
 from test.config import *
+
+pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+pd.set_option('display.width', None)
+pd.set_option('display.max_colwidth', -1)
 
 
 @pytest.fixture(scope="module")
-def sector_weights():
-    return read("sector_weights.csv", parse_dates=True, index_col=0)
-
-
-@pytest.fixture()
-def symbols():
-    Group.objects.delete()
-
-    a = Group(name="Alternatives").save()
-    e = Group(name="Equities").save()
-    f = Group(name="Fixed Income").save()
-
-    s1 = Symbol(name="A", group=a, internal="AA")
-    s2 = Symbol(name="B", group=a, internal="BB")
-    s3 = Symbol(name="C", group=e, internal="CC")
-    s4 = Symbol(name="D", group=e, internal="DD")
-    s5 = Symbol(name="E", group=f, internal="EE")
-    s6 = Symbol(name="F", group=f, internal="FF")
-    s7 = Symbol(name="G", group=f, internal="GG")
-
-    return [s1, s2, s3, s4, s5, s6, s7]
+def portfolio():
+    return Portfolio(prices=read("price.csv", parse_dates=True, index_col=0),
+                     weights=read("weight.csv", parse_dates=True, index_col=0))
 
 
 class TestPortfolio(object):
-    def test_one_over_n(self):
-        prices = pd.DataFrame(index=[1,2,3], columns=["A","B"], data=[[np.nan, 2.0], [3.0, np.nan], [np.nan, 4.0]])
-        portfolio = one_over_n(prices=prices)
-        pdt.assert_frame_equal(portfolio.weights, pd.DataFrame(index=[1,2,3], columns=["A","B"], data=[[np.nan, 1.0], [0.5, 0.5], [0.5, 0.5]]))
-
     def test_from_position(self):
         prices = pd.DataFrame(index=[1, 2, 3], columns=["A", "B"], data=[[1, 1], [1.1, 1.2], [1.1, 1.4]])
         position = pd.Series(index=["A", "B"], data=[100, 200])
@@ -60,42 +41,23 @@ class TestPortfolio(object):
 
     def test_position(self, portfolio):
         x = 1e6 * portfolio.position
-        assert x["A"][pd.Timestamp("2015-04-22")] == pytest.approx(60.191699988670969, 1e-5)
-
-    def test_build_portfolio(self):
-        prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3],
-                              data=[[1000.0, 1000.0], [1500.0, 1500.0], [2000.0, 2000.0]])
-        weights = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[0.25, 0.25], [0.25, 0.25], [0.25, 0.25]])
-
-        p = Portfolio(prices=prices, weights=weights)
-        pdt.assert_frame_equal(prices, p.prices)
-
-        assert p.position["A"][2] == pytest.approx(0.00020833333333333335, 1e-10)
+        assert x["A"][pd.Timestamp("2015-04-22")] == pytest.approx(59.77214866291216, 1e-5)
 
     def test_mul(self, portfolio):
-        # print(2 * portfolio.weights)
-        # print((2 * portfolio).weights)
-        pdt.assert_frame_equal(2 * portfolio.weights, (2 * portfolio).weights, check_names=False)
-
-    def test_iron_threshold(self, portfolio):
-        p1 = portfolio.truncate(before="2015-01-01").iron_threshold(threshold=0.05)
-        assert len(p1.trading_days) == 5
-
-    def test_iron_time(self, portfolio):
-        p2 = portfolio.truncate(before="2014-07-01").iron_time(rule="3M")
-        assert len(p2.trading_days) == 4
+        pdt.assert_frame_equal(0.5 * portfolio.weights, (0.5 * portfolio).weights, check_names=False)
 
     def test_init_1(self):
         prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[10.0, 10.0], [15.0, 15.0], [20.0, np.nan]])
         weights = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3], data=[[0.3, 0.7], [0.3, 0.7], [0.3, 0.7]])
         portfolio = Portfolio(prices=prices, weights=weights)
-        assert 0.3 == pytest.approx(portfolio.weights["A"][3], 1e-5)
-        assert 15.0 == pytest.approx(portfolio.prices["B"][3], 1e-5)
+        assert portfolio.weights["A"][3] == pytest.approx(0.3, 1e-5)
+        assert portfolio.prices["B"][3] == pytest.approx(15.0, 1e-5)
 
     def test_init_2(self):
         with pytest.raises(AssertionError):
             prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3],
                                   data=[[10.0, 10.0], [15.0, 15.0], [20.0, np.nan]])
+            # wrong index
             weights = pd.DataFrame(columns=["A", "B"], index=[1.5], data=[[0.3, 0.7]])
             Portfolio(prices=prices, weights=weights)
 
@@ -103,13 +65,9 @@ class TestPortfolio(object):
         with pytest.raises(AssertionError):
             prices = pd.DataFrame(columns=["A", "B"], index=[1, 2, 3],
                                   data=[[10.0, 10.0], [15.0, 15.0], [20.0, np.nan]])
+            # mismatch in columns
             weights = pd.DataFrame(columns=["C"], index=[1.5], data=[[0.3]])
             Portfolio(prices=prices, weights=weights)
-
-    @pytest.mark.skip(reason="no way of currently testing this")
-    def test_state(self, portfolio):
-        portfolio.state.to_csv("state2.csv")
-        pdt.assert_frame_equal(portfolio.state, read("state2.csv", squeeze=False, header=0, index_col=0))
 
     def test_mismatch_columns(self):
         with pytest.raises(AssertionError):
@@ -129,15 +87,9 @@ class TestPortfolio(object):
 
     def test_series(self):
         prices = pd.DataFrame(index=[0, 1, 2], columns=["A", "B"])
-        weights = pd.Series(index=["A", "B"], data=[1.0, 1.0])
+        weights = pd.Series(index=["A", "B"], data=[0.5, 0.5])
         p = Portfolio(prices=prices, weights=weights)
-        assert p.weights["B"][2] == 1
-
-    def test_gap(self):
-        prices = pd.DataFrame(index=[0, 1, 2, 3], columns=["A"], data=100)
-        weights = pd.DataFrame(index=[0, 1, 2, 3], columns=["A"], data=[1, np.nan, 1, 1])
-        with pytest.raises(AssertionError):
-            Portfolio(prices=prices, weights=weights)
+        assert p.weights["B"][2] == 0.5
 
     def test_weight_current(self, portfolio):
         assert portfolio.weight_current["D"] == pytest.approx(0.022837914929098344, 1e-10)
@@ -146,20 +98,15 @@ class TestPortfolio(object):
         sub = portfolio.subportfolio(assets=portfolio.assets[:2])
         assert portfolio.assets[:2] == sub.assets
 
-    # def test_snapshot(self, portfolio):
-    #     x = portfolio.snapshot(n=5)
-    #     assert x["Year-to-Date"]["B"] == pytest.approx(0.01615087992272124, 1e-10)
-
     def test_apply(self, portfolio):
-        w = portfolio.apply(lambda x: 2 * x)
-        pdt.assert_frame_equal(w.weights, 2 * portfolio.weights)
+        pdt.assert_frame_equal(portfolio.apply(lambda x: 0.5 * x).weights, 0.5 * portfolio.weights)
 
     def test_similar(self, portfolio):
         assert not similar(portfolio, 5)
         assert not similar(portfolio, portfolio.subportfolio(assets=["A", "B", "C"]))
         assert not similar(portfolio, portfolio.tail(100))
 
-        p2 = Portfolio(weights=2 * portfolio.weights, prices=portfolio.prices)
+        p2 = Portfolio(weights=0.5*portfolio.weights, prices=portfolio.prices)
         assert not similar(portfolio, p2)
         assert similar(portfolio, portfolio)
 
@@ -173,33 +120,39 @@ class TestPortfolio(object):
         assert similar(p.head(10), portfolio.head(10))
 
     def test_empty_weights(self, portfolio):
-        p = Portfolio.fromPosition(prices=portfolio.prices)
-        pdt.assert_frame_equal(p.weights,
-                               pd.DataFrame(data=0.0, index=portfolio.prices.index, columns=portfolio.prices.keys()))
+        pdt.assert_frame_equal(Portfolio.fromPosition(prices=portfolio.prices).weights, 0.0*portfolio.prices)
 
     def test_to_frame(self, portfolio):
         frame = portfolio.to_frame(name="")
-    #    pdt.assert_series_equal(frame["cash"], portfolio.cash, check_names=False)
-    #    pdt.assert_series_equal(frame["leverage"], portfolio.leverage, check_names=False)
+        pdt.assert_series_equal(frame["-cash"], portfolio.cash, check_names=False)
+        pdt.assert_series_equal(frame["-leverage"], portfolio.leverage, check_names=False)
 
-    def test_last_dates(self, portfolio):
-        pdt.assert_series_equal(portfolio.last_dates,
-                                portfolio.prices.apply(lambda x: x.last_valid_index()).sort_values(ascending=True))
-
-    def test_state(self, portfolio, symbols):
-        frame = portfolio.state(symbols=symbols)
-        pdt.assert_frame_equal(frame, read("state.csv", index_col=0))
-
-    def test_sector(self, portfolio, symbols):
-        symbolmap = {s.name: s.group.name for s in symbols}
+    def test_sector(self, portfolio):
+        symbolmap = {"A": "Alternatives", "B": "Alternatives",
+                     "C": "Equities", "D": "Equities",
+                     "E": "Fixed Income", "F": "Fixed Income", "G": "Fixed Income"}
 
         frame = portfolio.sector(symbolmap=symbolmap)
-        pdt.assert_frame_equal(frame.tail(5), read("sector.csv", index_col=0, parse_dates=True))
+        pdt.assert_series_equal(portfolio.weights[["A", "B"]].sum(axis=1), frame["Alternatives"], check_names=False)
 
         frame = portfolio.sector(symbolmap=symbolmap, total=True)
-        pdt.assert_frame_equal(frame.head(3), read("sector_total.csv", index_col=0, parse_dates=True))
+        pdt.assert_series_equal(portfolio.weights[["A", "B"]].sum(axis=1), frame["Alternatives"], check_names=False)
 
-    def test_csv(self, portfolio):
-        portfolio.to_csv(folder="/tmp/maffay", name="peter")
-        p = Portfolio.read_csv(folder="/tmp/maffay", name="peter")
-        assert similar(portfolio, p)
+    # def test_csv(self, portfolio):
+    #     portfolio.to_csv(folder="/tmp/maffay", name="peter")
+    #     p = Portfolio.read_csv(folder="/tmp/maffay", name="peter")
+    #     assert similar(portfolio, p)
+
+    def test_iron_threshold(self, portfolio):
+        p = portfolio.iron_threshold(threshold=0.05)
+        diff = (p.weights - portfolio.weights).abs().sum(axis=1)
+        rebalancing = diff[diff == 0]
+        # start + rebalancing + last day
+        assert len(rebalancing) == 1 + 39 + 1
+
+    def test_iron_time(self, portfolio):
+        p = portfolio.iron_time(rule="3M")
+        diff = (p.weights - portfolio.weights).abs().sum(axis=1)
+        rebalancing = diff[diff == 0]
+        # start + rebalancing + last day
+        assert len(rebalancing) == 1 + 9 + 1

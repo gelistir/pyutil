@@ -1,10 +1,9 @@
 from pyutil.mongo.engine.frame import Frame
-from pyutil.portfolio.portfolio import similar
-
 from test.config import *
 
+import pandas.util.testing as pdt
 
-def test_frame(portfolio):
-    f = Frame(name="Portfolio", prices=portfolio.prices, weights=portfolio.weights)
-    x = Portfolio(prices=f.prices, weights=f.weights)
-    assert similar(x, portfolio)
+
+def test_frame():
+    f = Frame(name="Portfolio", prices=read("price.csv", index_col=0, parse_dates=True))
+    pdt.assert_frame_equal(f.prices, read("price.csv", index_col=0, parse_dates=True))
