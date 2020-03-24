@@ -9,16 +9,29 @@ Set of utility code used by Lobnek Wealth Management.
 
 ## Installation
 ```python
-pip install git+http://github.com/lobnek/pyutil.git
+pip install lob-pyutil
 ```
 
-## Running a strategy
+## Utility code
 
-Our main concern is to implement and maintain strategies in a robust way. We do not rewrite our codes for production servers 
-in alternative programming languages. We use the same Python scripts both in research and production. 
+Lobnek Wealth Management is a Swiss Family office. We run quantitative strategies for our clients based on Python scripts.
+Neither the strategies nor the clients are published here but we have decided to share some of the tools we use to create and 
+maintain our systems. 
 
-A strategy is a script loading time series data from an archive and using parameters specified a priori.
-For research it is helpful to interfere with the parameters before the strategy iterates in a backtest through history.
+We have released tools for 
+* Convex programming with cvxpy
+* Database management (with MongoDB and MongoEngine)
+* Configurations and logging 
+* Performance measurement (drawdown, year/month tables, etc.)
+* Plotting with beakerx
+* Portfolios (construction and analysis)
+* Strategy development (all following the same blueprint)
+* Supporting of (Unit)tests
+* Massaging time series data (oscillators, etc.)
+* Web development
+
+We are most interested in your feedback and appreciate comments and support contributions for our tools.  We recommend to explore
+our tools following the binder link given above.
 
 
 
