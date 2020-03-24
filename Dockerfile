@@ -6,7 +6,7 @@ MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
 
 COPY requirements.txt /tmp/pyutil/requirements.txt
 
-RUN conda install -y -c conda-forge nomkl pandas=0.25.3 requests=2.22.0 scipy beakerx=1.4.1 && \
+RUN conda install -y -c conda-forge nomkl pandas=0.25.3 requests=2.22.0 cvxpy scipy beakerx=1.4.1 && \
     conda clean -y --all && \
     pip install --no-cache-dir -r /tmp/pyutil/requirements.txt && \
     rm -r /tmp/pyutil

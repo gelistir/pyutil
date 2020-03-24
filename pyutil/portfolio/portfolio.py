@@ -4,6 +4,7 @@ import numpy as np
 from pyutil.performance.return_series import drawdown
 from pyutil.timeseries.merge import merge as merge_in_t
 
+_factor = 1e6
 
 def merge(portfolios, axis=0):
     prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
@@ -158,7 +159,7 @@ class Portfolio(object):
 
     @property
     def position(self):
-        return self.weights / self.prices
+        return _factor*(self.weights / self.prices)
 
     @property
     def assets(self) -> list:
@@ -341,6 +342,6 @@ class Portfolio(object):
             # new prices
             prices = self.prices.loc[t2]
             # new weights
-            self[t2] = (position * prices) / ((position * prices).sum() + self.cash[t1])
+            self[t2] = (position * prices) / ((position * prices).sum() + _factor * self.cash[t1])
 
             yield t2, self
