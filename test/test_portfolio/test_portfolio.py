@@ -40,8 +40,8 @@ class TestPortfolio(object):
         assert x.index[0] == pd.Timestamp("2015-04-16")
 
     def test_position(self, portfolio):
-        x = 1e6 * portfolio.position
-        assert x["A"][pd.Timestamp("2015-04-22")] == pytest.approx(59.77214866291216, 1e-5)
+        x = portfolio.position
+        assert x["A"][pd.Timestamp("2015-04-22")] == pytest.approx(6.019169998867096e-05, 1e-5)
 
     def test_mul(self, portfolio):
         pdt.assert_frame_equal(0.5 * portfolio.weights, (0.5 * portfolio).weights, check_names=False)
