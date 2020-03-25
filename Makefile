@@ -1,8 +1,4 @@
 #!make
-#PROJECT_VERSION := $(shell python setup.py --version)
-
-#SHELL := /bin/bash
-#PACKAGE := pyutil
 
 # needed to get the ${PORT} environment variable
 include .env
