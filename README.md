@@ -1,8 +1,7 @@
 # pyutil
 
 [![Build Status](https://travis-ci.org/lobnek/pyutil.svg?branch=master)](https://travis-ci.org/lobnek/pyutil)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/lobnek/pyutil/master?filepath=%2Fbinder)
-
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/lobnek/pyutil/master)
 
 Set of utility code used by Lobnek Wealth Management.
 
