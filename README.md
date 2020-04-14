@@ -19,7 +19,7 @@ Neither the strategies nor the clients are published here but we have decided to
 maintain our systems. 
 
 We have released tools for 
-* Convex programming with cvxpy
+* Convex programming (with cvxpy)
 * Database management (with MongoDB and MongoEngine)
 * Configurations and logging 
 * Performance measurement (drawdown, year/month tables, etc.)
@@ -33,5 +33,6 @@ We have released tools for
 We are most interested in your feedback and appreciate comments and support contributions for our tools.  We recommend to explore
 our tools following the binder link given above.
 
+In this project we also demonstrate how we use docker and take advantage of Binder, see https://mybinder.org/
 
-
+All our internal web services and strategies are based on this package. 

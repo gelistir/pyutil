@@ -22,8 +22,3 @@ class Production(ExitStack):
         super().__exit__(exc_type, exc_val, exc_tb)
         self.logger.info("Time elapsed: {0}".format(self.elapsed))
         return exc_type is None
-            #self.logger.exception(exc_val)
-            #return True
-
-        #self.logger.info("Time elapsed: {0}".format(self.elapsed))
-        #return True
