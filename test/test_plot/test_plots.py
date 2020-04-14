@@ -1,3 +1,5 @@
+import tempfile
+
 import pandas as pd
 import pytest
 
@@ -36,4 +38,4 @@ def test_display_performance(ts):
 
 def test_frames():
     f = pd.DataFrame(index=["A","B"], columns=["C1", "C2"], data=[["A","B"],["C","D"]])
-    assert pandas_display(f)
+    assert pandas_display(f, file=tempfile.NamedTemporaryFile(suffix="csv").name)

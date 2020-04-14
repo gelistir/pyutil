@@ -34,6 +34,7 @@ def test_warning():
         x = m.files
         assert len(x) == 4
 
+
 def test_empty_text():
     m = Mail(from_adr="Peter Maffay", to_adr="David Hasselhoff", mailgunapi=0, mailgunkey=0)
     # you can't send anything with fake mailgunapi and mailgunkey

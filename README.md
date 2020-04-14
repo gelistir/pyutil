@@ -33,6 +33,8 @@ We have released tools for
 We are most interested in your feedback and appreciate comments and support contributions for our tools.  We recommend to explore
 our tools following the binder link given above.
 
-In this project we also demonstrate how we use docker and take advantage of Binder, see https://mybinder.org/
+In this project we also demonstrate the use of docker and take advantage of Binder, see https://mybinder.org/
+We combine Docker with an old-school Makefile approach and achieve a test-coverage of 100%.
 
-All our internal web services and strategies are based on this package. 
+All our (internal) web services and strategies are based on this package. 
+
