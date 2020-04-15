@@ -17,6 +17,6 @@ setup(
     author_email='thomas.schmelzer@lobnek.com',
     url='https://github.com/lobnek/pyutil',
     description='Utility code of a Swiss Family Office',
-    install_requires=['requests>=2.22.0', 'pandas>=0.25.3', 'pymongo', 'scipy', 'mongoengine', 'pyyaml'],
+    install_requires=['requests>=2.22.0', 'pandas>=0.25.3', 'pymongo>=3.10.1', 'mongoengine>=0.19.1', 'pyyaml>=5.3.1'],
     license="MIT"
 )
