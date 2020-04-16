@@ -5,6 +5,7 @@ from pyutil.portfolio.portfolio import similar
 from pyutil.strategy.config import ConfigMaster
 from test.config import portfolio, read
 
+
 @pytest.fixture()
 def prices():
     return read("price.csv", parse_dates=True, index_col=0)
@@ -12,7 +13,6 @@ def prices():
 
 @pytest.fixture()
 def strategy(portfolio, prices):
-
     class Strategy(ConfigMaster):
         def __init__(self, names, reader, **kwargs):
             """
@@ -26,14 +26,14 @@ def strategy(portfolio, prices):
         def portfolio(self):
             return portfolio.subportfolio(assets=self.names)
 
-    return Strategy(names=["A", "B", "C"],             # Assets used by the strategy
+    return Strategy(names=["A", "B", "C"],  # Assets used by the strategy
                     reader=lambda name: prices[name],  # simple function to read prices
-                    Hans=30, Dampf=40)                 # parameter
+                    Hans=30, Dampf=40)  # parameter
 
 
 def test_run_strategy(strategy):
     # you can always add new parameters or change existing ones
-    strategy["Peter Maffay"]=20
+    strategy["Peter Maffay"] = 20
     strategy["Hans"] = 35
     assert strategy.parameter == {"Peter Maffay": 20, "Hans": 35, "Dampf": 40}
 

@@ -25,7 +25,7 @@ class PandasDocument(DynamicDocument):
     meta = {'abstract': True}
     # Each children has a unique name (within the class of the children)
     name = StringField(max_length=200, required=True, unique=True)
-    # A dicitionary for reference data, e.g. something like symbol.reference["PX_LAST"] = ...
+    # A dictionary for reference data, e.g. something like symbol.reference["PX_LAST"] = ...
     reference = DictField()
     # Date modified
     date_modified = DateTimeField(default=datetime.datetime.utcnow)

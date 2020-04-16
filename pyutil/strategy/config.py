@@ -2,7 +2,7 @@ import abc
 import logging
 import pandas as pd
 
-
+# Every strategy is a child of the ConfigMaster class. The ConfigMaster class extends Python's dictionary.
 class ConfigMaster(dict):
     """ Every strategy is described by a configuration object. Each such object inherits from the ConfigMaster class."""
     __metaclass__ = abc.ABCMeta

@@ -16,6 +16,8 @@ def strategies(folder):
 
 
 def _module(source):
+    # We store the source code directly as a string in a mongo database!
+    # Using reflection we get back to a module
     from types import ModuleType
 
     compiled = compile(source, '', 'exec')
@@ -25,8 +27,11 @@ def _module(source):
 
 
 class Strategy(PandasDocument):
+    # active flag, only active strategies are updated
     active = BooleanField(default=True)
+    # source code
     source = StringField()
+    # type of the strategy (you can use whatever name here)
     type = StringField(max_length=100)
 
     def configuration(self, reader=None) -> ConfigMaster:

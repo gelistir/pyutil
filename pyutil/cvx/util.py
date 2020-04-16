@@ -1,5 +1,6 @@
 import cvxpy as cvx
 
+# I have addressed this here https://github.com/cvxgrp/cvxpy/issues/966
 
 class Solver(object):
     def __init__(self, problem):

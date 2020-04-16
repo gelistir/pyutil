@@ -1,5 +1,5 @@
 __title__ = 'pyutil'
-__version__ = '5.0.0'
+__version__ = '5.0.1'
 __author__ = 'Lobnek Wealth Management'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2019 by Lobnek Wealth Management'

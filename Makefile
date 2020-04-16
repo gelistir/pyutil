@@ -14,8 +14,8 @@ PACKAGE := ${__title__}
 .DEFAULT: help
 
 help:
-	@echo "make build"
-	@echo "       Build the docker image."
+	#@echo "make build"
+	#@echo "       Build the docker image."
 	@echo "make test"
 	@echo "       Build the docker image for testing and run them."
 	@echo "make teamcity"
@@ -31,9 +31,9 @@ help:
 
 
 
-build:
+#build:
 	#docker-compose build jupyter
-	docker-compose build --no-cache pyutil
+	#docker-compose build --no-cache pyutil
 
 test: #clean
 	mkdir -p artifacts
