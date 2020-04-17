@@ -14,8 +14,6 @@ PACKAGE := ${__title__}
 .DEFAULT: help
 
 help:
-	#@echo "make build"
-	#@echo "       Build the docker image."
 	@echo "make test"
 	@echo "       Build the docker image for testing and run them."
 	@echo "make teamcity"
@@ -30,11 +28,6 @@ help:
 	@echo "       Make a tag on Github."
 
 
-
-#build:
-	#docker-compose build jupyter
-	#docker-compose build --no-cache pyutil
-
 test: #clean
 	mkdir -p artifacts
 	#docker-compose -f docker-compose.test.yml down -v --rmi all --remove-orphans
@@ -44,7 +37,7 @@ teamcity: test doc
 
 jupyter:
 	docker-compose build jupyter
-	echo "http://localhost:${PORT}"
+	echo "http://localhost:${PORT}/lab"
 	docker-compose up jupyter
 
 graph: test

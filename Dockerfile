@@ -1,5 +1,6 @@
 # Set the base image to Ubuntu, use a public image
-FROM continuumio/miniconda3 as builder
+# FROM continuumio/miniconda3:4.8.2 as builder
+FROM python:3.7.7-slim-stretch as builder
 
 # File Author / Maintainer
 MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
@@ -7,11 +8,11 @@ MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
 # copy requirements over
 COPY requirements.txt /tmp/pyutil/requirements.txt
 
-# install pandas, requests, cvxpy and beakerx, install the requirements, clean traces
-RUN conda install -y -c conda-forge nomkl pandas=0.25.3 requests=2.22.0 cvxpy=1.0.27 beakerx=1.4.1 && \
-    conda clean -y --all && \
+RUN buildDeps='gcc g++ libc6-dev' && \
+    apt-get update && apt-get install -y $buildDeps --no-install-recommends && \
     pip install --no-cache-dir -r /tmp/pyutil/requirements.txt && \
-    rm -r /tmp/pyutil
+    rm -r /tmp/pyutil && \
+    apt-get purge -y --auto-remove $buildDeps
 
 COPY ./pyutil /pyutil/pyutil
 
