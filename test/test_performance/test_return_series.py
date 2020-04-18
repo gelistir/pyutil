@@ -5,12 +5,12 @@ import pytest
 import pandas.util.testing as pdt
 
 from pyutil.performance.return_series import from_nav, from_returns, performance
-from test.config import read
+from test.config import read_pd
 
 
 @pytest.fixture()
 def ts():
-    ts = read("ts.csv", parse_dates=True, squeeze=True, header=None, index_col=0)
+    ts = read_pd("ts.csv", parse_dates=True, squeeze=True, header=None, index_col=0)
     ts.name = None
     ts.index.name = None
     return from_nav(ts)
@@ -115,5 +115,5 @@ def test_sortino_no_negative():
 
 
 def test_performance():
-    ts = read("ts.csv", parse_dates=True, squeeze=True, header=None, index_col=0)
+    ts = read_pd("ts.csv", parse_dates=True, squeeze=True, header=None, index_col=0)
     pdt.assert_series_equal(performance(ts), from_nav(ts).summary())

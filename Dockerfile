@@ -19,7 +19,7 @@ COPY ./pyutil /pyutil/pyutil
 #### Here the test-configuration
 FROM builder as test
 
-RUN pip install --no-cache-dir httpretty pytest pytest-cov pytest-html sphinx mongomock
+RUN pip install --no-cache-dir httpretty pytest pytest-cov pytest-html sphinx mongomock requests-mock
 
 WORKDIR /pyutil
 

@@ -5,5 +5,5 @@ import pandas.util.testing as pdt
 
 
 def test_frame():
-    f = Frame(name="Portfolio", prices=read("price.csv", index_col=0, parse_dates=True))
-    pdt.assert_frame_equal(f.prices, read("price.csv", index_col=0, parse_dates=True))
+    f = Frame(name="Portfolio", prices=read_pd("price.csv", index_col=0, parse_dates=True))
+    pdt.assert_frame_equal(f.prices, read_pd("price.csv", index_col=0, parse_dates=True))

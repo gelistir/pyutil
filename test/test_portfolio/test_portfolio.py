@@ -12,8 +12,8 @@ pd.set_option('display.max_colwidth', -1)
 
 @pytest.fixture(scope="module")
 def portfolio():
-    return Portfolio(prices=read("price.csv", parse_dates=True, index_col=0),
-                     weights=read("weight.csv", parse_dates=True, index_col=0))
+    return Portfolio(prices=read_pd("price.csv", parse_dates=True, index_col=0),
+                     weights=read_pd("weight.csv", parse_dates=True, index_col=0))
 
 
 class TestPortfolio(object):

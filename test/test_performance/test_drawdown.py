@@ -3,17 +3,17 @@ import pandas.util.testing as pdt
 import pytest
 
 from pyutil.performance.drawdown import Drawdown, drawdown
-from test.config import read
+from test.config import read_pd
 
 
 @pytest.fixture(scope="module")
 def ts():
-    return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0).pct_change().fillna(0.0)
+    return read_pd("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0).pct_change().fillna(0.0)
 
 
 def test_drawdown(ts):
-    pdt.assert_series_equal(Drawdown(ts).drawdown, read("drawdown.csv", squeeze=True, parse_dates=True, header=None, index_col=0), check_names=False)
-    pdt.assert_series_equal(drawdown(ts), read("drawdown.csv", squeeze=True, parse_dates=True, header=None, index_col=0), check_names=False)
+    pdt.assert_series_equal(Drawdown(ts).drawdown, read_pd("drawdown.csv", squeeze=True, parse_dates=True, header=None, index_col=0), check_names=False)
+    pdt.assert_series_equal(drawdown(ts), read_pd("drawdown.csv", squeeze=True, parse_dates=True, header=None, index_col=0), check_names=False)
 
 
 def test_empty():

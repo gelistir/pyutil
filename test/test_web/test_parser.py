@@ -4,7 +4,7 @@ from io import StringIO
 import pandas as pd
 import pandas.util.testing as pdt
 
-from pyutil.web.parser import HighchartsSeries, respond_pandas
+from pyutil.web.parser import respond_pandas
 import pytest
 
 
@@ -13,24 +13,15 @@ def nav():
     return pd.Series({pd.Timestamp('2014-12-11'): 1.29, pd.Timestamp('2014-12-12'): 1.29, pd.Timestamp('2014-12-15'): 1.28})
 
 
-def test_parser(nav):
-    pdt.assert_series_equal(HighchartsSeries.parse(HighchartsSeries.to_json(nav)), nav)
-
-
 def test_respond_frame_json(nav):
     x = nav.to_frame(name="Maffay")
     response = respond_pandas(x, "json")
     pdt.assert_frame_equal(pd.read_json(response.data, typ="frame", orient="table"), x)
 
+
 def test_respond_json():
     x = ["A", "B"]
-    response = respond_pandas(x, "json")
-    #print(response.data)
-    assert json.loads(response.data) == ["A", "B"]
-
-    #assert False
-
-    #pdt.assert_frame_equal((response.data, typ="frame", orient="table"), x)
+    assert json.loads(respond_pandas(x, "json").data) == x
 
 
 def test_respond_frame_csv(nav):

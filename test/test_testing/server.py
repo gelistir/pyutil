@@ -4,7 +4,9 @@ from pyutil.web.parser import respond_pandas
 
 frame = pd.DataFrame(index=["A"], columns=["B"], data=[[3.0]])
 
+
 app = Flask(__name__)
+
 
 @app.route("/hello")
 def hello():

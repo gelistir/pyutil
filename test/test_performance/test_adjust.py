@@ -2,12 +2,12 @@ import pandas as pd
 import pytest
 
 from pyutil.performance.adjust import adjust
-from test.config import read
+from test.config import read_pd
 
 
 @pytest.fixture(scope="module")
 def ts():
-    return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
+    return read_pd("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
 
 
 def test_adjust(ts):

@@ -3,12 +3,12 @@ import pytest
 
 from pyutil.portfolio.portfolio import similar
 from pyutil.strategy.config import ConfigMaster
-from test.config import portfolio, read
+from test.config import portfolio, read_pd
 
 
 @pytest.fixture()
 def prices():
-    return read("price.csv", parse_dates=True, index_col=0)
+    return read_pd("price.csv", parse_dates=True, index_col=0)
 
 
 @pytest.fixture()

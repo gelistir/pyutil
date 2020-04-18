@@ -1,12 +1,12 @@
 import pytest
 
 from pyutil.timeseries.signal import trend_new, volatility
-from test.config import read
+from test.config import read_pd
 
 
 @pytest.fixture()
 def ts():
-    return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
+    return read_pd("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
 
 
 def test_trend_new(ts):

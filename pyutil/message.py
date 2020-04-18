@@ -9,7 +9,7 @@ class Mail(object):
     Class for sending emails with and without attachments via mailgun
     """
 
-    def __init__(self, mailgunapi=None, mailgunkey=None, to_adr=None, from_adr=None, text="", subject=""):
+    def __init__(self, mailgunapi=None, mailgunkey=None, to_adr=None, from_adr=None, text=None, subject=None):
         """
         Create a Mail object
         """
@@ -17,8 +17,8 @@ class Mail(object):
         self.__mailgun_api = mailgunapi or os.environ["MAILGUNAPI"]
         self.__mailgun_key = mailgunkey or os.environ["MAILGUNKEY"]
         self.__files = list()
-        self.__subject = subject
-        self.__text = text
+        self.__subject = subject or ""
+        self.__text = text or ""
         self.__toAdr = to_adr
         self.__fromAdr = from_adr
 
@@ -85,7 +85,7 @@ class Mail(object):
                 logger.info("type: {0}, name: {1}".format(file[0], file[1][0]))
 
             r = requests.post(self.__mailgun_api, auth=("api", self.__mailgun_key), files=self.__files, data=data)
-            assert r.ok, "Something went wront sending the email"
+            assert r.ok, "Something went wrong sending the email"
 
         finally:
 

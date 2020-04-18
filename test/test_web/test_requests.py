@@ -1,32 +1,21 @@
-from unittest import mock
+import requests_mock
 
-import requests
 import pandas as pd
-from pyutil.web.requests import fetch_csv
+from pyutil.web.requests import fetch_csv, fetch_json
 import pandas.util.testing as pdt
 
-# custom class to be the mock return value
-# will override the requests.Response returned from requests.get
-class MockResponse:
-    @property
-    def content(self):
-        frame = pd.DataFrame(index=["A","B"], columns=["C1"], data=[[2],[3]])
-        return frame.to_csv().encode()
 
-    @property
-    def ok(self):
-        return True
+frame = pd.DataFrame(index=["A", "B"], columns=["C1"], data=[[2], [3]])
 
 
 def test_fetch_csv():
-    # Any arguments may be passed and mock_get() will always return our
-    # mocked object, which only has the .json() method.
-    def mock_get(*args, **kwargs):
-        return MockResponse()
+    with requests_mock.Mocker() as m:
+        m.get("https://maffay.com", content=frame.to_csv().encode())
+        pdt.assert_frame_equal(fetch_csv("https://maffay.com", index_col=0), frame)
 
-    # apply the monkeypatch for requests.get to mock_get
-    #monkeypatch.setattr(requests, "get", mock_get)
 
-    with mock.patch.object(requests, "get", side_effect=mock_get) as mock_fct:
-        result = fetch_csv("https://fakeurl", index_col=0)
-        pdt.assert_frame_equal(result, pd.DataFrame(index=["A","B"], columns=["C1"], data=[[2],[3]]))
+def test_fetch_json():
+    with requests_mock.Mocker() as m:
+        m.get("https://maffay.com", json=frame.to_json(orient="table"))
+        pdt.assert_frame_equal(fetch_json(url="https://maffay.com", orient="table"), frame)
+

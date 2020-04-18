@@ -3,12 +3,12 @@ import pandas.util.testing as pdt
 import pytest
 
 from pyutil.timeseries.merge import merge, last_index, first_index, to_datetime, to_date
-from test.config import read
+from test.config import read_pd
 
 
 @pytest.fixture()
 def ts():
-    return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
+    return read_pd("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
 
 
 class TestMerge(object):

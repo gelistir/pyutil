@@ -2,12 +2,12 @@ import pandas as pd
 import pytest
 
 from pyutil.performance.periods import periods, period_returns
-from test.config import read
+from test.config import read_pd
 
 
 @pytest.fixture(scope="module")
 def returns():
-    return read("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0).pct_change()
+    return read_pd("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0).pct_change()
 
 
 def test_periods():

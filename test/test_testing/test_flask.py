@@ -29,3 +29,4 @@ def test_csv(client):
 def test_json(client):
     f = response2json(get(client, url="/json"), orient="table")
     pdt.assert_frame_equal(f, frame)
+
