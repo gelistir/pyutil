@@ -43,14 +43,6 @@ def test_solve():
     s.solve()
     np.allclose(s.variables["weights"].value, np.array([-1.0, +1.0]))
 
-
-def test_items():
-    s = solver(2)
-    s.parameters["exp_return"].value = np.array([2.0, 3.0])
-    s.parameters["max_leverage"].value = 2.0
-
-    s.solve()
-
     d = {name: v for name, v in s.variables.items()}
     np.allclose(d["weights"].value, np.array([-1.0, +1.0]))
 

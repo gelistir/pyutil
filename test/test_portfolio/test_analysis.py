@@ -42,15 +42,12 @@ def test_drawdown(portfolio, navs):
 
 def test_mtd(portfolio, navs):
     xxx = ppa.mtd(frame=navs)
-    print(xxx)
     assert xxx.loc["test"]["Apr 20"] == from_nav(portfolio.nav).tail_month[pd.Timestamp("2015-04-20")]
     assert set(xxx.index) == {"test"}
 
 
 def test_ytd(portfolio, navs):
-    #print(from_nav(portfolio.nav).ytd_series[pd.Timestamp("2015-03-31")])
     xxx = ppa.ytd(frame=navs)
-    print(xxx)
     assert xxx.loc["test"]["03"] == from_nav(portfolio.nav).tail_year.resample("M")[pd.Timestamp("2015-03-31")]
     assert set(xxx.index) == {"test"}
 

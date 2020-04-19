@@ -11,9 +11,14 @@ def ts():
     return read_pd("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0).pct_change().fillna(0.0)
 
 
-def test_drawdown(ts):
-    pdt.assert_series_equal(Drawdown(ts).drawdown, read_pd("drawdown.csv", squeeze=True, parse_dates=True, header=None, index_col=0), check_names=False)
-    pdt.assert_series_equal(drawdown(ts), read_pd("drawdown.csv", squeeze=True, parse_dates=True, header=None, index_col=0), check_names=False)
+@pytest.fixture()
+def dd():
+    return read_pd("drawdown.csv", squeeze=True, parse_dates=True, header=None, index_col=0)
+
+
+def test_drawdown(ts, dd):
+    pdt.assert_series_equal(Drawdown(ts).drawdown, dd, check_names=False)
+    pdt.assert_series_equal(drawdown(ts), dd, check_names=False)
 
 
 def test_empty():
@@ -36,5 +41,3 @@ def test_wrong_index_order():
 def test_eps():
     x = pd.Series({})
     assert Drawdown(x, eps=1e-10).eps == 1e-10
-
-

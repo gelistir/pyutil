@@ -1,4 +1,3 @@
-import pandas as pd
 import pandas.util.testing as pdt
 import pytest
 
@@ -29,12 +28,18 @@ class TestEngine(object):
         assert {k: v for k, v in p.reference.items()} == {"XXX": 10}
 
     def test_equals(self):
+        # can't harm to clean a bit
+        Singer.objects.delete()
+
         p1 = Singer(name="Peter Maffay")
         p2 = Singer(name="Peter Maffay")
 
         assert p1 == p2
 
     def test_merge(self):
+        # can't harm to clean a bit
+        Singer.objects.delete()
+
         p = Singer(name="Peter Maffay")
 
         ts1 = pd.Series(index=[1, 2], data=[3.3, 4.3])
@@ -46,8 +51,10 @@ class TestEngine(object):
         pdt.assert_series_equal(p.close, pd.Series(index=[1, 2, 3], data=[3.3, 5.3, 6.3]))
 
     def test_products(self):
-        p1 = Singer(name="Peter").save()
+        # can't harm to clean a bit
+        Singer.objects.delete()
 
+        p1 = Singer(name="Peter").save()
         p2 = Singer(name="Falco").save()
 
         # here we query the database! Hence need the client in the background
@@ -109,7 +116,7 @@ class TestEngine(object):
 
     def test_pandas_wrong(self):
         # can't harm to clean a bit
-        #Singer.objects.delete()
+        Singer.objects.delete()
 
         p1 = Singer(name="Peter Maffay")
         p1.price = 5.0
@@ -127,22 +134,16 @@ class TestEngine(object):
         s = [singer for singer in Singer.objects]
         assert len(s) == 0
 
-        c1 = Singer(name="AA")
+        c1 = Singer(name="AA").save()
         assert c1.name == "AA"
 
-        c2 = Singer(name="AA")
-
-        c1.save()
+        # try to create a second singer with the same name
         with pytest.raises(NotUniqueError):
-            c2.save()
+            Singer(name="AA").save()
 
     def test_to_dict(self):
         # can't harm to clean a bit
         Singer.objects.delete()
-
-        # check that no singer has survived
-        s = [singer for singer in Singer.objects]
-        assert len(s) == 0
 
         c1 = Singer(name="AAA").save()
         c2 = Singer(name="BBB").save()

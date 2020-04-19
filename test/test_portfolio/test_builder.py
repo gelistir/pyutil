@@ -61,15 +61,15 @@ def test_merge():
     portfolio2[1] = pd.Series({"C": 0.5, "D": 0.5})
     portfolio2[2] = pd.Series({"C": 0.3, "D": 0.7})
 
-    portfolio = merge(portfolios=[0.5*portfolio1, 0.5*portfolio2], axis=1)
+    portfolio = merge(portfolios=[0.5 * portfolio1, 0.5 * portfolio2], axis=1)
 
     assert portfolio.assets == ["A", "B", "C", "D"]
 
     prices3 = pd.DataFrame(columns=["A", "B"], index=[1, 2], data=200)
 
     portfolio3 = Portfolio(prices=prices3)
-    portfolio3[1]=pd.Series({"A": 0.5, "B": 0.5})
-    portfolio3[2]=pd.Series({"A": 0.3, "B": 0.7})
+    portfolio3[1] = pd.Series({"A": 0.5, "B": 0.5})
+    portfolio3[2] = pd.Series({"A": 0.3, "B": 0.7})
 
     with pytest.raises(ValueError):
         # overlapping columns!

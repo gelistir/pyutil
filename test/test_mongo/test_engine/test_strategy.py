@@ -1,4 +1,4 @@
-from pyutil.mongo.engine.strategy import Strategy, strategies
+from pyutil.mongo.engine.strategy import Strategy, strategies, configuration
 from pyutil.portfolio.portfolio import  similar
 import pandas.util.testing as pdt
 from test.config import *
@@ -27,19 +27,17 @@ def test_strategy(portfolio):
     s.save()
 
     navs = Strategy.navs()
-    print(navs["mdt"])
-    print(portfolio.nav)
-
     assert not navs["mdt"].empty
 
 
 def test_source(portfolio):
     with open(resource("source.py"), "r") as f:
         s = Strategy(name="Peter", source=f.read(), active=True, type="wild")
-
-        assert s.portfolio is None
-        assert s.last_valid_index is None
-        assert s.source
+        # construct the configuration based on the strategy (and it's source code)
+        c = configuration(strategy=s)
+        # verify the names of the configuration
+        assert c.names == portfolio.assets
+        # also possible to ask the strategy directly
         assert s.assets == portfolio.assets
 
 

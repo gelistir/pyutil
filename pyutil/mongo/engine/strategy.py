@@ -1,9 +1,9 @@
 import pandas as pd
 from mongoengine import *
+
+from pyutil.strategy.config import ConfigMaster
 from .pandasdocument import PandasDocument
 from pyutil.portfolio.portfolio import Portfolio
-from pyutil.strategy.config import ConfigMaster
-
 import os
 
 
@@ -26,6 +26,10 @@ def _module(source):
     return mod
 
 
+def configuration(strategy, reader=None):
+    return strategy.module.Configuration(reader=reader)
+
+
 class Strategy(PandasDocument):
     # active flag, only active strategies are updated
     active = BooleanField(default=True)
@@ -35,9 +39,7 @@ class Strategy(PandasDocument):
     type = StringField(max_length=100)
 
     def configuration(self, reader=None) -> ConfigMaster:
-        # Configuration only needs a reader to access the symbols...
-        # Reader is a function taking the name of an asset as a parameter
-        return _module(self.source).Configuration(reader=reader)
+        return self.module.Configuration(reader=reader)
 
     @property
     def portfolio(self):
@@ -45,6 +47,10 @@ class Strategy(PandasDocument):
             return Portfolio(prices=self.prices, weights=self.weights)
         except AttributeError:
             return None
+
+    @property
+    def module(self):
+        return _module(self.source)
 
     @portfolio.setter
     def portfolio(self, portfolio):
@@ -73,12 +79,11 @@ class Strategy(PandasDocument):
 
     @staticmethod
     def portfolios(strategies=None) -> dict:
-        strategies = strategies or Strategy.objects
-        return {strategy.name: strategy.portfolio for strategy in strategies if strategy.portfolio is not None}
+        s = strategies or Strategy.objects
+        return {strategy.name: strategy.portfolio for strategy in s if strategy.portfolio is not None}
 
     @staticmethod
     def navs(strategies=None) -> pd.DataFrame:
-        strategies = strategies or Strategy.objects
         frame = pd.DataFrame({key: item.nav for key, item in Strategy.portfolios(strategies).items()})
         frame.index.name = "Portfolio"
         return frame

@@ -1,16 +1,10 @@
 import pandas as pd
-import pytest
-
 from pyutil.performance.adjust import adjust
 from test.config import read_pd
 
 
-@pytest.fixture(scope="module")
-def ts():
-    return read_pd("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
-
-
-def test_adjust(ts):
+def test_adjust():
+    ts = read_pd("ts.csv", squeeze=True, header=None, parse_dates=True, index_col=0)
     assert adjust(ts).loc["2014-01-01"] == 100.00
 
 

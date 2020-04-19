@@ -11,7 +11,5 @@ def fetch_csv(url, params=None, **kwargs):
 
 def fetch_json(url, params=None, **kwargs):
     r = requests.get(url, params)
-    print(r)
-    print(r.json())
     assert r.ok, "The status code is {status}".format(status=r.status_code)
     return pd.read_json(r.json(), **kwargs)
