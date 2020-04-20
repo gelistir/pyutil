@@ -52,3 +52,12 @@ def test_strategies():
     folder = resource(name="strat")
     for name, source in strategies(folder=folder):
         assert name in {"P1", "P2"}
+
+
+def test_active():
+    Strategy.objects.delete()
+    Strategy(name="A", active=False).save()
+    Strategy(name="B", active=True).save()
+
+    assert len(Strategy.active_strategies()) == 1
+    assert len(Strategy.objects) == 2

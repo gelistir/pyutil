@@ -48,6 +48,10 @@ class Strategy(PandasDocument):
         except AttributeError:
             return None
 
+    @queryset_manager
+    def active_strategies(doc_cls, queryset):
+        return queryset.filter(active=True)
+
     @property
     def module(self):
         return _module(self.source)
