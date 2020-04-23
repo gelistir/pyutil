@@ -8,7 +8,7 @@ MAINTAINER Thomas Schmelzer "thomas.schmelzer@lobnek.com"
 # copy requirements over
 COPY requirements.txt /tmp/pyutil/requirements.txt
 
-RUN buildDeps='gcc g++ libc6-dev' && \
+RUN buildDeps='gcc g++' && \
     apt-get update && apt-get install -y $buildDeps --no-install-recommends && \
     pip install --no-cache-dir -r /tmp/pyutil/requirements.txt && \
     rm -r /tmp/pyutil && \

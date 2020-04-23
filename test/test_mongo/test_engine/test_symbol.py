@@ -25,7 +25,7 @@ def symbol(group):
 
 
 def test_symbol(group, symbol):
-    assert Symbol.objects(tags='mongoengine').count() == 1
+    assert len(Symbol.objects(tags='mongoengine')) == 1
     assert symbol.group == group
 
     frame = Symbol.reference_frame()

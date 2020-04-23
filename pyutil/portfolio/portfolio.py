@@ -6,6 +6,7 @@ from pyutil.timeseries.merge import merge as merge_in_t
 
 _factor = 1e6
 
+
 def merge(portfolios, axis=0):
     prices = pd.concat([p.prices for p in portfolios], axis=axis, verify_integrity=True)
     weights = pd.concat([p.weights for p in portfolios], axis=axis, verify_integrity=True)
@@ -38,9 +39,9 @@ def similar(a, b, eps=1e-6):
 class Portfolio(object):
     def rename(self, names):
         """ names is a dictionary """
-        self.weights.rename(columns=names, inplace=True)
-        self.prices.rename(columns=names, inplace=True)
-        return self
+        # self.weights.rename(columns=names, inplace=True)
+        # self.prices.rename(columns=names, inplace=True)
+        return Portfolio(weights=self.weights.rename(columns=names), prices=self.prices.rename(columns=names))
 
     @staticmethod
     def __series2frame(index, series):
@@ -75,7 +76,7 @@ class Portfolio(object):
         value = position * prices
         total = value.sum(axis=1) + cash
 
-        return Portfolio(prices=prices, weights=value.apply(lambda x: x/total))
+        return Portfolio(prices=prices, weights=value.apply(lambda x: x / total))
 
     def copy(self):
         return Portfolio(prices=self.prices.copy(), weights=self.weights.copy())
@@ -124,7 +125,7 @@ class Portfolio(object):
 
         # make it a frame
         if isinstance(weights, pd.Series):
-            weights = self.__series2frame(index = self.__prices.index, series=weights)
+            weights = self.__series2frame(index=self.__prices.index, series=weights)
 
         if weights is not None:
             assert weights.index.equals(prices.index)
@@ -142,7 +143,7 @@ class Portfolio(object):
 
     @property
     def position(self):
-        return (self.weights / self.prices).apply(lambda x: x*self.nav)
+        return (self.weights / self.prices).apply(lambda x: x * self.nav)
 
     @property
     def assets(self) -> list:
@@ -159,7 +160,7 @@ class Portfolio(object):
     @weights.setter
     def weights(self, value):
         self.__weights = value
-        assert (self.cash >= 0).all(), "Negative cash"
+        # assert (self.cash >= 0).all(), "Negative cash"
 
     @property
     def asset_returns(self):
@@ -176,7 +177,7 @@ class Portfolio(object):
     @property
     def weighted_returns(self):
         r = self.asset_returns.fillna(0.0)
-        return pd.DataFrame({a: r[a]*self.weights[a].dropna().shift(1).fillna(0.0) for a in self.assets})
+        return pd.DataFrame({a: r[a] * self.weights[a].dropna().shift(1).fillna(0.0) for a in self.assets})
 
     @property
     def index(self):
